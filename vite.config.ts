@@ -5,6 +5,7 @@ const entry = (name: string) =>
   fileURLToPath(new URL(`./${name}`, import.meta.url));
 
 export default defineConfig({
+  plugins: [],
   base: './',
   server: {
     port: 3000,
@@ -24,6 +25,7 @@ export default defineConfig({
     include: ['@xterm/xterm', '@xterm/addon-fit', 'monaco-editor'],
   },
   build: {
+    outDir: 'dist',
     target: 'esnext',
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
