@@ -33,6 +33,9 @@ type BootProfile = {
   fallback?: boolean;
 };
 
+const GITHUB_RELEASE_ISO_URL =
+  'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso';
+
 export class V86LinuxTerminal {
   private term: any = null;
   private fitAddon: any = null;
@@ -65,7 +68,7 @@ export class V86LinuxTerminal {
 
   private currentProfile: BootProfile = {
     name: 'Alpine Linux',
-    iso: './alpine.iso',
+    iso: GITHUB_RELEASE_ISO_URL,
   };
 
   private assetUrl(path: string): string {
@@ -248,7 +251,7 @@ export class V86LinuxTerminal {
     await this.startProfile(
       {
         name: 'Alpine Linux',
-        iso: './alpine.iso',
+        iso: GITHUB_RELEASE_ISO_URL,
       },
       force,
     );
@@ -334,7 +337,7 @@ export class V86LinuxTerminal {
         },
         cdrom: {
           url: profile.iso,
-          async: true,
+          async: false,
         },
         screen_container: screen,
         autostart: true,
@@ -398,7 +401,7 @@ export class V86LinuxTerminal {
 
     if (
       !this.shellReady &&
-      this.currentProfile.iso === './alpine.iso' &&
+      this.currentProfile.iso === GITHUB_RELEASE_ISO_URL &&
       /No space left on device|write error: No space left on device|Loading user settings .*apkovl.* failed|emergency recovery shell/i.test(
         visible,
       )
@@ -426,7 +429,7 @@ export class V86LinuxTerminal {
     }
 
     if (
-      this.currentProfile.iso === './alpine.iso' &&
+      this.currentProfile.iso === GITHUB_RELEASE_ISO_URL &&
       !this.shellReady &&
       this.alpineLoginState === 'waiting' &&
       /(?:^|\n)\s*(?:localhost\s+)?login:\s*$/im.test(visible)
@@ -517,7 +520,6 @@ export class V86LinuxTerminal {
 
     this.fit();
 
-    // Configure guest TTY dimensions cleanly once on shell ready
     if (!this.guestTtyConfigured) {
       this.guestTtyConfigured = true;
       const cols = this.term?.cols || 120;
@@ -531,10 +533,10 @@ export class V86LinuxTerminal {
       }, 300);
     }
 
-    if (this.gccRequested && this.currentProfile.iso === './alpine.iso') {
+    if (this.gccRequested && this.currentProfile.iso === GITHUB_RELEASE_ISO_URL) {
       this.gccRequested = false;
       window.setTimeout(() => {
-        if (this.shellReady && this.currentProfile.iso === './alpine.iso') {
+        if (this.shellReady && this.currentProfile.iso === GITHUB_RELEASE_ISO_URL) {
           this.installGcc();
         }
       }, 800);
@@ -555,7 +557,7 @@ export class V86LinuxTerminal {
       return;
     }
 
-    if (this.currentProfile.iso !== './alpine.iso') {
+    if (this.currentProfile.iso !== GITHUB_RELEASE_ISO_URL) {
       this.gccRequested = true;
       this.writeLine('\r\n\x1b[36m[GCC] Switching to Alpine Linux...\x1b[0m');
       void this.bootAlpine(true);
