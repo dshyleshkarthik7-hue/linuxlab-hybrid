@@ -31,19 +31,8 @@ yarn-error.log*
 *.sln
 *.sw?
 .DS_Store
-
-iso-builder/work/rootfs/var/
-iso-builder/work/rootfs/usr/lib/gcc/
-linuxlab-ai-builder/alpine-boot/rootfs/var/
-linuxlab-ai-builder/alpine-boot/rootfs/usr/lib/gcc/
-
-iso-builder/work/rootfs/bin/
-linuxlab-ai-builder/alpine-boot/rootfs/bin/
-
-# Ignore build outputs and runtime rootfs
-iso-builder/work/
-linuxlab-hybrid-ready/iso-builder/work/
-linuxlab-hybrid-ready/linuxlab-ai-builder/alpine-boot/rootfs/
-*.iso
-*.log
+iso-builder/
+linuxlab-hybrid-ready/
+linuxlab-ai-builder/
 *.tmp
+*.log
