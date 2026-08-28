@@ -187,7 +187,7 @@ export class V86LinuxTerminal {
     try {
       this.fitAddon?.fit();
     } catch {
-      // Safe layout fallback
+      // Safe layout transition
     }
   }
 
@@ -517,15 +517,16 @@ export class V86LinuxTerminal {
 
     this.fit();
 
-    // Configure guest TTY dimensions cleanly on first shell boot
+    // Configure guest TTY dimensions cleanly once on shell ready
     if (!this.guestTtyConfigured) {
       this.guestTtyConfigured = true;
       const cols = this.term?.cols || 120;
       const rows = this.term?.rows || 30;
 
-      // Sets terminal size, colors, and clears buffer cleanly
       window.setTimeout(() => {
-        this.sendSerial(`stty cols ${cols} rows ${rows}; export TERM=xterm-256color LINES=${rows} COLUMNS=${cols}; clear\r`);
+        this.sendSerial(
+          `stty cols ${cols} rows ${rows}; export TERM=xterm-256color LINES=${rows} COLUMNS=${cols}; clear\r`,
+        );
         this.term?.focus();
       }, 300);
     }
@@ -590,7 +591,7 @@ export class V86LinuxTerminal {
   }
 
   // ========================================================================
-  // SERIAL SEND & EXECUTION
+  // SERIAL SEND & COMMAND EXECUTION
   // ========================================================================
 
   public sendCommand(command: string): void {
