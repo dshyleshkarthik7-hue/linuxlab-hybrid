@@ -34,7 +34,10 @@ type BootProfile = {
 };
 
 const GITHUB_RELEASE_ISO_URL =
-  'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso';
+  'https://corsproxy.io/?' +
+  encodeURIComponent(
+    'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso'
+  );
 
 export class V86LinuxTerminal {
   private term: any = null;
