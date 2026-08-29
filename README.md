@@ -1,112 +1,204 @@
-# LinuxLab Hybrid — Ready Build
+# LinuxLab — Browser-Based x86 Linux Emulator
 
-LinuxLab is a browser systems-programming laboratory with two engines:
+A lightweight, web-based Linux development environment running x86 emulation directly in the browser via WebAssembly (`v86`) and xterm.js. The guest environment boots a custom Alpine Linux distribution equipped with GCC and essential development utilities.
 
-- **Engine A:** deterministic educational Linux/shell/C environment.
-- **Engine B:** real x86 Alpine Linux running under v86 in the browser, with a real GCC toolchain.
+## Features
 
-## Project layout
+* **Client-Side x86 Emulation:** Runs entirely in modern browsers using `v86` compiled to WebAssembly.
+* **Pre-Installed Toolchain:** Boots a custom Alpine Linux image featuring GCC 15.2.0, `make`, `nano`, and core build essentials.
+* **Low Latency & High Reliability:** Uses a Netlify Edge Function with HTTP Range requests (`/api/iso`) to progressively stream ISO data while avoiding browser CORS and memory limitations.
+* **Full Terminal Capabilities:** Powered by `@xterm/xterm` with automatic resizing, terminal color support, and ANSI escape-code handling.
+* **Automated Login:** Detects boot stages and login prompts to automatically log in as `root`.
+
+## Architecture Overview
 
 ```text
-linuxlab-hybrid-ready/
-├── iso-builder/
-│   ├── build-alpine-gcc.ps1
-│   └── work/
-│       ├── build-linuxlab-gcc.sh
-│       └── alpine-minirootfs-3.24.1-x86.tar.gz
+Browser
+  │
+  │ v86 + xterm.js
+  ▼
+x86 Emulator
+  │
+  │ HTTP Range Requests
+  ▼
+Netlify Edge Function
+  │
+  │ Server-to-Server Streaming
+  ▼
+GitHub Releases CDN
+  │
+  ▼
+Custom Alpine Linux ISO
+```
+
+### Main Components
+
+* **Frontend (`src/mainv86.ts`)**
+
+  * Initializes the `v86` emulator.
+  * Configures SeaBIOS and VGA BIOS.
+  * Allocates 1 GiB of guest RAM.
+  * Connects virtual serial I/O to the xterm.js terminal.
+  * Handles the emulator lifecycle and automated login.
+
+* **Streaming Proxy (`netlify/edge-functions/iso.ts`)**
+
+  * Receives ISO requests from the browser.
+  * Forwards HTTP `Range` headers to the GitHub Releases asset.
+  * Streams the requested binary data back to the browser.
+  * Adds the required CORS and access-control headers.
+
+## Project Structure
+
+```text
+linuxlab-hybrid/
+├── netlify/
+│   └── edge-functions/
+│       └── iso.ts              # Binary streaming proxy
 ├── public/
+│   ├── libv86.js               # v86 runtime
+│   ├── v86.wasm                # WebAssembly emulator
+│   ├── seabios.bin              # SeaBIOS firmware
+│   └── vgabios.bin              # VGA BIOS
 ├── src/
-├── index.html
-├── index-v86.html
-├── simulator.html
+│   └── mainv86.ts              # Terminal & v86 controller
+├── netlify.toml                 # Netlify configuration
 ├── package.json
-├── package-lock.json
-├── vite.config.ts
 └── tsconfig.json
 ```
 
-## Requirements
+## Getting Started
 
-- Windows 10/11
-- WSL2 with Ubuntu
-- Node.js **22 LTS or newer**
-- PowerShell
+### Prerequisites
 
-Node 22 is required because the current Wrangler/Cloudflare development dependencies require it.
+* Node.js v18 or higher
+* npm or pnpm
+* A modern web browser with WebAssembly support
 
-## 1. Install web dependencies
+### Installation
 
-From the repository root:
+Clone the repository:
 
-```powershell
-npm ci
+```bash
+git clone https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid.git
+cd linuxlab-hybrid
 ```
 
-## 2. Build the Alpine GCC ISO
+Install dependencies:
 
-From the repository root:
-
-```powershell
-powershell -ExecutionPolicy Bypass -File .\iso-builder\build-alpine-gcc.ps1
+```bash
+npm install
 ```
 
-The builder uses Ubuntu WSL only for host-side utilities. It does **not** require Ubuntu packages named `apk-tools`, `abuild`, or `alpine-keys`.
+Start the local development server:
 
-The build:
-
-1. downloads Alpine 3.24.1 x86 minirootfs when needed;
-2. uses `qemu-i386-static` to execute the 32-bit Alpine userspace on an x86_64 WSL host;
-3. installs Alpine's real GCC/build toolchain;
-4. creates a direct root shell on `ttyS0` for the browser lab;
-5. builds the initramfs and bootable ISO;
-6. writes the final image to `public/alpine.iso`.
-
-## 3. Build the web application
-
-```powershell
-npm run build
-```
-
-The Vite production output is written to:
-
-```text
-dist/
-```
-
-To build both the web application and ISO:
-
-```powershell
-npm run build:all
-```
-
-## 4. Run locally
-
-```powershell
+```bash
 npm run dev
 ```
 
-For Engine B, open the generated v86 page from the Vite server.
-
-## Engine B GCC test
-
-After Alpine boots, run:
-
-```sh
-linuxlab-gcc-test
-```
-
-or:
-
-```sh
-cd /root/examples
-gcc hello.c -o hello
-./hello
-```
-
-This is the actual Alpine x86 GCC toolchain running inside the emulated guest.
+Open the local URL displayed by the development server in your browser.
 
 ## Deployment
 
-Deploy the generated `dist/` directory to a static host. The browser v86 engine requires the COOP/COEP headers supplied by `public/_headers` (or equivalent headers configured on your hosting platform).
+### Deploying to Netlify
 
-The generated ISO is intentionally a disposable lab environment with a root shell on the emulated serial console. **Do not treat it as a hardened production operating system.**
+LinuxLab uses a Netlify Edge Function to proxy and progressively stream the Alpine Linux ISO.
+
+1. Push your changes to GitHub:
+
+```bash
+git add .
+git commit -m "Deploy to production"
+git push origin main
+```
+
+2. Connect the repository to Netlify.
+
+3. Netlify will automatically use the configuration in `netlify.toml`.
+
+Expected configuration:
+
+```text
+Build Command:    npm run build
+Publish Directory: dist
+Edge Function:    /api/iso
+```
+
+After deployment, open the Netlify site and wait for the Linux terminal to boot.
+
+## Quick Usage & Verification
+
+Once the emulator finishes booting and you reach the root shell:
+
+```text
+(none):~#
+```
+
+Create a C source file:
+
+```bash
+nano main.c
+```
+
+Add the following program:
+
+```c
+#include <stdio.h>
+
+int main(void) {
+    printf("LinuxLab x86 emulation is running!\n");
+    return 0;
+}
+```
+
+Compile it:
+
+```bash
+gcc main.c -o main
+```
+
+Run it:
+
+```bash
+./main
+```
+
+Expected output:
+
+```text
+LinuxLab x86 emulation is running!
+```
+
+## How It Works
+
+LinuxLab runs a complete x86 Linux environment inside the browser.
+
+1. The browser loads the `v86` WebAssembly emulator.
+2. `v86` initializes the BIOS and virtual x86 hardware.
+3. The emulator requests ISO data through `/api/iso`.
+4. The Netlify Edge Function forwards HTTP Range requests to the GitHub Releases CDN.
+5. The Alpine Linux guest progressively boots from the streamed ISO.
+6. Virtual serial output is connected to xterm.js.
+7. LinuxLab detects the login prompt and automatically logs in as `root`.
+8. The user receives an interactive Linux shell directly in the browser.
+
+## Technology Stack
+
+| Technology             | Purpose                            |
+| ---------------------- | ---------------------------------- |
+| TypeScript             | Frontend application logic         |
+| v86                    | x86 CPU and hardware emulation     |
+| WebAssembly            | High-performance browser execution |
+| xterm.js               | Interactive terminal interface     |
+| Alpine Linux           | Lightweight Linux guest OS         |
+| GCC                    | C development toolchain            |
+| Netlify Edge Functions | ISO streaming proxy                |
+| GitHub Releases        | ISO asset hosting                  |
+
+## License
+
+This project is licensed under the **MIT License**.
+
+---
+
+**LinuxLab** — A Linux development environment running entirely in your browser.
