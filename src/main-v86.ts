@@ -34,7 +34,7 @@ type BootProfile = {
 };
 
 const HUGGINGFACE_ISO_URL =
-  'https://huggingface.co/datasets/shyleshkarthikd/alpine-iso/resolve/main/alpine.iso';
+  'https://huggingface.co/datasets/shyleshkarthikd/alpine-iso/resolve/main/alpine.iso?download=true';
 
 export class V86LinuxTerminal {
   private term: any = null;
@@ -296,7 +296,7 @@ export class V86LinuxTerminal {
 
     this.writeLine('\x1b[1;36m============================================================\x1b[0m');
     this.writeLine(`\x1b[1;32m LinuxLab Engine B — ${profile.name}\x1b[0m`);
-    this.writeLine('\x1b[36m Preferred full Linux environment (via Hugging Face CDN)\x1b[0m');
+    this.writeLine('\x1b[36m Preferred full Linux environment (Hugging Face CDN)\x1b[0m');
     this.writeLine('');
 
     const relay = this.getRelay();
