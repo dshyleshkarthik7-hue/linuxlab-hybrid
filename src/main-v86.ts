@@ -33,9 +33,8 @@ type BootProfile = {
   fallback?: boolean;
 };
 
-// Raw Git-LFS direct file endpoint from your public Hugging Face dataset
-const HUGGINGFACE_RAW_ISO_URL =
-  'https://huggingface.co/datasets/shyleshkarthikd/alpine-iso/raw/main/alpine.iso';
+// Internal streaming endpoint served with full CORS and Byte-Range support
+const ISO_STREAM_ENDPOINT = '/api/iso';
 
 export class V86LinuxTerminal {
   private term: any = null;
@@ -69,7 +68,7 @@ export class V86LinuxTerminal {
 
   private currentProfile: BootProfile = {
     name: 'Alpine Linux (Custom GCC)',
-    iso: HUGGINGFACE_RAW_ISO_URL,
+    iso: ISO_STREAM_ENDPOINT,
   };
 
   private assetUrl(path: string): string {
@@ -252,7 +251,7 @@ export class V86LinuxTerminal {
     await this.startProfile(
       {
         name: 'Alpine Linux (Custom GCC)',
-        iso: HUGGINGFACE_RAW_ISO_URL,
+        iso: ISO_STREAM_ENDPOINT,
       },
       force,
     );
@@ -297,7 +296,8 @@ export class V86LinuxTerminal {
 
     this.writeLine('\x1b[1;36m============================================================\x1b[0m');
     this.writeLine(`\x1b[1;32m LinuxLab Engine B — ${profile.name}\x1b[0m`);
-    this.writeLine('\x1b[36m Booting Custom ISO with pre-installed GCC toolchain\x1b[0m');
+    this.writeLine('\x1b[36m Custom Alpine ISO with built-in GCC toolchain\x1b[0m');
+    this.writeLine(`Endpoint: \x1b[33m${profile.iso}\x1b[0m`);
     this.writeLine('');
 
     const relay = this.getRelay();
@@ -307,7 +307,7 @@ export class V86LinuxTerminal {
       this.writeLine('\x1b[33mNetwork relay disabled. Add ?relay=wss://... for guest networking.\x1b[0m');
     }
 
-    this.writeLine('\x1b[90mStreaming image from CDN and initializing virtual CPU...\x1b[0m');
+    this.writeLine('\x1b[90mStreaming image blocks from server...\x1b[0m');
 
     this.setStatus(`${profile.name} • loading`);
 
@@ -406,7 +406,7 @@ export class V86LinuxTerminal {
     if (!this.bootPromptHandled && /(?:^|\n)\s*boot:\s*$/im.test(visible)) {
       this.bootPromptHandled = true;
       this.writeLine(
-        '\x1b[1;36m[Bootloader] ISOLINUX boot prompt detected. Starting custom kernel...\x1b[0m',
+        '\x1b[1;36m[Bootloader] ISOLINUX boot prompt detected. Executing default kernel...\x1b[0m',
       );
 
       window.setTimeout(() => {
@@ -417,7 +417,7 @@ export class V86LinuxTerminal {
     }
 
     if (
-      this.currentProfile.iso === HUGGINGFACE_RAW_ISO_URL &&
+      this.currentProfile.iso === ISO_STREAM_ENDPOINT &&
       !this.shellReady &&
       this.alpineLoginState === 'waiting' &&
       /(?:^|\n)\s*(?:localhost\s+)?login:\s*$/im.test(visible)
@@ -488,7 +488,6 @@ export class V86LinuxTerminal {
       }, 300);
     }
 
-    // Auto-verify GCC on boot
     window.setTimeout(() => {
       if (this.shellReady) {
         this.checkGccToolchain();
@@ -505,7 +504,7 @@ export class V86LinuxTerminal {
 
     if (!this.shellReady) {
       this.gccRequested = true;
-      this.writeLine('\r\n\x1b[33m[GCC] VM is booting. Checking toolchain on shell startup...\x1b[0m');
+      this.writeLine('\r\n\x1b[33m[GCC] VM is booting. Toolchain will be checked once logged in...\x1b[0m');
       return;
     }
 
@@ -523,7 +522,7 @@ export class V86LinuxTerminal {
 
     this.gccSetupStarted = true;
     this.sendCommand(
-      'echo "[LinuxLab] Checking installed GCC build environment..."; if command -v gcc >/dev/null 2>&1; then echo -e "\\033[1;32m[LinuxLab] GCC Toolchain is active:\\033[0m"; gcc --version; else echo -e "\\033[1;31m[LinuxLab] GCC not found on ISO rootfs\\033[0m"; fi',
+      'echo "[LinuxLab] Validating GCC installation..."; if command -v gcc >/dev/null 2>&1; then echo -e "\\033[1;32m[LinuxLab] GCC Toolchain is available:\\033[0m"; gcc --version; else echo -e "\\033[1;31m[LinuxLab] GCC not found on rootfs\\033[0m"; fi',
     );
   }
 
