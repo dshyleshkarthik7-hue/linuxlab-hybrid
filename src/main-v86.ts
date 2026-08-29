@@ -33,8 +33,9 @@ type BootProfile = {
   fallback?: boolean;
 };
 
-const HUGGINGFACE_ISO_URL =
-  'https://huggingface.co/datasets/shyleshkarthikd/alpine-iso/resolve/main/alpine.iso?download=true';
+// Raw Git-LFS direct file endpoint from your public Hugging Face dataset
+const HUGGINGFACE_RAW_ISO_URL =
+  'https://huggingface.co/datasets/shyleshkarthikd/alpine-iso/raw/main/alpine.iso';
 
 export class V86LinuxTerminal {
   private term: any = null;
@@ -67,8 +68,8 @@ export class V86LinuxTerminal {
   private readonly GUEST_MEMORY_BYTES = 1024 * 1024 * 1024;
 
   private currentProfile: BootProfile = {
-    name: 'Alpine Linux',
-    iso: HUGGINGFACE_ISO_URL,
+    name: 'Alpine Linux (Custom GCC)',
+    iso: HUGGINGFACE_RAW_ISO_URL,
   };
 
   private assetUrl(path: string): string {
@@ -250,8 +251,8 @@ export class V86LinuxTerminal {
   public async bootAlpine(force = true): Promise<void> {
     await this.startProfile(
       {
-        name: 'Alpine Linux',
-        iso: HUGGINGFACE_ISO_URL,
+        name: 'Alpine Linux (Custom GCC)',
+        iso: HUGGINGFACE_RAW_ISO_URL,
       },
       force,
     );
@@ -296,7 +297,7 @@ export class V86LinuxTerminal {
 
     this.writeLine('\x1b[1;36m============================================================\x1b[0m');
     this.writeLine(`\x1b[1;32m LinuxLab Engine B — ${profile.name}\x1b[0m`);
-    this.writeLine('\x1b[36m Preferred full Linux environment (Hugging Face CDN)\x1b[0m');
+    this.writeLine('\x1b[36m Booting Custom ISO with pre-installed GCC toolchain\x1b[0m');
     this.writeLine('');
 
     const relay = this.getRelay();
@@ -306,8 +307,7 @@ export class V86LinuxTerminal {
       this.writeLine('\x1b[33mNetwork relay disabled. Add ?relay=wss://... for guest networking.\x1b[0m');
     }
 
-    this.writeLine('\x1b[90mConnecting to VM and booting image...\x1b[0m');
-    this.writeLine('\x1b[90mISOLINUX "boot:" will be handled automatically.\x1b[0m');
+    this.writeLine('\x1b[90mStreaming image from CDN and initializing virtual CPU...\x1b[0m');
 
     this.setStatus(`${profile.name} • loading`);
 
@@ -398,17 +398,6 @@ export class V86LinuxTerminal {
 
     const visible = this.stripAnsi(this.serialBuffer);
 
-    if (
-      !this.shellReady &&
-      this.currentProfile.iso === HUGGINGFACE_ISO_URL &&
-      /No space left on device|write error: No space left on device|Loading user settings .*apkovl.* failed|emergency recovery shell/i.test(
-        visible,
-      )
-    ) {
-      this.handleAlpineStorageFailure();
-      return;
-    }
-
     if (!this.shellReady && this.isShellPrompt(visible)) {
       this.markReady();
       return;
@@ -417,7 +406,7 @@ export class V86LinuxTerminal {
     if (!this.bootPromptHandled && /(?:^|\n)\s*boot:\s*$/im.test(visible)) {
       this.bootPromptHandled = true;
       this.writeLine(
-        '\x1b[1;36m[Bootloader] ISOLINUX boot prompt detected. Starting default entry...\x1b[0m',
+        '\x1b[1;36m[Bootloader] ISOLINUX boot prompt detected. Starting custom kernel...\x1b[0m',
       );
 
       window.setTimeout(() => {
@@ -428,14 +417,14 @@ export class V86LinuxTerminal {
     }
 
     if (
-      this.currentProfile.iso === HUGGINGFACE_ISO_URL &&
+      this.currentProfile.iso === HUGGINGFACE_RAW_ISO_URL &&
       !this.shellReady &&
       this.alpineLoginState === 'waiting' &&
       /(?:^|\n)\s*(?:localhost\s+)?login:\s*$/im.test(visible)
     ) {
       this.alpineLoginState = 'login-detected';
       this.writeLine(
-        '\x1b[36m[Alpine] Login prompt detected. Sending username root once...\x1b[0m',
+        '\x1b[36m[Alpine] Login prompt detected. Logging in as root...\x1b[0m',
       );
 
       if (!this.shellReady && this.emulator) {
@@ -444,39 +433,9 @@ export class V86LinuxTerminal {
       }
     }
 
-    if (/mounting host9p on \/mnt failed/i.test(visible)) {
-      if (!this.serialBuffer.includes('[LinuxLab] Host /mnt sharing is unavailable')) {
-        this.writeLine(
-          '\x1b[33m[LinuxLab] Host /mnt sharing is unavailable; Linux boot can continue normally.\x1b[0m',
-        );
-      }
-    }
-
     if (!this.shellReady && this.isShellPrompt(this.stripAnsi(this.serialBuffer))) {
       this.markReady();
     }
-  }
-
-  private handleAlpineStorageFailure(): void {
-    if (this.state === 'error') {
-      return;
-    }
-
-    this.stopTimers();
-    this.state = 'error';
-
-    this.writeLine('');
-    this.writeLine(
-      '\x1b[1;31m[Alpine] Boot failed: localhost.apkovl.tar.gz could not be unpacked because writable guest storage is full.\x1b[0m',
-    );
-    this.writeLine(
-      '\x1b[33m[Alpine] Engine B is using 1 GiB guest RAM. If this persists, reduce the apkovl size or increase guest RAM further.\x1b[0m',
-    );
-    this.writeLine(
-      '\x1b[90m[Alpine] The emergency "~ #" prompt is not treated as a normal login shell.\x1b[0m',
-    );
-
-    this.setStatus(`${this.currentProfile.name} • storage/initramfs error`);
   }
 
   private isShellPrompt(text: string): boolean {
@@ -513,10 +472,7 @@ export class V86LinuxTerminal {
     this.alpineLoginState = 'ready';
 
     this.stopTimers();
-
-    const elapsed = ((performance.now() - this.bootStartedAt) / 1000).toFixed(1);
     this.setStatus(`${this.currentProfile.name} • ready`);
-
     this.fit();
 
     if (!this.guestTtyConfigured) {
@@ -532,14 +488,12 @@ export class V86LinuxTerminal {
       }, 300);
     }
 
-    if (this.gccRequested && this.currentProfile.iso === HUGGINGFACE_ISO_URL) {
-      this.gccRequested = false;
-      window.setTimeout(() => {
-        if (this.shellReady && this.currentProfile.iso === HUGGINGFACE_ISO_URL) {
-          this.installGcc();
-        }
-      }, 800);
-    }
+    // Auto-verify GCC on boot
+    window.setTimeout(() => {
+      if (this.shellReady) {
+        this.checkGccToolchain();
+      }
+    }, 600);
   }
 
   // ========================================================================
@@ -549,45 +503,27 @@ export class V86LinuxTerminal {
   public requestGcc(): void {
     this.term?.focus();
 
-    if (!this.emulator) {
-      this.gccRequested = true;
-      this.writeLine('\r\n\x1b[33m[GCC] Starting Alpine first; GCC request queued.\x1b[0m');
-      void this.bootAlpine(true);
-      return;
-    }
-
-    if (this.currentProfile.iso !== HUGGINGFACE_ISO_URL) {
-      this.gccRequested = true;
-      this.writeLine('\r\n\x1b[36m[GCC] Switching to Alpine Linux...\x1b[0m');
-      void this.bootAlpine(true);
-      return;
-    }
-
     if (!this.shellReady) {
       this.gccRequested = true;
-      this.writeLine('\r\n\x1b[33m[GCC] Alpine is still booting. Request queued.\x1b[0m');
+      this.writeLine('\r\n\x1b[33m[GCC] VM is booting. Checking toolchain on shell startup...\x1b[0m');
       return;
     }
 
-    this.installGcc();
+    this.checkGccToolchain();
   }
 
-  private installGcc(): void {
+  private checkGccToolchain(): void {
     if (!this.shellReady || !this.emulator) {
-      this.gccRequested = true;
       return;
     }
 
     if (this.gccSetupStarted) {
-      this.writeLine('\r\n\x1b[36m[GCC] GCC check is already running.\x1b[0m');
       return;
     }
 
     this.gccSetupStarted = true;
-    this.writeLine('\r\n\x1b[1;36m[GCC] Checking the real Alpine GCC toolchain...\x1b[0m');
-
     this.sendCommand(
-      'if command -v gcc >/dev/null 2>&1; then echo "[LinuxLab] GCC available"; gcc --version; else echo "[LinuxLab] GCC is not installed in this Alpine image"; if command -v apk >/dev/null 2>&1; then echo "[LinuxLab] Attempting build-base installation..."; apk add --no-cache build-base && gcc --version || echo "[LinuxLab] GCC installation failed"; else echo "[LinuxLab] apk is unavailable"; fi; fi',
+      'echo "[LinuxLab] Checking installed GCC build environment..."; if command -v gcc >/dev/null 2>&1; then echo -e "\\033[1;32m[LinuxLab] GCC Toolchain is active:\\033[0m"; gcc --version; else echo -e "\\033[1;31m[LinuxLab] GCC not found on ISO rootfs\\033[0m"; fi',
     );
   }
 
@@ -646,17 +582,8 @@ export class V86LinuxTerminal {
   // ========================================================================
 
   public async restart(): Promise<void> {
-    const keepGcc = this.gccRequested;
-    const profile = this.currentProfile.iso === './linux4.iso' ? 'linux4' : 'alpine';
-
     this.writeLine('\r\n\x1b[1;33m[Restarting Virtual Machine...]\x1b[0m');
-    this.gccRequested = keepGcc;
-
-    if (profile === 'linux4') {
-      await this.bootLinux4();
-    } else {
-      await this.bootAlpine(true);
-    }
+    await this.bootAlpine(true);
   }
 
   public destroy(): void {
@@ -715,7 +642,7 @@ export class V86LinuxTerminal {
 
     if (silent >= 10) {
       this.writeLine(
-        `\x1b[33m[Boot monitor] ${elapsed}s elapsed; guest is still allowed to boot.\x1b[0m`,
+        `\x1b[33m[Boot monitor] ${elapsed}s elapsed; guest is still booting...\x1b[0m`,
       );
     }
   }
