@@ -33,7 +33,9 @@ type BootProfile = {
   fallback?: boolean;
 };
 
-const GITHUB_RELEASE_ISO_URL = '/api/iso';
+// Hugging Face direct raw download endpoint with full CORS and Range header support
+const HUGGINGFACE_ISO_URL =
+  'https://huggingface.co/datasets/shyleshkarthikd/alpine-iso/resolve/main/alpine.iso?download=true';
 
 export class V86LinuxTerminal {
   private term: any = null;
@@ -67,7 +69,7 @@ export class V86LinuxTerminal {
 
   private currentProfile: BootProfile = {
     name: 'Alpine Linux',
-    iso: GITHUB_RELEASE_ISO_URL,
+    iso: HUGGINGFACE_ISO_URL,
   };
 
   private assetUrl(path: string): string {
@@ -250,7 +252,7 @@ export class V86LinuxTerminal {
     await this.startProfile(
       {
         name: 'Alpine Linux',
-        iso: GITHUB_RELEASE_ISO_URL,
+        iso: HUGGINGFACE_ISO_URL,
       },
       force,
     );
@@ -295,8 +297,7 @@ export class V86LinuxTerminal {
 
     this.writeLine('\x1b[1;36m============================================================\x1b[0m');
     this.writeLine(`\x1b[1;32m LinuxLab Engine B — ${profile.name}\x1b[0m`);
-    this.writeLine('\x1b[36m Preferred full Linux environment\x1b[0m');
-    this.writeLine(`Boot image: \x1b[33m${profile.iso}\x1b[0m`);
+    this.writeLine('\x1b[36m Preferred full Linux environment (via Hugging Face Fast CDN)\x1b[0m');
     this.writeLine('');
 
     const relay = this.getRelay();
@@ -306,10 +307,10 @@ export class V86LinuxTerminal {
       this.writeLine('\x1b[33mNetwork relay disabled. Add ?relay=wss://... for guest networking.\x1b[0m');
     }
 
-    this.writeLine('\x1b[90mWaiting for the guest shell. Maximum wait: 120s.\x1b[0m');
-    this.writeLine('\x1b[90mISOLINUX "boot:" is normal and will be handled automatically.\x1b[0m');
+    this.writeLine('\x1b[90mConnecting to VM and booting image...\x1b[0m');
+    this.writeLine('\x1b[90mISOLINUX "boot:" will be handled automatically.\x1b[0m');
 
-    this.setStatus(`${profile.name} • booting`);
+    this.setStatus(`${profile.name} • loading`);
 
     try {
       await this.loadScript();
@@ -400,7 +401,7 @@ export class V86LinuxTerminal {
 
     if (
       !this.shellReady &&
-      this.currentProfile.iso === GITHUB_RELEASE_ISO_URL &&
+      this.currentProfile.iso === HUGGINGFACE_ISO_URL &&
       /No space left on device|write error: No space left on device|Loading user settings .*apkovl.* failed|emergency recovery shell/i.test(
         visible,
       )
@@ -428,7 +429,7 @@ export class V86LinuxTerminal {
     }
 
     if (
-      this.currentProfile.iso === GITHUB_RELEASE_ISO_URL &&
+      this.currentProfile.iso === HUGGINGFACE_ISO_URL &&
       !this.shellReady &&
       this.alpineLoginState === 'waiting' &&
       /(?:^|\n)\s*(?:localhost\s+)?login:\s*$/im.test(visible)
@@ -532,10 +533,10 @@ export class V86LinuxTerminal {
       }, 300);
     }
 
-    if (this.gccRequested && this.currentProfile.iso === GITHUB_RELEASE_ISO_URL) {
+    if (this.gccRequested && this.currentProfile.iso === HUGGINGFACE_ISO_URL) {
       this.gccRequested = false;
       window.setTimeout(() => {
-        if (this.shellReady && this.currentProfile.iso === GITHUB_RELEASE_ISO_URL) {
+        if (this.shellReady && this.currentProfile.iso === HUGGINGFACE_ISO_URL) {
           this.installGcc();
         }
       }, 800);
@@ -556,7 +557,7 @@ export class V86LinuxTerminal {
       return;
     }
 
-    if (this.currentProfile.iso !== GITHUB_RELEASE_ISO_URL) {
+    if (this.currentProfile.iso !== HUGGINGFACE_ISO_URL) {
       this.gccRequested = true;
       this.writeLine('\r\n\x1b[36m[GCC] Switching to Alpine Linux...\x1b[0m');
       void this.bootAlpine(true);
