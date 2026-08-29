@@ -197,8 +197,6 @@ LinuxLab runs a complete x86 Linux environment inside the browser.
 
 ## License
 
-This project is licensed under the **MIT License**.
+Copyright (c) 2026 Shylesh Karthik D. All rights reserved.
 
----
-
-**LinuxLab** — A Linux development environment running entirely in your browser.
+This project and its source code are proprietary. Unauthorized copying, modification, distribution, or commercial use of this software without prior written permission is strictly prohibited. See LICENSE for full details.
