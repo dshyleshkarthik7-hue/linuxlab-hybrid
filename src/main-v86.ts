@@ -33,11 +33,7 @@ type BootProfile = {
   fallback?: boolean;
 };
 
-const GITHUB_RELEASE_ISO_URL =
-  'https://corsproxy.io/?' +
-  encodeURIComponent(
-    'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso'
-  );
+const GITHUB_RELEASE_ISO_URL = '/api/iso';
 
 export class V86LinuxTerminal {
   private term: any = null;
