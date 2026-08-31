@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /functions/
+Disallow: /node_modules/
+
+Sitemap: https://linuxlab-hybrid.netlify.app/sitemap.xml

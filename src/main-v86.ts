@@ -275,7 +275,7 @@ export class V86LinuxTerminal {
     }
 
     this.stopTimers();
-    this.destroyEmulator();
+    await this.destroyEmulator();
 
     this.currentProfile = profile;
     this.state = 'loading';
@@ -585,7 +585,7 @@ export class V86LinuxTerminal {
     await this.bootAlpine(true);
   }
 
-  public destroy(): void {
+  public async destroy(): Promise<void> {
     this.stopTimers();
     if (this.resizeDebounceTimer !== null) {
       window.clearTimeout(this.resizeDebounceTimer);
@@ -599,7 +599,7 @@ export class V86LinuxTerminal {
 
     window.removeEventListener('resize', this.onWindowResize);
 
-    this.destroyEmulator();
+    await this.destroyEmulator();
     this.state = 'stopped';
     this.shellReady = false;
     this.guestTtyConfigured = false;
@@ -611,24 +611,37 @@ export class V86LinuxTerminal {
     this.setStatus('stopped');
   }
 
-  private destroyEmulator(): void {
-    if (!this.emulator) {
+  private async destroyEmulator(): Promise<void> {
+    const emulator = this.emulator;
+    if (!emulator) {
       return;
     }
 
-    try {
-      this.emulator.stop?.();
-    } catch {
-      // Ignore
-    }
-
-    try {
-      this.emulator.destroy?.();
-    } catch {
-      // Ignore
-    }
-
+    // Detach the reference before awaiting v86 cleanup so a new boot cannot
+    // accidentally send input to an instance that is already being destroyed.
     this.emulator = null;
+    this.shellReady = false;
+
+    try {
+      // v86 exposes async stop()/destroy(). Calling destroy immediately after
+      // stop() can race its asynchronous shutdown and leave internal state
+      // undefined. Await each lifecycle operation in order.
+      if (typeof emulator.stop === 'function') {
+        await emulator.stop();
+      }
+    } catch (error) {
+      console.warn('[LinuxLab] v86 stop failed during cleanup', error);
+    }
+
+    try {
+      if (typeof emulator.destroy === 'function') {
+        await emulator.destroy();
+      }
+    } catch (error) {
+      // Cleanup must remain best-effort. v86 may already have released part of
+      // its internal state during an interrupted boot or previous teardown.
+      console.warn('[LinuxLab] v86 destroy failed during cleanup', error);
+    }
   }
 
   private reportBootProgress(): void {
