@@ -32,7 +32,7 @@ export class V86LinuxTerminal {
   private gccSetupStarted = false;
   private bootStartedAt = 0;
   private lastOutputAt = 0;
-  private readonly GUEST_MEMORY_BYTES = 512 * 1024 * 1024;
+  private readonly GUEST_MEMORY_BYTES = 1024 * 1024 * 1024;
   private currentProfile: BootProfile = { name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT };
 
   private assetUrl(path: string): string { return new URL(path, document.baseURI).toString(); }
@@ -93,7 +93,7 @@ export class V86LinuxTerminal {
     else this.writeLine('\x1b[33mGuest networking is off by default. A compatible WebSocket relay can be supplied with ?relay=wss://...\x1b[0m');
     this.writeLine('\x1b[90mStreaming image blocks from server...\x1b[0m');
     this.setStatus(`${profile.name} • loading`);
-    this.setMonitor('RAM allocation: 512 MiB • ISO transfer: measuring… • Guest network: off');
+    this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ISO transfer: measuring… • ${this.connectionSummary()}`);
 
     try {
       await this.loadScript();
@@ -121,6 +121,8 @@ export class V86LinuxTerminal {
     if (!char) return; this.lastOutputAt = performance.now(); this.serialBuffer = (this.serialBuffer + char).slice(-16000);
     try { this.term?.write(char); } catch {}
     const visible = this.stripAnsi(this.serialBuffer);
+    if (/No space left on device/i.test(visible) && !this.shellReady) { this.handleBootError('Alpine overlay ran out of writable space during boot. VM memory has been restored to 1 GiB; if this persists, the ISO/apkovl needs to be rebuilt with a larger writable target.'); return; }
+    if (/Launching initramfs emergency recovery shell/i.test(visible) && !this.shellReady) { this.handleBootError('Alpine entered initramfs emergency recovery instead of reaching the normal system shell.'); return; }
     if (!this.shellReady && this.isShellPrompt(visible)) { this.markReady(); return; }
     if (!this.bootPromptHandled && /(?:^|\n)\s*boot:\s*$/im.test(visible)) { this.bootPromptHandled = true; window.setTimeout(() => { if (!this.shellReady && this.emulator) this.sendSerial('\r'); }, 250); }
     if (this.currentProfile.iso === ISO_STREAM_ENDPOINT && !this.shellReady && this.alpineLoginState === 'waiting' && /(?:^|\n)\s*(?:localhost\s+)?login:\s*$/im.test(visible)) { this.alpineLoginState = 'login-detected'; this.writeLine('\x1b[36m[Alpine] Login prompt detected. Logging in as root...\x1b[0m'); if (!this.shellReady && this.emulator) { this.alpineLoginState = 'username-sent'; this.sendAutomaticLogin('root\r'); } }
@@ -130,7 +132,7 @@ export class V86LinuxTerminal {
   private isShellPrompt(text: string): boolean { const lines = text.replace(/\r/g,'\n').split('\n').map(line => line.trim()).filter(Boolean).slice(-30); for (const line of lines) { if (/^localhost:[^\n]*[%#$>]$/.test(line) || /^[A-Za-z0-9._-]+:[^\n]*[%#$>]$/.test(line) || /^\(none\):[^\n]*[%#$>]$/.test(line) || /^[\w.-]+@[\w.-]+:[^\n]*[%#$>]$/.test(line) || /^(?:~|\.|\/)[^\s]*[%#$>]$/.test(line) || /^[%#$>]$/.test(line)) return true; } return false; }
 
   private markReady(): void {
-    if (this.shellReady) return; this.shellReady = true; this.state = 'ready'; this.alpineLoginState = 'ready'; this.stopTimers(); this.setStatus(`${this.currentProfile.name} • ready`); this.setMonitor(`RAM allocation: 512 MiB • ISO transfer: ${this.getIsoTransferRate()} • Guest network: ${this.getRelay() ? 'relay enabled' : 'off'}`); this.fit();
+    if (this.shellReady) return; this.shellReady = true; this.state = 'ready'; this.alpineLoginState = 'ready'; this.stopTimers(); this.setStatus(`${this.currentProfile.name} • ready`); this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ISO transfer: ${this.getIsoTransferRate()} • ${this.connectionSummary()}`); this.fit();
     if (!this.guestTtyConfigured) { this.guestTtyConfigured = true; const cols = this.term?.cols || 120, rows = this.term?.rows || 30; window.setTimeout(() => { this.sendSerial(`stty cols ${cols} rows ${rows}; export TERM=xterm-256color LINES=${rows} COLUMNS=${cols}; clear\r`); this.term?.focus(); }, 300); }
     window.setTimeout(() => { if (this.shellReady) this.checkGccToolchain(); }, 600);
   }
@@ -143,10 +145,12 @@ export class V86LinuxTerminal {
   public async restart(): Promise<void> { this.writeLine('\r\n\x1b[1;33m[Restarting Virtual Machine...]\x1b[0m'); await this.bootAlpine(true); }
   public async destroy(): Promise<void> { this.stopTimers(); if (this.resizeDebounceTimer !== null) { window.clearTimeout(this.resizeDebounceTimer); this.resizeDebounceTimer = null; } if (this.resizeObserver) { this.resizeObserver.disconnect(); this.resizeObserver = null; } window.removeEventListener('resize', this.onWindowResize); await this.destroyEmulator(); this.state='stopped'; this.shellReady=false; this.guestTtyConfigured=false; this.alpineLoginState='waiting'; this.serialBuffer=''; this.gccSetupStarted=false; this.term?.clear(); this.setStatus('stopped'); }
   private async destroyEmulator(): Promise<void> { const emulator=this.emulator; if(!emulator)return; this.emulator=null; this.shellReady=false; try { if(typeof emulator.stop==='function') await emulator.stop(); } catch(error){ console.warn('[LinuxLab] v86 stop failed during cleanup',error); } try { if(typeof emulator.destroy==='function') await emulator.destroy(); } catch(error){ console.warn('[LinuxLab] v86 destroy failed during cleanup',error); } }
-  private reportBootProgress(): void { if(!this.emulator||this.shellReady)return; const elapsed=Math.round((performance.now()-this.bootStartedAt)/1000), silent=Math.round((performance.now()-this.lastOutputAt)/1000); if(silent>=10)this.writeLine(`\x1b[33m[Boot monitor] ${elapsed}s elapsed; guest is still booting...\x1b[0m`); this.setMonitor(`RAM allocation: 512 MiB • ISO transfer: ${this.getIsoTransferRate()} • Boot: ${elapsed}s • Guest network: ${this.getRelay()?'relay enabled':'off'}`); }
-  private updateUsageMonitor(): void { if(!this.emulator)return; const elapsed=Math.max(1,(performance.now()-this.bootStartedAt)/1000); const rate=this.getIsoTransferRate(); const state=this.shellReady?'ready':this.state; this.setMonitor(`RAM allocation: 512 MiB • ISO transfer: ${rate} • Boot: ${Math.round(elapsed)}s • Guest network: ${this.getRelay()?'relay enabled':'off'} • ${state}`); }
+  private reportBootProgress(): void { if(!this.emulator||this.shellReady||this.state==='error')return; const elapsed=Math.round((performance.now()-this.bootStartedAt)/1000), silent=Math.round((performance.now()-this.lastOutputAt)/1000); if(silent>=10)this.writeLine(`\x1b[33m[Boot monitor] ${elapsed}s elapsed; guest is still booting...\x1b[0m`); this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ISO transfer: ${this.getIsoTransferRate()} • Boot: ${elapsed}s • ${this.connectionSummary()}`); }
+  private updateUsageMonitor(): void { if(!this.emulator||this.state==='error')return; const elapsed=Math.max(1,(performance.now()-this.bootStartedAt)/1000); const rate=this.getIsoTransferRate(); const state=this.shellReady?'ready':this.state; this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ISO transfer: ${rate} • Boot: ${Math.round(elapsed)}s • ${this.connectionSummary()} • ${state}`); }
+  private memoryMiB(): number { return Math.round(this.GUEST_MEMORY_BYTES / 1024 / 1024); }
+  private connectionSummary(): string { const connection=(navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection; const downlink=typeof connection?.downlink==='number' ? `${connection.downlink.toFixed(1)} Mbps est.` : 'network estimate unavailable'; const relay=this.getRelay() ? 'relay enabled' : 'guest network off'; return `Net: ${downlink} • ${relay}`; }
   private getIsoTransferRate(): string { try { const entries=performance.getEntriesByName(new URL(ISO_STREAM_ENDPOINT,document.baseURI).href) as PerformanceResourceTiming[]; const entry=entries[entries.length-1]; if(!entry || !entry.responseEnd || entry.transferSize <= 0)return 'measuring…'; const seconds=Math.max(.001,(entry.responseEnd-entry.startTime)/1000); return `${(entry.transferSize/1024/1024/seconds).toFixed(1)} MB/s`; } catch { return 'measuring…'; } }
-  private handleBootError(message:string):void { this.stopTimers(); this.writeLine(`\r\n\x1b[1;31m[VM Boot Error] ${message}\x1b[0m`); this.state='error'; this.setStatus(`${this.currentProfile.name} • error`); }
+  private handleBootError(message:string):void { this.stopTimers(); this.writeLine(`\r\n\x1b[1;31m[VM Boot Error] ${message}\x1b[0m`); this.state='error'; this.setStatus(`${this.currentProfile.name} • error`); this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ${this.connectionSummary()} • boot error`); }
   private stopTimers():void { if(this.bootTimer!==null){window.clearTimeout(this.bootTimer);this.bootTimer=null;} if(this.progressTimer!==null){window.clearInterval(this.progressTimer);this.progressTimer=null;} if(this.monitorTimer!==null){window.clearInterval(this.monitorTimer);this.monitorTimer=null;} }
   private getRelay():string|null { try { const relay=new URLSearchParams(window.location.search).get('relay'); return relay&&/^wss?:\/\//i.test(relay)?relay:null; } catch { return null; } }
   private stripAnsi(text:string):string { return text.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g,'').replace(/\x1b./g,'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,''); }
