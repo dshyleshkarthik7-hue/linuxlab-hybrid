@@ -11,5 +11,10 @@
   [headers.values]
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, HEAD, OPTIONS"
-    Access-Control-Allow-Headers = "*"
-    Access-Control-Expose-Headers = "Content-Length, Content-Range, Accept-Ranges"
+    Access-Control-Allow-Headers = "Range, Content-Type"
+    Access-Control-Expose-Headers = "Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Resource-Policy = "cross-origin"
