@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /functions/
+Disallow: /node_modules/
+
+# Keep the real emulator and educational demo pages discoverable.
+Sitemap: https://linuxlab-hybrid.netlify.app/sitemap.xml
