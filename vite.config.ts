@@ -27,6 +27,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     target: 'esnext',
+    cssMinify: 'esbuild',
     chunkSizeWarningLimit: 1000,
     rollupOptions: {
       input: {
