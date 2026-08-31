@@ -216,14 +216,72 @@
     <script type="module">
       import { V86LinuxTerminal } from './src/main-v86.ts';
 
-      window.addEventListener('DOMContentLoaded', async () => {
-        const vm = new V86LinuxTerminal('v86-terminal-container');
-        window.linuxLabVM = vm;
+      // v86's asynchronous CD-ROM mode is essential here: the production
+      // Alpine image is ~691 MB. With async:false, the browser waits for the
+      // whole ISO before the VM can start. v86 explicitly supports ranged,
+      // asynchronous CD-ROM loading when the server supports Range requests.
+      async function prepareV86ForStreaming() {
+        if ((window).V86Starter || (window).V86) return;
 
+        await new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = './libv86.js';
+          script.async = true;
+          script.onload = resolve;
+          script.onerror = () => reject(new Error('Failed to preload libv86.js'));
+          document.head.appendChild(script);
+        });
+
+        const OriginalV86 = (window).V86Starter || (window).V86;
+        if (!OriginalV86 || OriginalV86.__linuxlabStreamingWrapper) return;
+
+        const StreamingV86 = new Proxy(OriginalV86, {
+          construct(target, args, newTarget) {
+            const originalOptions = (args && args[0]) || {};
+            const options = {
+              ...originalOptions,
+              memory_size: 512 * 1024 * 1024,
+              autostart: false,
+              cdrom: originalOptions.cdrom
+                ? {
+                    ...originalOptions.cdrom,
+                    async: true,
+                    // Fixed release asset size avoids an extra size-discovery
+                    // request while preserving HTTP Range streaming.
+                    size: 691011584,
+                  }
+                : originalOptions.cdrom,
+            };
+
+            const instance = Reflect.construct(target, [options], newTarget);
+
+            // main-v86 attaches its serial listener immediately after the
+            // constructor returns. Starting on a microtask guarantees the
+            // listener is installed before guest output begins.
+            queueMicrotask(() => {
+              void instance.run?.();
+            });
+
+            return instance;
+          },
+        });
+
+        StreamingV86.__linuxlabStreamingWrapper = true;
+        window.V86Starter = StreamingV86;
+        window.V86 = StreamingV86;
+      }
+
+      window.addEventListener('DOMContentLoaded', async () => {
         try {
+          await prepareV86ForStreaming();
+
+          const vm = new V86LinuxTerminal('v86-terminal-container');
+          window.linuxLabVM = vm;
           await vm.bootAlpine();
         } catch (error) {
           console.error('[LinuxLab] Engine B startup failed:', error);
+          const status = document.getElementById('v86-status');
+          if (status) status.textContent = 'Alpine emulator failed to start';
         }
       });
     </script>
