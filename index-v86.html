@@ -1,290 +1,56 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0"
-    />
-
-    <meta
-      name="description"
-      content="LinuxLab Engine B — browser x86 Linux emulator"
-    />
-
-    <title>
-      LinuxLab — Dual-Reality x86 Linux Lab
-    </title>
-
-    <link
-      rel="stylesheet"
-      href="/src/style.css"
-    />
-  </head>
-
-  <body>
-    <div id="app">
-
-      <!-- =========================================================
-           HEADER
-           ========================================================= -->
-
-      <header class="app-header">
-
-        <div class="logo-group">
-
-          <span
-            style="font-size:1.3rem;"
-          >
-            🖥️
-          </span>
-
-          <span class="logo-title">
-
-            LinuxLab
-
-            <span
-              class="badge"
-              style="
-                color:#4ade80;
-                border-color:#4ade80;
-              "
-            >
-              Engine B • x86 Hardware Emulator
-            </span>
-
-          </span>
-
-        </div>
-
-
-        <!-- =======================================================
-             CONTROLS
-             ======================================================= -->
-
-        <div
-          class="header-actions"
-          id="v86-controls"
-        >
-
-          <span
-            id="v86-status"
-            class="action-btn"
-            style="
-              cursor:default;
-              user-select:none;
-            "
-            aria-live="polite"
-          >
-            starting…
-          </span>
-
-
-          <button
-            id="btn-v86-alpine"
-            class="action-btn"
-            type="button"
-          >
-            🐧 Boot Alpine
-          </button>
-
-
-          <button
-            id="btn-v86-gcc"
-            class="action-btn"
-            type="button"
-          >
-            ⚙ GCC
-          </button>
-
-
-          <button
-            id="btn-v86-fallback"
-            class="action-btn"
-            type="button"
-          >
-            🛟 Boot linux4
-          </button>
-
-
-          <button
-            id="btn-v86-restart"
-            class="action-btn"
-            type="button"
-          >
-            ↺ Reboot VM
-          </button>
-
-
-          <a
-            href="./index.html"
-            class="action-btn"
-            style="text-decoration:none;"
-          >
-            🏠 Home
-          </a>
-
-        </div>
-
-      </header>
-
-
-      <!-- =========================================================
-           MAIN
-           ========================================================= -->
-
-      <main
-        style="
-          display:flex;
-          flex:1;
-          height:calc(100vh - 55px);
-          min-height:0;
-          background:#020617;
-          position:relative;
-          overflow:hidden;
-        "
-      >
-
-        <!-- =======================================================
-             XTERM TERMINAL
-             ======================================================= -->
-
-        <div
-          id="v86-terminal-container"
-          style="
-            flex:1;
-            width:100%;
-            height:100%;
-            min-width:0;
-            min-height:0;
-            padding:12px;
-            position:relative;
-            z-index:1;
-          "
-        ></div>
-
-
-        <!-- =======================================================
-             V86 SCREEN CONTAINER
-             
-             v86 needs this element mounted in the DOM.
-             It is deliberately placed off-screen so the xterm
-             terminal remains the visible interface.
-             ======================================================= -->
-
-        <div
-          id="screen_container"
-          aria-hidden="true"
-          style="
-            position:absolute;
-            left:-10000px;
-            top:-10000px;
-
-            width:640px;
-            height:400px;
-
-            visibility:hidden;
-
-            pointer-events:none;
-
-            overflow:hidden;
-          "
-        >
-
-          <div
-            style="
-              white-space:pre;
-              font:14px monospace;
-              line-height:14px;
-            "
-          ></div>
-
-          <canvas></canvas>
-
-        </div>
-
-      </main>
-
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="LinuxLab Engine B — browser x86 Linux emulator" />
+  <title>LinuxLab — x86 Linux Emulator</title>
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body>
+<div id="app">
+  <header class="app-header">
+    <div class="logo-group">
+      <span style="font-size:1.3rem;">🖥️</span>
+      <span class="logo-title">LinuxLab <span class="badge" style="color:#4ade80;border-color:#4ade80;">REAL • x86 Emulator</span></span>
     </div>
+    <div class="header-actions" id="v86-controls">
+      <span id="v86-status" class="action-btn" style="cursor:default;user-select:none;" aria-live="polite">starting…</span>
+      <span id="v86-monitor" class="action-btn" style="cursor:default;user-select:none;" aria-live="polite">RAM: 512 MiB • Network: off</span>
+      <button id="btn-v86-alpine" class="action-btn" type="button">🐧 Boot Alpine</button>
+      <button id="btn-v86-gcc" class="action-btn" type="button">⚙ GCC</button>
+      <button id="btn-v86-fallback" class="action-btn" type="button">🛟 Boot linux4</button>
+      <button id="btn-v86-restart" class="action-btn" type="button">↺ Reboot VM</button>
+      <a href="./index.html" class="action-btn" style="text-decoration:none;">🏠 Home</a>
+    </div>
+  </header>
 
+  <main style="display:flex;flex:1;height:calc(100vh - 55px);min-height:0;background:#020617;position:relative;overflow:hidden;">
+    <div id="v86-terminal-container" style="flex:1;width:100%;height:100%;min-width:0;min-height:0;padding:12px;position:relative;z-index:1;"></div>
+    <div id="screen_container" aria-hidden="true" style="position:absolute;left:-10000px;top:-10000px;width:640px;height:400px;visibility:hidden;pointer-events:none;overflow:hidden;">
+      <div style="white-space:pre;font:14px monospace;line-height:14px;"></div><canvas></canvas>
+    </div>
+  </main>
+</div>
 
-    <!-- ===========================================================
-         ENGINE B
-         =========================================================== -->
+<script type="module">
+  import { V86LinuxTerminal } from './src/main-v86.ts';
 
-    <script type="module">
-      import { V86LinuxTerminal } from './src/main-v86.ts';
-
-      // v86's asynchronous CD-ROM mode is essential here: the production
-      // Alpine image is ~691 MB. With async:false, the browser waits for the
-      // whole ISO before the VM can start. v86 explicitly supports ranged,
-      // asynchronous CD-ROM loading when the server supports Range requests.
-      async function prepareV86ForStreaming() {
-        if ((window).V86Starter || (window).V86) return;
-
-        await new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = './libv86.js';
-          script.async = true;
-          script.onload = resolve;
-          script.onerror = () => reject(new Error('Failed to preload libv86.js'));
-          document.head.appendChild(script);
-        });
-
-        const OriginalV86 = (window).V86Starter || (window).V86;
-        if (!OriginalV86 || OriginalV86.__linuxlabStreamingWrapper) return;
-
-        const StreamingV86 = new Proxy(OriginalV86, {
-          construct(target, args, newTarget) {
-            const originalOptions = (args && args[0]) || {};
-            const options = {
-              ...originalOptions,
-              memory_size: 512 * 1024 * 1024,
-              autostart: false,
-              cdrom: originalOptions.cdrom
-                ? {
-                    ...originalOptions.cdrom,
-                    async: true,
-                    // Fixed release asset size avoids an extra size-discovery
-                    // request while preserving HTTP Range streaming.
-                    size: 691011584,
-                  }
-                : originalOptions.cdrom,
-            };
-
-            const instance = Reflect.construct(target, [options], newTarget);
-
-            // main-v86 attaches its serial listener immediately after the
-            // constructor returns. Starting on a microtask guarantees the
-            // listener is installed before guest output begins.
-            queueMicrotask(() => {
-              void instance.run?.();
-            });
-
-            return instance;
-          },
-        });
-
-        StreamingV86.__linuxlabStreamingWrapper = true;
-        window.V86Starter = StreamingV86;
-        window.V86 = StreamingV86;
-      }
-
-      window.addEventListener('DOMContentLoaded', async () => {
-        try {
-          await prepareV86ForStreaming();
-
-          const vm = new V86LinuxTerminal('v86-terminal-container');
-          window.linuxLabVM = vm;
-          await vm.bootAlpine();
-        } catch (error) {
-          console.error('[LinuxLab] Engine B startup failed:', error);
-          const status = document.getElementById('v86-status');
-          if (status) status.textContent = 'Alpine emulator failed to start';
-        }
-      });
-    </script>
-
-  </body>
+  // Keep startup simple. main-v86 owns the v86 lifecycle and configures the
+  // CD-ROM as asynchronous; do not wrap V86Starter or call run() ourselves.
+  // A second run() call can race v86's internal initialization and produce
+  // "Cannot read properties of undefined (reading 'run')".
+  window.addEventListener('DOMContentLoaded', async () => {
+    try {
+      const vm = new V86LinuxTerminal('v86-terminal-container');
+      window.linuxLabVM = vm;
+      await vm.bootAlpine();
+    } catch (error) {
+      console.error('[LinuxLab] Engine B startup failed:', error);
+      const status = document.getElementById('v86-status');
+      if (status) status.textContent = 'Alpine emulator failed to start';
+    }
+  });
+</script>
+</body>
 </html>
