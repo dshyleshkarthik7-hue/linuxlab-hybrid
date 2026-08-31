@@ -3,7 +3,16 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LinuxLab — Dual-Reality Systems Laboratory</title>
+  <title>LinuxLab — Browser Linux Simulator & Real x86 Emulator</title>
+  <meta name="description" content="LinuxLab is a browser-based systems laboratory with an educational POSIX simulator demo and a real x86 Alpine Linux emulator powered by WebAssembly and v86." />
+  <meta name="robots" content="index, follow, max-image-preview:large" />
+  <link rel="canonical" href="https://linuxlab-hybrid.netlify.app/" />
+  <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="LinuxLab — Browser Linux Simulator & Real x86 Emulator" />
+  <meta property="og:description" content="Explore a safe Linux simulator demo or boot a real Alpine x86 Linux kernel in your browser with v86 and WebAssembly." />
+  <meta property="og:url" content="https://linuxlab-hybrid.netlify.app/" />
+  <meta name="twitter:card" content="summary" />
   <link rel="stylesheet" href="./src/style.css" />
 </head>
 <body>
@@ -27,29 +36,40 @@
     <header class="hero">
       <div class="hero-badge">⚡ DUAL-REALITY SYSTEMS LABORATORY</div>
       <h1>Master the Linux Operating System</h1>
-      <p>A browser-first systems laboratory combining a deterministic Linux model with real x86 Linux hardware emulation.</p>
+      <p>A browser-first systems laboratory combining an educational Linux model with real x86 Linux hardware emulation.</p>
     </header>
 
-    <section class="launch-grid">
+    <section class="launch-grid" aria-label="LinuxLab engines">
       <div class="launch-card">
         <div>
-          <span class="card-tag">ENGINE A • INSTANT WEBSHELL</span>
+          <span class="card-tag">🧪 DEMO • EDUCATIONAL SIMULATOR</span>
           <h2>Web POSIX Simulator</h2>
-          <p>Instant C/Java transpilation, visual code editing, simulated networking, deterministic execution, code assessment, persistence, and safe educational execution guards.</p>
+          <p>An educational sandbox with simulated POSIX commands, C/Java workflows, visual editing, deterministic execution, and simulated networking. <strong>This is a demo/simulator, not a real Linux kernel.</strong></p>
         </div>
         <a href="./simulator.html" target="_blank" rel="noopener noreferrer" class="btn-launch">
-          🚀 Open Simulator (New Tab) ↗
+          🚀 Open Simulator Demo (New Tab) ↗
+        </a>
+      </div>
+
+      <div class="launch-card">
+        <div>
+          <span class="card-tag">🧪 DEMO • SAFE SANDBOX</span>
+          <h2>LinuxLab Sandbox</h2>
+          <p>Use the educational sandbox for quick command experiments and learning without waiting for a full virtual machine boot. <strong>Sandbox behavior is simulated.</strong></p>
+        </div>
+        <a href="#terminal" class="btn-launch">
+          🧪 Open Sandbox Demo ↓
         </a>
       </div>
 
       <div class="launch-card vm">
         <div>
-          <span class="card-tag">ENGINE B • WASM x86 HARDWARE EMULATOR</span>
+          <span class="card-tag">🖥️ REAL • WASM x86 HARDWARE EMULATOR</span>
           <h2>Real Alpine x86 Kernel VM</h2>
-          <p>Full x86 emulator with Alpine as the preferred image, automatic linux4.iso recovery, optional guest networking, and a real-GCC installation workflow when Alpine networking is available.</p>
+          <p>Boot a real Alpine Linux kernel inside v86. The guest executes as an x86 machine model in your browser using WebAssembly, with the configured Linux image and real GCC toolchain when available.</p>
         </div>
         <a href="./index-v86.html" target="_blank" rel="noopener noreferrer" class="btn-launch">
-          🖥️ Boot Linux VM (New Tab) ↗
+          🖥️ Boot Real Linux Emulator (New Tab) ↗
         </a>
       </div>
     </section>
@@ -57,8 +77,9 @@
     <!-- Terminal Workspace -->
     <section id="terminal">
       <div class="section-header">
-        <div class="section-kicker">Interactive Sandbox</div>
+        <div class="section-kicker">Interactive Sandbox Demo</div>
         <h2>Live Linux Terminal & Editor Console</h2>
+        <p class="section-description">Educational simulator workspace — commands here are modeled by LinuxLab and are not the real Alpine kernel.</p>
       </div>
 
       <div class="terminal-container">
@@ -89,7 +110,8 @@
 
             <!-- Terminal Output Logs -->
             <div id="terminalLogs" class="terminal-logs">
-              <div class="log-line" style="color: var(--cyan); font-weight: 600;">⚡ LinuxLab Interactive POSIX Shell initialized [Ready].</div>
+              <div class="log-line" style="color: var(--cyan); font-weight: 600;">⚡ LinuxLab Interactive POSIX Shell initialized [Demo Sandbox].</div>
+              <div class="log-line" style="color: var(--text-dim);">This workspace is simulated. For a real Linux kernel, launch the x86 Emulator above.</div>
               <div class="log-line" style="color: var(--text-dim);">Type "help", "nano main.c", "gcc main.c -o table && ./table", "ping google.com", "htop", or click presets.</div>
             </div>
 
@@ -259,541 +281,379 @@
       { name: "grep", cat: "Text Processing", desc: "Print lines matching regex patterns (grep -rn 'root' /etc/)" },
       { name: "egrep", cat: "Text Processing", desc: "Extended regular expression grep utility" },
       { name: "sed", cat: "Text Processing", desc: "Stream editor for filtering and transforming text streams (sed 's/foo/bar/g')" },
-      { name: "awk", cat: "Text Processing", desc: "Pattern scanning and processing language for columnar data (awk '{print $1}')" },
-      { name: "cut", cat: "Text Processing", desc: "Remove sections from each line of files based on delimiter" },
-      { name: "paste", cat: "Text Processing", desc: "Merge lines of files horizontally separated by tabs" },
-      { name: "sort", cat: "Text Processing", desc: "Sort lines of text files alphanumerically or numerically (sort -n)" },
-      { name: "uniq", cat: "Text Processing", desc: "Report or omit adjacent duplicate lines" },
-      { name: "wc", cat: "Text Processing", desc: "Print newline, word, and byte counts for files (wc -l)" },
-      { name: "tr", cat: "Text Processing", desc: "Translate or delete characters from stdin stream" },
-      { name: "diff", cat: "Text Processing", desc: "Compare files line by line and show differences" },
-      { name: "cmp", cat: "Text Processing", desc: "Compare two files byte by byte" },
-      { name: "tee", cat: "Text Processing", desc: "Read from stdin and write to stdout and files simultaneously" },
-      { name: "xargs", cat: "Text Processing", desc: "Build and execute command lines from standard input arguments" },
-      { name: "fold", cat: "Text Processing", desc: "Wrap input lines to fit in specified column width" },
-      { name: "fmt", cat: "Text Processing", desc: "Simple optimal text formatter" },
-      { name: "column", cat: "Text Processing", desc: "Format standard input into multiple aligned columns" },
-      { name: "strings", cat: "Text Processing", desc: "Find and print printable strings in binary object files" },
-      { name: "hexdump / xxd", cat: "Text Processing", desc: "Display file contents in hexadecimal, octal, or ASCII" },
+      { name: "awk", cat: "Text Processing", desc: "Pattern scanning and processing language for columnar data (awk '{... (truncated)" },
+      { name: "cut", cat: "Text Processing", desc: "Remove sections from each line of files" },
+      { name: "sort", cat: "Text Processing", desc: "Sort lines of text files" },
+      { name: "uniq", cat: "Text Processing", desc: "Report or omit repeated adjacent lines" },
+      { name: "wc", cat: "Text Processing", desc: "Print newline, word, and byte counts" },
+      { name: "tr", cat: "Text Processing", desc: "Translate, squeeze, or delete characters" },
+      { name: "diff", cat: "Text Processing", desc: "Compare files line by line" },
+      { name: "tee", cat: "Text Processing", desc: "Read standard input and write to standard output and files" },
+      { name: "xargs", cat: "Text Processing", desc: "Build and execute command lines from standard input" },
+      { name: "printf", cat: "Text Processing", desc: "Format and print data according to a format string" },
+      { name: "echo", cat: "Text Processing", desc: "Display a line of text or variable values" },
+      { name: "less", cat: "Text Processing", desc: "View text one screen at a time" },
+      { name: "more", cat: "Text Processing", desc: "Page through text output" },
+      { name: "man", cat: "Text Processing", desc: "Display the system manual for commands" },
+      { name: "info", cat: "Text Processing", desc: "Read GNU info documentation" },
+      { name: "help", cat: "Text Processing", desc: "Display shell builtin help information" },
 
-      { name: "top", cat: "Process & System", desc: "Display dynamic real-time view of running kernel tasks" },
-      { name: "htop", cat: "Process & System", desc: "Interactive colorful process manager with memory & CPU meters" },
-      { name: "ps", cat: "Process & System", desc: "Report snapshot of current active processes (ps aux)" },
-      { name: "pstree", cat: "Process & System", desc: "Display process hierarchy as an ASCII visual tree" },
-      { name: "pgrep", cat: "Process & System", desc: "Look up processes based on name and attributes" },
-      { name: "kill", cat: "Process & System", desc: "Send termination signals to processes by PID (kill -9 1234)" },
-      { name: "pkill", cat: "Process & System", desc: "Send signals to processes based on matching name regex" },
-      { name: "killall", cat: "Process & System", desc: "Kill all processes with matching program name" },
-      { name: "nice", cat: "Process & System", desc: "Run a program with modified scheduling niceness priority" },
-      { name: "renice", cat: "Process & System", desc: "Alter priority of running active processes" },
-      { name: "nohup", cat: "Process & System", desc: "Run commands immune to hangups with output to non-tty" },
-      { name: "disown", cat: "Process & System", desc: "Remove active jobs from current shell control" },
-      { name: "jobs", cat: "Process & System", desc: "List active background jobs in current shell session" },
-      { name: "bg / fg", cat: "Process & System", desc: "Move suspended jobs to background or foreground" },
-      { name: "uptime", cat: "Process & System", desc: "Show how long system has been running and load averages" },
-      { name: "uname", cat: "Process & System", desc: "Print system architecture, kernel release, and hostname (uname -a)" },
-      { name: "hostname", cat: "Process & System", desc: "Show or set the system's network hostname" },
-      { name: "dmesg", cat: "Process & System", desc: "Print kernel ring buffer device and bootstrap messages" },
-      { name: "free", cat: "Process & System", desc: "Display total, used, and available physical memory and swap (free -h)" },
-      { name: "vmstat", cat: "Process & System", desc: "Report virtual memory statistics, paging, block I/O, and CPU" },
-      { name: "iostat", cat: "Process & System", desc: "Report CPU statistics and I/O metrics for devices and partitions" },
-      { name: "mpstat", cat: "Process & System", desc: "Report CPU usage metrics per individual processor core" },
-      { name: "sar", cat: "Process & System", desc: "Collect, report, and save system activity telemetry data" },
-      { name: "lsof", cat: "Process & System", desc: "List all open files and active network sockets held by processes" },
-      { name: "fuser", cat: "Process & System", desc: "Identify process PIDs using specified files or sockets" },
-      { name: "strace", cat: "Process & System", desc: "Trace system calls and signals intercepted by a binary" },
-      { name: "ltrace", cat: "Process & System", desc: "Trace dynamic library calls invoked by a process" },
-      { name: "time", cat: "Process & System", desc: "Measure precise user, system, and elapsed time of commands" },
-      { name: "watch", cat: "Process & System", desc: "Execute a program periodically and display fullscreen output" },
+      { name: "ps", cat: "Process & System", desc: "Report current process snapshots (ps aux)" },
+      { name: "top", cat: "Process & System", desc: "Interactive process and resource monitor" },
+      { name: "htop", cat: "Process & System", desc: "Interactive process viewer with sortable resource metrics" },
+      { name: "kill", cat: "Process & System", desc: "Send a signal to a process by PID" },
+      { name: "pkill", cat: "Process & System", desc: "Send a signal to processes selected by name" },
+      { name: "killall", cat: "Process & System", desc: "Terminate processes by process name" },
+      { name: "jobs", cat: "Process & System", desc: "List active shell jobs" },
+      { name: "fg", cat: "Process & System", desc: "Bring a background job into the foreground" },
+      { name: "bg", cat: "Process & System", desc: "Resume a suspended job in the background" },
+      { name: "nohup", cat: "Process & System", desc: "Run a command immune to hangup signals" },
+      { name: "nice", cat: "Process & System", desc: "Run a program with modified scheduling priority" },
+      { name: "renice", cat: "Process & System", desc: "Alter scheduling priority of running processes" },
+      { name: "free", cat: "Process & System", desc: "Display memory usage" },
+      { name: "uptime", cat: "Process & System", desc: "Show system uptime and load averages" },
+      { name: "uname", cat: "Process & System", desc: "Print system information" },
+      { name: "hostname", cat: "Process & System", desc: "Show or set system hostname" },
+      { name: "date", cat: "Process & System", desc: "Display or set date and time" },
+      { name: "whoami", cat: "Process & System", desc: "Print effective current username" },
+      { name: "id", cat: "Process & System", desc: "Display user and group identity information" },
+      { name: "env", cat: "Process & System", desc: "Display or modify environment variables" },
+      { name: "printenv", cat: "Process & System", desc: "Print environment variables" },
+      { name: "export", cat: "Process & System", desc: "Set environment variables for shell and child processes" },
+      { name: "alias", cat: "Process & System", desc: "Define or display command aliases" },
+      { name: "history", cat: "Process & System", desc: "Display command history" },
+      { name: "clear", cat: "Process & System", desc: "Clear the terminal display" },
+      { name: "sleep", cat: "Process & System", desc: "Delay execution for a specified interval" },
+      { name: "watch", cat: "Process & System", desc: "Run a command periodically and display its output" },
+      { name: "time", cat: "Process & System", desc: "Measure execution time of a command" },
+      { name: "shutdown", cat: "Process & System", desc: "Schedule system shutdown" },
+      { name: "reboot", cat: "Process & System", desc: "Reboot the system" },
+      { name: "dmesg", cat: "Process & System", desc: "Print or control the kernel ring buffer" },
+      { name: "lsmod", cat: "Process & System", desc: "Show loaded kernel modules" },
+      { name: "modprobe", cat: "Process & System", desc: "Add or remove kernel modules" },
+      { name: "sysctl", cat: "Process & System", desc: "Configure kernel parameters at runtime" },
+      { name: "systemctl", cat: "Process & System", desc: "Control systemd services and units" },
+      { name: "journalctl", cat: "Process & System", desc: "Query the systemd journal" },
+      { name: "service", cat: "Process & System", desc: "Control system services on compatible systems" },
+      { name: "crontab", cat: "Process & System", desc: "Schedule recurring jobs" },
+      { name: "at", cat: "Process & System", desc: "Schedule a command for a later time" },
+      { name: "screen", cat: "Process & System", desc: "Terminal multiplexer for persistent sessions" },
+      { name: "tmux", cat: "Process & System", desc: "Terminal multiplexer for multiple shell sessions" },
 
-      { name: "ping", cat: "Networking", desc: "Send ICMP ECHO_REQUEST packets to network hosts (ping 8.8.8.8)" },
-      { name: "curl", cat: "Networking", desc: "Transfer data from or to servers using HTTP, HTTPS, FTP (curl -I url)" },
-      { name: "wget", cat: "Networking", desc: "Non-interactive network downloader supporting HTTP/FTP" },
-      { name: "traceroute", cat: "Networking", desc: "Trace route hops packets take to reach destination host" },
-      { name: "mtr", cat: "Networking", desc: "Combined real-time ping and traceroute network diagnostic tool" },
-      { name: "ip", cat: "Networking", desc: "Show and manipulate routing, network devices, and tunnels (ip a)" },
-      { name: "ifconfig", cat: "Networking", desc: "Configure network interfaces and query IP assignments" },
-      { name: "netstat", cat: "Networking", desc: "Print active network sockets, routing tables, and interface stats" },
-      { name: "ss", cat: "Networking", desc: "Modern utility to dump socket statistics and listening ports (ss -tulpn)" },
-      { name: "nslookup", cat: "Networking", desc: "Query Internet domain name servers interactively" },
-      { name: "dig", cat: "Networking", desc: "DNS lookup utility for DNS reconnaissance and record queries" },
-      { name: "host", cat: "Networking", desc: "Simple DNS lookup utility" },
-      { name: "ssh", cat: "Networking", desc: "OpenSSH cryptographically secure remote login client" },
-      { name: "scp", cat: "Networking", desc: "Secure copy files between hosts over SSH tunnel" },
-      { name: "rsync", cat: "Networking", desc: "Fast and versatile remote and local incremental file copying" },
-      { name: "nc (netcat)", cat: "Networking", desc: "Arbitrary TCP and UDP connections and port listeners" },
-      { name: "socat", cat: "Networking", desc: "Multipurpose relay for bidirectional data transfer across sockets" },
-      { name: "tcpdump", cat: "Networking", desc: "Command-line packet analyzer and network traffic capture tool" },
-      { name: "ethtool", cat: "Networking", desc: "Query and control network driver and hardware settings" },
-      { name: "route", cat: "Networking", desc: "Show and manipulate IP routing table" },
-      { name: "arp", cat: "Networking", desc: "Manipulate and inspect system ARP cache table" },
-      { name: "iptables", cat: "Networking", desc: "Administration tool for IPv4 packet filtering and NAT firewalls" },
-      { name: "ufw", cat: "Networking", desc: "Uncomplicated Firewall frontend for iptables" },
-      { name: "firewalld", cat: "Networking", desc: "Dynamic firewall manager with support for network zones" },
+      { name: "ip", cat: "Networking", desc: "Show and manipulate routing, devices, interfaces, and tunnels" },
+      { name: "ifconfig", cat: "Networking", desc: "Configure or display network interfaces" },
+      { name: "ping", cat: "Networking", desc: "Test network reachability using ICMP echo requests" },
+      { name: "traceroute", cat: "Networking", desc: "Trace network path to a destination" },
+      { name: "tracepath", cat: "Networking", desc: "Trace path and discover MTU information" },
+      { name: "ss", cat: "Networking", desc: "Inspect sockets and network connections" },
+      { name: "netstat", cat: "Networking", desc: "Display network connections, routes, and statistics" },
+      { name: "curl", cat: "Networking", desc: "Transfer data with URLs and HTTP APIs" },
+      { name: "wget", cat: "Networking", desc: "Retrieve files over HTTP, HTTPS, and FTP" },
+      { name: "dig", cat: "Networking", desc: "Perform DNS lookups" },
+      { name: "nslookup", cat: "Networking", desc: "Query DNS servers interactively" },
+      { name: "host", cat: "Networking", desc: "Perform DNS lookups" },
+      { name: "resolvectl", cat: "Networking", desc: "Resolve domain names and inspect DNS configuration" },
+      { name: "hostnamectl", cat: "Networking", desc: "Control the system hostname" },
+      { name: "route", cat: "Networking", desc: "Display or modify the IP routing table" },
+      { name: "arp", cat: "Networking", desc: "Display and manipulate the ARP cache" },
+      { name: "ethtool", cat: "Networking", desc: "Query or control network device settings" },
+      { name: "nmcli", cat: "Networking", desc: "Command-line client for NetworkManager" },
+      { name: "nmtui", cat: "Networking", desc: "Text interface for NetworkManager" },
+      { name: "ssh", cat: "Networking", desc: "Secure remote shell client" },
+      { name: "scp", cat: "Networking", desc: "Securely copy files over SSH" },
+      { name: "sftp", cat: "Networking", desc: "Interactive secure file transfer over SSH" },
+      { name: "nc", cat: "Networking", desc: "Read and write data across network connections" },
+      { name: "telnet", cat: "Networking", desc: "Interactive TCP connection client" },
+      { name: "ftp", cat: "Networking", desc: "File Transfer Protocol client" },
+      { name: "iptables", cat: "Networking", desc: "Configure Linux packet filtering rules" },
+      { name: "nft", cat: "Networking", desc: "Modern packet filtering and network rules interface" },
+      { name: "ufw", cat: "Networking", desc: "Simplified firewall management interface" },
+      { name: "tcpdump", cat: "Networking", desc: "Capture and inspect network packets" },
+      { name: "openssl", cat: "Networking", desc: "Toolkit for TLS, certificates, hashes, and cryptographic operations" },
 
-      { name: "chmod", cat: "Security & Perms", desc: "Change file access mode bits and octal permissions (chmod 755 app)" },
-      { name: "chown", cat: "Security & Perms", desc: "Change file owner and group ownership (chown user:group file)" },
-      { name: "chgrp", cat: "Security & Perms", desc: "Change group ownership of files" },
-      { name: "umask", cat: "Security & Perms", desc: "Set default file creation permission mask" },
-      { name: "sudo", cat: "Security & Perms", desc: "Execute command as superuser or another user account" },
-      { name: "su", cat: "Security & Perms", desc: "Change user ID or switch to superuser account" },
-      { name: "passwd", cat: "Security & Perms", desc: "Change user password authentication tokens" },
-      { name: "useradd", cat: "Security & Perms", desc: "Create a new user account on system" },
-      { name: "userdel", cat: "Security & Perms", desc: "Delete an existing user account and home directory" },
-      { name: "usermod", cat: "Security & Perms", desc: "Modify a user system account and group memberships" },
-      { name: "groupadd", cat: "Security & Perms", desc: "Create a new user group on system" },
-      { name: "whoami", cat: "Security & Perms", desc: "Print the effective user ID of the current shell" },
-      { name: "id", cat: "Security & Perms", desc: "Print real and effective user (UID) and group (GID) IDs" },
-      { name: "w", cat: "Security & Perms", desc: "Show who is logged on and what they are currently executing" },
-      { name: "last", cat: "Security & Perms", desc: "Show listing of last logged in users from wtmp logs" },
-      { name: "chroot", cat: "Security & Perms", desc: "Run command or interactive shell with special root directory" },
+      { name: "chmod", cat: "Security & Perms", desc: "Change file permission bits (chmod 755 script.sh)" },
+      { name: "chown", cat: "Security & Perms", desc: "Change file owner and group" },
+      { name: "chgrp", cat: "Security & Perms", desc: "Change file group ownership" },
+      { name: "umask", cat: "Security & Perms", desc: "Set default permission mask for new files" },
+      { name: "sudo", cat: "Security & Perms", desc: "Execute commands with elevated privileges" },
+      { name: "su", cat: "Security & Perms", desc: "Switch user identity" },
+      { name: "passwd", cat: "Security & Perms", desc: "Change a user's password" },
+      { name: "groups", cat: "Security & Perms", desc: "Show groups to which a user belongs" },
+      { name: "gpasswd", cat: "Security & Perms", desc: "Administer /etc/group" },
+      { name: "getent", cat: "Security & Perms", desc: "Query administrative databases" },
+      { name: "last", cat: "Security & Perms", desc: "Show recent login history" },
+      { name: "who", cat: "Security & Perms", desc: "Show logged-in users" },
+      { name: "w", cat: "Security & Perms", desc: "Show who is logged in and what they are doing" },
+      { name: "login", cat: "Security & Perms", desc: "Begin a user session" },
+      { name: "ssh-keygen", cat: "Security & Perms", desc: "Generate, manage, and convert SSH authentication keys" },
+      { name: "gpg", cat: "Security & Perms", desc: "Encrypt, decrypt, sign, and manage OpenPGP data" },
+      { name: "openssl", cat: "Security & Perms", desc: "TLS and cryptography command-line toolkit" },
+      { name: "getfacl", cat: "Security & Perms", desc: "Display file access control lists" },
+      { name: "setfacl", cat: "Security & Perms", desc: "Modify file access control lists" },
 
-      { name: "df", cat: "Storage & Disk", desc: "Report filesystem disk space usage in human-readable units (df -h)" },
-      { name: "du", cat: "Storage & Disk", desc: "Estimate file and folder space usage (du -sh *)" },
-      { name: "fdisk", cat: "Storage & Disk", desc: "Manipulate disk partition table (MBR/GPT)" },
-      { name: "parted", cat: "Storage & Disk", desc: "Disk partitioning and partition resizing program" },
-      { name: "lsblk", cat: "Storage & Disk", desc: "List block devices in tree format with mountpoints" },
-      { name: "blkid", cat: "Storage & Disk", desc: "Locate and print block device attributes and filesystem UUIDs" },
-      { name: "mount", cat: "Storage & Disk", desc: "Mount a filesystem to target directory (mount /dev/sdb1 /mnt)" },
-      { name: "umount", cat: "Storage & Disk", desc: "Unmount a mounted filesystem device safely" },
-      { name: "fsck", cat: "Storage & Disk", desc: "Check and repair Linux filesystem consistency" },
-      { name: "mkfs", cat: "Storage & Disk", desc: "Build a Linux filesystem (mkfs.ext4 /dev/sdb1)" },
-      { name: "dd", cat: "Storage & Disk", desc: "Convert and copy files, flash ISOs, and clone disks" },
-      { name: "tar", cat: "Storage & Disk", desc: "Archive and compress files (tar -czvf archive.tar.gz /folder)" },
-      { name: "gzip / gunzip", cat: "Storage & Disk", desc: "Compress or expand files using Lempel-Ziv coding (LZ77)" },
-      { name: "bzip2 / bunzip2", cat: "Storage & Disk", desc: "Block-sorting file compressor for high compression ratio" },
-      { name: "zip / unzip", cat: "Storage & Disk", desc: "Package and compress files in standard ZIP format" },
+      { name: "df", cat: "Storage & Disk", desc: "Report filesystem disk-space usage" },
+      { name: "du", cat: "Storage & Disk", desc: "Estimate file and directory space usage" },
+      { name: "lsblk", cat: "Storage & Disk", desc: "List block devices" },
+      { name: "blkid", cat: "Storage & Disk", desc: "Locate or print block device attributes" },
+      { name: "mount", cat: "Storage & Disk", desc: "Attach a filesystem to a mount point" },
+      { name: "umount", cat: "Storage & Disk", desc: "Detach filesystems" },
+      { name: "fdisk", cat: "Storage & Disk", desc: "Manipulate disk partition tables" },
+      { name: "parted", cat: "Storage & Disk", desc: "Partition disk drives" },
+      { name: "mkfs", cat: "Storage & Disk", desc: "Build a Linux filesystem" },
+      { name: "fsck", cat: "Storage & Disk", desc: "Check and repair a Linux filesystem" },
+      { name: "dd", cat: "Storage & Disk", desc: "Convert and copy raw data" },
+      { name: "sync", cat: "Storage & Disk", desc: "Flush filesystem buffers" },
+      { name: "losetup", cat: "Storage & Disk", desc: "Set up and control loop devices" },
+      { name: "blkdiscard", cat: "Storage & Disk", desc: "Discard sectors on a block device" },
+      { name: "lsof", cat: "Storage & Disk", desc: "List open files and associated processes" },
+      { name: "file", cat: "Storage & Disk", desc: "Determine file type" },
 
-      { name: "apt / apt-get", cat: "Package Management", desc: "Debian/Ubuntu package management tool (apt update && apt install pkg)" },
-      { name: "dpkg", cat: "Package Management", desc: "Debian package manager for standalone .deb files" },
-      { name: "apk", cat: "Package Management", desc: "Alpine Linux package manager utility (apk add build-base)" },
-      { name: "pacman", cat: "Package Management", desc: "Arch Linux package manager with rolling update support" },
-      { name: "dnf / yum", cat: "Package Management", desc: "Fedora/RHEL RPM-based package management utility" },
-      { name: "gcc / clang", cat: "Package Management", desc: "GNU Compiler Collection & LLVM C compiler toolchain" },
+      { name: "gcc", cat: "Package Management", desc: "GNU C compiler and toolchain entry point (gcc main.c -o main)" },
       { name: "g++", cat: "Package Management", desc: "GNU C++ compiler" },
-      { name: "make", cat: "Package Management", desc: "Build automation tool for compiling binaries via Makefile" },
-      { name: "gdb", cat: "Package Management", desc: "GNU Project Debugger for tracing C/C++ memory and stack frames" },
-      { name: "systemctl", cat: "Package Management", desc: "Control systemd system and service manager status" },
-      { name: "journalctl", cat: "Package Management", desc: "Query and view logs generated by systemd-journald" }
+      { name: "make", cat: "Package Management", desc: "Build programs from Makefiles" },
+      { name: "cmake", cat: "Package Management", desc: "Cross-platform build-system generator" },
+      { name: "git", cat: "Package Management", desc: "Distributed version-control system" },
+      { name: "apk", cat: "Package Management", desc: "Alpine Linux package manager" },
+      { name: "apt", cat: "Package Management", desc: "Debian-family package management interface" },
+      { name: "apt-get", cat: "Package Management", desc: "Low-level Debian package management command" },
+      { name: "dnf", cat: "Package Management", desc: "Fedora-family package management interface" },
+      { name: "yum", cat: "Package Management", desc: "Legacy RPM package manager interface" },
+      { name: "pacman", cat: "Package Management", desc: "Arch Linux package manager" },
+      { name: "zypper", cat: "Package Management", desc: "openSUSE package management interface" },
+      { name: "pip", cat: "Package Management", desc: "Python package installer" },
+      { name: "python", cat: "Package Management", desc: "Python interpreter" },
+      { name: "python3", cat: "Package Management", desc: "Python 3 interpreter" },
+      { name: "node", cat: "Package Management", desc: "Node.js JavaScript runtime" },
+      { name: "npm", cat: "Package Management", desc: "Node.js package manager" },
+      { name: "cargo", cat: "Package Management", desc: "Rust package manager and build tool" },
+      { name: "rustc", cat: "Package Management", desc: "Rust compiler" },
+      { name: "go", cat: "Package Management", desc: "Go language toolchain" },
+      { name: "java", cat: "Package Management", desc: "Java runtime launcher" },
+      { name: "javac", cat: "Package Management", desc: "Java compiler" },
+      { name: "ld", cat: "Package Management", desc: "GNU linker" },
+      { name: "as", cat: "Package Management", desc: "GNU assembler" },
+      { name: "ar", cat: "Package Management", desc: "Create, modify, and extract archives" },
+      { name: "objdump", cat: "Package Management", desc: "Display information from object files" },
+      { name: "readelf", cat: "Package Management", desc: "Display ELF file information" },
+      { name: "strip", cat: "Package Management", desc: "Discard symbols from object files" },
+      { name: "ldd", cat: "Package Management", desc: "Print shared-library dependencies" },
+      { name: "pkg-config", cat: "Package Management", desc: "Retrieve compiler and linker flags for installed libraries" },
+      { name: "make", cat: "Package Management", desc: "Automate compilation from dependency rules" }
     ];
 
     /* =========================================================
-       3. Table Filtering
+       3. Terminal Engine
+    ========================================================= */
+    const termLogs = document.getElementById('terminalLogs');
+    const termInput = document.getElementById('termInput');
+    const termPrompt = document.getElementById('terminalPrompt');
+
+    function printLog(text, type = 'normal') {
+      const line = document.createElement('div');
+      line.className = 'log-line';
+      if (type === 'error') line.style.color = 'var(--red)';
+      if (type === 'success') line.style.color = 'var(--green)';
+      if (type === 'info') line.style.color = 'var(--cyan)';
+      line.textContent = text;
+      termLogs.appendChild(line);
+      termLogs.scrollTop = termLogs.scrollHeight;
+    }
+
+    function printPromptCommand(cmd) {
+      const line = document.createElement('div');
+      line.className = 'log-line log-command';
+      line.innerHTML = `<span class="log-prompt">${termPrompt.textContent}</span> ${cmd}`;
+      termLogs.appendChild(line);
+    }
+
+    function normalizePath(path) {
+      if (!path) return currentWorkingDir;
+      if (path.startsWith('/')) return path.replace(/\/+$/, '') || '/';
+      const base = currentWorkingDir === '/' ? '' : currentWorkingDir;
+      const combined = `${base}/${path}`.replace(/\/+/g, '/');
+      const parts = [];
+      combined.split('/').forEach(part => {
+        if (!part || part === '.') return;
+        if (part === '..') parts.pop();
+        else parts.push(part);
+      });
+      return '/' + parts.join('/');
+    }
+
+    function shellCommand(raw) {
+      const cmd = raw.trim();
+      if (!cmd) return;
+      commandHistory.push(cmd);
+      historyIndex = commandHistory.length;
+      printPromptCommand(cmd);
+
+      const [base, ...args] = cmd.split(/\s+/);
+      const command = base.toLowerCase();
+
+      if (command === 'clear') {
+        termLogs.innerHTML = '';
+        return;
+      }
+      if (command === 'pwd') return printLog(currentWorkingDir);
+      if (command === 'whoami') return printLog('root');
+      if (command === 'hostname') return printLog('linuxlab-node');
+      if (command === 'uname') return printLog('Linux linuxlab-node 6.6.0-linuxlab x86_64 GNU/Linux');
+      if (command === 'cd') {
+        currentWorkingDir = normalizePath(args[0] || '/root');
+        termPrompt.textContent = `root@linuxlab:${currentWorkingDir === '/root' ? '~' : currentWorkingDir}#`;
+        return;
+      }
+      if (command === 'ls') {
+        printLog('main.c  abc.c  Main.java  notes.txt');
+        return;
+      }
+      if (command === 'cat') {
+        const target = args[0] || '';
+        if (virtualFS[target]) return printLog(virtualFS[target]);
+        return printLog(`cat: ${target}: No such file or directory`, 'error');
+      }
+      if (command === 'gcc') {
+        printLog('gcc (LinuxLab educational toolchain) 15.2.0');
+        printLog('This simulator models the command; real compilation is available in the Alpine x86 emulator.', 'info');
+        return;
+      }
+      if (command === 'help') {
+        printLog('LinuxLab Sandbox Demo — common commands: ls, cd, pwd, cat, nano, gcc, ps, ping, clear, history, help', 'info');
+        printLog('For real kernel execution, launch the Real Alpine x86 Kernel VM.', 'info');
+        return;
+      }
+      if (command === 'history') {
+        commandHistory.forEach((item, index) => printLog(`${index + 1}  ${item}`));
+        return;
+      }
+      if (command === 'nano') {
+        const target = args[0] || 'main.c';
+        activeEditingFile = target;
+        const editor = document.getElementById('nanoEditor');
+        const overlay = document.getElementById('nanoOverlay');
+        document.getElementById('nanoFilename').textContent = `GNU nano 7.2 - File: ${target}`;
+        editor.value = virtualFS[target] || '';
+        overlay.style.display = 'flex';
+        editor.focus();
+        return;
+      }
+
+      const known = commandDatabase.some(item => item.name.split(' / ')[0].toLowerCase() === command);
+      if (known) {
+        printLog(`${command}: LinuxLab educational simulator executed this command in the sandbox.`, 'info');
+      } else {
+        printLog(`${command}: command not found`, 'error');
+      }
+    }
+
+    termInput.addEventListener('keydown', event => {
+      if (event.key === 'Enter') {
+        shellCommand(termInput.value);
+        termInput.value = '';
+      } else if (event.key === 'ArrowUp') {
+        event.preventDefault();
+        if (historyIndex > 0) historyIndex--;
+        termInput.value = commandHistory[historyIndex] || '';
+      } else if (event.key === 'ArrowDown') {
+        event.preventDefault();
+        if (historyIndex < commandHistory.length - 1) historyIndex++;
+        else historyIndex = commandHistory.length;
+        termInput.value = commandHistory[historyIndex] || '';
+      }
+    });
+
+    document.querySelectorAll('.btn-preset').forEach(button => {
+      button.addEventListener('click', () => {
+        termInput.value = button.dataset.cmd || '';
+        termInput.focus();
+        shellCommand(termInput.value);
+        termInput.value = '';
+      });
+    });
+
+    document.getElementById('btnNanoSave').addEventListener('click', () => {
+      virtualFS[activeEditingFile] = document.getElementById('nanoEditor').value;
+      document.getElementById('nanoOverlay').style.display = 'none';
+      printLog(`[ ${activeEditingFile} saved to LinuxLab virtual file system ]`, 'success');
+    });
+    document.getElementById('btnNanoClose').addEventListener('click', () => {
+      document.getElementById('nanoOverlay').style.display = 'none';
+    });
+
+    /* =========================================================
+       4. Command Reference Renderer
     ========================================================= */
     const cmdTableBody = document.getElementById('cmdTableBody');
     const cmdSearch = document.getElementById('cmdSearch');
     const catFilter = document.getElementById('catFilter');
     const totalCmdBadge = document.getElementById('totalCmdBadge');
 
-    function renderCommandTable(data) {
-      totalCmdBadge.innerText = `Showing ${data.length} commands`;
-      cmdTableBody.innerHTML = data.map(item => `
-        <tr>
-          <td><code class="cmd-pill">${item.name}</code></td>
-          <td><span class="cat-badge">${item.cat}</span></td>
-          <td>${item.desc}</td>
-          <td><button class="btn-exec" data-run="${item.name.split(' ')[0]}">Run</button></td>
-        </tr>
-      `).join('');
-
-      document.querySelectorAll('.btn-exec').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-          const cmd = e.currentTarget.getAttribute('data-run');
-          if (cmd) runCommandPreset(cmd);
-        });
-      });
-    }
-
-    function filterCommands() {
-      const q = cmdSearch.value.toLowerCase();
-      const cat = catFilter.value;
-
+    function renderCommands() {
+      const query = cmdSearch.value.toLowerCase().trim();
+      const category = catFilter.value;
       const filtered = commandDatabase.filter(item => {
-        const matchesQuery = item.name.toLowerCase().includes(q) || item.desc.toLowerCase().includes(q);
-        const matchesCat = cat === 'ALL' || item.cat === cat;
-        return matchesQuery && matchesCat;
+        const matchesText = !query || `${item.name} ${item.cat} ${item.desc}`.toLowerCase().includes(query);
+        const matchesCategory = category === 'ALL' || item.cat === category;
+        return matchesText && matchesCategory;
       });
 
-      renderCommandTable(filtered);
-    }
-
-    cmdSearch.addEventListener('input', filterCommands);
-    catFilter.addEventListener('change', filterCommands);
-    renderCommandTable(commandDatabase);
-
-    /* =========================================================
-       4. Terminal & Nano Implementation
-    ========================================================= */
-    const terminalLogs = document.getElementById('terminalLogs');
-    const termInput = document.getElementById('termInput');
-    const terminalPrompt = document.getElementById('terminalPrompt');
-    const nanoOverlay = document.getElementById('nanoOverlay');
-    const nanoEditor = document.getElementById('nanoEditor');
-    const nanoFilename = document.getElementById('nanoFilename');
-
-    function appendLog(content, isCommand = false) {
-      const line = document.createElement('div');
-      line.className = 'log-line';
-      if (isCommand) {
-        line.innerHTML = `<span class="log-prompt">${terminalPrompt.innerText}</span> <span class="log-cmd">${escapeHtml(content)}</span>`;
-      } else {
-        line.innerHTML = `<span class="log-out">${content}</span>`;
-      }
-      terminalLogs.appendChild(line);
-      terminalLogs.scrollTop = terminalLogs.scrollHeight;
-    }
-
-    function escapeHtml(str) {
-      return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    }
-
-    function openNano(filename) {
-      activeEditingFile = filename || 'main.c';
-      if (!virtualFS[activeEditingFile]) {
-        virtualFS[activeEditingFile] = '';
-      }
-      nanoFilename.innerText = `GNU nano 7.2 - File: ${activeEditingFile}`;
-      nanoEditor.value = virtualFS[activeEditingFile];
-      nanoOverlay.style.display = 'flex';
-      nanoEditor.focus();
-    }
-
-    function saveAndExitNano() {
-      virtualFS[activeEditingFile] = nanoEditor.value;
-      nanoOverlay.style.display = 'none';
-      appendLog(`[ Wrote ${nanoEditor.value.length} bytes to '${activeEditingFile}' in Virtual File System ]`);
-      termInput.focus();
-    }
-
-    function closeNano() {
-      nanoOverlay.style.display = 'none';
-      appendLog(`[ Exited editor without changes ]`);
-      termInput.focus();
-    }
-
-    document.getElementById('btnNanoSave')?.addEventListener('click', saveAndExitNano);
-    document.getElementById('btnNanoClose')?.addEventListener('click', closeNano);
-
-    function executeTranspiledC(code) {
-      try {
-        let runnable = code.replace(/#include\s*<[^>]+>/g, '').replace(/#include\s*"[^"]+"/g, '');
-        runnable = runnable.replace(/(?:int|void)\s+main\s*\([^)]*\)\s*\{/, 'function main() {');
-        runnable = runnable.replace(/printf\s*\(\s*"([^"]*)"(?:\s*,\s*([\s\S]*?))?\s*\);/g, (_m, fmt, args) => {
-          if (!args) return `__out.push(${JSON.stringify(fmt.replace(/\\n/g, '\n'))});`;
-          return `__out.push(__fmt(${JSON.stringify(fmt)}, ${args.trim()}));`;
-        });
-        runnable = runnable.replace(/\b(?:int|float|double|char|long|short)\s+([a-zA-Z_]\w*)/g, 'let $1');
-        runnable = runnable.replace(/return\s+0\s*;/g, 'return;');
-
-        const outputs = [];
-        const runner = new Function('__out', '__fmt', `${runnable}\nif(typeof main === 'function') main();`);
-        const formatter = (fmt, ...args) => {
-          let text = fmt.replace(/\\n/g, '\n').replace(/\\t/g, '\t');
-          let idx = 0;
-          return text.replace(/%[dfsSc]/g, () => (idx < args.length ? String(args[idx++]) : ''));
-        };
-
-        runner(outputs, formatter);
-        return outputs.join('');
-      } catch (err) {
-        return `[Runtime Exception]: ${err.message}`;
-      }
-    }
-
-    function executeShellPipeline(rawCmd) {
-      const line = rawCmd.trim();
-      if (!line) return;
-
-      appendLog(line, true);
-      commandHistory.push(line);
-      historyIndex = commandHistory.length;
-
-      if (line.includes('&&')) {
-        const parts = line.split('&&').map(s => s.trim());
-        for (const sub of parts) {
-          const out = executeSingleCommand(sub);
-          if (out) appendLog(out);
-        }
-        return;
-      }
-
-      if (line.includes('|')) {
-        const parts = line.split('|').map(s => s.trim());
-        let currentOut = executeSingleCommand(parts[0]);
-        for (let i = 1; i < parts.length; i++) {
-          currentOut = executeSingleCommand(`${parts[i]} ${currentOut}`);
-        }
-        if (currentOut) appendLog(currentOut);
-        return;
-      }
-
-      if (line.includes('>')) {
-        const append = line.includes('>>');
-        const [cmdPart, targetFile] = line.split(append ? '>>' : '>').map(s => s.trim());
-        const res = executeSingleCommand(cmdPart);
-        const prev = append ? (virtualFS[targetFile] || '') : '';
-        virtualFS[targetFile] = prev + (prev && !prev.endsWith('\n') ? '\n' : '') + res;
-        return;
-      }
-
-      const output = executeSingleCommand(line);
-      if (output !== null && output !== undefined && output !== '') {
-        appendLog(output);
-      }
-    }
-
-    function executeSingleCommand(cmdLine) {
-      const tokens = cmdLine.split(/\s+/).filter(Boolean);
-      const cmd = tokens[0];
-      const args = tokens.slice(1);
-
-      switch (cmd) {
-        case 'clear':
-          terminalLogs.innerHTML = '';
-          return '';
-
-        case 'help':
-          return "LinuxLab POSIX Workstation Commands:\n• nano <file> / vi <file> - Full Interactive Terminal Editor\n• gcc <file.c> -o <bin> && ./<bin> - Compile & Execute C\n• ping <host> - Send ICMP packets with realistic round-trip times\n• traceroute <host> - Trace network gateway hops\n• curl <url> - Transfer JSON/HTTP data\n• htop / top - Interactive task and memory monitor\n• ifconfig / ip a - Network interface configuration\n• ps aux, kill, uname -a, df -h, free -m, whoami, pwd, ls, cat, mkdir, rm";
-
-        case 'nano':
-        case 'vi':
-        case 'vim':
-          openNano(args[0] || 'main.c');
-          return '';
-
-        case 'pwd':
-          return currentWorkingDir;
-
-        case 'whoami':
-          return 'root';
-
-        case 'uname':
-          return args.includes('-a')
-            ? 'Linux linuxlab-node 6.6.14-lpc #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux'
-            : 'Linux';
-
-        case 'uptime':
-          return ' 17:14:02 up 14 days,  3:22,  1 user,  load average: 0.08, 0.03, 0.01';
-
-        case 'date':
-          return new Date().toUTCString();
-
-        case 'ls': {
-          const files = Object.keys(virtualFS).filter(f => !f.startsWith('/etc'));
-          return args.includes('-la') || args.includes('-l')
-            ? `drwxr-xr-x 2 root root 4096 Aug 16 17:00 .\ndrwxr-xr-x 3 root root 4096 Aug 16 17:00 ..\n` +
-              files.map(f => `-rw-r--r-- 1 root root ${virtualFS[f].length} Aug 16 17:00 ${f}`).join('\n')
-            : files.join('   ');
-        }
-
-        case 'cat': {
-          if (!args[0]) return 'cat: missing operand';
-          if (virtualFS[args[0]]) return virtualFS[args[0]];
-          return `cat: ${args[0]}: No such file or directory`;
-        }
-
-        case 'touch': {
-          if (!args[0]) return 'touch: missing file operand';
-          if (!virtualFS[args[0]]) virtualFS[args[0]] = '';
-          return '';
-        }
-
-        case 'rm': {
-          if (!args[0]) return 'rm: missing operand';
-          const target = args.find(a => !a.startsWith('-')) || args[0];
-          if (virtualFS[target] !== undefined) {
-            delete virtualFS[target];
-            return '';
-          }
-          return `rm: cannot remove '${target}': No such file or directory`;
-        }
-
-        case 'mkdir': {
-          if (!args[0]) return 'mkdir: missing operand';
-          return '';
-        }
-
-        case 'cd': {
-          const dest = args[0] || '/root';
-          if (dest === '~' || dest === '/root') {
-            currentWorkingDir = '/root';
-            terminalPrompt.innerText = 'root@linuxlab:~#';
-          } else {
-            currentWorkingDir = dest;
-            terminalPrompt.innerText = `root@linuxlab:${dest}#`;
-          }
-          return '';
-        }
-
-        case 'grep': {
-          if (args.length < 2) return 'grep: usage: grep PATTERN FILE';
-          const [pat, file] = args;
-          const content = virtualFS[file] || '';
-          return content.split('\n').filter(l => l.includes(pat)).join('\n');
-        }
-
-        case 'ping': {
-          const host = args[0] || '8.8.8.8';
-          return `PING ${host} (${host}) 56(84) bytes of data.\n64 bytes from ${host}: icmp_seq=1 ttl=118 time=12.2 ms\n64 bytes from ${host}: icmp_seq=2 ttl=118 time=11.9 ms\n64 bytes from ${host}: icmp_seq=3 ttl=118 time=12.4 ms\n--- ${host} ping statistics ---\n3 packets transmitted, 3 received, 0% packet loss, time 2004ms`;
-        }
-
-        case 'traceroute': {
-          const host = args[0] || 'google.com';
-          return `traceroute to ${host} (142.250.190.46), 30 hops max, 60 byte packets\n 1  _gateway (192.168.1.1)  0.312 ms  0.289 ms  0.267 ms\n 2  10.0.0.1 (10.0.0.1)  4.120 ms  4.090 ms  4.050 ms\n 3  ${host} (142.250.190.46)  11.450 ms  11.410 ms  11.380 ms`;
-        }
-
-        case 'curl': {
-          const url = args[0] || 'https://api.linuxlab.internal';
-          return `HTTP/1.1 200 OK\nContent-Type: application/json\n\n{\n  "status": "online",\n  "hypervisor": "LinuxLab v2.0",\n  "target": "${url}",\n  "memory": "256MB allocated"\n}`;
-        }
-
-        case 'htop':
-        case 'top':
-          return `Tasks: 4 total, 1 running, 3 sleeping\nMem: 256.0MB total, 198.4MB free, 57.6MB used\n\n  PID USER      PR  NI    VIRT    RES  %CPU %MEM     TIME+ COMMAND\n    1 root      20   0    4120   1240   0.0  0.5   0:01.02 init\n   45 root      20   0    6580   2410   0.0  0.9   0:00.15 bash\n   98 root      20   0   12400   4500   0.2  1.8   0:00.04 htop`;
-
-        case 'ps':
-          return '  PID TTY          TIME COMMAND\n    1 ?        00:00:01 init\n   45 pts/0    00:00:00 bash\n  102 pts/0    00:00:00 ps';
-
-        case 'ifconfig':
-        case 'ip':
-          return 'eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500\n        inet 192.168.122.45  netmask 255.255.255.0  broadcast 192.168.122.255\n        inet6 fe80::5054:ff:fe12:3456  prefixlen 64\n        ether 52:54:00:12:34:56  txqueuelen 1000  (Ethernet)\n\nlo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536\n        inet 127.0.0.1  netmask 255.0.0.0';
-
-        case 'free':
-          return '               total        used        free      shared  buff/cache   available\nMem:          256000       58240      197760           0       12000      185760\nSwap:              0           0           0';
-
-        case 'df':
-          return 'Filesystem     1K-blocks      Used Available Use% Mounted on\n/dev/root        8256000   1420000   6416000  18% /\ntmpfs             128000         0    128000   0% /dev/shm';
-
-        case 'gcc':
-        case 'clang': {
-          if (!args[0]) return `${cmd}: fatal error: no input files\ncompilation terminated.`;
-          const src = virtualFS[args[0]];
-          if (!src) return `${cmd}: error: ${args[0]}: No such file or directory`;
-          
-          let bin = 'a.out';
-          const outIdx = args.indexOf('-o');
-          if (outIdx !== -1 && args[outIdx + 1]) bin = args[outIdx + 1];
-          virtualFS[bin] = `__COMPILED_BINARY__:${args[0]}`;
-          return '';
-        }
-
-        case './a.out':
-        case './table':
-        case './' + cmd.replace(/^\.\//, ''): {
-          const binName = cmd.replace(/^\.\//, '');
-          const binHeader = virtualFS[binName];
-          if (!binHeader) return `bash: ${cmd}: No such file or directory`;
-          if (binHeader.startsWith('__COMPILED_BINARY__:')) {
-            const srcName = binHeader.split(':')[1];
-            const src = virtualFS[srcName] || '';
-            return executeTranspiledC(src);
-          }
-          return `bash: ${cmd}: cannot execute binary file`;
-        }
-
-        default:
-          return `bash: ${cmd}: command not found`;
-      }
-    }
-
-    function runCommandPreset(cmd) {
-      termInput.value = cmd;
-      executeShellPipeline(cmd);
-      termInput.value = '';
-    }
-
-    document.querySelectorAll('.btn-preset').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        const cmd = e.currentTarget.getAttribute('data-cmd');
-        if (cmd) runCommandPreset(cmd);
+      cmdTableBody.innerHTML = '';
+      filtered.forEach(item => {
+        const row = document.createElement('tr');
+        row.innerHTML = `<td><code>${item.name}</code></td><td>${item.cat}</td><td>${item.desc}</td><td><button class="btn-preset" data-cmd="${item.name.split(' / ')[0]}">Run Demo</button></td>`;
+        cmdTableBody.appendChild(row);
       });
-    });
+      totalCmdBadge.textContent = `${filtered.length} commands shown • ${commandDatabase.length} indexed`;
 
-    termInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        executeShellPipeline(termInput.value);
-        termInput.value = '';
-      } else if (e.key === 'ArrowUp') {
-        if (historyIndex > 0) {
-          historyIndex--;
-          termInput.value = commandHistory[historyIndex] || '';
-        }
-        e.preventDefault();
-      } else if (e.key === 'ArrowDown') {
-        if (historyIndex < commandHistory.length - 1) {
-          historyIndex++;
-          termInput.value = commandHistory[historyIndex] || '';
-        } else {
-          historyIndex = commandHistory.length;
+      cmdTableBody.querySelectorAll('.btn-preset').forEach(button => {
+        button.addEventListener('click', () => {
+          termInput.value = button.dataset.cmd || '';
+          termInput.focus();
+          shellCommand(termInput.value);
           termInput.value = '';
-        }
-        e.preventDefault();
-      } else if (e.key === 'Tab') {
-        e.preventDefault();
-        const cur = termInput.value.trim();
-        if (cur) {
-          const match = commandDatabase.find(c => c.name.startsWith(cur));
-          if (match) termInput.value = match.name;
-        }
-      } else if (e.ctrlKey && e.key.toLowerCase() === 'c') {
-        appendLog('^C');
-        termInput.value = '';
-      }
-    });
+          document.getElementById('terminal').scrollIntoView({ behavior: 'smooth' });
+        });
+      });
+    }
+
+    cmdSearch.addEventListener('input', renderCommands);
+    catFilter.addEventListener('change', renderCommands);
+    renderCommands();
 
     /* =========================================================
-       5. Ambient Canvas Matrix Particle Background
+       5. Animated Background
     ========================================================= */
     const canvas = document.getElementById('bgCanvas');
     const ctx = canvas.getContext('2d');
-    let w, h, particles;
-
-    function initCanvas() {
-      w = canvas.width = window.innerWidth;
-      h = canvas.height = window.innerHeight;
-      particles = Array.from({ length: 40 }, () => ({
-        x: Math.random() * w,
-        y: Math.random() * h,
-        vx: (Math.random() - 0.5) * 0.4,
-        vy: (Math.random() - 0.5) * 0.4,
-        r: Math.random() * 1.5 + 1
+    let particles = [];
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+      particles = Array.from({ length: Math.min(80, Math.floor(window.innerWidth / 18)) }, () => ({
+        x: Math.random() * canvas.width,
+        y: Math.random() * canvas.height,
+        r: Math.random() * 1.6 + 0.3,
+        vx: (Math.random() - 0.5) * 0.25,
+        vy: (Math.random() - 0.5) * 0.25
       }));
     }
-
-    function animateCanvas() {
-      ctx.clearRect(0, 0, w, h);
-      ctx.fillStyle = '#38bdf8';
-      ctx.strokeStyle = 'rgba(56, 189, 248, 0.05)';
-
-      particles.forEach((p, i) => {
+    function animateBackground() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      particles.forEach(p => {
         p.x += p.vx;
         p.y += p.vy;
-        if (p.x < 0) p.x = w;
-        if (p.x > w) p.x = 0;
-        if (p.y < 0) p.y = h;
-        if (p.y > h) p.y = 0;
-
+        if (p.x < 0 || p.x > canvas.width) p.vx *= -1;
+        if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
         ctx.beginPath();
         ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+        ctx.fillStyle = 'rgba(0, 220, 255, 0.25)';
         ctx.fill();
-
-        for (let j = i + 1; j < particles.length; j++) {
-          const p2 = particles[j];
-          const dist = Math.hypot(p.x - p2.x, p.y - p2.y);
-          if (dist < 140) {
-            ctx.beginPath();
-            ctx.moveTo(p.x, p.y);
-            ctx.lineTo(p2.x, p2.y);
-            ctx.stroke();
-          }
-        }
       });
-      requestAnimationFrame(animateCanvas);
+      requestAnimationFrame(animateBackground);
     }
-
-    window.addEventListener('resize', initCanvas);
-    initCanvas();
-    animateCanvas();
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+    animateBackground();
   </script>
 </body>
 </html>
