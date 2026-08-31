@@ -1,202 +1,252 @@
 # LinuxLab — Browser-Based x86 Linux Emulator
 
-A lightweight, web-based Linux development environment running x86 emulation directly in the browser via WebAssembly (`v86`) and xterm.js. The guest environment boots a custom Alpine Linux distribution equipped with GCC and essential development utilities.
+> A real x86 Linux development environment running entirely in the browser.
 
-## Features
+LinuxLab boots a custom Alpine Linux guest inside the browser using **v86 + WebAssembly**, exposes the guest through **xterm.js**, and delivers the Linux disk through a **Netlify Edge byte-range streaming proxy** backed by a GitHub Release asset.
 
-* **Client-Side x86 Emulation:** Runs entirely in modern browsers using `v86` compiled to WebAssembly.
-* **Pre-Installed Toolchain:** Boots a custom Alpine Linux image featuring GCC 15.2.0, `make`, `nano`, and core build essentials.
-* **Low Latency & High Reliability:** Uses a Netlify Edge Function with HTTP Range requests (`/api/iso`) to progressively stream ISO data while avoiding browser CORS and memory limitations.
-* **Full Terminal Capabilities:** Powered by `@xterm/xterm` with automatic resizing, terminal color support, and ANSI escape-code handling.
-* **Automated Login:** Detects boot stages and login prompts to automatically log in as `root`.
+## Why this project?
 
-## Architecture Overview
+LinuxLab explores a practical systems problem: **how can a useful Linux development environment be delivered without requiring a local VM, container, or native installation?**
+
+The project keeps CPU emulation client-side while the edge layer handles efficient delivery of the large guest disk image. The result is a self-contained x86 Linux shell that can compile and run C programs directly in a modern browser.
+
+## ✨ Features
+
+- **Client-side x86 emulation** — v86 executes the guest CPU and hardware model in WebAssembly.
+- **Custom Alpine Linux** — lightweight guest image tailored for browser execution.
+- **GCC toolchain** — GCC 15.2.0, `make`, `nano`, and core development utilities are available in the guest.
+- **Range-aware disk streaming** — `/api/iso` forwards HTTP byte ranges instead of requiring the browser to download the whole image up front.
+- **Interactive terminal** — xterm.js provides ANSI handling, terminal resizing, keyboard input, and scrollback.
+- **Automated boot/login** — boot-stage detection moves the user from firmware output to a usable root shell.
+- **Fallback boot profile** — the existing fallback path can be used when the primary Alpine profile is unavailable.
+- **Responsive viewport** — terminal dimensions follow the container using `ResizeObserver` and the fit addon.
+
+## 🏗️ Architecture
 
 ```text
-Browser
-  │
-  │ v86 + xterm.js
-  ▼
-x86 Emulator
-  │
-  │ HTTP Range Requests
-  ▼
-Netlify Edge Function
-  │
-  │ Server-to-Server Streaming
-  ▼
-GitHub Releases CDN
-  │
-  ▼
-Custom Alpine Linux ISO
+┌──────────────────────────────────────────────┐
+│                  Browser                     │
+│                                              │
+│  ┌───────────────┐      ┌────────────────┐  │
+│  │   xterm.js    │◄────►│      v86       │  │
+│  │ Terminal I/O  │      │ WebAssembly    │  │
+│  └───────────────┘      │ x86 emulator   │  │
+│                         └───────┬────────┘  │
+│                                 │ HTTP Range│
+└─────────────────────────────────┼───────────┘
+                                  ▼
+                    ┌─────────────────────────┐
+                    │ Netlify Edge Function   │
+                    │ /api/iso                │
+                    │ Range + CORS proxy     │
+                    └────────────┬────────────┘
+                                 │ streaming
+                                 ▼
+                    ┌─────────────────────────┐
+                    │ GitHub Releases CDN     │
+                    │ alpine.iso              │
+                    └────────────┬────────────┘
+                                 ▼
+                    ┌─────────────────────────┐
+                    │ Custom Alpine Linux     │
+                    │ GCC + build utilities   │
+                    └─────────────────────────┘
 ```
 
-### Main Components
+### Request flow
 
-* **Frontend (`src/mainv86.ts`)**
+1. The browser loads the v86 runtime and WebAssembly module.
+2. v86 initializes virtual x86 hardware and firmware.
+3. The guest requests disk blocks from `/api/iso`.
+4. The Netlify Edge Function forwards the browser's `Range` header upstream.
+5. GitHub's release infrastructure returns the requested byte range.
+6. The edge function streams the response body back without buffering the ISO in application memory.
+7. Alpine boots and its serial output is connected to xterm.js.
+8. LinuxLab detects the login prompt and completes the configured login flow.
+9. The browser receives an interactive Linux shell.
 
-  * Initializes the `v86` emulator.
-  * Configures SeaBIOS and VGA BIOS.
-  * Allocates 1 GiB of guest RAM.
-  * Connects virtual serial I/O to the xterm.js terminal.
-  * Handles the emulator lifecycle and automated login.
-
-* **Streaming Proxy (`netlify/edge-functions/iso.ts`)**
-
-  * Receives ISO requests from the browser.
-  * Forwards HTTP `Range` headers to the GitHub Releases asset.
-  * Streams the requested binary data back to the browser.
-  * Adds the required CORS and access-control headers.
-
-## Project Structure
+## 📁 Project structure
 
 ```text
 linuxlab-hybrid/
+├── .github/
+│   └── workflows/
+│       └── ci.yml                 # Reproducible CI build
 ├── netlify/
 │   └── edge-functions/
-│       └── iso.ts              # Binary streaming proxy
+│       └── iso.ts                 # Range-aware streaming proxy
 ├── public/
-│   ├── libv86.js               # v86 runtime
-│   ├── v86.wasm                # WebAssembly emulator
-│   ├── seabios.bin              # SeaBIOS firmware
-│   └── vgabios.bin              # VGA BIOS
+│   ├── libv86.js                  # v86 runtime
+│   ├── v86.wasm                   # WebAssembly emulator
+│   ├── seabios.bin                # SeaBIOS firmware
+│   └── vgabios.bin                # VGA BIOS
 ├── src/
-│   └── mainv86.ts              # Terminal & v86 controller
-├── netlify.toml                 # Netlify configuration
+│   ├── core/                      # Core application modules
+│   ├── engine/                    # Emulator/runtime modules
+│   ├── ui/                        # UI modules
+│   ├── main-v86.ts                # v86 controller
+│   ├── main.ts                    # Application entry point
+│   └── style.css                  # Application styles
+├── netlify.toml                   # Build, edge, and security configuration
 ├── package.json
 └── tsconfig.json
 ```
 
-## Getting Started
+## 🚀 Getting started
 
-### Prerequisites
+### Requirements
 
-* Node.js v18 or higher
-* npm or pnpm
-* A modern web browser with WebAssembly support
+- Node.js **22+**
+- npm **10.8+**
+- A modern browser with WebAssembly support
 
-### Installation
-
-Clone the repository:
+### Install
 
 ```bash
 git clone https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid.git
 cd linuxlab-hybrid
+npm ci
 ```
 
-Install dependencies:
-
-```bash
-npm install
-```
-
-Start the local development server:
+### Development
 
 ```bash
 npm run dev
 ```
 
-Open the local URL displayed by the development server in your browser.
-
-## Deployment
-
-### Deploying to Netlify
-
-LinuxLab uses a Netlify Edge Function to proxy and progressively stream the Alpine Linux ISO.
-
-1. Push your changes to GitHub:
+### Production build
 
 ```bash
-git add .
-git commit -m "Deploy to production"
-git push origin main
+npm run build
 ```
 
-2. Connect the repository to Netlify.
+The build performs TypeScript checking before the Vite production bundle is generated.
 
-3. Netlify will automatically use the configuration in `netlify.toml`.
+### Build the Linux image
 
-Expected configuration:
-
-```text
-Build Command:    npm run build
-Publish Directory: dist
-Edge Function:    /api/iso
-```
-
-After deployment, open the Netlify site and wait for the Linux terminal to boot.
-
-## Quick Usage & Verification
-
-Once the emulator finishes booting and you reach the root shell:
-
-```text
-(none):~#
-```
-
-Create a C source file:
+The existing image-builder workflow is available on Windows PowerShell:
 
 ```bash
-nano main.c
+npm run build:iso
 ```
 
-Add the following program:
+To run the complete application + ISO build pipeline:
 
-```c
+```bash
+npm run build:all
+```
+
+## ☁️ Deployment
+
+LinuxLab is designed for Netlify deployment.
+
+```text
+Build command:     npm run build
+Publish directory: dist
+Edge route:        /api/iso
+Edge function:     iso
+```
+
+The edge endpoint is intentionally a thin streaming proxy: it forwards the incoming byte-range request to the immutable release asset and returns the upstream stream to the browser.
+
+## 🧪 Verification
+
+After the emulator reaches the shell, verify the environment with:
+
+```bash
+uname -a
+cc --version
+gcc --version
+```
+
+Then compile a small C program:
+
+```bash
+cat > hello.c <<'EOF'
 #include <stdio.h>
 
 int main(void) {
-    printf("LinuxLab x86 emulation is running!\n");
+    puts("LinuxLab x86 emulation is running!");
     return 0;
 }
+EOF
+
+gcc hello.c -O2 -o hello
+./hello
 ```
 
-Compile it:
-
-```bash
-gcc main.c -o main
-```
-
-Run it:
-
-```bash
-./main
-```
-
-Expected output:
+Expected result:
 
 ```text
 LinuxLab x86 emulation is running!
 ```
 
-## How It Works
+## 📊 Performance notes
 
-LinuxLab runs a complete x86 Linux environment inside the browser.
+LinuxLab's important optimization is **delivery strategy**, not a claim that x86 emulation is equivalent to native execution.
 
-1. The browser loads the `v86` WebAssembly emulator.
-2. `v86` initializes the BIOS and virtual x86 hardware.
-3. The emulator requests ISO data through `/api/iso`.
-4. The Netlify Edge Function forwards HTTP Range requests to the GitHub Releases CDN.
-5. The Alpine Linux guest progressively boots from the streamed ISO.
-6. Virtual serial output is connected to xterm.js.
-7. LinuxLab detects the login prompt and automatically logs in as `root`.
-8. The user receives an interactive Linux shell directly in the browser.
+The disk is accessed through HTTP byte ranges so v86 can request portions of the guest image on demand. This avoids making the browser application responsible for eagerly downloading and holding the complete ISO before emulation can begin.
 
-## Technology Stack
+For reproducible performance comparisons, measure these milestones in the deployed environment:
 
-| Technology             | Purpose                            |
-| ---------------------- | ---------------------------------- |
-| TypeScript             | Frontend application logic         |
-| v86                    | x86 CPU and hardware emulation     |
-| WebAssembly            | High-performance browser execution |
-| xterm.js               | Interactive terminal interface     |
-| Alpine Linux           | Lightweight Linux guest OS         |
-| GCC                    | C development toolchain            |
-| Netlify Edge Functions | ISO streaming proxy                |
-| GitHub Releases        | ISO asset hosting                  |
+| Metric | What to measure |
+|---|---|
+| First terminal paint | Page load → terminal visible |
+| Emulator start | Terminal visible → v86 initialized |
+| First guest output | v86 initialized → first Linux output |
+| Shell ready | Boot start → interactive shell |
+| Total transfer | Network bytes consumed during boot |
+
+> **Note:** publish measured numbers only after collecting them on the target deployment and browser. This repository does not fabricate benchmark results.
+
+## 🔐 Security model
+
+LinuxLab's guest commands execute inside the **browser-side v86 emulator**, not as shell commands on the Netlify Edge Function.
+
+The edge function's responsibility is limited to fetching and streaming the release asset. It does not expose a server-side shell, accept arbitrary upstream URLs, or execute guest code.
+
+The deployment also sends defensive browser headers including `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and cross-origin policies appropriate to the application's resource-loading model.
+
+Because this is an emulator running untrusted guest software in a browser, users should still treat the environment as a development/demo sandbox rather than a security boundary for sensitive data.
+
+## 🔄 CI
+
+Every push to `main` and every pull request runs a reproducible Node 22 build using `npm ci` followed by `npm run build`.
+
+This catches TypeScript and production-bundle regressions before deployment.
+
+## 🛠️ Technology stack
+
+| Technology | Role |
+|---|---|
+| TypeScript | Application and emulator integration |
+| Vite | Development server and production bundling |
+| v86 | x86 CPU/hardware emulation |
+| WebAssembly | High-performance browser execution |
+| xterm.js | Interactive terminal |
+| Alpine Linux | Lightweight guest OS |
+| GCC | Native C compilation inside the guest |
+| Netlify Edge Functions | Range-aware ISO delivery |
+| GitHub Releases | Guest disk asset hosting |
+
+## Known constraints
+
+- x86 emulation is inherently slower than native execution.
+- Large guest assets still require network transfer and browser storage/memory.
+- Browser behavior varies by device and available resources.
+- The edge endpoint intentionally depends on the configured GitHub Release asset.
+- The Linux guest is ephemeral unless persistence is explicitly implemented by the application.
+
+## Roadmap
+
+- [ ] Publish measured boot/transfer benchmarks.
+- [ ] Add browser compatibility smoke tests.
+- [ ] Add optional persistent guest storage.
+- [ ] Add richer emulator diagnostics and boot telemetry.
+- [ ] Provide additional lightweight guest profiles.
 
 ## License
 
 Copyright (c) 2026 Shylesh Karthik D. All rights reserved.
 
-This project and its source code are proprietary. Unauthorized copying, modification, distribution, or commercial use of this software without prior written permission is strictly prohibited. See LICENSE for full details.
+This project and its source code are proprietary. Unauthorized copying, modification, distribution, or commercial use of this software without prior written permission is strictly prohibited. See `LICENSE` for full details.
