@@ -67,13 +67,15 @@ class LinuxLabApp {
       scrollBeyondLastLine: false,
     });
 
-    this.engine.setEditorHook((filename: string, content: string) => {
-      this.switchFileTab(filename, content);
-    });
+    this.attachEditorHook();
 
     setTimeout(() => {
       this.editor?.layout();
     }, 200);
+  }
+
+  private attachEditorHook(): void {
+    this.engine.setEditorHook((filename: string, content: string) => this.switchFileTab(filename, content));
   }
 
   private initSimulatorTerminal(): void {
@@ -102,7 +104,7 @@ class LinuxLabApp {
     setTimeout(() => {
       try {
         this.simFitAddon.fit();
-      } catch (e) {}
+      } catch (error) { console.warn('[LinuxLab] Terminal fit failed:', error); }
     }, 150);
 
     this.simTerm.writeln('\x1b[1;36m====================================================\x1b[0m');
@@ -124,12 +126,7 @@ class LinuxLabApp {
       this.currentInputBuffer = '';
 
       if (cmd.trim().length > 0) {
-        this.engine.execute(cmd).then((output) => {
-          if (output) {
-            this.simTerm.writeln(output);
-          }
-          this.simTerm.write(this.engine.getPrompt());
-        });
+        void this.executeTerminalCommand(cmd);
       } else {
         this.simTerm.write(this.engine.getPrompt());
       }
@@ -147,6 +144,18 @@ class LinuxLabApp {
     if (data >= ' ' || data === '\t') {
       this.currentInputBuffer += data;
       this.simTerm.write(data);
+    }
+  }
+
+  private async executeTerminalCommand(cmd: string): Promise<void> {
+    try {
+      const output = await this.engine.execute(cmd);
+      if (output) this.simTerm.writeln(output);
+    } catch (error) {
+      console.error('[LinuxLab] Command execution failed:', error);
+      this.simTerm.writeln(`\x1b[31mError: ${error instanceof Error ? error.message : String(error)}\x1b[0m`);
+    } finally {
+      this.simTerm.write(this.engine.getPrompt());
     }
   }
 
@@ -214,7 +223,12 @@ class LinuxLabApp {
       res = this.assessment.runCTestSuite(code);
     }
 
-    feedbackList.innerHTML = res.logs.join('');
+    feedbackList.replaceChildren();
+    for (const entry of res.logs) {
+      const line = document.createElement('div');
+      line.textContent = entry;
+      feedbackList.appendChild(line);
+    }
     void StorageService.saveProgress(this.currentFile.endsWith('.java') ? 'java-prime' : 'c-table', res.score, res.score >= 80)
       .catch((error) => console.warn('[LinuxLab] Progress save failed:', error));
   }
@@ -227,6 +241,7 @@ class LinuxLabApp {
 
     document.getElementById('btn-reset')?.addEventListener('click', () => {
       this.engine = new InBrowserLinuxEngine();
+      this.attachEditorHook();
       this.assessment = new AssessmentRunner(this.engine);
       this.switchFileTab('main.c');
       this.simTerm.clear();
@@ -249,7 +264,7 @@ class LinuxLabApp {
       this.editor?.layout();
       try {
         this.simFitAddon?.fit();
-      } catch (e) {}
+      } catch (error) { console.warn('[LinuxLab] Terminal resize failed:', error); }
     });
   }
 }
