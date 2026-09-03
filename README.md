@@ -250,3 +250,8 @@ This catches TypeScript and production-bundle regressions before deployment.
 Copyright (c) 2026 Shylesh Karthik D. All rights reserved.
 
 This project and its source code are proprietary. Unauthorized copying, modification, distribution, or commercial use of this software without prior written permission is strictly prohibited. See `LICENSE` for full details.
+
+
+## Learning reliability checklist
+
+LinuxLab uses two clearly labelled engines: **Engine A** is an educational simulator and **Engine B** is real Alpine Linux in v86. Simulator workspace persistence is local to the browser where enabled; the real VM is temporary and should never be used for real secrets. Before release, verify the happy path: pipes, redirection, cp/mv/find, mobile nano controls and boot-to-prompt.
