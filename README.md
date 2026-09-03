@@ -1,157 +1,87 @@
-# LinuxLab Hybrid — Learn Linux Without Expensive Hardware
+# LinuxLab Hybrid
 
-> A free, beginner-focused Linux learning platform with **two learning environments**: a safe simulator and real Alpine Linux running in the browser.
+A free, beginner-focused platform for learning Linux without requiring expensive hardware or a dedicated Linux computer.
 
-LinuxLab Hybrid was created to help students and learners practice Linux even when they do not have a dedicated Linux computer, powerful hardware, or easy access to learning resources.
+## Start learning
 
-## 🌐 Try LinuxLab
+- Homepage: https://linuxlab-hybrid.netlify.app/
+- Simulator: https://linuxlab-hybrid.netlify.app/simulator.html
+- Real Alpine Linux: https://linuxlab-hybrid.netlify.app/index-v86.html
 
-- **Homepage:** https://linuxlab-hybrid.netlify.app/
-- **Learning Simulator:** https://linuxlab-hybrid.netlify.app/simulator.html
-- **Real Alpine Linux:** https://linuxlab-hybrid.netlify.app/index-v86.html
+## Two ways to learn
 
-## 🎯 What learners can do
+### Engine A — Learning Simulator
+Practice Linux concepts safely:
 
-### 🧪 Engine A — Learning Simulator
-A safe educational environment for practicing common Linux concepts:
+- `pwd`, `ls`, `cd`
+- files and directories
+- `cp`, `mv`, `rm`, `find`
+- pipes and redirection
+- `grep`, `sort`, `uniq`, `wc`
+- programming and command practice
 
-- Navigate with `pwd`, `ls`, and `cd`
-- Create and manage files and folders
-- Practice `cp`, `mv`, `rm`, and `find`
-- Learn pipes, redirection and shell operators
-- Use text tools such as `grep`, `sort`, `uniq`, and `wc`
-- Explore beginner programming workflows
-- Learn networking commands in an educational simulated environment
+This environment is an educational simulator, not a full Linux kernel.
 
-**Important:** Engine A is a simulator designed for learning. It is not a complete Linux kernel or full Bash implementation.
+### Engine B — Real Alpine Linux
+Run a real Alpine Linux guest in the browser using v86, WebAssembly and xterm.js.
 
-### 🐧 Engine B — Real Alpine Linux
-A real Alpine Linux guest running inside the browser through:
+Profiles:
+- Quick: 256 MB RAM
+- Developer: 1 GB RAM
 
-- v86 x86 emulation
-- WebAssembly
-- xterm.js terminal integration
-- Browser-side Linux execution
+Real VM sessions are temporary. Do not enter real passwords or sensitive information.
 
-Profiles include:
+## Learning goal
 
-- **Quick Linux — 256 MB RAM**
-- **Developer Linux — 1 GB RAM** for heavier development work
+LinuxLab is designed for learners who should not be blocked from practicing Linux because they lack hardware, money, or easy access to resources.
 
-The real VM is temporary. Learners should not enter real passwords or sensitive information.
+## Ways to use Linux
 
-## 📚 Learning philosophy
+1. LinuxLab in the browser
+2. Oracle VM VirtualBox
+3. Dual boot
+4. Full installation
 
-LinuxLab teaches both **what a command does** and **what happens behind it**.
+For beginners, a virtual machine is usually the safest next step.
 
-For example:
+## Development
 
-```text
-source code → compiler → machine code + metadata → executable → Linux loads it → process runs
-```
-
-The project includes beginner explanations, interactive command examples, a 200+ command reference, guided practice and knowledge checks.
-
-## 🚀 Ways to start learning Linux
-
-1. **LinuxLab in your browser** — easiest and safest starting point.
-2. **Oracle VM VirtualBox** — run Linux inside a virtual machine while keeping your current operating system.
-3. **Dual boot** — install Linux alongside another operating system.
-4. **Full installation** — use Linux directly as your main operating system when comfortable.
-
-For beginners, starting with a virtual machine is generally the safest practical path.
-
-## 🏗️ Architecture
-
-```text
-Browser
-├── Engine A: TypeScript educational Linux simulator
-│   ├── Virtual filesystem
-│   ├── Command engine
-│   └── Learning workflows
-│
-└── Engine B: Real Linux
-    ├── xterm.js
-    ├── v86 + WebAssembly
-    ├── Alpine Linux guest
-    └── Netlify Edge range streaming
-```
-
-## 🧪 Automated testing
-
-Run the simulator regression tests:
-
-```bash
-npm test
-```
-
-Run the production build:
-
-```bash
-npm run build
-```
-
-CI checks important learner workflows including:
-
-- navigation
-- pipes
-- redirection
-- `cp` and `mv`
-- `find`
-- filesystem operations
-
-## 💻 Development
-
-### Requirements
-
+Requirements:
 - Node.js 22+
 - npm 10.8+
-
-### Install
 
 ```bash
 git clone https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid.git
 cd linuxlab-hybrid
 npm ci
-```
-
-### Run locally
-
-```bash
 npm run dev
 ```
 
-### Build
+Build:
 
 ```bash
 npm run build
 ```
 
-## ⚠️ Transparency
+Tests:
 
-LinuxLab clearly separates simulated learning from real Linux:
+```bash
+npm test
+```
 
-- **Simulator:** educational model for safe practice
-- **Real Alpine:** actual Linux guest running through browser x86 emulation
+## Transparency
 
-This distinction is important because learners should understand what they are practicing.
+- **Simulator:** educational model for safe practice.
+- **Real Alpine:** actual Linux guest running through browser x86 emulation.
 
-## 🔐 Privacy and sessions
-
-The core learning experience does not require an account. Browser-based learning data may be stored locally where persistence is enabled.
-
-Real Linux sessions are temporary and can lose files or history when the session closes or restarts.
-
-## 🗺️ Sitemap and indexing
+## SEO
 
 - Sitemap: https://linuxlab-hybrid.netlify.app/sitemap.xml
 - Robots: https://linuxlab-hybrid.netlify.app/robots.txt
 
-## 🤝 Project goal
+## Project mission
 
-LinuxLab Hybrid is built with one main goal:
-
-> **Help learners access practical Linux education without being blocked by expensive resources or complicated setup.**
+> Help students and learners access practical Linux education without being stopped by expensive resources or complicated setup.
 
 ## License
 
