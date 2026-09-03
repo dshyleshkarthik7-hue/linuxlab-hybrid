@@ -305,35 +305,23 @@ export class InBrowserLinuxEngine {
         if (!files.length) return 'touch: missing file operand';
         for (const file of files) {
           const existing = this.resolvePath(file).node;
-          if (!existing) {
-            if (!this.writeFile(file, '')) return `touch: cannot touch '${file}': No such file or directory`;
-          } else if (existing.type === 'dir') {
-            return `touch: cannot touch '${file}': Is a directory`;
-          }
+          if (!existing && !this.writeFile(file, '')) return `touch: cannot touch '${file}': No such file or directory`;
+          if (existing?.type === 'dir') return `touch: cannot touch '${file}': Is a directory`;
         }
         return '';
       }
-
       case 'rm': {
         const targets = args.filter((a) => !a.startsWith('-'));
         if (!targets.length) return 'rm: missing operand';
         const recursive = args.some((a) => a.includes('r'));
         for (const target of targets) {
           const { node, parent, name } = this.resolvePath(target);
-          if (!node || !parent || !parent.children) return `rm: cannot remove '${target}': No such file or directory`;
+          if (!node || !parent?.children) return `rm: cannot remove '${target}': No such file or directory`;
           if (node.type === 'dir' && !recursive) return `rm: cannot remove '${target}': Is a directory`;
           parent.children.delete(name);
         }
         return '';
       }
-
-      case 'cat': {
-        if (!args[0]) return 'cat: missing operand';
-        const data = this.readFile(args[0]);
-        if (data === null) return `cat: ${args[0]}: No such file or directory`;
-        return data;
-      }
-
       case 'cp': {
         const operands = args.filter((a) => !a.startsWith('-'));
         if (operands.length < 2) return 'cp: missing destination file operand';
@@ -461,7 +449,6 @@ export class InBrowserLinuxEngine {
         if (args.includes('-c')) return String(bytes);
         return `${lines} ${words} ${bytes}${file ? ' ' + file : ''}`;
       }
-
       case 'sort': {
         const file = args.find((a) => !a.startsWith('-'));
         const data = file ? this.readFile(file) : stdin;
