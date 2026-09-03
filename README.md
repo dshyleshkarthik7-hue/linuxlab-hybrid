@@ -290,3 +290,10 @@ The homepage includes an interactive beginner explanation and a knowledge check.
 ### Privacy and access
 
 Learning progress and practice data should remain local to the learner's browser unless an explicit future opt-in feature says otherwise. LinuxLab does not require an account for the core learning path.
+
+
+## Reliability promise
+
+LinuxLab is built around practical learning, so common beginner workflows are protected by automated regression checks. The test suite verifies navigation, pipes, redirection, file copying and moving, searching, listing and deletion. When a bug is found, the goal is to fix the underlying engine behavior and add a regression test so the same problem is less likely to return.
+
+The simulator remains an educational environment rather than a replacement for a complete Linux distribution. The Real Linux environment is provided separately for learners who want to practice against an actual Alpine guest.

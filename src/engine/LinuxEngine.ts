@@ -135,6 +135,12 @@ export class InBrowserLinuxEngine {
     return null;
   }
 
+  private deletePath(pathStr: string): boolean {
+    const { node, parent, name } = this.resolvePath(pathStr);
+    if (!node || !parent || !parent.children) return false;
+    return parent.children.delete(name);
+  }
+
   public async execute(raw: string): Promise<string> {
     const line = raw.trim();
     if (!line) return '';
@@ -378,6 +384,14 @@ export class InBrowserLinuxEngine {
         const lines = data ? data.split('\n').length : 0;
         const words = data.trim() ? data.trim().split(/\s+/).length : 0;
         return `${lines} ${words} ${data.length} ${file}`;
+      }
+
+      case 'sort':
+        return (stdin || '').split('\n').filter(Boolean).sort().join('\n');
+
+      case 'uniq': {
+        const lines = (stdin || '').split('\n').filter(Boolean);
+        return lines.filter((line, index) => index === 0 || line !== lines[index - 1]).join('\n');
       }
 
       case 'chmod': {
