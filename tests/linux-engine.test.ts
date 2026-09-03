@@ -47,6 +47,11 @@ async function run() {
   assert.equal((await e.execute('echo alpha | grep alpha | wc -l')).trim(), '1');
   assert.equal(await e.execute('echo hi > quoted && cat quoted'), 'hi');
   assert.ok((await e.execute('find /root -name "*.java"')).includes('/root/Main.java'));
+  assert.equal(await e.execute('test -d /root'), '');
+  assert.equal(await e.execute('test -f /root/main.c'), '');
+  assert.equal(await e.execute('test -f /root'), '');
+  assert.equal(await e.execute('[ -d /root ]'), '');
+
   console.log('LinuxLab happy-path engine checks passed');
 }
 

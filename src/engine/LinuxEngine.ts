@@ -403,6 +403,21 @@ export class InBrowserLinuxEngine {
 
       case 'false': this.exitCode = 1; return '';
       case 'true': return '';
+      case 'test':
+      case '[': {
+        const testArgs = cmd === '[' && args[args.length - 1] === ']' ? args.slice(0, -1) : args;
+        let ok = false;
+        if (testArgs.length === 1) ok = Boolean(testArgs[0]);
+        else if (testArgs[0] === '-d') ok = this.resolvePath(testArgs[1]).node?.type === 'dir';
+        else if (testArgs[0] === '-f') ok = this.resolvePath(testArgs[1]).node?.type === 'file';
+        else if (testArgs[0] === '-e') ok = Boolean(this.resolvePath(testArgs[1]).node);
+        else if (testArgs[0] === '-z') ok = (testArgs[1] || '').length === 0;
+        else if (testArgs[0] === '-n') ok = (testArgs[1] || '').length > 0;
+        else if (testArgs.length >= 3 && testArgs[1] === '=') ok = testArgs[0] === testArgs[2];
+        else if (testArgs.length >= 3 && testArgs[1] === '!=') ok = testArgs[0] !== testArgs[2];
+        this.exitCode = ok ? 0 : 1;
+        return '';
+      }
       case 'cat': {
         if (!args.length) return stdin;
         const output: string[] = [];
