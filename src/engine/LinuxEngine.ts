@@ -662,7 +662,10 @@ class EducationalCInterpreter {
   private readonly maxSteps = 250_000;
   private readonly maxOutput = 100_000;
 
-  constructor(private source: string, input: string[] = [], injectedVars: Record<string, number> = {}) {
+  private source: string;
+
+  constructor(source: string, input: string[] = [], injectedVars: Record<string, number> = {}) {
+    this.source = source;
     this.input = [...input];
     for (const [k, v] of Object.entries(injectedVars)) this.vars.set(k, v);
     this.tokenize();
