@@ -301,17 +301,29 @@ export class InBrowserLinuxEngine {
       }
 
       case 'touch': {
-        if (!args[0]) return 'touch: missing file operand';
-        this.writeFile(args[0], '');
+        const files = args.filter((a) => !a.startsWith('-'));
+        if (!files.length) return 'touch: missing file operand';
+        for (const file of files) {
+          const existing = this.resolvePath(file).node;
+          if (!existing) {
+            if (!this.writeFile(file, '')) return `touch: cannot touch '${file}': No such file or directory`;
+          } else if (existing.type === 'dir') {
+            return `touch: cannot touch '${file}': Is a directory`;
+          }
+        }
         return '';
       }
 
       case 'rm': {
-        if (!args[0]) return 'rm: missing operand';
-        const target = args.find((a) => !a.startsWith('-')) || args[0];
-        const { node, parent, name } = this.resolvePath(target);
-        if (!node || !parent || !parent.children) return `rm: cannot remove '${target}': No such file or directory`;
-        parent.children.delete(name);
+        const targets = args.filter((a) => !a.startsWith('-'));
+        if (!targets.length) return 'rm: missing operand';
+        const recursive = args.some((a) => a.includes('r'));
+        for (const target of targets) {
+          const { node, parent, name } = this.resolvePath(target);
+          if (!node || !parent || !parent.children) return `rm: cannot remove '${target}': No such file or directory`;
+          if (node.type === 'dir' && !recursive) return `rm: cannot remove '${target}': Is a directory`;
+          parent.children.delete(name);
+        }
         return '';
       }
 
@@ -323,21 +335,28 @@ export class InBrowserLinuxEngine {
       }
 
       case 'cp': {
-        if (args.length < 2) return 'cp: missing file operand';
-        const [source, destination] = args;
+        const operands = args.filter((a) => !a.startsWith('-'));
+        if (operands.length < 2) return 'cp: missing destination file operand';
+        const [source, destination] = operands;
         const sourceNode = this.resolvePath(source).node;
         if (!sourceNode) return `cp: cannot stat '${source}': No such file or directory`;
         if (sourceNode.type !== 'file') return `cp: -r not specified; omitting directory '${source}'`;
-        this.writeFile(destination, sourceNode.content || '');
+        const destinationNode = this.resolvePath(destination).node;
+        const target = destinationNode?.type === 'dir' ? destination.replace(/\/$/, '') + '/' + sourceNode.name : destination;
+        if (!this.writeFile(target, sourceNode.content || '')) return `cp: cannot create regular file '${target}': No such file or directory`;
         return '';
       }
 
       case 'mv': {
-        if (args.length < 2) return 'mv: missing destination file operand';
-        const [source, destination] = args;
-        const sourceData = this.readFile(source);
-        if (sourceData === null) return `mv: cannot stat '${source}': No such file or directory`;
-        this.writeFile(destination, sourceData);
+        const operands = args.filter((a) => !a.startsWith('-'));
+        if (operands.length < 2) return 'mv: missing destination file operand';
+        const [source, destination] = operands;
+        const sourceNode = this.resolvePath(source).node;
+        if (!sourceNode) return `mv: cannot stat '${source}': No such file or directory`;
+        const destinationNode = this.resolvePath(destination).node;
+        const target = destinationNode?.type === 'dir' ? destination.replace(/\/$/, '') + '/' + sourceNode.name : destination;
+        if (sourceNode.type !== 'file') return `mv: cannot move '${source}': directory moves are not supported in the simulator`;
+        if (!this.writeFile(target, sourceNode.content || '')) return `mv: cannot move '${source}' to '${target}': No such file or directory`;
         this.deletePath(source);
         return '';
       }
@@ -434,16 +453,27 @@ export class InBrowserLinuxEngine {
         const file = args.find((a) => !a.startsWith('-'));
         const data = file ? this.readFile(file) : stdin;
         if (data === null) return `wc: ${file}: No such file or directory`;
-        const lines = data ? data.split('\n').length : 0;
+        const lines = data ? data.split('\n').length - (data.endsWith('\n') ? 1 : 0) : 0;
         const words = data.trim() ? data.trim().split(/\s+/).length : 0;
-        return `${lines} ${words} ${data.length} ${file}`;
+        const bytes = new TextEncoder().encode(data).length;
+        if (args.includes('-l')) return String(lines);
+        if (args.includes('-w')) return String(words);
+        if (args.includes('-c')) return String(bytes);
+        return `${lines} ${words} ${bytes}${file ? ' ' + file : ''}`;
       }
 
-      case 'sort':
-        return (stdin || '').split('\n').filter(Boolean).sort().join('\n');
+      case 'sort': {
+        const file = args.find((a) => !a.startsWith('-'));
+        const data = file ? this.readFile(file) : stdin;
+        if (data === null) return `sort: cannot read: ${file}: No such file or directory`;
+        return data.split('\n').filter((line) => line.length > 0).sort().join('\n');
+      }
 
       case 'uniq': {
-        const lines = (stdin || '').split('\n').filter(Boolean);
+        const file = args.find((a) => !a.startsWith('-'));
+        const data = file ? this.readFile(file) : stdin;
+        if (data === null) return `uniq: ${file}: No such file or directory`;
+        const lines = data.split('\n').filter((line) => line.length > 0);
         return lines.filter((line, index) => index === 0 || line !== lines[index - 1]).join('\n');
       }
 
