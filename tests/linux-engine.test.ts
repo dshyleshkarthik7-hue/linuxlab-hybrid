@@ -9,6 +9,9 @@ async function run() {
   assert.equal(await e.execute('cd /root && pwd'), '/root');
 
   assert.equal(await e.execute('echo hi > f && cat f'), 'hi');
+  assert.equal(await e.execute('cat missing && echo should-not-run'), 'cat: missing: No such file or directory');
+  assert.equal(await e.execute('cat missing || echo recovered'), 'recovered');
+  assert.equal(await e.execute('echo one; echo two'), 'one\ntwo');
   assert.equal((await e.execute('echo alpha | grep alpha')).trim(), 'alpha');
   assert.equal((await e.execute('echo alpha | grep beta')).trim(), '');
   assert.equal((await e.execute('echo z | sort')).trim(), 'z');
@@ -17,10 +20,13 @@ async function run() {
   assert.equal(await e.execute('cat b'), 'cat: b: No such file or directory');
 
   const found = await e.execute('find /root -name main.c');
-  assert.ok(found.includes('main.c'));
+  assert.equal(found.trim(), '/root/main.c');
+  assert.ok((await e.execute('find /root -name "*.c"')).includes('/root/main.c'));
+  assert.ok((await e.execute('find /root -type f')).includes('/root/main.c'));
 
   const ls = await e.execute('ls -la');
   assert.ok(ls.includes('main.c'));
+  assert.ok((await e.execute('ls -l')).includes('-rw-r--r--'));
 
   assert.equal(await e.execute('rm c && cat c'), 'cat: c: No such file or directory');
 

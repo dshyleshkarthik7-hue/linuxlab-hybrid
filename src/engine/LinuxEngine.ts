@@ -151,9 +151,30 @@ export class InBrowserLinuxEngine {
       let combinedOut = '';
       for (const cmd of subCmds) {
         const out = await this.execute(cmd);
+        if (this.isFailure(out)) break;
         if (out) combinedOut += (combinedOut ? '\n' : '') + out;
       }
       return combinedOut;
+    }
+
+    if (line.includes('||')) {
+      const subCmds = line.split('||').map((s) => s.trim());
+      let lastOut = '';
+      for (const cmd of subCmds) {
+        lastOut = await this.execute(cmd);
+        if (!this.isFailure(lastOut)) break;
+      }
+      return lastOut;
+    }
+
+    if (line.includes(';')) {
+      const subCmds = line.split(';').map((s) => s.trim()).filter(Boolean);
+      const outputs: string[] = [];
+      for (const cmd of subCmds) {
+        const out = await this.execute(cmd);
+        if (out) outputs.push(out);
+      }
+      return outputs.join('\n');
     }
 
     if (line.includes('|')) {
@@ -175,6 +196,10 @@ export class InBrowserLinuxEngine {
     }
 
     return this.executeSingle(line);
+  }
+
+  private isFailure(output: string): boolean {
+    return /^(?:bash: )?(?:[a-zA-Z0-9_.-]+: )?(?:command not found|cannot |missing |invalid |No such file|Not a directory)/m.test(output);
   }
 
   private async executeSingle(cmdLine: string, stdin = ''): Promise<string> {
@@ -233,15 +258,14 @@ export class InBrowserLinuxEngine {
 
       case 'ls': {
         const target = args.find((a) => !a.startsWith('-')) || '.';
+        const long = args.some((a) => a.includes('l'));
+        const all = args.some((a) => a.includes('a'));
         const { node } = this.resolvePath(target);
         if (!node) return `ls: cannot access '${target}': No such file or directory`;
-        if (node.type === 'file') return node.name;
-        if (!node.children || node.children.size === 0) return '';
-        const list: string[] = [];
-        node.children.forEach((child) => {
-          list.push(child.type === 'dir' ? `\x1b[1;34m${child.name}\x1b[0m` : child.name);
-        });
-        return list.join('  ');
+        if (node.type === 'file') return long ? `${node.permissions || '-rw-r--r--'} 1 root root ${(node.content || '').length} ${node.name}` : node.name;
+        const entries = Array.from(node.children?.values() || []).filter((child) => all || !child.name.startsWith('.')).sort((a, b) => a.name.localeCompare(b.name));
+        if (!long) return entries.map((child) => child.type === 'dir' ? `\x1b[1;34m${child.name}\x1b[0m` : child.name).join('  ');
+        return entries.map((child) => `${child.permissions || (child.type === 'dir' ? 'drwxr-xr-x' : '-rw-r--r--')} 1 root root ${(child.content || '').length} ${child.name}`).join('\n');
       }
 
       case 'cd': {
