@@ -63,6 +63,7 @@ export class V86LinuxTerminal {
   private onWindowResize = (): void => this.handleViewportResize();
   private handleViewportResize(): void { if (this.resizeDebounceTimer !== null) window.clearTimeout(this.resizeDebounceTimer); this.resizeDebounceTimer = window.setTimeout(() => this.fit(), 50); }
   public fit(): void { try { this.fitAddon?.fit(); } catch {} }
+  public sendMobileInput(data: string): void { this.term?.focus(); this.sendSerial(data); }
   private writeLine(text: string): void { try { this.term?.writeln(text); } catch { console.log(text); } }
 
   private bindExternalButtons(): void {

@@ -37,6 +37,8 @@ class LinuxLabApp {
 
   private currentFile: string = 'main.c';
   private currentInputBuffer: string = '';
+  private waitingForProgramInput = false;
+  private pendingProgramCommand = '';
 
   constructor() {
     this.engine = new InBrowserLinuxEngine();
@@ -148,6 +150,13 @@ class LinuxLabApp {
   }
 
   private async executeTerminalCommand(cmd: string): Promise<void> {
+    // Beginner-friendly interactive input: ask before executing educational programs that use scanf.
+    if (/^\.\/\S+/.test(cmd) && !this.waitingForProgramInput) {
+      const source = this.engine.readFile('/root/main.c') || '';
+      if (/scanf\s*\(/.test(source)) { this.waitingForProgramInput = true; this.pendingProgramCommand = cmd; this.simTerm.write('Program input required. Enter value(s), then press Enter: '); return; }
+    }
+    if (this.waitingForProgramInput) { this.waitingForProgramInput = false; cmd = `${this.pendingProgramCommand} ${cmd}`; this.pendingProgramCommand = ''; }
+
     try {
       const output = await this.engine.execute(cmd);
       if (output) this.simTerm.writeln(output);

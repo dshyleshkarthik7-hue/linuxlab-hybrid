@@ -25,10 +25,10 @@
     </div>
     <div class="header-actions" id="v86-controls">
       <span id="v86-status" class="action-btn" style="cursor:default;user-select:none;" aria-live="polite">starting…</span>
-      <span id="v86-monitor" class="action-btn" style="cursor:default;user-select:none;" aria-live="polite">RAM: 512 MiB • Network: off</span>
-      <button id="btn-v86-alpine" class="action-btn" type="button">🐧 Boot Alpine</button>
+      <span id="v86-monitor" class="action-btn" style="cursor:default;user-select:none;" aria-live="polite">Loading profile…</span>
+      <button id="btn-v86-alpine" class="action-btn" type="button">🐧 Developer Linux (1 GB)</button>
       <button id="btn-v86-gcc" class="action-btn" type="button">⚙ GCC</button>
-      <button id="btn-v86-fallback" class="action-btn" type="button">🛟 Boot linux4</button>
+      <button id="btn-v86-fallback" class="action-btn" type="button">⚡ Quick Linux (256 MB)</button>
       <button id="btn-v86-restart" class="action-btn" type="button">↺ Reboot VM</button>
       <a href="./index.html" class="action-btn" style="text-decoration:none;">🏠 Home</a>
     </div>
@@ -39,10 +39,10 @@
     <div id="screen_container" aria-hidden="true" style="position:absolute;left:-10000px;top:-10000px;width:640px;height:400px;visibility:hidden;pointer-events:none;overflow:hidden;">
       <div style="white-space:pre;font:14px monospace;line-height:14px;"></div><canvas></canvas>
     </div>
-  </main>
+  <div id="mobile-linux-keyboard" aria-label="LinuxLab mobile keyboard"></div></main>
 </div>
 
-<script type="module">
+<style>#mobile-linux-keyboard{display:none;position:fixed;bottom:0;left:0;right:0;padding:8px;background:rgba(2,6,23,.72);backdrop-filter:blur(12px);z-index:99;gap:5px;flex-wrap:wrap}#mobile-linux-keyboard button{min-width:38px;min-height:38px;border:1px solid #334155;border-radius:8px;background:rgba(15,23,42,.72);color:#e2e8f0}@media(max-width:700px){#mobile-linux-keyboard{display:flex}#v86-terminal-container{padding-bottom:230px!important}}</style><script type="module">
   import { V86LinuxTerminal } from './src/main-v86.ts';
 
   // Keep startup simple. main-v86 owns the v86 lifecycle and configures the
@@ -53,12 +53,13 @@
     try {
       const vm = new V86LinuxTerminal('v86-terminal-container');
       window.linuxLabVM = vm;
-      await vm.bootAlpine();
+      await vm.bootLinux4();
     } catch (error) {
       console.error('[LinuxLab] Engine B startup failed:', error);
       const status = document.getElementById('v86-status');
       if (status) status.textContent = 'Alpine emulator failed to start';
     }
+  const kb=document.getElementById("mobile-linux-keyboard"); const keys=["ESC","CTRL","ALT","TAB","↑","↓","←","→","/","-","_","|","~","Q","W","E","R","T","Y","U","I","O","P","A","S","D","F","G","H","J","K","L","Z","X","C","V","B","N","M","⌫","SPACE","ENTER"]; let sticky=null; keys.forEach(k=>{const b=document.createElement("button");b.textContent=k;b.onclick=()=>{if(k==="CTRL"||k==="ALT"){sticky=sticky===k?null:k;b.style.outline=sticky===k?"2px solid #38bdf8":"";return;}let data=k==="ESC"?"\x1b":k==="TAB"?"\t":k==="ENTER"?"\r":k==="SPACE"?" ":k==="⌫"?"\x7f":k; if(sticky&&data.length===1){data=String.fromCharCode(data.toLowerCase().charCodeAt(0)-96);sticky=null;document.querySelectorAll("#mobile-linux-keyboard button").forEach(x=>x.style.outline="");} vm.sendMobileInput?.(data);};kb.appendChild(b);});
   });
 </script>
 </body>
