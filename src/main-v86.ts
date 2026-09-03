@@ -7,7 +7,7 @@ const FitAddonConstructor = (fitModule as any).FitAddon || (fitModule as any).de
 
 type VMState = 'stopped' | 'loading' | 'booting' | 'ready' | 'error';
 type AlpineLoginState = 'waiting' | 'login-detected' | 'username-sent' | 'ready';
-type BootProfile = { name: string; iso: string; fallback?: boolean };
+type BootProfile = { name: string; iso: string; memoryMiB: number; fallback?: boolean };
 
 const ISO_STREAM_ENDPOINT = '/api/iso';
 
@@ -76,8 +76,8 @@ export class V86LinuxTerminal {
   private setMonitor(text: string): void { const el = document.getElementById('v86-monitor'); if (el) el.textContent = text; }
 
   public async boot(): Promise<void> { await this.bootAlpine(false); }
-  public async bootAlpine(force = true): Promise<void> { await this.startProfile({ name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT }, force); }
-  public async bootLinux4(): Promise<void> { await this.startProfile({ name: 'Linux4', iso: './linux4.iso', fallback: true }, true); }
+  public async bootAlpine(force = true): Promise<void> { await this.startProfile({ name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 }, force); }
+  public async bootLinux4(): Promise<void> { await this.startProfile({ name: 'Linux4', iso: './linux4.iso', memoryMiB: 256, fallback: true }, true); }
 
   private async startProfile(profile: BootProfile, force: boolean): Promise<void> {
     if (!force && this.emulator && this.state !== 'error') { this.term?.focus(); return; }
@@ -102,7 +102,7 @@ export class V86LinuxTerminal {
       const screen = document.getElementById('screen_container');
       if (!screen) throw new Error('Missing #screen_container');
       const options: any = {
-        wasm_path: this.assetUrl('v86.wasm'), memory_size: this.GUEST_MEMORY_BYTES, vga_memory_size: 8 * 1024 * 1024,
+        wasm_path: this.assetUrl('v86.wasm'), memory_size: profile.memoryMiB * 1024 * 1024, vga_memory_size: 8 * 1024 * 1024,
         bios: { url: this.assetUrl('seabios.bin') }, vga_bios: { url: this.assetUrl('vgabios.bin') },
         cdrom: { url: profile.iso, async: true }, screen_container: screen, autostart: true, disable_speaker: true, disable_keyboard: false, disable_mouse: true,
       };
