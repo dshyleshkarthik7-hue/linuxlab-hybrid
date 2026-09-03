@@ -1,104 +1,111 @@
-# LinuxLab — Browser-Based x86 Linux Emulator
+# LinuxLab Hybrid — Learn Linux Without Expensive Hardware
 
-> A real x86 Linux development environment running entirely in the browser.
+> A free, beginner-focused Linux learning platform with **two learning environments**: a safe simulator and real Alpine Linux running in the browser.
 
-LinuxLab boots a custom Alpine Linux guest inside the browser using **v86 + WebAssembly**, exposes the guest through **xterm.js**, and delivers the Linux disk through a **Netlify Edge byte-range streaming proxy** backed by a GitHub Release asset.
+LinuxLab Hybrid was created to help students and learners practice Linux even when they do not have a dedicated Linux computer, powerful hardware, or easy access to learning resources.
 
-## Why this project?
+## 🌐 Try LinuxLab
 
-LinuxLab explores a practical systems problem: **how can a useful Linux development environment be delivered without requiring a local VM, container, or native installation?**
+- **Homepage:** https://linuxlab-hybrid.netlify.app/
+- **Learning Simulator:** https://linuxlab-hybrid.netlify.app/simulator.html
+- **Real Alpine Linux:** https://linuxlab-hybrid.netlify.app/index-v86.html
 
-The project keeps CPU emulation client-side while the edge layer handles efficient delivery of the large guest disk image. The result is a self-contained x86 Linux shell that can compile and run C programs directly in a modern browser.
+## 🎯 What learners can do
 
-## ✨ Features
+### 🧪 Engine A — Learning Simulator
+A safe educational environment for practicing common Linux concepts:
 
-- **Client-side x86 emulation** — v86 executes the guest CPU and hardware model in WebAssembly.
-- **Custom Alpine Linux** — lightweight guest image tailored for browser execution.
-- **GCC toolchain** — GCC 15.2.0, `make`, `nano`, and core development utilities are available in the guest.
-- **Range-aware disk streaming** — `/api/iso` forwards HTTP byte ranges instead of requiring the browser to download the whole image up front.
-- **Interactive terminal** — xterm.js provides ANSI handling, terminal resizing, keyboard input, and scrollback.
-- **Automated boot/login** — boot-stage detection moves the user from firmware output to a usable root shell.
-- **Fallback boot profile** — the existing fallback path can be used when the primary Alpine profile is unavailable.
-- **Responsive viewport** — terminal dimensions follow the container using `ResizeObserver` and the fit addon.
+- Navigate with `pwd`, `ls`, and `cd`
+- Create and manage files and folders
+- Practice `cp`, `mv`, `rm`, and `find`
+- Learn pipes, redirection and shell operators
+- Use text tools such as `grep`, `sort`, `uniq`, and `wc`
+- Explore beginner programming workflows
+- Learn networking commands in an educational simulated environment
+
+**Important:** Engine A is a simulator designed for learning. It is not a complete Linux kernel or full Bash implementation.
+
+### 🐧 Engine B — Real Alpine Linux
+A real Alpine Linux guest running inside the browser through:
+
+- v86 x86 emulation
+- WebAssembly
+- xterm.js terminal integration
+- Browser-side Linux execution
+
+Profiles include:
+
+- **Quick Linux — 256 MB RAM**
+- **Developer Linux — 1 GB RAM** for heavier development work
+
+The real VM is temporary. Learners should not enter real passwords or sensitive information.
+
+## 📚 Learning philosophy
+
+LinuxLab teaches both **what a command does** and **what happens behind it**.
+
+For example:
+
+```text
+source code → compiler → machine code + metadata → executable → Linux loads it → process runs
+```
+
+The project includes beginner explanations, interactive command examples, a 200+ command reference, guided practice and knowledge checks.
+
+## 🚀 Ways to start learning Linux
+
+1. **LinuxLab in your browser** — easiest and safest starting point.
+2. **Oracle VM VirtualBox** — run Linux inside a virtual machine while keeping your current operating system.
+3. **Dual boot** — install Linux alongside another operating system.
+4. **Full installation** — use Linux directly as your main operating system when comfortable.
+
+For beginners, starting with a virtual machine is generally the safest practical path.
 
 ## 🏗️ Architecture
 
 ```text
-┌──────────────────────────────────────────────┐
-│                  Browser                     │
-│                                              │
-│  ┌───────────────┐      ┌────────────────┐  │
-│  │   xterm.js    │◄────►│      v86       │  │
-│  │ Terminal I/O  │      │ WebAssembly    │  │
-│  └───────────────┘      │ x86 emulator   │  │
-│                         └───────┬────────┘  │
-│                                 │ HTTP Range│
-└─────────────────────────────────┼───────────┘
-                                  ▼
-                    ┌─────────────────────────┐
-                    │ Netlify Edge Function   │
-                    │ /api/iso                │
-                    │ Range + CORS proxy     │
-                    └────────────┬────────────┘
-                                 │ streaming
-                                 ▼
-                    ┌─────────────────────────┐
-                    │ GitHub Releases CDN     │
-                    │ alpine.iso              │
-                    └────────────┬────────────┘
-                                 ▼
-                    ┌─────────────────────────┐
-                    │ Custom Alpine Linux     │
-                    │ GCC + build utilities   │
-                    └─────────────────────────┘
+Browser
+├── Engine A: TypeScript educational Linux simulator
+│   ├── Virtual filesystem
+│   ├── Command engine
+│   └── Learning workflows
+│
+└── Engine B: Real Linux
+    ├── xterm.js
+    ├── v86 + WebAssembly
+    ├── Alpine Linux guest
+    └── Netlify Edge range streaming
 ```
 
-### Request flow
+## 🧪 Automated testing
 
-1. The browser loads the v86 runtime and WebAssembly module.
-2. v86 initializes virtual x86 hardware and firmware.
-3. The guest requests disk blocks from `/api/iso`.
-4. The Netlify Edge Function forwards the browser's `Range` header upstream.
-5. GitHub's release infrastructure returns the requested byte range.
-6. The edge function streams the response body back without buffering the ISO in application memory.
-7. Alpine boots and its serial output is connected to xterm.js.
-8. LinuxLab detects the login prompt and completes the configured login flow.
-9. The browser receives an interactive Linux shell.
+Run the simulator regression tests:
 
-## 📁 Project structure
-
-```text
-linuxlab-hybrid/
-├── .github/
-│   └── workflows/
-│       └── ci.yml                 # Reproducible CI build
-├── netlify/
-│   └── edge-functions/
-│       └── iso.ts                 # Range-aware streaming proxy
-├── public/
-│   ├── libv86.js                  # v86 runtime
-│   ├── v86.wasm                   # WebAssembly emulator
-│   ├── seabios.bin                # SeaBIOS firmware
-│   └── vgabios.bin                # VGA BIOS
-├── src/
-│   ├── core/                      # Core application modules
-│   ├── engine/                    # Emulator/runtime modules
-│   ├── ui/                        # UI modules
-│   ├── main-v86.ts                # v86 controller
-│   ├── main.ts                    # Application entry point
-│   └── style.css                  # Application styles
-├── netlify.toml                   # Build, edge, and security configuration
-├── package.json
-└── tsconfig.json
+```bash
+npm test
 ```
 
-## 🚀 Getting started
+Run the production build:
+
+```bash
+npm run build
+```
+
+CI checks important learner workflows including:
+
+- navigation
+- pipes
+- redirection
+- `cp` and `mv`
+- `find`
+- filesystem operations
+
+## 💻 Development
 
 ### Requirements
 
-- Node.js **22+**
-- npm **10.8+**
-- A modern browser with WebAssembly support
+- Node.js 22+
+- npm 10.8+
 
 ### Install
 
@@ -108,192 +115,44 @@ cd linuxlab-hybrid
 npm ci
 ```
 
-### Development
+### Run locally
 
 ```bash
 npm run dev
 ```
 
-### Production build
+### Build
 
 ```bash
 npm run build
 ```
 
-The build performs TypeScript checking before the Vite production bundle is generated.
+## ⚠️ Transparency
 
-### Build the Linux image
+LinuxLab clearly separates simulated learning from real Linux:
 
-The existing image-builder workflow is available on Windows PowerShell:
+- **Simulator:** educational model for safe practice
+- **Real Alpine:** actual Linux guest running through browser x86 emulation
 
-```bash
-npm run build:iso
-```
+This distinction is important because learners should understand what they are practicing.
 
-To run the complete application + ISO build pipeline:
+## 🔐 Privacy and sessions
 
-```bash
-npm run build:all
-```
+The core learning experience does not require an account. Browser-based learning data may be stored locally where persistence is enabled.
 
-## ☁️ Deployment
+Real Linux sessions are temporary and can lose files or history when the session closes or restarts.
 
-LinuxLab is designed for Netlify deployment.
+## 🗺️ Sitemap and indexing
 
-```text
-Build command:     npm run build
-Publish directory: dist
-Edge route:        /api/iso
-Edge function:     iso
-```
+- Sitemap: https://linuxlab-hybrid.netlify.app/sitemap.xml
+- Robots: https://linuxlab-hybrid.netlify.app/robots.txt
 
-The edge endpoint is intentionally a thin streaming proxy: it forwards the incoming byte-range request to the immutable release asset and returns the upstream stream to the browser.
+## 🤝 Project goal
 
-## 🧪 Verification
+LinuxLab Hybrid is built with one main goal:
 
-After the emulator reaches the shell, verify the environment with:
-
-```bash
-uname -a
-cc --version
-gcc --version
-```
-
-Then compile a small C program:
-
-```bash
-cat > hello.c <<'EOF'
-#include <stdio.h>
-
-int main(void) {
-    puts("LinuxLab x86 emulation is running!");
-    return 0;
-}
-EOF
-
-gcc hello.c -O2 -o hello
-./hello
-```
-
-Expected result:
-
-```text
-LinuxLab x86 emulation is running!
-```
-
-## 📊 Performance notes
-
-LinuxLab's important optimization is **delivery strategy**, not a claim that x86 emulation is equivalent to native execution.
-
-The disk is accessed through HTTP byte ranges so v86 can request portions of the guest image on demand. This avoids making the browser application responsible for eagerly downloading and holding the complete ISO before emulation can begin.
-
-For reproducible performance comparisons, measure these milestones in the deployed environment:
-
-| Metric | What to measure |
-|---|---|
-| First terminal paint | Page load → terminal visible |
-| Emulator start | Terminal visible → v86 initialized |
-| First guest output | v86 initialized → first Linux output |
-| Shell ready | Boot start → interactive shell |
-| Total transfer | Network bytes consumed during boot |
-
-> **Note:** publish measured numbers only after collecting them on the target deployment and browser. This repository does not fabricate benchmark results.
-
-## 🔐 Security model
-
-LinuxLab's guest commands execute inside the **browser-side v86 emulator**, not as shell commands on the Netlify Edge Function.
-
-The edge function's responsibility is limited to fetching and streaming the release asset. It does not expose a server-side shell, accept arbitrary upstream URLs, or execute guest code.
-
-The deployment also sends defensive browser headers including `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy`, and cross-origin policies appropriate to the application's resource-loading model.
-
-Because this is an emulator running untrusted guest software in a browser, users should still treat the environment as a development/demo sandbox rather than a security boundary for sensitive data.
-
-## 🔄 CI and automated checks
-
-Every push to `main` and every pull request runs Node 22 checks in GitHub Actions.
-
-The current pipeline:
-
-1. Installs project dependencies.
-2. Runs the Linux engine happy-path tests.
-3. Runs TypeScript checking.
-4. Creates the production Vite build.
-
-The automated checks cover important learner workflows including:
-
-- `pwd` and `cd`
-- changing directories and returning to `/root`
-- redirection with `>`
-- sequential commands with `&&`
-- pipes such as `echo alpha | grep alpha`
-- `cp` and `mv`
-- `find`
-- `ls -la`
-
-The goal is simple: common learning commands should not silently regress.
-
-## 🛠️ Technology stack
-
-| Technology | Role |
-|---|---|
-| TypeScript | Application and emulator integration |
-| Vite | Development server and production bundling |
-| v86 | x86 CPU/hardware emulation |
-| WebAssembly | High-performance browser execution |
-| xterm.js | Interactive terminal |
-| Alpine Linux | Lightweight guest OS |
-| GCC | Native C compilation inside the guest |
-| Netlify Edge Functions | Range-aware ISO delivery |
-| GitHub Releases | Guest disk asset hosting |
-
-## Known constraints
-
-- x86 emulation is inherently slower than native execution.
-- Large guest assets still require network transfer and browser storage/memory.
-- Browser behavior varies by device and available resources.
-- The edge endpoint intentionally depends on the configured GitHub Release asset.
-- The Linux guest is ephemeral unless persistence is explicitly implemented by the application.
-
-## Roadmap
-
-- [ ] Publish measured boot/transfer benchmarks.
-- [ ] Add browser compatibility smoke tests.
-- [ ] Add optional persistent guest storage.
-- [ ] Add richer emulator diagnostics and boot telemetry.
-- [ ] Provide additional lightweight guest profiles.
+> **Help learners access practical Linux education without being blocked by expensive resources or complicated setup.**
 
 ## License
 
-Copyright (c) 2026 Shylesh Karthik D. All rights reserved.
-
-This project and its source code are proprietary. Unauthorized copying, modification, distribution, or commercial use of this software without prior written permission is strictly prohibited. See `LICENSE` for full details.
-
-
-## Learning reliability checklist
-
-LinuxLab uses two clearly labelled engines: **Engine A** is an educational simulator and **Engine B** is real Alpine Linux in v86. Simulator workspace persistence is local to the browser where enabled; the real VM is temporary and should never be used for real secrets. Before release, verify the happy path: pipes, redirection, cp/mv/find, mobile nano controls and boot-to-prompt.
-
-
-## 🎓 Learning philosophy
-
-LinuxLab is built for learners who do not have access to expensive hardware, a dedicated Linux computer, or clear beginner resources. The goal is to teach both **what to type** and **what happens behind the command**.
-
-A typical compilation lesson follows this simple chain:
-
-```text
-source code → compiler → machine code + program metadata → executable → Linux loader → process → CPU execution
-```
-
-The homepage includes an interactive beginner explanation and a knowledge check. Future lessons can use the same pattern: explain the idea, let the learner try a command, then explain the result in plain language.
-
-### Privacy and access
-
-Learning progress and practice data should remain local to the learner's browser unless an explicit future opt-in feature says otherwise. LinuxLab does not require an account for the core learning path.
-
-
-## Reliability promise
-
-LinuxLab is built around practical learning, so common beginner workflows are protected by automated regression checks. The test suite verifies navigation, pipes, redirection, file copying and moving, searching, listing and deletion. When a bug is found, the goal is to fix the underlying engine behavior and add a regression test so the same problem is less likely to return.
-
-The simulator remains an educational environment rather than a replacement for a complete Linux distribution. The Real Linux environment is provided separately for learners who want to practice against an actual Alpine guest.
+Copyright (c) 2026 Shylesh Karthik D. All rights reserved. See `LICENSE`.
