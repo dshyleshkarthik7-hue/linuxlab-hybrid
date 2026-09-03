@@ -374,7 +374,7 @@ export class InBrowserLinuxEngine {
         const startPath = args[0] && !args[0].startsWith('-') ? args[0] : '.';
         const nameIndex = args.indexOf('-name');
         const typeIndex = args.indexOf('-type');
-        const namePattern = nameIndex >= 0 ? args[nameIndex + 1] : undefined;
+        const namePattern = nameIndex >= 0 ? args[nameIndex + 1]?.replace(/^['"]|['"]$/g, '') : undefined;
         const typeFilter = typeIndex >= 0 ? args[typeIndex + 1] : undefined;
         const resolved = this.resolvePath(startPath);
         if (!resolved.node) return "find: '" + startPath + "': No such file or directory";
