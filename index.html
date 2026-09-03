@@ -30,6 +30,7 @@
       <div class="nav-links">
         <a href="#start" class="nav-link">Start Here</a>
         <a href="#terminal" class="nav-link">Practice Linux</a>
+        <a href="#inside" class="nav-link">How It Works</a>
         <a href="#guide" class="nav-link">Install Linux</a>
         <a href="#commands" class="nav-link">200+ Commands</a>
       </div>
@@ -161,6 +162,36 @@
             <button class="btn-preset" data-cmd="clear">🧹 clear</button>
           </div>
         </div>
+      </div>
+    </section>
+
+
+    <!-- Learn What Happens Behind the Command -->
+    <section id="inside" class="guide-section">
+      <div class="section-header">
+        <div class="section-kicker">Learn the Why • Not Just the Commands</div>
+        <h2>What Actually Happens Inside Linux?</h2>
+        <p class="section-description">LinuxLab is designed to explain the journey behind a command in simple words. You should understand what your computer is doing, not only memorize what to type.</p>
+      </div>
+      <div class="step-list">
+        <div class="step-box"><div class="step-num">01</div><h4>You write source code</h4><p>A C file such as <code>hello.c</code> is human-readable instructions. It is not directly understood by the CPU.</p><button class="btn-preset learn-try" data-cmd="nano hello.c">Try opening a C file</button></div>
+        <div class="step-box"><div class="step-num">02</div><h4>The compiler translates it</h4><p>When you run <code>gcc hello.c -o hello</code>, GCC checks your code and translates it through several stages into machine instructions that a processor can execute.</p><button class="btn-preset learn-try" data-cmd="gcc main.c -o hello">Try compiling</button></div>
+        <div class="step-box"><div class="step-num">03</div><h4>An executable file is created</h4><p>The file <code>hello</code> is an executable program. On Linux it commonly uses the ELF format. It contains machine code plus information the operating system needs to load the program, such as program sections, data and metadata.</p><button class="btn-preset learn-try" data-cmd="ls -la">See created files</button></div>
+        <div class="step-box"><div class="step-num">04</div><h4>Linux loads and runs it</h4><p>When you type <code>./hello</code>, the shell asks Linux to start that program. Linux creates a process, prepares memory and gives the CPU instructions to execute.</p><button class="btn-preset learn-try" data-cmd="./hello">Try running it</button></div>
+      </div>
+      <div class="distro-grid">
+        <div class="distro-card"><h3>🧠 Easy analogy</h3><p><strong>Source code</strong> is a recipe written for humans. The <strong>compiler</strong> translates it into instructions. The <strong>executable</strong> is the prepared set of instructions, and the <strong>CPU</strong> follows them step by step.</p></div>
+        <div class="distro-card"><h3>📦 What is inside an executable?</h3><p>Conceptually: machine instructions, program data, information about how the program should be loaded, and references to libraries it may need. You do not need to memorize the format first—LinuxLab can introduce each layer gradually.</p></div>
+        <div class="distro-card"><h3>🐧 What does the shell do?</h3><p>Bash or another shell reads what you type, interprets commands such as pipes and redirection, starts programs and connects their input/output. The shell is a command interpreter—not the Linux kernel itself.</p></div>
+        <div class="distro-card"><h3>⚙️ What does the kernel do?</h3><p>The Linux kernel manages important resources such as processes, memory, filesystems and hardware access. Programs request services through the operating system rather than controlling hardware directly.</p></div>
+      </div>
+      <div class="terminal-presets" style="margin-top:1rem">
+        <div class="preset-title">Quick Knowledge Check</div>
+        <p style="color:var(--text-dim);margin:.4rem 0">What does <code>gcc hello.c -o hello</code> mainly create?</p>
+        <button class="btn-preset quiz-answer" data-correct="false">A text editor</button>
+        <button class="btn-preset quiz-answer" data-correct="true">An executable program named hello</button>
+        <button class="btn-preset quiz-answer" data-correct="false">A new Linux kernel</button>
+        <span id="quizFeedback" aria-live="polite" style="display:block;margin-top:.7rem;color:var(--cyan)"></span>
       </div>
     </section>
 
@@ -648,5 +679,10 @@
     resizeCanvas();
     animateBackground();
   </script>
+
+<script>
+document.querySelectorAll('.learn-try').forEach(btn=>btn.addEventListener('click',()=>{const input=document.getElementById('termInput');const terminal=document.getElementById('terminal');if(input&&terminal){location.hash='terminal';input.value=btn.dataset.cmd||'';input.focus();}}));
+document.querySelectorAll('.quiz-answer').forEach(btn=>btn.addEventListener('click',()=>{const feedback=document.getElementById('quizFeedback');const correct=btn.dataset.correct==='true';feedback.textContent=correct?'✅ Correct! GCC compiles source code and the -o option names the output executable.':'❌ Not quite. Think about what the compiler produces after translating source code.';}));
+</script>
 </body>
 </html>

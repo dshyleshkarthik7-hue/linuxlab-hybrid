@@ -255,3 +255,20 @@ This project and its source code are proprietary. Unauthorized copying, modifica
 ## Learning reliability checklist
 
 LinuxLab uses two clearly labelled engines: **Engine A** is an educational simulator and **Engine B** is real Alpine Linux in v86. Simulator workspace persistence is local to the browser where enabled; the real VM is temporary and should never be used for real secrets. Before release, verify the happy path: pipes, redirection, cp/mv/find, mobile nano controls and boot-to-prompt.
+
+
+## 🎓 Learning philosophy
+
+LinuxLab is built for learners who do not have access to expensive hardware, a dedicated Linux computer, or clear beginner resources. The goal is to teach both **what to type** and **what happens behind the command**.
+
+A typical compilation lesson follows this simple chain:
+
+```text
+source code → compiler → machine code + program metadata → executable → Linux loader → process → CPU execution
+```
+
+The homepage includes an interactive beginner explanation and a knowledge check. Future lessons can use the same pattern: explain the idea, let the learner try a command, then explain the result in plain language.
+
+### Privacy and access
+
+Learning progress and practice data should remain local to the learner's browser unless an explicit future opt-in feature says otherwise. LinuxLab does not require an account for the core learning path.
