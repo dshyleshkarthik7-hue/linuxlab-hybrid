@@ -222,7 +222,9 @@ export class InBrowserLinuxEngine {
   }
 
   private async executeSingle(cmdLine: string, stdin = ''): Promise<string> {
-    const tokens = cmdLine.split(/\s+/).filter(Boolean);
+    // Tokenize simple shell arguments while preserving quoted strings.
+    const tokens = (cmdLine.match(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || [])
+      .map((token) => token.replace(/^(['"])([\s\S]*)\1$/, '$2'));
     const cmd = tokens[0];
     const args = tokens.slice(1);
 
