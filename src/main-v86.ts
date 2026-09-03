@@ -32,8 +32,7 @@ export class V86LinuxTerminal {
   private gccSetupStarted = false;
   private bootStartedAt = 0;
   private lastOutputAt = 0;
-  private readonly GUEST_MEMORY_BYTES = 1024 * 1024 * 1024;
-  private currentProfile: BootProfile = { name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT };
+  private currentProfile: BootProfile = { name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 };
 
   private assetUrl(path: string): string { return new URL(path, document.baseURI).toString(); }
 
@@ -148,7 +147,7 @@ export class V86LinuxTerminal {
   private async destroyEmulator(): Promise<void> { const emulator=this.emulator; if(!emulator)return; this.emulator=null; this.shellReady=false; try { if(typeof emulator.stop==='function') await emulator.stop(); } catch(error){ console.warn('[LinuxLab] v86 stop failed during cleanup',error); } try { if(typeof emulator.destroy==='function') await emulator.destroy(); } catch(error){ console.warn('[LinuxLab] v86 destroy failed during cleanup',error); } }
   private reportBootProgress(): void { if(!this.emulator||this.shellReady||this.state==='error')return; const elapsed=Math.round((performance.now()-this.bootStartedAt)/1000), silent=Math.round((performance.now()-this.lastOutputAt)/1000); if(silent>=10)this.writeLine(`\x1b[33m[Boot monitor] ${elapsed}s elapsed; guest is still booting...\x1b[0m`); this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ISO transfer: ${this.getIsoTransferRate()} • Boot: ${elapsed}s • ${this.connectionSummary()}`); }
   private updateUsageMonitor(): void { if(!this.emulator||this.state==='error')return; const elapsed=Math.max(1,(performance.now()-this.bootStartedAt)/1000); const rate=this.getIsoTransferRate(); const state=this.shellReady?'ready':this.state; this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ISO transfer: ${rate} • Boot: ${Math.round(elapsed)}s • ${this.connectionSummary()} • ${state}`); }
-  private memoryMiB(): number { return Math.round(this.GUEST_MEMORY_BYTES / 1024 / 1024); }
+  private memoryMiB(): number { return this.currentProfile.memoryMiB; }
   private connectionSummary(): string { const connection=(navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection; const downlink=typeof connection?.downlink==='number' ? `${connection.downlink.toFixed(1)} Mbps est.` : 'network estimate unavailable'; const relay=this.getRelay() ? 'relay enabled' : 'guest network off'; return `Net: ${downlink} • ${relay}`; }
   private getIsoTransferRate(): string { try { const entries=performance.getEntriesByName(new URL(ISO_STREAM_ENDPOINT,document.baseURI).href) as PerformanceResourceTiming[]; const entry=entries[entries.length-1]; if(!entry || !entry.responseEnd || entry.transferSize <= 0)return 'measuring…'; const seconds=Math.max(.001,(entry.responseEnd-entry.startTime)/1000); return `${(entry.transferSize/1024/1024/seconds).toFixed(1)} MB/s`; } catch { return 'measuring…'; } }
   private handleBootError(message:string):void { this.stopTimers(); this.writeLine(`\r\n\x1b[1;31m[VM Boot Error] ${message}\x1b[0m`); this.state='error'; this.setStatus(`${this.currentProfile.name} • error`); this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ${this.connectionSummary()} • boot error`); }
