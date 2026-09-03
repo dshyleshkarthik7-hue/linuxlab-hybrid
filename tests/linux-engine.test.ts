@@ -29,7 +29,9 @@ async function run() {
   assert.ok((await e.execute('ls -l')).includes('-rw-r--r--'));
 
   assert.equal(await e.execute('rm c && cat c'), 'cat: c: No such file or directory');
-  assert.equal(await e.execute('touch one two && ls').includes('one') && (await e.execute('ls')).includes('two'), true);
+  const touched = await e.execute('touch one two && ls');
+  assert.ok(touched.includes('one'));
+  assert.ok((await e.execute('ls')).includes('two'));
   assert.equal(await e.execute('mkdir dir && touch dir/file && cp dir/file /root && cat /root/file'), '');
   assert.equal(await e.execute('rm dir'), "rm: cannot remove 'dir': Is a directory");
   assert.equal(await e.execute('rm -r dir'), '');
