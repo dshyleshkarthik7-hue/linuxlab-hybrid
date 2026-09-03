@@ -16,7 +16,7 @@ jobs:
           node-version: 22
           cache: npm
       - name: Install dependencies
-        run: npm install --no-audit --no-fund
+        run: npm ci --no-audit --no-fund
       - name: Happy-path learning checks
         run: npm run test
       - name: Type-check and production build

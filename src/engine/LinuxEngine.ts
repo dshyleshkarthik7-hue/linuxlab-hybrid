@@ -12,6 +12,7 @@ export class InBrowserLinuxEngine {
   public cwdPath: string[] = ['root'];
   public env: Map<string, string>;
   public history: string[] = [];
+  private exitCode = 0;
   private onEditorOpen?: (filename: string, content: string) => void;
 
   constructor() {
@@ -218,7 +219,7 @@ export class InBrowserLinuxEngine {
   private isFailure(output: string): boolean {
     // The educational engine returns shell-style error text instead of POSIX exit
     // codes. Detect the stable error phrases anywhere in the command result.
-    return /(?:command not found|No such file or directory|Not a directory|Is a directory|cannot (?:access|create|remove|stat|touch|move)|missing (?:operand|file operand|destination)|invalid)/i.test(output);
+    return this.exitCode !== 0 || /(?:command not found|No such file or directory|Not a directory|Is a directory|cannot (?:access|create|remove|stat|touch|move)|missing (?:operand|file operand|destination)|invalid)/i.test(output);
   }
 
   private async executeSingle(cmdLine: string, stdin = ''): Promise<string> {
@@ -228,6 +229,7 @@ export class InBrowserLinuxEngine {
     const cmd = tokens[0];
     const args = tokens.slice(1);
 
+    this.exitCode = 0;
     switch (cmd) {
       case 'clear':
         return '\x1b[2J\x1b[H';
@@ -399,6 +401,8 @@ export class InBrowserLinuxEngine {
         return results.join('\n');
       }
 
+      case 'false': this.exitCode = 1; return '';
+      case 'true': return '';
       case 'cat': {
         if (!args.length) return stdin;
         const output: string[] = [];
@@ -588,6 +592,7 @@ export class InBrowserLinuxEngine {
       }
 
       default:
+        this.exitCode = 127;
         return `bash: ${cmd}: command not found`;
     }
   }

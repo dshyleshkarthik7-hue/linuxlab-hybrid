@@ -38,7 +38,16 @@ async function run() {
   assert.equal(await e.execute('rm -r dir'), '');
   assert.equal(await e.execute('echo one two | wc -w'), '2');
 
-  console.log('LinuxLab happy-path engine checks passed');
+
+  // Regression coverage for shell semantics and common learner workflows.
+  assert.equal(await e.execute('true && echo ok'), 'ok');
+  assert.equal(await e.execute('false && echo no'), '');
+  assert.equal(await e.execute('false || echo fallback'), 'fallback');
+  assert.equal(await e.execute('echo first; false; echo last'), 'first\nlast');
+  assert.equal((await e.execute('echo alpha | grep alpha | wc -l')).trim(), '1');
+  assert.equal(await e.execute('echo hi > quoted && cat quoted'), 'hi');
+  assert.ok((await e.execute('find /root -name "*.java"')).includes('/root/Main.java'));
+\n  console.log('LinuxLab happy-path engine checks passed');
 }
 
 run().catch((err) => {
