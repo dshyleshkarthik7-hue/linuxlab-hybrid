@@ -318,6 +318,35 @@ export class InBrowserLinuxEngine {
         return '';
       }
 
+      case 'find': {
+        const startPath = args[0] && !args[0].startsWith('-') ? args[0] : '.';
+        const nameIndex = args.indexOf('-name');
+        const typeIndex = args.indexOf('-type');
+        const namePattern = nameIndex >= 0 ? args[nameIndex + 1] : undefined;
+        const typeFilter = typeIndex >= 0 ? args[typeIndex + 1] : undefined;
+        const resolved = this.resolvePath(startPath);
+        if (!resolved.node) return "find: '" + startPath + "': No such file or directory";
+        const results: string[] = [];
+        const matches = (name: string) => {
+          if (!namePattern) return true;
+          if (!namePattern.includes('*')) return name === namePattern;
+          const parts = namePattern.split('*');
+          return name.startsWith(parts[0]) && name.endsWith(parts[parts.length - 1]);
+        };
+        const walk = (current: VirtualNode, currentPath: string, isRoot = false) => {
+          const typeOk = !typeFilter || (typeFilter === 'f' && current.type === 'file') || (typeFilter === 'd' && current.type === 'dir');
+          if (!isRoot && typeOk && matches(current.name)) results.push(currentPath);
+          if (current.type === 'dir' && current.children) {
+            for (const child of current.children.values()) {
+              walk(child, currentPath === '/' ? '/' + child.name : currentPath + '/' + child.name);
+            }
+          }
+        };
+        const base = startPath === '.' ? this.getCwd() : startPath.replace(/\/$/, '') || '/';
+        walk(resolved.node, base, true);
+        return results.join('\n');
+      }
+
       case 'grep': {
         if (!args[0]) return 'grep: missing search pattern';
         const pat = args[0];
