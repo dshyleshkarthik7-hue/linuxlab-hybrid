@@ -199,7 +199,9 @@ export class InBrowserLinuxEngine {
   }
 
   private isFailure(output: string): boolean {
-    return /(?:^|\n)(?:bash: )?(?:[a-zA-Z0-9_.-]+: )?(?:command not found|cannot |missing |invalid |No such file|Not a directory)/m.test(output);
+    // The educational engine returns shell-style error text instead of POSIX exit
+    // codes. Detect the stable error phrases anywhere in the command result.
+    return /(?:command not found|No such file or directory|Not a directory|Is a directory|cannot (?:access|create|remove|stat|touch|move)|missing (?:operand|file operand|destination)|invalid)/i.test(output);
   }
 
   private async executeSingle(cmdLine: string, stdin = ''): Promise<string> {
