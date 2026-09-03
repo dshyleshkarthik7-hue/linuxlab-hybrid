@@ -154,8 +154,7 @@ export class InBrowserLinuxEngine {
       const stages = line.split('|').map((s) => s.trim());
       let pipeOut = '';
       for (const st of stages) {
-        const cmd = pipeOut ? `${st} ${pipeOut}` : st;
-        pipeOut = await this.executeSingle(cmd);
+        pipeOut = await this.executeSingle(st, pipeOut);
       }
       return pipeOut;
     }
@@ -172,7 +171,7 @@ export class InBrowserLinuxEngine {
     return this.executeSingle(line);
   }
 
-  private async executeSingle(cmdLine: string): Promise<string> {
+  private async executeSingle(cmdLine: string, stdin = ''): Promise<string> {
     const tokens = cmdLine.split(/\s+/).filter(Boolean);
     const cmd = tokens[0];
     const args = tokens.slice(1);
@@ -294,9 +293,10 @@ export class InBrowserLinuxEngine {
       }
 
       case 'grep': {
-        if (args.length < 2) return 'grep: usage: grep PATTERN FILE';
-        const [pat, file] = args;
-        const data = this.readFile(file);
+        if (!args[0]) return 'grep: missing search pattern';
+        const pat = args[0];
+        const file = args[1];
+        const data = file ? this.readFile(file) : stdin;
         if (data === null) return `grep: ${file}: No such file or directory`;
         return data.split('\n').filter((l) => l.includes(pat)).join('\n');
       }
@@ -343,8 +343,7 @@ export class InBrowserLinuxEngine {
       case 'head':
       case 'tail': {
         const file = args.find((a) => !a.startsWith('-'));
-        if (!file) return `${cmd}: missing file operand`;
-        const data = this.readFile(file);
+        const data = file ? this.readFile(file) : stdin;
         if (data === null) return `${cmd}: ${file}: No such file or directory`;
         const lines = data.split('\n');
         const countArg = args.find((a) => /^-\d+$/.test(a));
@@ -354,8 +353,7 @@ export class InBrowserLinuxEngine {
 
       case 'wc': {
         const file = args.find((a) => !a.startsWith('-'));
-        if (!file) return 'wc: missing file operand';
-        const data = this.readFile(file);
+        const data = file ? this.readFile(file) : stdin;
         if (data === null) return `wc: ${file}: No such file or directory`;
         const lines = data ? data.split('\n').length : 0;
         const words = data.trim() ? data.trim().split(/\s+/).length : 0;

@@ -209,11 +209,29 @@ The deployment also sends defensive browser headers including `X-Content-Type-Op
 
 Because this is an emulator running untrusted guest software in a browser, users should still treat the environment as a development/demo sandbox rather than a security boundary for sensitive data.
 
-## 🔄 CI
+## 🔄 CI and automated checks
 
-Every push to `main` and every pull request runs a reproducible Node 22 build using `npm ci` followed by `npm run build`.
+Every push to `main` and every pull request runs Node 22 checks in GitHub Actions.
 
-This catches TypeScript and production-bundle regressions before deployment.
+The current pipeline:
+
+1. Installs project dependencies.
+2. Runs the Linux engine happy-path tests.
+3. Runs TypeScript checking.
+4. Creates the production Vite build.
+
+The automated checks cover important learner workflows including:
+
+- `pwd` and `cd`
+- changing directories and returning to `/root`
+- redirection with `>`
+- sequential commands with `&&`
+- pipes such as `echo alpha | grep alpha`
+- `cp` and `mv`
+- `find`
+- `ls -la`
+
+The goal is simple: common learning commands should not silently regress.
 
 ## 🛠️ Technology stack
 
