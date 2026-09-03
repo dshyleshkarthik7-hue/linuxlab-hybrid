@@ -15,10 +15,9 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      # The repository currently keeps a legacy lockfile while package metadata
-      # evolves. npm install refreshes it deterministically in CI without
-      # blocking learners on an out-of-sync lockfile.
       - name: Install dependencies
         run: npm install --no-audit --no-fund
+      - name: Happy-path learning checks
+        run: npm run test
       - name: Type-check and production build
         run: npm run build

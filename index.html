@@ -166,6 +166,16 @@
     </section>
 
 
+<section id="learning-path" class="guide-section">
+<div class="section-header"><div class="section-kicker">Your Free Learning Journey</div><h2>Learn Linux Step by Step</h2><p class="section-description">Do not memorize everything. Learn one idea, understand why it works, try it, then solve a small challenge.</p></div>
+<div class="step-list">
+<div class="step-box"><div class="step-num">🌱</div><h4>Beginner: Navigate</h4><p>Understand where you are and move around.</p><button class="btn-preset lesson-try" data-cmd="pwd && ls">▶ Try pwd and ls</button></div>
+<div class="step-box"><div class="step-num">📁</div><h4>Files: Create and organize</h4><p>Practice mkdir, touch, cp and mv safely.</p><button class="btn-preset lesson-try" data-cmd="mkdir practice && touch practice/hello.txt && ls practice">▶ Build a practice folder</button></div>
+<div class="step-box"><div class="step-num">🔎</div><h4>Text: Search and connect</h4><p>Learn grep, pipes and redirection.</p><button class="btn-preset lesson-try" data-cmd="ls | grep c">▶ Try a pipe</button></div>
+<div class="step-box"><div class="step-num">💻</div><h4>Build: Compile and run</h4><p>Write source code, compile it and understand the executable.</p><button class="btn-preset lesson-try" data-cmd="gcc main.c -o program && ./program">▶ Compile a program</button></div>
+</div>
+<div class="terminal-presets" style="margin-top:1rem"><div class="preset-title">🎮 Mini Challenge: Linux Detective</div><p style="color:var(--text-dim)">Can you list files and find the C source file? Try <code>ls -la | grep ".c"</code>.</p><button class="btn-preset lesson-try" data-cmd='ls -la | grep ".c"'>🕵️ Start challenge</button><button class="btn-preset" id="tourStart">✨ Start 60-second guided tour</button><span id="tourMessage" aria-live="polite" style="display:block;margin-top:.7rem;color:var(--cyan)"></span></div>
+</section>
     <!-- Learn What Happens Behind the Command -->
     <section id="inside" class="guide-section">
       <div class="section-header">
@@ -684,5 +694,9 @@
 document.querySelectorAll('.learn-try').forEach(btn=>btn.addEventListener('click',()=>{const input=document.getElementById('termInput');const terminal=document.getElementById('terminal');if(input&&terminal){location.hash='terminal';input.value=btn.dataset.cmd||'';input.focus();}}));
 document.querySelectorAll('.quiz-answer').forEach(btn=>btn.addEventListener('click',()=>{const feedback=document.getElementById('quizFeedback');const correct=btn.dataset.correct==='true';feedback.textContent=correct?'✅ Correct! GCC compiles source code and the -o option names the output executable.':'❌ Not quite. Think about what the compiler produces after translating source code.';}));
 </script>
-</body>
+<script>
+document.querySelectorAll('.lesson-try,.learn-try').forEach(b=>b.addEventListener('click',()=>{const i=document.getElementById('termInput');if(i){location.hash='terminal';i.value=b.dataset.cmd||'';i.focus();}}));
+const tourSteps=[['Step 1/4: You are in a folder. Try pwd.','pwd'],['Step 2/4: List what is here with ls.','ls'],['Step 3/4: Open a source file with nano main.c.','nano main.c'],['Step 4/4: Compile it with GCC, then run the program.','gcc main.c -o program && ./program']];
+let tourIndex=0;document.getElementById('tourStart')?.addEventListener('click',()=>{tourIndex=0;const i=document.getElementById('termInput'),m=document.getElementById('tourMessage');const next=()=>{if(tourIndex>=tourSteps.length){m.textContent='🎉 Tour complete! Next, explore the How It Works section and Real Linux.';return;}const [text,cmd]=tourSteps[tourIndex++];m.textContent=text;i.value=cmd;i.focus();};location.hash='terminal';next();i.onkeydown=e=>{if(e.key==='Enter')setTimeout(next,600);};});
+</script></body>
 </html>
