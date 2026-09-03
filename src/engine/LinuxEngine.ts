@@ -292,6 +292,26 @@ export class InBrowserLinuxEngine {
         return data;
       }
 
+      case 'cp': {
+        if (args.length < 2) return 'cp: missing file operand';
+        const [source, destination] = args;
+        const sourceNode = this.resolvePath(source).node;
+        if (!sourceNode) return `cp: cannot stat '${source}': No such file or directory`;
+        if (sourceNode.type !== 'file') return `cp: -r not specified; omitting directory '${source}'`;
+        this.writeFile(destination, sourceNode.content || '');
+        return '';
+      }
+
+      case 'mv': {
+        if (args.length < 2) return 'mv: missing destination file operand';
+        const [source, destination] = args;
+        const sourceData = this.readFile(source);
+        if (sourceData === null) return `mv: cannot stat '${source}': No such file or directory`;
+        this.writeFile(destination, sourceData);
+        this.deletePath(source);
+        return '';
+      }
+
       case 'grep': {
         if (!args[0]) return 'grep: missing search pattern';
         const pat = args[0];
@@ -319,12 +339,12 @@ export class InBrowserLinuxEngine {
       case 'which': {
         const target = args[0];
         if (!target) return 'which: missing argument';
-        const known = new Set(['bash', 'sh', 'ls', 'cd', 'mkdir', 'touch', 'rm', 'cat', 'grep', 'head', 'tail', 'gcc', 'clang', 'javac', 'java', 'nano', 'vi', 'vim', 'ps', 'top', 'htop', 'free', 'df', 'ping', 'curl', 'ip', 'ifconfig', 'chmod', 'pwd', 'whoami']);
+        const known = new Set(['bash', 'sh', 'ls', 'cd', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'cat', 'grep', 'head', 'tail', 'gcc', 'clang', 'javac', 'java', 'nano', 'vi', 'vim', 'ps', 'top', 'htop', 'free', 'df', 'ping', 'curl', 'ip', 'ifconfig', 'chmod', 'pwd', 'whoami']);
         return known.has(target) ? `/usr/bin/${target}` : '';
       }
 
       case 'help':
-        return 'LinuxLab simulator commands: ls cd pwd mkdir touch rm cat grep head tail wc sort uniq echo printf export env history which gcc clang javac java chmod stat ps top free df ping curl ip ifconfig. C runtime: int/float/char/string, arrays, functions, if/else, for/while, break/continue, printf/puts/scanf/getchar, common string/math helpers. Use ./a.out INPUT... for simulated stdin; use Engine B + real GCC for full C/Linux.';
+        return 'LinuxLab simulator commands: ls cd pwd mkdir touch rm cp mv cat grep head tail wc sort uniq echo printf export env history which gcc clang javac java chmod stat ps top free df ping curl ip ifconfig. C runtime: int/float/char/string, arrays, functions, if/else, for/while, break/continue, printf/puts/scanf/getchar, common string/math helpers. Use ./a.out INPUT... for simulated stdin; use Engine B + real GCC for full C/Linux.';
 
       case 'history':
         return this.history.map((entry, index) => `${String(index + 1).padStart(4, ' ')}  ${entry}`).join('\n');
