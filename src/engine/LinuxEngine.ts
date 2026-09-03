@@ -332,9 +332,9 @@ export class InBrowserLinuxEngine {
         return '';
       }
       case 'rm': {
+        const recursive = args.some((a) => a === '-r' || a === '-R' || a === '--recursive' || /^-[a-zA-Z]*[rR][a-zA-Z]*$/.test(a));
         const targets = args.filter((a) => !a.startsWith('-'));
         if (!targets.length) return 'rm: missing operand';
-        const recursive = args.some((a) => a.includes('r'));
         for (const target of targets) {
           const { node, parent, name } = this.resolvePath(target);
           if (!node || !parent?.children) return `rm: cannot remove '${target}': No such file or directory`;

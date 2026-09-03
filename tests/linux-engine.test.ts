@@ -34,6 +34,7 @@ async function run() {
   assert.ok((await e.execute('ls')).includes('two'));
   assert.equal(await e.execute('mkdir dir && touch dir/file && cp dir/file /root && cat /root/file'), '');
   assert.equal(await e.execute('rm dir'), "rm: cannot remove 'dir': Is a directory");
+  assert.equal(await e.execute('test -d dir'), '');
   assert.equal(await e.execute('rm -r dir'), '');
   assert.equal(await e.execute('echo one two | wc -w'), '2');
 
