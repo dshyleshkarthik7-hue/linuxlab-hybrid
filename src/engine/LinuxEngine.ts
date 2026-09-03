@@ -146,52 +146,69 @@ export class InBrowserLinuxEngine {
     if (!line) return '';
     this.history.push(line);
 
-    if (line.includes('&&')) {
-      const subCmds = line.split('&&').map((s) => s.trim());
-      let combinedOut = '';
-      for (const cmd of subCmds) {
-        const out = await this.execute(cmd);
-        if (this.isFailure(out)) break;
-        if (out) combinedOut += (combinedOut ? '\n' : '') + out;
+    const splitOperator = (input: string, operator: string): string[] => {
+      const parts: string[] = []; let current = ''; let quote = ''; let escaped = false;
+      for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (escaped) { current += ch; escaped = false; continue; }
+        if (ch === '\\') { current += ch; escaped = true; continue; }
+        if ((ch === '"' || ch === "'")) { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; }
+        if (!quote && input.startsWith(operator, i)) { parts.push(current.trim()); current = ''; i += operator.length - 1; continue; }
+        current += ch;
       }
-      return combinedOut;
+      parts.push(current.trim());
+      return parts.filter(Boolean);
+    };
+
+    const orParts = splitOperator(line, '||');
+    if (orParts.length > 1) {
+      let last = '';
+      for (const part of orParts) {
+        last = await this.execute(part);
+        if (!this.isFailure(last)) return last;
+      }
+      return last;
     }
 
-    if (line.includes('||')) {
-      const subCmds = line.split('||').map((s) => s.trim());
-      let lastOut = '';
-      for (const cmd of subCmds) {
-        lastOut = await this.execute(cmd);
-        if (!this.isFailure(lastOut)) break;
-      }
-      return lastOut;
-    }
-
-    if (line.includes(';')) {
-      const subCmds = line.split(';').map((s) => s.trim()).filter(Boolean);
+    const andParts = splitOperator(line, '&&');
+    if (andParts.length > 1) {
       const outputs: string[] = [];
-      for (const cmd of subCmds) {
-        const out = await this.execute(cmd);
+      for (const part of andParts) {
+        const out = await this.execute(part);
         if (out) outputs.push(out);
+        if (this.isFailure(out)) return outputs.join('\n');
       }
       return outputs.join('\n');
     }
 
-    if (line.includes('|')) {
-      const stages = line.split('|').map((s) => s.trim());
+    const sequenceParts = splitOperator(line, ';');
+    if (sequenceParts.length > 1) {
+      const outputs: string[] = [];
+      for (const part of sequenceParts) { const out = await this.execute(part); if (out) outputs.push(out); }
+      return outputs.join('\n');
+    }
+
+    const pipeParts = splitOperator(line, '|');
+    if (pipeParts.length > 1) {
       let pipeOut = '';
-      for (const st of stages) {
-        pipeOut = await this.executeSingle(st, pipeOut);
-      }
+      for (const stage of pipeParts) pipeOut = await this.executeSingle(stage, pipeOut);
       return pipeOut;
     }
 
-    if (line.includes('>')) {
-      const append = line.includes('>>');
-      const [cmdPart, targetFile] = line.split(append ? '>>' : '>').map((s) => s.trim());
-      const res = await this.executeSingle(cmdPart);
-      const prev = append ? this.readFile(targetFile) || '' : '';
-      this.writeFile(targetFile, prev + (prev && !prev.endsWith('\n') ? '\n' : '') + res);
+    // Basic redirection. Keep quoted filenames intact and prefer >> over >.
+    const appendParts = splitOperator(line, '>>');
+    if (appendParts.length === 2) {
+      const res = await this.executeSingle(appendParts[0]);
+      const target = appendParts[1].replace(/^['"]|['"]$/g, '');
+      const prev = this.readFile(target) || '';
+      if (!this.writeFile(target, prev + res)) return `bash: ${target}: No such file or directory`;
+      return '';
+    }
+    const redirectParts = splitOperator(line, '>');
+    if (redirectParts.length === 2) {
+      const res = await this.executeSingle(redirectParts[0]);
+      const target = redirectParts[1].replace(/^['"]|['"]$/g, '');
+      if (!this.writeFile(target, res)) return `bash: ${target}: No such file or directory`;
       return '';
     }
 
