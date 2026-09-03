@@ -378,6 +378,17 @@ export class InBrowserLinuxEngine {
         return results.join('\n');
       }
 
+      case 'cat': {
+        if (!args.length) return stdin;
+        const output: string[] = [];
+        for (const file of args) {
+          const data = this.readFile(file);
+          if (data === null) return `cat: ${file}: No such file or directory`;
+          output.push(data);
+        }
+        return output.join('');
+      }
+
       case 'grep': {
         if (!args[0]) return 'grep: missing search pattern';
         const pat = args[0];
