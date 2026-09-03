@@ -150,12 +150,25 @@ class LinuxLabApp {
   }
 
   private async executeTerminalCommand(cmd: string): Promise<void> {
-    // Beginner-friendly interactive input: ask before executing educational programs that use scanf.
-    if (/^\.\/\S+/.test(cmd) && !this.waitingForProgramInput) {
+    // The learning runtime normally receives stdin as arguments. Make scanf feel
+    // interactive by pausing the terminal and collecting those values first.
+    if (this.waitingForProgramInput) {
+      this.waitingForProgramInput = false;
+      const pending = this.pendingProgramCommand;
+      this.pendingProgramCommand = '';
+      cmd = `${pending} ${cmd.trim()}`.trim();
+    } else {
       const source = this.engine.readFile('/root/main.c') || '';
-      if (/scanf\s*\(/.test(source)) { this.waitingForProgramInput = true; this.pendingProgramCommand = cmd; this.simTerm.write('Program input required. Enter value(s), then press Enter: '); return; }
+      const executesProgram = /(^|&&\s*)\.\/[^\s]+(?:\s|$)/.test(cmd);
+      const alreadyHasInput = /\.\/[^\s]+\s+[^&\s]/.test(cmd);
+      if (executesProgram && /scanf\s*\(/.test(source) && !alreadyHasInput) {
+        this.waitingForProgramInput = true;
+        this.pendingProgramCommand = cmd;
+        this.simTerm.writeln('\x1b[33m[Program paused for input]\x1b[0m');
+        this.simTerm.write('Enter value(s) (for example: 5), then press Enter: ');
+        return;
+      }
     }
-    if (this.waitingForProgramInput) { this.waitingForProgramInput = false; cmd = `${this.pendingProgramCommand} ${cmd}`; this.pendingProgramCommand = ''; }
 
     try {
       const output = await this.engine.execute(cmd);
