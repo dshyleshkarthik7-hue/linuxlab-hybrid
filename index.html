@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>\n  <meta name="msvalidate.01" content="282830306BEF15F98B821C6CB28EA013" />
+<head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LinuxLab — Browser Linux Simulator & Real x86 Emulator</title>
-  <meta name="description" content="LinuxLab is a browser-based systems laboratory with an educational POSIX simulator demo and a real x86 Alpine Linux emulator powered by WebAssembly and v86." />
+  <title>LinuxLab — Learn Linux Safely: Sandbox, Commands & Real Linux</title>
+  <meta name="description" content="LinuxLab helps beginners learn Linux safely with a simulated learning sandbox, 200+ command reference, and a real Alpine Linux environment in the browser." />
   <meta name="robots" content="index, follow, max-image-preview:large" />
   <link rel="canonical" href="https://linuxlab-hybrid.netlify.app/" />
   <link rel="sitemap" type="application/xml" href="/sitemap.xml" />
@@ -15,11 +15,9 @@
   <meta name="twitter:card" content="summary" />
   <link rel="stylesheet" href="./src/style.css" />
   <meta name="google-site-verification" content="2nUtwedGSNvf4DfIFELLALuh8GMCvr74mcaw-RDu4Xw" />
+  <meta name="msvalidate.01" content="282830306BEF15F98B821C6CB28EA013" />
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"LinuxLab","applicationCategory":"DeveloperApplication","operatingSystem":"Web","url":"https://linuxlab-hybrid.netlify.app/","description":"An online Linux terminal and browser-based Alpine Linux emulator."}</script>
-
-<style>
-.learn-start{position:relative;overflow:hidden}.learn-start:before{content:"";position:absolute;width:220px;height:220px;border-radius:50%;background:rgba(56,189,248,.08);filter:blur(20px);right:-70px;top:-80px;animation:linuxlabFloat 7s ease-in-out infinite}.learn-start>*{position:relative}.learn-card{transition:transform .25s ease,border-color .25s ease,box-shadow .25s ease}.learn-card:hover{transform:translateY(-5px);border-color:var(--cyan);box-shadow:0 14px 30px rgba(56,189,248,.12)}.session-note,.install-basics{margin:18px 0 0;padding:12px 14px;border-left:3px solid #facc15;background:rgba(250,204,21,.06);border-radius:8px;color:var(--text-muted);font-size:.85rem}.install-basics{border-left-color:var(--green);background:rgba(74,222,128,.06)}@keyframes linuxlabFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(24px)}}@media(prefers-reduced-motion:reduce){.learn-start:before{animation:none}.learn-card:hover{transform:none}}
-</style></head>
+</head>
 <body>
 
   <canvas id="bgCanvas"></canvas>
@@ -30,8 +28,8 @@
         ⚡ Linux<span>Lab</span>
       </div>
       <div class="nav-links">
-        <a href="#start" class="nav-link">Getting Started</a>
-        <a href="#terminal" class="nav-link">Practice</a>
+        <a href="#start" class="nav-link">Start Here</a>
+        <a href="#terminal" class="nav-link">Practice Linux</a>
         <a href="#guide" class="nav-link">Install Linux</a>
         <a href="#commands" class="nav-link">200+ Commands</a>
       </div>
@@ -40,47 +38,152 @@
 
   <main class="container">
     <header class="hero">
-      <div class="hero-badge">⚡ DUAL-REALITY SYSTEMS LABORATORY</div>
-      <h1>Learn Linux From the Beginning</h1>
-      <p>Start safely in your browser, learn commands step by step, then try a real Alpine Linux system. No technical experience is required.</p>
+      <div class="hero-badge">⚡ LEARN • PRACTICE • EXPLORE</div>
+      <h1>Learn Linux Without Fear</h1>
+      <p>Start with a safe learning sandbox, understand real Linux commands, and when you are ready, boot a real Alpine Linux system directly in your browser.</p>
     </header>
 
-    <section id="start" class="guide-section learn-start">
+    <section class="launch-grid" aria-label="LinuxLab engines">
+      <div class="launch-card">
+        <div>
+          <span class="card-tag">🧪 LEARNING MODE • SAFE SIMULATION</span>
+          <h2>Linux Learning Simulator</h2>
+          <p>Practice Linux-style commands, files, folders, editors and beginner programming in a safe environment. <strong>This is a simulator for learning — it is not a real Linux kernel.</strong></p>
+        </div>
+        <a href="./simulator.html" target="_blank" rel="noopener noreferrer" class="btn-launch">
+          🚀 Open Learning Simulator (New Tab) ↗
+        </a>
+      </div>
+
+      <div class="launch-card">
+        <div>
+          <span class="card-tag">⚡ QUICK PRACTICE • NO BOOT WAIT</span>
+          <h2>Interactive Command Sandbox</h2>
+          <p>Try commands instantly, use presets, edit files and explore the terminal below. <strong>Results are designed for learning and are simulated.</strong></p>
+        </div>
+        <a href="#terminal" class="btn-launch">
+          🧪 Practice Commands Below ↓
+        </a>
+      </div>
+
+      <div class="launch-card vm">
+        <div>
+          <span class="card-tag">🐧 REAL • BROWSER-BASED LINUX MACHINE</span>
+          <h2>Real Alpine Linux</h2>
+          <p>When you are ready, boot a real Linux environment in your browser. Use Quick Linux with <strong>256 MB RAM</strong> or the Developer Alpine profile with <strong>1 GB RAM</strong> for heavier development work.</p>
+        </div>
+        <a href="./index-v86.html" target="_blank" rel="noopener noreferrer" class="btn-launch">
+          🐧 Boot Real Linux (New Tab) ↗
+        </a>
+      </div>
+    </section>
+
+    <section id="start" class="guide-section">
       <div class="section-header">
         <div class="section-kicker">Start Here • Beginner Friendly</div>
-        <h2>What is Linux, and how can you try it?</h2>
-        <p class="section-description">Linux is an operating system—the main software that helps a computer run, similar to Windows or macOS. You do not have to erase or change your computer to start learning it.</p>
+        <h2>What is Linux, and how can you use it?</h2>
+        <p class="section-description">Linux is an operating system, like Windows or macOS. You can learn it without deleting Windows or changing your computer.</p>
       </div>
       <div class="distro-grid">
-        <div class="distro-card"><h3>🌱 Best for Beginners: Ubuntu</h3><p>Easy to start with, large community and lots of guides.</p><a class="btn-exec" href="https://ubuntu.com/download/desktop" target="_blank" rel="noopener">Download Ubuntu ↗</a></div>
-        <div class="distro-card"><h3>💻 VirtualBox Method</h3><p>Recommended first: install Oracle VM VirtualBox, create a VM, attach a Linux ISO and learn without changing your main operating system.</p><a class="btn-exec" href="https://www.virtualbox.org/" target="_blank" rel="noopener">Download VirtualBox ↗</a></div>
-        <div class="distro-card"><h3>⚡ Lightweight: Alpine</h3><p>Small and fast, useful for advanced learners and the real environment inside LinuxLab.</p><a class="btn-exec" href="https://alpinelinux.org/downloads/" target="_blank" rel="noopener">Download Alpine ↗</a></div>
-        <div class="distro-card"><h3>🔀 Dual Boot</h3><p>Install Linux beside your current OS. Back up first and follow your distribution's official installation guide.</p></div>
+        <div class="distro-card"><h3>🌐 LinuxLab in your browser</h3><p>The easiest first step. Learn commands safely, explore the sandbox and later try real Linux without installing anything.</p></div>
+        <div class="distro-card"><h3>💻 VirtualBox</h3><p>Run Linux inside a window while keeping your current operating system. We recommend Oracle VM VirtualBox for beginners.</p><a class="btn-launch" href="https://www.virtualbox.org/" target="_blank" rel="noopener noreferrer">Get Oracle VM VirtualBox ↗</a></div>
+        <div class="distro-card"><h3>🔀 Dual boot</h3><p>Keep your existing operating system and Linux on the same computer, then choose one when the computer starts. Back up important files first.</p></div>
+        <div class="distro-card"><h3>🖥️ Full Linux installation</h3><p>Use Linux as your main operating system when you are comfortable with installation, updates, backups and recovery.</p></div>
+      </div>
+      <div class="step-list">
+        <div class="step-box"><div class="step-num">01</div><h4>Learn the basics</h4><p>Start with <code>pwd</code>, <code>ls</code>, <code>cd</code>, <code>mkdir</code> and file commands. LinuxLab explains and lets you practice them.</p></div>
+        <div class="step-box"><div class="step-num">02</div><h4>Use the 200+ command guide</h4><p>Search commands by category and use the examples as a learning reference instead of trying to memorize everything at once.</p></div>
+        <div class="step-box"><div class="step-num">03</div><h4>Explore networking</h4><p>Learn what commands such as <code>ping</code>, <code>ip</code> and <code>ifconfig</code> are used for. Simulator networking is educational; real networking depends on the environment.</p></div>
+        <div class="step-box"><div class="step-num">04</div><h4>Move to real Linux</h4><p>Boot the real Alpine environment when you want genuine Linux behavior. <strong>Sessions are temporary:</strong> closing or restarting can erase files and command history.</p></div>
+      </div>
+    </section>
+
+    <!-- Terminal Workspace -->
+    <section id="terminal">
+      <div class="section-header">
+        <div class="section-kicker">Interactive Sandbox Demo</div>
+        <h2>Practice Linux Commands Safely</h2>
+        <p class="section-description">This is the LinuxLab learning sandbox. Try commands, edit files and experiment freely — the environment is simulated and is not a real Linux kernel.</p>
       </div>
 
-      <div class="install-basics"><strong>Minimum comfortable starting point:</strong> 4 GB RAM and about 25 GB free storage. For a smoother desktop experience, 8 GB RAM and 50 GB+ free storage are recommended.</div>
+      <div class="terminal-container">
+        <div class="terminal-topbar">
+          <div class="terminal-dots">
+            <div class="dot dot-red"></div>
+            <div class="dot dot-yellow"></div>
+            <div class="dot dot-green"></div>
+          </div>
+          <span id="termStatusBadge" class="terminal-meta">root@linuxlab: ~ (Interactive POSIX Shell)</span>
+        </div>
+
+        <div class="terminal-workspace-body">
+          <div class="terminal-view">
+            <!-- Embedded Nano -->
+            <div id="nanoOverlay" class="nano-overlay">
+              <div class="nano-header">
+                <span id="nanoFilename">GNU nano 7.2 - File: abc.c</span>
+                <span>[ Modified ]</span>
+              </div>
+              <textarea id="nanoEditor" class="nano-textarea" spellcheck="false"></textarea>
+              <div class="nano-footer">
+                <button class="nano-btn" id="btnNanoSave">^O WriteOut & ^X Exit</button>
+                <button class="nano-btn" id="btnNanoClose">Cancel</button>
+                <span>Click <strong>WriteOut & Exit</strong> to commit changes into Virtual File System.</span>
+              </div>
+            </div>
+
+            <!-- Terminal Output Logs -->
+            <div id="terminalLogs" class="terminal-logs">
+              <div class="log-line" style="color: var(--cyan); font-weight: 600;">⚡ Welcome to the LinuxLab Learning Sandbox.</div>
+              <div class="log-line" style="color: var(--text-dim);">This workspace is simulated for learning. Use Real Linux above when you want an actual Linux environment.</div>
+              <div class="log-line" style="color: var(--text-dim);">Try "help", "ls -la", "cd /tmp", "nano main.c", "gcc main.c -o table && ./table", "ping 8.8.8.8", or click a preset.</div>
+            </div>
+
+            <!-- Command Input Line -->
+            <div class="terminal-input-bar">
+              <span id="terminalPrompt" class="log-prompt">root@linuxlab:~#</span>
+              <input type="text" id="termInput" class="term-input" placeholder="Type a linux command..." autocomplete="off" spellcheck="false" />
+            </div>
+          </div>
+
+          <!-- Try These Commands -->
+          <div class="terminal-presets">
+            <div class="preset-title">Quick Command Presets</div>
+            <button class="btn-preset" data-cmd="nano main.c">📝 nano main.c</button>
+            <button class="btn-preset" data-cmd="gcc main.c -o table && ./table">⚡ gcc & execute</button>
+            <button class="btn-preset" data-cmd="ping 8.8.8.8">🌐 ping 8.8.8.8</button>
+            <button class="btn-preset" data-cmd="curl https://api.linuxlab.internal">📡 curl API</button>
+            <button class="btn-preset" data-cmd="htop">📊 htop monitor</button>
+            <button class="btn-preset" data-cmd="ifconfig">🔌 ifconfig / ip a</button>
+            <button class="btn-preset" data-cmd="ps aux">⚙️ ps aux</button>
+            <button class="btn-preset" data-cmd="cat /etc/os-release">📄 cat /etc/os-release</button>
+            <button class="btn-preset" data-cmd="ls -la">📁 ls -la</button>
+            <button class="btn-preset" data-cmd="clear">🧹 clear</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Installation Guide -->
+    <section id="guide" class="guide-section">
+      <div class="section-header">
+        <div class="section-kicker">Your Next Step • Laptop or Desktop</div>
+        <h2>How to Install Linux When You Are Ready</h2>
+        <p class="section-description">Start with a virtual machine first if you are new to Linux. It lets you learn without changing your main computer.</p>
+      </div>
+
+      <div class="distro-grid">
+        <div class="distro-card"><h3>🌱 Ubuntu — easiest starting point</h3><p>A popular beginner desktop Linux with extensive documentation and community help.</p><a class="btn-launch" href="https://ubuntu.com/download/desktop" target="_blank" rel="noopener noreferrer">Download Ubuntu ↗</a></div>
+        <div class="distro-card"><h3>💻 VirtualBox — recommended first method</h3><p>Install Linux inside a virtual machine and keep your current operating system unchanged.</p><a class="btn-launch" href="https://www.virtualbox.org/" target="_blank" rel="noopener noreferrer">Download VirtualBox ↗</a></div>
+        <div class="distro-card"><h3>⚡ Alpine Linux — lightweight</h3><p>Small and fast, and the Linux family used by LinuxLab's real browser environment.</p><a class="btn-launch" href="https://alpinelinux.org/downloads/" target="_blank" rel="noopener noreferrer">Download Alpine ↗</a></div>
+        <div class="distro-card"><h3>🧰 Other distributions</h3><p>Fedora, Debian and others are excellent choices once you know what kind of desktop and workflow you prefer.</p></div>
+      </div>
 
       <div class="step-list">
-        <div class="step-box">
-          <div class="step-num">STAGE 01</div>
-          <h4>Download ISO Image</h4>
-          <p>Choose a distribution and download its ISO from the official website. Keep the ISO somewhere easy to find.</p>
-        </div>
-        <div class="step-box">
-          <div class="step-num">STAGE 02</div>
-          <h4>Flash to USB Drive</h4>
-          <p>For a virtual machine, attach the ISO inside VirtualBox. For installation on a physical computer, use a trusted bootable-USB tool and follow the distribution documentation.</p>
-        </div>
-        <div class="step-box">
-          <div class="step-num">STAGE 03</div>
-          <h4>UEFI & Partitioning</h4>
-          <p>Before changing partitions, back up important files. Read the installer carefully and keep your existing operating system if you want dual boot.</p>
-        </div>
-        <div class="step-box">
-          <div class="step-num">STAGE 04</div>
-          <h4>Bootloader & Users</h4>
-          <p>Finish the installer, create your user account and restart. Keep learning commands in LinuxLab while you get comfortable.</p>
-        </div>
+        <div class="step-box"><div class="step-num">STEP 01</div><h4>Check your computer</h4><p>A comfortable beginner target is <strong>4 GB RAM and about 25 GB free storage</strong>. For a smoother desktop, 8 GB RAM and 50 GB+ free storage is better.</p></div>
+        <div class="step-box"><div class="step-num">STEP 02</div><h4>Choose VirtualBox or installation</h4><p>For beginners, use VirtualBox first. If you want Linux directly on the computer, read your chosen distribution's official installation guide and back up important files.</p></div>
+        <div class="step-box"><div class="step-num">STEP 03</div><h4>Download the official ISO</h4><p>Get the Linux ISO from the distribution's official website. For VirtualBox, attach the ISO to a new virtual machine and follow the installer.</p></div>
+        <div class="step-box"><div class="step-num">STEP 04</div><h4>Learn after installation</h4><p>Start with files and folders, then networking, permissions, processes and programming. LinuxLab's command guide remains available as your practice reference.</p></div>
       </div>
     </section>
 
