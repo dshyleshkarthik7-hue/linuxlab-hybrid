@@ -199,7 +199,7 @@ export class InBrowserLinuxEngine {
   }
 
   private isFailure(output: string): boolean {
-    return /^(?:bash: )?(?:[a-zA-Z0-9_.-]+: )?(?:command not found|cannot |missing |invalid |No such file|Not a directory)/m.test(output);
+    return /(?:^|\n)(?:bash: )?(?:[a-zA-Z0-9_.-]+: )?(?:command not found|cannot |missing |invalid |No such file|Not a directory)/m.test(output);
   }
 
   private async executeSingle(cmdLine: string, stdin = ''): Promise<string> {
