@@ -10,7 +10,7 @@
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "no-referrer"
+    Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
     Cross-Origin-Opener-Policy = "same-origin"
     Cross-Origin-Embedder-Policy = "require-corp"
@@ -18,7 +18,8 @@
 [[headers]]
   for = "/api/iso"
   [headers.values]
-    Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, HEAD, OPTIONS"
     Access-Control-Allow-Headers = "Range, Content-Type"
     Access-Control-Expose-Headers = "Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified"
+    Cache-Control = "public, max-age=3600, s-maxage=86400"
+    Vary = "Origin"
