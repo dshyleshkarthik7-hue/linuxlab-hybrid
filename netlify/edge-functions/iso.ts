@@ -3,20 +3,39 @@ const PRIMARY_ISO_URL =
 const FALLBACK_ISO_URL =
   'https://huggingface.co/datasets/shyleshkarthikd/alpine-iso/resolve/main/alpine.iso?download=true';
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
-  'Access-Control-Allow-Headers': 'Range, Content-Type',
-  'Access-Control-Expose-Headers':
-    'Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified, X-LinuxLab-ISO-Source',
-};
-
 const TIMEOUT_MS = 15_000;
+const ALLOWED_METHODS = new Set(['GET', 'HEAD']);
+
+function corsHeaders(request: Request): Headers {
+  const headers = new Headers({
+    'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+    'Access-Control-Allow-Headers': 'Range, Content-Type',
+    'Access-Control-Expose-Headers':
+      'Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified, X-LinuxLab-ISO-Source',
+    'Vary': 'Origin',
+  });
+
+  // Same-origin requests do not need CORS. Only explicitly configured origins
+  // are allowed for cross-origin reuse of this large streaming endpoint.
+  const origin = request.headers.get('Origin');
+  const allowed = (Deno.env.get('LINUXLAB_ALLOWED_ORIGINS') || 'https://linuxterminal.me,https://www.linuxterminal.me')
+    .split(',')
+    .map(value => value.trim())
+    .filter(Boolean);
+
+  if (origin && allowed.includes(origin)) headers.set('Access-Control-Allow-Origin', origin);
+  return headers;
+}
+
+function validRange(value: string | null): boolean {
+  if (!value) return true;
+  return /^bytes=\d*-\d*(?:,\d*-\d*)*$/.test(value.trim());
+}
 
 async function fetchIso(url: string, request: Request): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  const headers = new Headers({ 'User-Agent': 'LinuxLab-Edge-Stream/1.2' });
+  const headers = new Headers({ 'User-Agent': 'LinuxLab-Edge-Stream/1.3' });
   const range = request.headers.get('Range');
   if (range) headers.set('Range', range);
 
@@ -33,17 +52,17 @@ async function fetchIso(url: string, request: Request): Promise<Response> {
 }
 
 function usable(response: Response, wantsRange: boolean): boolean {
-  if (wantsRange) {
-    return response.status === 206 && response.headers.has('Content-Range');
-  }
-  return response.status >= 200 && response.status < 300;
+  return wantsRange
+    ? response.status === 206 && response.headers.has('Content-Range')
+    : response.status >= 200 && response.status < 300;
 }
 
-function withSource(upstream: Response, source: string, method: string): Response {
+function withSource(upstream: Response, source: string, request: Request): Response {
   const headers = new Headers(upstream.headers);
-  Object.entries(corsHeaders).forEach(([key, value]) => headers.set(key, value));
+  corsHeaders(request).forEach((value, key) => headers.set(key, value));
   headers.set('X-LinuxLab-ISO-Source', source);
-  return new Response(method === 'HEAD' ? null : upstream.body, {
+  headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+  return new Response(request.method === 'HEAD' ? null : upstream.body, {
     status: upstream.status,
     statusText: upstream.statusText,
     headers,
@@ -51,10 +70,15 @@ function withSource(upstream: Response, source: string, method: string): Respons
 }
 
 export default async function handler(request: Request): Promise<Response> {
-  if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method)) {
-    return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD, OPTIONS', ...corsHeaders } });
+  const cors = corsHeaders(request);
+
+  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: cors });
+  if (!ALLOWED_METHODS.has(request.method)) {
+    return new Response('Method Not Allowed', { status: 405, headers: new Headers({ ...Object.fromEntries(cors), Allow: 'GET, HEAD, OPTIONS' }) });
   }
-  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
+  if (!validRange(request.headers.get('Range'))) {
+    return new Response('Invalid Range header', { status: 416, headers: cors });
+  }
 
   const wantsRange = request.headers.has('Range');
   const sources = [
@@ -66,7 +90,7 @@ export default async function handler(request: Request): Promise<Response> {
   for (const [name, url] of sources) {
     try {
       const response = await fetchIso(url, request);
-      if (usable(response, wantsRange)) return withSource(response, name, request.method);
+      if (usable(response, wantsRange)) return withSource(response, name, request);
       failures.push(`${name}=${response.status}`);
     } catch (error) {
       failures.push(`${name}=network-error`);
@@ -75,8 +99,7 @@ export default async function handler(request: Request): Promise<Response> {
   }
 
   console.error('[LinuxLab] ISO sources unavailable:', failures.join(', '));
-  return new Response('ISO upstream unavailable', {
-    status: 502,
-    headers: { ...corsHeaders, 'X-LinuxLab-ISO-Source': 'unavailable' },
-  });
+  const headers = corsHeaders(request);
+  headers.set('X-LinuxLab-ISO-Source', 'unavailable');
+  return new Response('ISO upstream unavailable', { status: 502, headers });
 }
