@@ -2,7 +2,7 @@ const DB_NAME = 'LinuxLab_IDB';
 const DB_VERSION = 3;
 
 export interface WorkspaceFile { filename: string; content: string; timestamp: number; }
-export interface LearningSession { id: string; mode: 'real-linux'; title: string; startedAt: number; updatedAt: number; commands: string[]; lessonId?: string; completed?: boolean; }
+export interface LearningSession { id: string; mode: 'simulator' | 'real-linux'; title: string; startedAt: number; updatedAt: number; commands: string[]; lessonId?: string; completed?: boolean; }
 export interface QuizAttempt { id: string; quizId: string; score: number; total: number; timestamp: number; answers: string[]; }
 
 export class StorageService {
