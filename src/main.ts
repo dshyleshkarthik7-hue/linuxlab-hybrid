@@ -40,14 +40,13 @@ class LinuxLabApp {
   private waitingForProgramInput = false;
   private pendingProgramCommand = '';
   private commandHistory: string[] = [];
+  private sessionCommands: string[] = [];
 
   private sessionId = crypto.randomUUID();
   private sessionStartedAt = Date.now();
 
   constructor() {
-    this.sessionId = crypto.randomUUID();
-      this.sessionStartedAt = Date.now();
-      this.engine = new InBrowserLinuxEngine();
+    this.engine = new InBrowserLinuxEngine();
     this.assessment = new AssessmentRunner(this.engine);
 
     requestAnimationFrame(() => {
@@ -195,18 +194,20 @@ class LinuxLabApp {
 
   private async persistSession(command: string): Promise<void> {
     try {
-      const existing = await StorageService.getSessions();
-      const current = existing.find(s => s.id === this.sessionId);
-      const commands = [...(current?.commands ?? []), command].slice(-200);
+      this.sessionCommands.push(command);
+      if (this.sessionCommands.length > 200) this.sessionCommands.shift();
+
       await StorageService.saveSession({
         id: this.sessionId,
         mode: 'simulator' as const,
         title: 'POSIX Simulator Session',
         startedAt: this.sessionStartedAt,
         updatedAt: Date.now(),
-        commands,
+        commands: [...this.sessionCommands],
       });
-    } catch (error) { console.warn('[LinuxLab] Session save failed:', error); }
+    } catch (error) {
+      console.warn('[LinuxLab] Session save failed:', error);
+    }
   }
 
   private switchFileTab(filename: string, forcedContent?: string): void {
