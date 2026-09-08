@@ -79,7 +79,7 @@ export class EditorService {
     if (model) {
       monaco.editor.setModelLanguage(
         model,
-        language === 'c' ? 'c' : language === 'shell' ? 'shell' : 'plaintext'
+        language === 'c' ? 'c' : language === 'java' ? 'java' : language === 'shell' ? 'shell' : 'plaintext'
       );
     }
     this.editor.setValue(code);
@@ -96,5 +96,14 @@ export class EditorService {
 
   setValue(code: string) {
     this.editor.setValue(code);
+  }
+
+  focus(): void {
+    this.editor.focus();
+  }
+
+  dispose(): void {
+    if (this.saveDebounceTimer) window.clearTimeout(this.saveDebounceTimer);
+    this.editor.dispose();
   }
 }
