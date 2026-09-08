@@ -1,39 +1,39 @@
 <!doctype html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Boot and practice with real Alpine Linux directly in your browser.">
-<title>Real Alpine Linux Online | LinuxTerminal</title>
-<link rel="canonical" href="https://linuxterminal.me/real-linux/">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="description" content="Boot real Linux images in your browser using an x86 emulator.">
+  <title>Real Linux | LinuxTerminal</title>
+  <link rel="canonical" href="https://linuxterminal.me/real-linux/">
 </head>
 <body>
-<div id="app">
-<header class="app-header">
-  <div class="logo-group"><span>🖥️</span><span class="logo-title">LinuxTerminal <span class="badge">REAL • x86 Emulator</span></span></div>
-  <div class="header-actions" id="v86-controls">
-    <span id="v86-status" class="action-btn" aria-live="polite">Starting…</span>
-    <span id="v86-monitor" class="action-btn" aria-live="polite">Preparing VM…</span>
-    <button id="btn-v86-alpine" class="action-btn" type="button">🐧 Developer (1 GB)</button>
-    <button id="btn-v86-fallback" class="action-btn" type="button">⚡ Quick (256 MB)</button>
-    <button id="btn-v86-gcc" class="action-btn" type="button">⚙ GCC</button>
-    <button id="btn-v86-restart" class="action-btn" type="button">↺ Reboot</button>
-    <a href="/" class="action-btn">🏠 Home</a>
+  <div id="app">
+    <header class="app-header">
+      <div class="logo-group"><span>🖥️</span><span class="logo-title">LinuxTerminal <span class="badge">REAL • x86</span></span></div>
+      <div class="header-actions">
+        <span id="v86-status" class="action-btn" aria-live="polite">Starting…</span>
+        <span id="v86-monitor" class="action-btn" aria-live="polite">Preparing…</span>
+        <button id="btn-v86-alpine" class="action-btn" type="button">🐧 Developer Alpine (1 GB)</button>
+        <button id="btn-v86-fallback" class="action-btn" type="button">💿 Linux4 ISO (256 MB)</button>
+        <button id="btn-v86-gcc" class="action-btn" type="button">⚙ GCC</button>
+        <button id="btn-v86-restart" class="action-btn" type="button">↺ Reboot</button>
+        <a href="/" class="action-btn">🏠 Home</a>
+      </div>
+    </header>
+    <main id="vm-main">
+      <div id="v86-terminal-container"></div>
+      <div id="screen_container" aria-hidden="true"><div></div><canvas></canvas></div>
+    </main>
   </div>
-</header>
-<main class="vm-main">
-  <div id="v86-terminal-container"></div>
-  <div id="screen_container" aria-hidden="true"><div></div><canvas></canvas></div>
-</main>
-</div>
-<style>
-html,body,#app{margin:0;width:100%;height:100%;background:#020617}
-.vm-main{height:calc(100vh - 64px);min-height:0;position:relative}
-#v86-terminal-container{position:absolute;inset:0;padding:12px;box-sizing:border-box}
-#screen_container{position:absolute;left:-10000px;top:-10000px;width:640px;height:400px;visibility:hidden;pointer-events:none}
-.header-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
-@media(max-width:700px){.vm-main{height:calc(100vh - 150px)}}
-</style>
-<script type="module" src="/src/main-v86.ts"></script>
+  <style>
+    html,body,#app{margin:0;width:100%;height:100%;background:#020617}
+    #vm-main{height:calc(100vh - 72px);min-height:320px;position:relative}
+    #v86-terminal-container{position:absolute;inset:0;padding:12px;box-sizing:border-box;min-width:0;min-height:0}
+    #screen_container{position:absolute;left:-10000px;top:-10000px;width:640px;height:400px;visibility:hidden;pointer-events:none}
+    .header-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+    @media(max-width:700px){#vm-main{height:calc(100vh - 170px)}}
+  </style>
+  <script type="module" src="/src/main-v86.ts"></script>
 </body>
 </html>
