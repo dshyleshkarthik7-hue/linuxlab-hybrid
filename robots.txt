@@ -1,3 +1,0 @@
-User-agent: *
-Allow: /
-Sitemap: https://linuxlab-hybrid.netlify.app/sitemap.xml
