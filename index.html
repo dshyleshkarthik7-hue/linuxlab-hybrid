@@ -499,7 +499,10 @@
     function printPromptCommand(cmd) {
       const line = document.createElement('div');
       line.className = 'log-line log-command';
-      line.innerHTML = `<span class="log-prompt">${termPrompt.textContent}</span> ${cmd}`;
+      const prompt = document.createElement('span');
+      prompt.className = 'log-prompt';
+      prompt.textContent = termPrompt.textContent || '';
+      line.append(prompt, document.createTextNode(' ' + cmd));
       termLogs.appendChild(line);
     }
 
