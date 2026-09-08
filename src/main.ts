@@ -40,7 +40,15 @@ class LinuxLabApp {
   private waitingForProgramInput = false;
   private pendingProgramCommand = '';
   private commandHistory: string[] = [];
-  private historyIndex = -1;
+  private replaceTerminalInput(next: string): void {
+    while (this.currentInputBuffer.length) {
+      this.simTerm.write('\\b \\b');
+      this.currentInputBuffer = this.currentInputBuffer.slice(0, -1);
+    }
+    this.currentInputBuffer = next;
+    this.simTerm.write(next);
+  }
+
   private sessionId = crypto.randomUUID();
   private sessionStartedAt = Date.now();
 
@@ -190,7 +198,6 @@ class LinuxLabApp {
     try {
       this.commandHistory.push(cmd);
       if (this.commandHistory.length > 200) this.commandHistory.shift();
-      this.historyIndex = -1;
       const output = await this.engine.execute(cmd);
       if (output) this.simTerm.writeln(output);
       void this.persistSession(cmd);
