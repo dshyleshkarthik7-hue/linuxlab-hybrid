@@ -258,7 +258,7 @@ export class InBrowserLinuxEngine {
 
       case 'curl': {
         const target = args[0] || 'https://api.linuxlab.internal';
-        return this.simulated('HTTP demonstration only', `\x1b[32mHTTP/1.1 200 OK\x1b[0m\nContent-Type: application/json\n\n{"status":"connected","engine":"Engine A (Simulator)","target":"${target}"}`;
+        return this.simulated('HTTP demonstration only', `\x1b[32mHTTP/1.1 200 OK\x1b[0m\nContent-Type: application/json\n\n{"status":"connected","engine":"Engine A (Simulator)","target":"${target}"}`);
       }
 
       case 'traceroute': {
