@@ -195,7 +195,7 @@ class LinuxLabApp {
       const commands = [...(current?.commands ?? []), command].slice(-200);
       await StorageService.saveSession({
         id: this.sessionId,
-        mode: 'real-linux' as const,
+        mode: 'simulator' as const,
         title: 'POSIX Simulator Session',
         startedAt: this.sessionStartedAt,
         updatedAt: Date.now(),
