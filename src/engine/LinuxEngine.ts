@@ -651,6 +651,8 @@ export class InBrowserLinuxEngine {
       vars.set('isPrime', prime);
     }
     const evalCondition = (expr: string): boolean | null => {
+      const bare = expr.trim().match(/^(!?)(\w+)$/);
+      if (bare) { const value = vars.get(bare[2]); return bare[1] === '!' ? !Boolean(value) : Boolean(value); }
       const m = expr.trim().match(/^(\w+)\s*(==|!=)\s*(true|false|-?\d+(?:\.\d+)?)$/);
       if (!m) return null; const left = vars.get(m[1]); const right = m[3] === 'true' ? true : m[3] === 'false' ? false : Number(m[3]);
       return m[2] === '==' ? left === right : left !== right;
