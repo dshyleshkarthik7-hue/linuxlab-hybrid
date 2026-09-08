@@ -23,7 +23,6 @@ export class V86LinuxTerminal {
   private resizeDebounceTimer: number | null = null;
   private state: VMState = 'stopped';
   private shellReady = false;
-  private gccRequested: boolean = false;
   private bootPromptHandled = false;
   private guestTtyConfigured = false;
   private alpineLoginState: AlpineLoginState = 'waiting';
@@ -151,7 +150,7 @@ export class V86LinuxTerminal {
     window.setTimeout(() => { if (this.shellReady) this.checkGccToolchain(); }, 600);
   }
 
-  public requestGcc(): void { this.term?.focus(); if (!this.shellReady) { this.gccRequested = true; this.writeLine('\r\n\x1b[33m[GCC] VM is booting. Toolchain will be checked once logged in...\x1b[0m'); return; } this.checkGccToolchain(); }
+  public requestGcc(): void { this.term?.focus(); if (!this.shellReady) { this.writeLine('\r\n\x1b[33m[GCC] VM is booting. Toolchain will be checked once logged in...\x1b[0m'); return; } this.checkGccToolchain(); }
   private checkGccToolchain(): void { if (!this.shellReady || !this.emulator || this.gccSetupStarted) return; this.gccSetupStarted = true; this.sendCommand('echo "[LinuxLab] Validating GCC installation..."; if command -v gcc >/dev/null 2>&1; then echo -e "\\033[1;32m[LinuxLab] GCC Toolchain is available:\\033[0m"; gcc --version; else echo -e "\\033[1;31m[LinuxLab] GCC not found on rootfs\\033[0m"; fi'); }
   public sendCommand(command: string): void { if (!this.emulator || !this.shellReady) { this.writeLine(`\r\n\x1b[33m[Terminal] Shell is not ready; command not sent: ${command}\x1b[0m`); return; } this.sendSerial(`${command}\r`); }
   private sendAutomaticLogin(data: string): void { if (this.shellReady || (this.alpineLoginState !== 'login-detected' && this.alpineLoginState !== 'username-sent') || data !== 'root\r') return; this.sendSerial(data); }
