@@ -21,3 +21,10 @@ jobs:
         run: npm run test
       - name: Type-check and production build
         run: npm run build
+      - name: Verify production entry points
+        run: |
+          test -f dist/index.html
+          test -f dist/simulator.html
+          test -f dist/index-v86.html
+          test -f dist/libv86.js
+          test -f dist/v86.wasm
