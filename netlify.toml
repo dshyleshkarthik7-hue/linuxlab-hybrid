@@ -34,3 +34,13 @@
     Access-Control-Allow-Methods = "GET, HEAD, OPTIONS"
     Access-Control-Allow-Headers = "Range"
     Access-Control-Expose-Headers = "Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified, X-LinuxLab-ISO-Source"
+
+[[redirects]]
+  from = "/simulator/"
+  to = "/simulator.html"
+  status = 200
+
+[[redirects]]
+  from = "/real-linux/"
+  to = "/index-v86.html"
+  status = 200

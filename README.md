@@ -5,8 +5,8 @@ A free, beginner-focused platform for learning Linux without requiring expensive
 ## Start learning
 
 - Homepage: https://linuxterminal.me/
-- Simulator: https://linuxterminal.me/simulator.html
-- Real Alpine Linux: https://linuxterminal.me/index-v86.html
+- Simulator: https://linuxterminal.me/simulator/
+- Real Alpine Linux: https://linuxterminal.me/real-linux/
 
 ## Three ways to learn
 
