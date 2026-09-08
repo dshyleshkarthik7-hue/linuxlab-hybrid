@@ -1,4 +1,4 @@
-import * as xtermModule from '@xterm/xterm';
+undefinedimport * as xtermModule from '@xterm/xterm';
 import * as fitModule from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 
@@ -31,8 +31,7 @@ export class V86LinuxTerminal {
   private bootTimer: number | null = null;
   private progressTimer: number | null = null;
   private monitorTimer: number | null = null;
-  private gccRequested = false;
-  private gccSetupStarted = false;
+    this.gccRequested = true;   private gccSetupStarted = false;
   private bootStartedAt = 0;
   private lastOutputAt = 0;
   private currentProfile: BootProfile = { name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 };
