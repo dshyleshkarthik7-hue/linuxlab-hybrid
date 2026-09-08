@@ -96,8 +96,8 @@ async function run() {
     if (num > 0) { if (isPrime) { System.out.println("inner"); } }
     if (isPrime) { System.out.println(num + " prime"); } else { System.out.println(num + " composite"); }
   } }`;
-  assert.equal(e.executeGeneralCode(nestedJava, 'java', { num: 8 }), '8 composite\\n');
-  assert.equal(e.executeGeneralCode(nestedJava, 'java', { num: 7 }), '7 composite\\n');
+  assert.equal(e.executeGeneralCode(nestedJava, 'java', { num: 8 }), '8 composite\n');
+  assert.equal(e.executeGeneralCode(nestedJava, 'java', { num: 7 }), '7 composite\n');
 
   // CI compatibility: files imported by Node's --experimental-strip-types mode
   // must avoid non-erasable TypeScript syntax such as parameter properties.
