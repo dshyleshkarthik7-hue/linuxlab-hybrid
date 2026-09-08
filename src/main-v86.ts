@@ -4,10 +4,9 @@ import '@xterm/xterm/css/xterm.css';
 
 const TerminalCtor = (xtermModule as any).Terminal ?? (xtermModule as any).default?.Terminal;
 const FitAddonCtor = (fitModule as any).FitAddon ?? (fitModule as any).default?.FitAddon;
-const ALPINE_ISO = '/api/iso?image=alpine';
+const ALPINE_ISO = '/api/iso';
 const LINUX4_ISO = '/linux4.iso';
 
-type State = 'idle' | 'loading' | 'booting' | 'ready' | 'error';
 type Profile = { name: string; memoryMiB: number; cdrom: string };
 type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_send(data:string):void; stop?:()=>void; destroy?:()=>void };
 
@@ -15,7 +14,6 @@ export class V86LinuxTerminal {
   private term: any;
   private fitAddon: any;
   private emulator: V86 | null = null;
-  private state: State = 'idle';
   private profile: Profile = { name: 'Developer Alpine', memoryMiB: 1024, cdrom: ALPINE_ISO };
   private bootId = 0;
   private activeBoot: Promise<void> | null = null;
@@ -69,7 +67,6 @@ export class V86LinuxTerminal {
     await this.disposeVM();
     if (id !== this.bootId) return;
     this.profile = profile;
-    this.state = 'loading';
     this.ready = false;
     this.serial = '';
     this.term.clear();
@@ -101,7 +98,6 @@ export class V86LinuxTerminal {
 
       if (id !== this.bootId) { try { vm.stop?.(); vm.destroy?.(); } catch {} return; }
       this.emulator = vm;
-      this.state = 'booting';
       vm.add_listener('serial0-output-byte', (byte:number) => { if (id === this.bootId) this.onSerial(byte); });
       this.setStatus(profile.name + ' • booting');
       this.setMonitor(profile.memoryMiB + ' MiB • booting');
@@ -119,7 +115,6 @@ export class V86LinuxTerminal {
     const text = this.clean(this.serial);
     if (!this.ready && this.isPrompt(text)) {
       this.ready = true;
-      this.state = 'ready';
       this.setStatus(this.profile.name + ' • ready');
       this.setMonitor(this.profile.memoryMiB + ' MiB • ready');
       window.setTimeout(() => this.send('export TERM=xterm-256color; clear\r'), 150);
@@ -148,7 +143,6 @@ export class V86LinuxTerminal {
   private clean(text:string): string { return text.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').replace(/\r/g,'\n'); }
 
   private async fail(message:string): Promise<void> {
-    this.state = 'error';
     this.ready = false;
     this.setStatus(this.profile.name + ' • error');
     this.setMonitor('Boot failed');
@@ -195,7 +189,6 @@ export class V86LinuxTerminal {
     this.resizeObserver?.disconnect();
     window.removeEventListener('resize', this.fitBound);
     await this.disposeVM();
-    this.state='idle';
     this.setStatus('stopped');
   }
 }
