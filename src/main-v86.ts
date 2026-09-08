@@ -10,6 +10,9 @@ type AlpineLoginState = 'waiting' | 'login-detected' | 'username-sent' | 'ready'
 type BootProfile = { name: string; iso: string; memoryMiB: number; fallback?: boolean };
 
 const ISO_STREAM_ENDPOINT = '/api/iso';
+// Fixed public relay option. It is opt-in and intentionally never read from the URL.
+const PUBLIC_RELAY_URL = 'wss://relay.widgetry.org/';
+type NetworkMode = 'off' | 'public-relay';
 
 export class V86LinuxTerminal {
   private term: any = null;
@@ -33,6 +36,7 @@ export class V86LinuxTerminal {
   private bootStartedAt = 0;
   private lastOutputAt = 0;
   private currentProfile: BootProfile = { name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 };
+  private networkMode: NetworkMode = 'off';
 
   private assetUrl(path: string): string { return new URL(path, document.baseURI).toString(); }
 
@@ -70,6 +74,14 @@ export class V86LinuxTerminal {
     document.getElementById('btn-v86-alpine')?.addEventListener('click', () => void this.bootAlpine(true));
     document.getElementById('btn-v86-fallback')?.addEventListener('click', () => void this.bootLinux4());
     document.getElementById('btn-v86-gcc')?.addEventListener('click', () => this.requestGcc());
+    document.getElementById('btn-v86-network')?.addEventListener('click', () => this.toggleNetwork());
+  }
+
+  private toggleNetwork(): void {
+    this.networkMode = this.networkMode === 'off' ? 'public-relay' : 'off';
+    this.writeLine(this.networkMode === 'public-relay'
+      ? '\r\n\x1b[33m[Network] Public experimental relay selected. Restart VM to apply. Never enter passwords, private keys, tokens, or sensitive data.\x1b[0m'
+      : '\r\n\x1b[33m[Network] Guest networking disabled.\x1b[0m');
   }
 
   private setStatus(text: string): void { const el = document.getElementById('v86-status'); if (el) el.textContent = text; }
@@ -88,9 +100,8 @@ export class V86LinuxTerminal {
     this.writeLine(`\x1b[1;32m LinuxLab Engine B — ${profile.name}\x1b[0m`);
     this.writeLine('\x1b[36m Alpine Linux image; GCC availability is checked after login.\x1b[0m');
     this.writeLine(`Endpoint: \x1b[33m${profile.iso}\x1b[0m`); this.writeLine('');
-    const relay = this.getRelay();
-    if (relay) this.writeLine(`\x1b[36mNetwork relay enabled: ${relay}\x1b[0m`);
-    else this.writeLine('\x1b[33mGuest networking is off by default. A compatible WebSocket relay can be supplied with ?relay=wss://...\x1b[0m');
+    if (this.networkMode === 'public-relay') this.writeLine('\x1b[33mPUBLIC NETWORK: experimental shared relay enabled. Do not enter secrets.\x1b[0m');
+    else this.writeLine('\x1b[90mGuest networking is OFF by default.\x1b[0m');
     this.writeLine('\x1b[90mStreaming image blocks from server...\x1b[0m');
     this.setStatus(`${profile.name} • loading`);
     this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ISO transfer: measuring… • ${this.connectionSummary()}`);
@@ -106,7 +117,7 @@ export class V86LinuxTerminal {
         bios: { url: this.assetUrl('seabios.bin') }, vga_bios: { url: this.assetUrl('vgabios.bin') },
         cdrom: { url: profile.iso, async: true }, screen_container: screen, autostart: true, disable_speaker: true, disable_keyboard: false, disable_mouse: true,
       };
-      if (relay) options.network_relay_url = relay;
+      if (this.networkMode === 'public-relay') options.network_relay_url = PUBLIC_RELAY_URL;
       this.emulator = new V86Starter(options);
       this.emulator.add_listener('serial0-output-byte', (byte: number) => this.handleSerialByte(byte));
       this.state = 'booting'; this.lastOutputAt = performance.now(); this.bootTimer = null;
@@ -148,11 +159,11 @@ export class V86LinuxTerminal {
   private reportBootProgress(): void { if(!this.emulator||this.shellReady||this.state==='error')return; const elapsed=Math.round((performance.now()-this.bootStartedAt)/1000), silent=Math.round((performance.now()-this.lastOutputAt)/1000); if(silent>=10)this.writeLine(`\x1b[33m[Boot monitor] ${elapsed}s elapsed; guest is still booting...\x1b[0m`); this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ISO transfer: ${this.getIsoTransferRate()} • Boot: ${elapsed}s • ${this.connectionSummary()}`); }
   private updateUsageMonitor(): void { if(!this.emulator||this.state==='error')return; const elapsed=Math.max(1,(performance.now()-this.bootStartedAt)/1000); const rate=this.getIsoTransferRate(); const state=this.shellReady?'ready':this.state; this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ISO transfer: ${rate} • Boot: ${Math.round(elapsed)}s • ${this.connectionSummary()} • ${state}`); }
   private memoryMiB(): number { return this.currentProfile.memoryMiB; }
-  private connectionSummary(): string { const connection=(navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection; const downlink=typeof connection?.downlink==='number' ? `${connection.downlink.toFixed(1)} Mbps est.` : 'network estimate unavailable'; const relay=this.getRelay() ? 'relay enabled' : 'guest network off'; return `Net: ${downlink} • ${relay}`; }
+  private connectionSummary(): string { const connection=(navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection; const downlink=typeof connection?.downlink==='number' ? `${connection.downlink.toFixed(1)} Mbps est.` : 'network estimate unavailable'; const relay=this.networkMode === 'public-relay' ? 'public experimental relay' : 'guest network off'; return `Net: ${downlink} • ${relay}`; }
   private getIsoTransferRate(): string { try { const entries=performance.getEntriesByName(new URL(ISO_STREAM_ENDPOINT,document.baseURI).href) as PerformanceResourceTiming[]; const entry=entries[entries.length-1]; if(!entry || !entry.responseEnd || entry.transferSize <= 0)return 'measuring…'; const seconds=Math.max(.001,(entry.responseEnd-entry.startTime)/1000); return `${(entry.transferSize/1024/1024/seconds).toFixed(1)} MB/s`; } catch { return 'measuring…'; } }
   private handleBootError(message:string):void { this.stopTimers(); this.writeLine(`\r\n\x1b[1;31m[VM Boot Error] ${message}\x1b[0m`); this.state='error'; this.setStatus(`${this.currentProfile.name} • error`); this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • ${this.connectionSummary()} • boot error`); }
   private stopTimers():void { if(this.bootTimer!==null){window.clearTimeout(this.bootTimer);this.bootTimer=null;} if(this.progressTimer!==null){window.clearInterval(this.progressTimer);this.progressTimer=null;} if(this.monitorTimer!==null){window.clearInterval(this.monitorTimer);this.monitorTimer=null;} }
-  private getRelay():string|null { try { const relay=new URLSearchParams(window.location.search).get('relay'); return relay&&/^wss?:\/\//i.test(relay)?relay:null; } catch { return null; } }
+
   private stripAnsi(text:string):string { return text.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').replace(/\x1b\][^\x07]*(?:\x07|\x1b\\)/g,'').replace(/\x1b./g,'').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g,''); }
   private loadScript():Promise<void>{ return new Promise((resolve,reject)=>{ if((window as any).V86Starter||(window as any).V86){resolve();return;} const existing=document.querySelector('script[data-linuxlab-v86]') as HTMLScriptElement|null; if(existing){existing.addEventListener('load',()=>resolve(),{once:true});existing.addEventListener('error',()=>reject(new Error('Failed to load libv86.js.')),{once:true});return;} const script=document.createElement('script');script.src=this.assetUrl('libv86.js');script.async=true;script.dataset.linuxlabV86='true';script.onload=()=>resolve();script.onerror=()=>reject(new Error('Failed to load libv86.js from the application assets.'));document.head.appendChild(script);}); }
 }
