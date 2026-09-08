@@ -641,10 +641,16 @@ export class InBrowserLinuxEngine {
     // Safe educational subset: parse data and evaluate simple control flow; never
     // execute generated JavaScript or arbitrary user code.
     const text = code.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-    if (!/\bclass\s+\w+/.test(text) || !/static\s+void\s+main\s*\(/.test(text)) return '[Java Educational Parser] Add a class and static void main(...) method.';
-    if (/\b(Runtime|ProcessBuilder|Class\.forName|reflect|Thread|synchronized)\b/.test(text)) return '[Java Educational Parser] This construct is outside the safe simulator subset.';
+    if (!/\bclass\s+\w+/.test(text) || !/static\s+void\s+main\s*\(/.test(text)) {
+      return '[Java Educational Parser] Add a class and static void main(...) method.';
+    }
+    if (/\b(Runtime|ProcessBuilder|Class\.forName|reflect|Thread|synchronized)\b/.test(text)) {
+      return '[Java Educational Parser] This construct is outside the safe simulator subset.';
+    }
+
     const vars = new Map<string, string | number | boolean>();
     for (const [name, value] of Object.entries(injectedVars)) vars.set(name, value);
+
     for (const match of text.matchAll(/\b(?:int|long|short|float|double|boolean|char|String)\s+(\w+)\s*=\s*([^;]+);/g)) {
       if (Object.prototype.hasOwnProperty.call(injectedVars, match[1])) continue;
       const raw = match[2].trim();
@@ -652,26 +658,52 @@ export class InBrowserLinuxEngine {
       else if (/^(true|false)$/.test(raw)) vars.set(match[1], raw === 'true');
       else if (/^"(?:[^"\\]|\\.)*"$/.test(raw)) vars.set(match[1], raw.slice(1, -1));
     }
+
     // Recognize the common prime-check lesson deterministically.
     if (/\bisPrime\b/.test(text) && /num\s*%\s*i\s*==\s*0/.test(text) && typeof vars.get('num') === 'number') {
-      const n = Number(vars.get('num')); let prime = n >= 2;
-      for (let i = 2; i <= Math.floor(n / 2) && prime; i++) if (n % i === 0) prime = false;
+      const n = Number(vars.get('num'));
+      let prime = n >= 2;
+      for (let i = 2; i <= Math.floor(n / 2) && prime; i++) {
+        if (n % i === 0) prime = false;
+      }
       vars.set('isPrime', prime);
     }
-    const evalCondition = (expr: string): boolean | null => {
-      const bare = expr.trim().match(/^(!?)(\w+)$/);
-      if (bare) { const value = vars.get(bare[2]); return bare[1] === '!' ? !Boolean(value) : Boolean(value); }
-      const m = expr.trim().match(/^(\w+)\s*(==|!=)\s*(true|false|-?\d+(?:\.\d+)?)$/);
-      if (!m) return null; const left = vars.get(m[1]); const right = m[3] === 'true' ? true : m[3] === 'false' ? false : Number(m[3]);
-      return m[2] === '==' ? left === right : left !== right;
-    };
-    const output: string[] = [];
-    const suppressed: Array<[number, number]> = [];
 
-    // Walk brace-balanced if/else blocks instead of using a non-nested regex.
-    // Lesson programs commonly contain an if inside a loop before the final
-    // if/else, which caused regex matching to span the wrong braces and emit
-    // both branches.
+    const valueOf = (token: string): string | number | boolean | undefined => {
+      const value = token.trim();
+      if (vars.has(value)) return vars.get(value);
+      if (/^(true|false)$/.test(value)) return value === 'true';
+      if (/^-?\d+(?:\.\d+)?$/.test(value)) return Number(value);
+      if (/^"(?:[^"\\]|\\.)*"$/.test(value)) return value.slice(1, -1);
+      return undefined;
+    };
+
+    const evalCondition = (expr: string): boolean | null => {
+      const trimmed = expr.trim();
+      const bare = trimmed.match(/^(!?)(\w+)$/);
+      if (bare) {
+        const value = vars.get(bare[2]);
+        if (value === undefined) return null;
+        return bare[1] === '!' ? !Boolean(value) : Boolean(value);
+      }
+
+      const comparison = trimmed.match(/^(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
+      if (!comparison) return null;
+      const left = valueOf(comparison[1]);
+      const right = valueOf(comparison[3]);
+      if (left === undefined || right === undefined) return null;
+
+      switch (comparison[2]) {
+        case '==': return left === right;
+        case '!=': return left !== right;
+        case '>': return Number(left) > Number(right);
+        case '>=': return Number(left) >= Number(right);
+        case '<': return Number(left) < Number(right);
+        case '<=': return Number(left) <= Number(right);
+        default: return null;
+      }
+    };
+
     const findClosingBrace = (openIndex: number): number => {
       let depth = 0;
       for (let i = openIndex; i < text.length; i++) {
@@ -684,43 +716,66 @@ export class InBrowserLinuxEngine {
       return -1;
     };
 
-    const ifStart = /\bif\s*\(([^)]*)\)\s*\{/g;
-    for (const m of text.matchAll(ifStart)) {
-      if (m.index === undefined) continue;
-      const condition = m[1];
-      const thenOpen = m.index + m[0].length - 1;
-      const thenClose = findClosingBrace(thenOpen);
-      if (thenClose < 0) continue;
-
-      let cursor = thenClose + 1;
-      while (/\s/.test(text[cursor] || '')) cursor++;
-      if (!text.startsWith('else', cursor)) continue;
-      cursor += 4;
-      while (/\s/.test(text[cursor] || '')) cursor++;
-      if (text[cursor] !== '{') continue;
-
-      const elseOpen = cursor;
-      const elseClose = findClosingBrace(elseOpen);
-      if (elseClose < 0) continue;
-
-      const decision = evalCondition(condition);
-      if (decision === null) continue;
-
-      const branch = decision
-        ? text.slice(thenOpen + 1, thenClose)
-        : text.slice(elseOpen + 1, elseClose);
-
-      suppressed.push([m.index, elseClose + 1]);
-      for (const p of branch.matchAll(/System\.out\.(println|print)\s*\(([^;]*)\)\s*;/g)) {
+    const output: string[] = [];
+    const emitPrints = (segment: string): void => {
+      for (const p of segment.matchAll(/System\.out\.(println|print)\s*\(([^;]*)\)\s*;/g)) {
         output.push(this.renderJavaPrint(p[2], vars) + (p[1] === 'println' ? '\n' : ''));
       }
-    }
+    };
 
-    for (const p of text.matchAll(/System\.out\.(println|print)\s*\(([^;]*)\)\s*;/g)) {
-      const pos = p.index ?? -1;
-      if (suppressed.some(([a, b]) => pos >= a && pos < b)) continue;
-      output.push(this.renderJavaPrint(p[2], vars) + (p[1] === 'println' ? '\n' : ''));
-    }
+    // Recursively walk regions. Unlike the previous suppression approach, this
+    // handles nested if blocks and if blocks without else without leaking prints
+    // from unselected branches into the generic scan.
+    const processRegion = (startIndex: number, endIndex: number): void => {
+      const ifPattern = /\bif\s*\(([^)]*)\)\s*\{/g;
+      let cursor = startIndex;
+
+      while (cursor < endIndex) {
+        ifPattern.lastIndex = cursor;
+        const match = ifPattern.exec(text);
+        if (!match || match.index >= endIndex) {
+          emitPrints(text.slice(cursor, endIndex));
+          return;
+        }
+
+        emitPrints(text.slice(cursor, match.index));
+
+        const thenOpen = match.index + match[0].length - 1;
+        const thenClose = findClosingBrace(thenOpen);
+        if (thenClose < 0 || thenClose >= endIndex) {
+          // Malformed control flow: keep parsing conservatively rather than
+          // pretending both branches executed.
+          cursor = match.index + match[0].length;
+          continue;
+        }
+
+        let next = thenClose + 1;
+        while (next < endIndex && /\s/.test(text[next])) next++;
+
+        let elseOpen = -1;
+        let elseClose = -1;
+        if (text.startsWith('else', next)) {
+          let brace = next + 4;
+          while (brace < endIndex && /\s/.test(text[brace])) brace++;
+          if (text[brace] === '{') {
+            elseOpen = brace;
+            elseClose = findClosingBrace(elseOpen);
+          }
+        }
+
+        const decision = evalCondition(match[1]);
+        if (decision === true) {
+          processRegion(thenOpen + 1, thenClose);
+        } else if (decision === false && elseOpen >= 0 && elseClose >= 0) {
+          processRegion(elseOpen + 1, elseClose);
+        }
+        // Unknown conditions intentionally emit neither branch: the simulator
+        // must never claim that both outcomes happened.
+        cursor = elseClose >= 0 ? elseClose + 1 : thenClose + 1;
+      }
+    };
+
+    processRegion(0, text.length);
     return output.length ? output.join('') : '[Java Educational Parser] No supported output statement found.';
   }
 
