@@ -89,6 +89,16 @@ async function run() {
   const composite = javaAssessment.checks.find(check => check.label === 'Composite test for 8');
   assert.equal(composite?.passed, true);
 
+
+  // Nested control flow must not duplicate the selected outer branch output.
+  const nestedJava = `public class Main { static void main(String[] args) {
+    int num = 8; boolean isPrime = false;
+    if (num > 0) { if (isPrime) { System.out.println("inner"); } }
+    if (isPrime) { System.out.println(num + " prime"); } else { System.out.println(num + " composite"); }
+  } }`;
+  assert.equal(e.executeGeneralCode(nestedJava, 'java', { num: 8 }), '8 composite\\n');
+  assert.equal(e.executeGeneralCode(nestedJava, 'java', { num: 7 }), '7 composite\\n');
+
   // CI compatibility: files imported by Node's --experimental-strip-types mode
   // must avoid non-erasable TypeScript syntax such as parameter properties.
   const assessment = new AssessmentRunner(e);
