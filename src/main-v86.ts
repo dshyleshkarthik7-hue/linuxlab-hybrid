@@ -7,7 +7,7 @@ const FitAddonConstructor = (fitModule as any).FitAddon || (fitModule as any).de
 
 type VMState = 'stopped' | 'loading' | 'booting' | 'ready' | 'error';
 type AlpineLoginState = 'waiting' | 'login-detected' | 'username-sent' | 'ready';
-type BootProfile = { name: string; iso: string; memoryMiB: number; fallback?: boolean };
+type BootProfile = { name: string; iso: string; memoryMiB: number };
 
 const ISO_STREAM_ENDPOINT = '/api/iso';
 // Fixed public relay option. It is opt-in and intentionally never read from the URL.
@@ -103,7 +103,7 @@ export class V86LinuxTerminal {
   public async bootAlpine(force = true): Promise<void> { await this.startProfile({ name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 }, force); }
   public async bootLinux4(): Promise<void> {
     this.writeLine('\r\n\x1b[33m[LinuxLab] Quick fallback uses the maintained Alpine image. The old linux4.iso asset was removed because Git LFS pointers are not safe to deploy as boot media.\x1b[0m');
-    await this.startProfile({ name: 'Alpine Linux (Compatibility)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024, fallback: true }, true);
+    await this.startProfile({ name: 'Alpine Linux (Compatibility)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 }, true);
   }
 
   private async startProfile(profile: BootProfile, force: boolean): Promise<void> {
