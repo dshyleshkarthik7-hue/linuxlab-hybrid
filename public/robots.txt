@@ -2,4 +2,4 @@ User-agent: *
 Allow: /
 Disallow: /api/
 
-Sitemap: https://linuxlab-hybrid.netlify.app/sitemap.xml
+Sitemap: https://linuxterminal.me/sitemap.xml

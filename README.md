@@ -1,14 +1,17 @@
-# LinuxLab Hybrid
+# LinuxTerminal
 
 A free, beginner-focused platform for learning Linux without requiring expensive hardware or a dedicated Linux computer.
 
 ## Start learning
 
-- Homepage: https://linuxlab-hybrid.netlify.app/
-- Simulator: https://linuxlab-hybrid.netlify.app/simulator.html
-- Real Alpine Linux: https://linuxlab-hybrid.netlify.app/index-v86.html
+- Homepage: https://linuxterminal.me/
+- Simulator: https://linuxterminal.me/simulator.html
+- Real Alpine Linux: https://linuxterminal.me/index-v86.html
 
-## Two ways to learn
+## Three ways to learn
+
+### Quick Preview
+A lightweight, simulated command preview on the homepage.
 
 ### Engine A — Learning Simulator
 Practice Linux concepts safely:
@@ -37,11 +40,11 @@ Alpine uses `apk` for package management (for example, `apk add python3`). `apt`
 
 ## Learning goal
 
-LinuxLab is designed for learners who should not be blocked from practicing Linux because they lack hardware, money, or easy access to resources.
+LinuxTerminal is designed for learners who should not be blocked from practicing Linux because they lack hardware, money, or easy access to resources.
 
 ## Ways to use Linux
 
-1. LinuxLab in the browser
+1. LinuxTerminal in the browser
 2. Oracle VM VirtualBox
 3. Dual boot
 4. Full installation
@@ -87,8 +90,8 @@ A sandbox reset starts a fresh in-memory learning environment. Saved learning re
 
 ## SEO
 
-- Sitemap: https://linuxlab-hybrid.netlify.app/sitemap.xml
-- Robots: https://linuxlab-hybrid.netlify.app/robots.txt
+- Sitemap: https://linuxterminal.me/sitemap.xml
+- Robots: https://linuxterminal.me/robots.txt
 
 ## Project mission
 

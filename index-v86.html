@@ -1,38 +1,39 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>\n  <meta name="msvalidate.01" content="282830306BEF15F98B821C6CB28EA013" />
+<head>
+  <meta name="msvalidate.01" content="282830306BEF15F98B821C6CB28EA013" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description" content="Boot and practice with real Alpine Linux directly in your browser." />
   <meta name="keywords" content="learn Linux, Linux commands, Linux simulator, online Linux terminal, Alpine Linux, Linux for beginners, Linux practice" />
-  <meta name="author" content="LinuxLab" />
-  <title>Real Alpine Linux Online | LinuxLab Hybrid</title>
+  <meta name="author" content="LinuxTerminal" />
+  <title>Real Alpine Linux Online | LinuxTerminal</title>
   <link rel="stylesheet" href="/src/style.css" />
   <meta name="google-site-verification" content="2nUtwedGSNvf4DfIFELLALuh8GMCvr74mcaw-RDu4Xw" />
   <meta name="robots" content="index,follow,max-image-preview:large" />
-  <link rel="canonical" href="https://linuxlab-hybrid.netlify.app/index-v86.html" />
+  <link rel="canonical" href="https://linuxterminal.me/real-linux/" />
   <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="LinuxLab" />
-  <meta property="og:title" content="Real Alpine Linux Online — Browser x86 Emulator | LinuxLab" />
-  <meta property="og:description" content="Boot and practice with real Alpine Linux in your browser using LinuxLab's x86 emulator." />
+  <meta property="og:site_name" content="LinuxTerminal" />
+  <meta property="og:title" content="Real Alpine Linux Online — Browser x86 Emulator | LinuxTerminal" />
+  <meta property="og:description" content="Boot and practice with real Alpine Linux in your browser using LinuxTerminal's x86 emulator." />
   <meta property="og:url" content="https://linuxlab-hybrid.netlify.app/index-v86.html" />
   <meta name="twitter:card" content="summary" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"LinuxLab","applicationCategory":"DeveloperApplication","operatingSystem":"Web","url":"https://linuxlab-hybrid.netlify.app/index-v86.html","description":"Boot and use Alpine Linux in your browser with LinuxLab's x86 emulator powered by WebAssembly and v86."}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"LinuxTerminal","applicationCategory":"DeveloperApplication","operatingSystem":"Web","url":"https://linuxterminal.me/real-linux/","description":"Boot and use Alpine Linux in your browser with LinuxTerminal's x86 emulator powered by WebAssembly and v86."}</script>
 </head>
 <body>
 <div id="app">
   <header class="app-header">
     <div class="logo-group">
       <span style="font-size:1.3rem;">🖥️</span>
-      <span class="logo-title">LinuxLab <span class="badge" style="color:#4ade80;border-color:#4ade80;">REAL • x86 Emulator</span></span>
+      <span class="logo-title">LinuxTerminal <span class="badge" style="color:#4ade80;border-color:#4ade80;">REAL • x86 Emulator</span></span>
     </div>
     <div class="header-actions" id="v86-controls">
       <span id="v86-status" class="action-btn" style="cursor:default;user-select:none;" aria-live="polite">starting…</span>
       <span id="v86-monitor" class="action-btn" style="cursor:default;user-select:none;" aria-live="polite">Loading profile…</span>
-      <button id="btn-v86-alpine" class="action-btn" type="button">🐧 Developer Linux (1 GB)</button>
+      <button id="btn-v86-alpine" class="action-btn" type="button">🐧 Developer Alpine (1 GB)</button>
       <button id="btn-v86-gcc" class="action-btn" type="button">⚙ GCC</button>
       <button id="btn-v86-network" class="action-btn" type="button" aria-pressed="false">🌐 Network: OFF</button>
-      <button id="btn-v86-fallback" class="action-btn" type="button">⚡ Quick Linux (256 MB)</button>
+      <button id="btn-v86-fallback" class="action-btn" type="button">⚡ Compatibility Linux (1 GB)</button>
       <button id="btn-v86-restart" class="action-btn" type="button">↺ Reboot VM</button>
       <a href="./index.html" class="action-btn" style="text-decoration:none;">🏠 Home</a>
     </div>
@@ -43,7 +44,7 @@
     <div id="screen_container" aria-hidden="true" style="position:absolute;left:-10000px;top:-10000px;width:640px;height:400px;visibility:hidden;pointer-events:none;overflow:hidden;">
       <div style="white-space:pre;font:14px monospace;line-height:14px;"></div><canvas></canvas>
     </div>
-  <div id="mobile-linux-keyboard" aria-label="LinuxLab mobile keyboard"></div></main>
+  <div id="mobile-linux-keyboard" aria-label="LinuxTerminal mobile keyboard"></div></main>
 </div>
 
 <style>#mobile-linux-keyboard{display:none;position:fixed;bottom:0;left:0;right:0;padding:8px;background:rgba(2,6,23,.72);backdrop-filter:blur(12px);z-index:99;gap:5px;flex-wrap:wrap}#mobile-linux-keyboard button{min-width:38px;min-height:38px;border:1px solid #334155;border-radius:8px;background:rgba(15,23,42,.72);color:#e2e8f0}@media(max-width:700px){#mobile-linux-keyboard{display:flex}#v86-terminal-container{padding-bottom:230px!important}}</style><script type="module">
@@ -59,7 +60,7 @@
       window.linuxLabVM = vm;
       await vm.bootAlpine(false);
     } catch (error) {
-      console.error('[LinuxLab] Engine B startup failed:', error);
+      console.error('[LinuxTerminal] Engine B startup failed:', error);
       const status = document.getElementById('v86-status');
       if (status) status.textContent = 'Alpine emulator failed to start';
     }

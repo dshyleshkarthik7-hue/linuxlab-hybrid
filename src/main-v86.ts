@@ -36,6 +36,7 @@ export class V86LinuxTerminal {
   private lastOutputAt = 0;
   private currentProfile: BootProfile = { name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 };
   private networkMode: NetworkMode = 'off';
+  private networkToggleConfirmed = false;
 
   private assetUrl(path: string): string { return new URL(path, document.baseURI).toString(); }
 
@@ -89,6 +90,11 @@ export class V86LinuxTerminal {
   }
 
   private toggleNetwork(): void {
+    if (this.networkMode === 'off' && !this.networkToggleConfirmed) {
+      const accepted = window.confirm('Enable the experimental public relay? The guest may reach the public network through a shared, untrusted relay. Do not enter passwords, private keys, tokens, or sensitive data.');
+      if (!accepted) return;
+      this.networkToggleConfirmed = true;
+    }
     this.networkMode = this.networkMode === 'off' ? 'public-relay' : 'off';
     this.updateNetworkButton();
     this.writeLine(this.networkMode === 'public-relay'
