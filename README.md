@@ -69,12 +69,19 @@ Tests:
 
 ```bash
 npm test
+npm run check
 ```
+
+`npm run check` runs the learning-engine regression checks followed by the TypeScript and production build checks used by CI.
 
 ## Transparency
 
-- **Simulator:** educational model for safe practice.
-- **Real Alpine:** actual Linux guest running through browser x86 emulation.
+- **Simulator:** educational model for safe practice. Commands that demonstrate networking, processes, memory, or disks are explicitly labelled **SIMULATED** and do not represent the learner's real machine or network.
+- **Real Alpine:** actual Linux guest running through browser x86 emulation. The guest is temporary and should be treated as an untrusted practice environment.
+
+### Reset and saved data
+
+A sandbox reset starts a fresh in-memory learning environment. Saved learning records are browser-local and are separate from a sandbox reset. Use the site's saved-data controls when you want to remove persistent learning records.
 
 ## SEO
 
