@@ -39,9 +39,13 @@ class LinuxLabApp {
   private currentInputBuffer: string = '';
   private waitingForProgramInput = false;
   private pendingProgramCommand = '';
+  private sessionId = crypto.randomUUID();
+  private sessionStartedAt = Date.now();
 
   constructor() {
-    this.engine = new InBrowserLinuxEngine();
+    this.sessionId = crypto.randomUUID();
+      this.sessionStartedAt = Date.now();
+      this.engine = new InBrowserLinuxEngine();
     this.assessment = new AssessmentRunner(this.engine);
 
     requestAnimationFrame(() => {
@@ -175,12 +179,29 @@ class LinuxLabApp {
     try {
       const output = await this.engine.execute(cmd);
       if (output) this.simTerm.writeln(output);
+      void this.persistSession(cmd);
     } catch (error) {
       console.error('[LinuxLab] Command execution failed:', error);
       this.simTerm.writeln(`\x1b[31mError: ${error instanceof Error ? error.message : String(error)}\x1b[0m`);
     } finally {
       this.simTerm.write(this.engine.getPrompt());
     }
+  }
+
+  private async persistSession(command: string): Promise<void> {
+    try {
+      const existing = await StorageService.getSessions();
+      const current = existing.find(s => s.id === this.sessionId);
+      const commands = [...(current?.commands ?? []), command].slice(-200);
+      await StorageService.saveSession({
+        id: this.sessionId,
+        mode: 'real-linux' as const,
+        title: 'POSIX Simulator Session',
+        startedAt: this.sessionStartedAt,
+        updatedAt: Date.now(),
+        commands,
+      });
+    } catch (error) { console.warn('[LinuxLab] Session save failed:', error); }
   }
 
   private switchFileTab(filename: string, forcedContent?: string): void {
@@ -262,6 +283,22 @@ class LinuxLabApp {
     document.getElementById('tab-main-java')?.addEventListener('click', () => this.switchFileTab('Main.java'));
     document.getElementById('btn-save-fs')?.addEventListener('click', () => this.saveCurrentEditorToFS());
     document.getElementById('btn-run-tests')?.addEventListener('click', () => this.runAutomatedGrading());
+
+    document.getElementById('btn-clear-terminal')?.addEventListener('click', () => {
+      this.simTerm.clear();
+      this.currentInputBuffer = '';
+      this.simTerm.write(this.engine.getPrompt());
+    });
+
+    document.querySelectorAll<HTMLButtonElement>('.learning-step').forEach((button) => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.learning-step').forEach(item => item.classList.remove('active'));
+        button.classList.add('active');
+        const cmd = button.dataset.cmd ?? '';
+        this.currentInputBuffer = cmd;
+        this.simTerm.write('\r\n' + this.engine.getPrompt() + cmd);
+      });
+    });
 
     document.getElementById('btn-reset')?.addEventListener('click', () => {
       this.currentInputBuffer = '';
