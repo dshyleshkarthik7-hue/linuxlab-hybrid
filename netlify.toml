@@ -6,18 +6,6 @@
   path = "/api/iso"
   function = "iso"
 
-[[redirects]]
-  from = "/simulator.html"
-  to = "/simulator/"
-  status = 301
-  force = true
-
-[[redirects]]
-  from = "/index-v86.html"
-  to = "/real-linux/"
-  status = 301
-  force = true
-
 [[headers]]
   for = "/*"
   [headers.values]
@@ -39,6 +27,12 @@
   from = "/simulator/"
   to = "/simulator.html"
   status = 200
+
+[[redirects]]
+  from = "/simulator.html"
+  to = "/simulator/"
+  status = 301
+  force = true
 
 [[redirects]]
   from = "/real-linux/"
