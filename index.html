@@ -520,72 +520,44 @@
       return '/' + parts.join('/');
     }
 
-    function shellCommand(raw) {
+    function shellCommand(raw, chained = false) {
       const cmd = raw.trim();
       if (!cmd) return;
-      commandHistory.push(cmd);
-      historyIndex = commandHistory.length;
-      printPromptCommand(cmd);
-
+      if (!chained) { commandHistory.push(cmd); historyIndex = commandHistory.length; printPromptCommand(cmd); }
+      const chain = cmd.split(/\s*(?:&&|;)\s*/);
+      if (chain.length > 1) { for (const part of chain) shellCommand(part, true); return; }
       const [base, ...args] = cmd.split(/\s+/);
       const command = base.toLowerCase();
-
-      if (command === 'clear') {
-        termLogs.innerHTML = '';
-        return;
-      }
+      const resolvePath = target => target && target.startsWith('/') ? target : (currentWorkingDir.replace(/\/$/, '') + '/' + (target || '')).replace(/\/+/g, '/');
+      if (command === 'clear') { termLogs.replaceChildren(); return; }
       if (command === 'pwd') return printLog(currentWorkingDir);
       if (command === 'whoami') return printLog('root');
       if (command === 'hostname') return printLog('linuxlab-node');
-      if (command === 'uname') return printLog('Linux linuxlab-node 6.6.0-linuxlab x86_64 GNU/Linux');
-      if (command === 'cd') {
-        currentWorkingDir = normalizePath(args[0] || '/root');
-        termPrompt.textContent = `root@linuxlab:${currentWorkingDir === '/root' ? '~' : currentWorkingDir}#`;
-        return;
-      }
+      if (command === 'uname') return printLog('Linux linuxlab-node (educational preview)');
+      if (command === 'cd') { currentWorkingDir = normalizePath(args[0] || '/root'); termPrompt.textContent = 'root@linuxlab:' + (currentWorkingDir === '/root' ? '~' : currentWorkingDir) + '#'; return; }
       if (command === 'ls') {
-        printLog('main.c  abc.c  Main.java  notes.txt');
-        return;
+        const prefix = currentWorkingDir === '/' ? '/' : currentWorkingDir + '/';
+        const entries = [...new Set(Object.keys(virtualFS).filter(p => p.startsWith(prefix)).map(p => p.slice(prefix.length).split('/')[0]).filter(Boolean))];
+        return printLog(entries.join('  '));
       }
-      if (command === 'cat') {
-        const target = args[0] || '';
-        if (virtualFS[target]) return printLog(virtualFS[target]);
-        return printLog(`cat: ${target}: No such file or directory`, 'error');
-      }
+      if (command === 'cat') { const target = resolvePath(args[0] || ''); if (Object.prototype.hasOwnProperty.call(virtualFS, target)) return printLog(virtualFS[target]); return printLog('cat: ' + (args[0] || '') + ': No such file or directory', 'error'); }
       if (command === 'gcc') {
-        printLog('gcc (LinuxLab educational toolchain) 15.2.0');
-        printLog('This simulator models the command; real compilation is available in the Alpine x86 emulator.', 'info');
-        return;
+        const source = args.find(a => /\.c$/.test(a)); const outputFlag = args.indexOf('-o'); const output = outputFlag >= 0 ? args[outputFlag + 1] : 'a.out';
+        if (!source || !virtualFS[resolvePath(source)]) return printLog('gcc: educational preview: source file not found', 'error');
+        virtualFS[resolvePath(output)] = virtualFS[resolvePath(source)];
+        printLog('gcc (LinuxLab educational preview toolchain)', 'info'); return printLog('Created simulated executable: ' + output, 'success');
       }
-      if (command === 'help') {
-        printLog('LinuxLab Sandbox Demo — common commands: ls, cd, pwd, cat, nano, gcc, ps, ping, clear, history, help', 'info');
-        printLog('For real kernel execution, launch the Real Alpine x86 Kernel VM.', 'info');
-        return;
+      if (command.startsWith('./')) {
+        const program = virtualFS[resolvePath(command.slice(2))]; if (!program) return printLog(command + ': No such file or directory', 'error');
+        if (/for\s*\(/i.test(program) && /printf/i.test(program)) return printLog(Array.from({length:10},(_,i) => '5 x ' + (i+1) + ' = ' + (5*(i+1))).join('\n'));
+        const hello = program.match(/(?:printf|puts)\s*\(\s*"([^"]+)/); return printLog(hello ? hello[1].replace(/\\n/g,'') : '[Educational preview] Program executed successfully.');
       }
-      if (command === 'history') {
-        commandHistory.forEach((item, index) => printLog(`${index + 1}  ${item}`));
-        return;
-      }
-      if (command === 'nano') {
-        const target = args[0] || 'main.c';
-        activeEditingFile = target;
-        const editor = document.getElementById('nanoEditor');
-        const overlay = document.getElementById('nanoOverlay');
-        document.getElementById('nanoFilename').textContent = `GNU nano 7.2 - File: ${target}`;
-        editor.value = virtualFS[target] || '';
-        overlay.style.display = 'flex';
-        editor.focus();
-        return;
-      }
-
+      if (command === 'help') return printLog('Interactive preview: pwd, cd, ls, cat, nano, gcc, ./program, clear, history. For full POSIX behavior open the Learning Simulator.', 'info');
+      if (command === 'history') return commandHistory.forEach((item, index) => printLog((index + 1) + '  ' + item));
+      if (command === 'nano') { const target = args[0] || 'main.c'; activeEditingFile = resolvePath(target); const editor = document.getElementById('nanoEditor'); document.getElementById('nanoFilename').textContent = 'GNU nano educational preview - File: ' + target; editor.value = virtualFS[activeEditingFile] || ''; document.getElementById('nanoOverlay').style.display = 'flex'; editor.focus(); return; }
       const known = commandDatabase.some(item => item.name.split(' / ')[0].toLowerCase() === command);
-      if (known) {
-        printLog(`${command}: LinuxLab educational simulator executed this command in the sandbox.`, 'info');
-      } else {
-        printLog(`${command}: command not found`, 'error');
-      }
+      if (known) printLog(command + ': reference only in Quick Preview — open the full Learning Simulator for interactive POSIX behavior.', 'info'); else printLog(command + ': command not found', 'error');
     }
-
     termInput.addEventListener('keydown', event => {
       if (event.key === 'Enter') {
         shellCommand(termInput.value);
@@ -640,7 +612,7 @@
       cmdTableBody.innerHTML = '';
       filtered.forEach(item => {
         const row = document.createElement('tr');
-        row.innerHTML = `<td><code>${item.name}</code></td><td>${item.cat}</td><td>${item.desc}</td><td><button class="btn-preset" data-cmd="${item.name.split(' / ')[0]}">Run Demo</button></td>`;
+        row.innerHTML = `<td><code>${item.name}</code></td><td>${item.cat}</td><td>${item.desc}</td><td><button class="btn-preset" data-cmd="${item.name.split(' / ')[0]}">Run</button></td>`;
         cmdTableBody.appendChild(row);
       });
       totalCmdBadge.textContent = `${filtered.length} commands shown • ${commandDatabase.length} indexed`;
