@@ -5,7 +5,14 @@ export interface AssessmentCheck { label:string; passed:boolean; feedback:string
 export interface AssessmentResult { passed:number; total:number; logs:string[]; score:number; checks:AssessmentCheck[]; }
 
 export class AssessmentRunner {
-  constructor(private engine: InBrowserLinuxEngine) {}
+  // Keep this as an ordinary property instead of a TypeScript parameter property.
+  // Node 22's strip-types test runner can erase types but intentionally does not
+  // transform parameter properties, so this form keeps the source runnable in CI.
+  private engine: InBrowserLinuxEngine;
+
+  constructor(engine: InBrowserLinuxEngine) {
+    this.engine = engine;
+  }
   public runCTestSuite(sourceCode:string):AssessmentResult {
     const suite:TestCase[]=[
       {id:1,description:'Table num=5 (Step 1)',injectedVar:{name:'num',value:5},expectedSubstring:'5 x 1 = 5'},
