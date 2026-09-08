@@ -616,6 +616,7 @@
         row.innerHTML = `<td><code>${item.name}</code></td><td>${item.cat}</td><td>${item.desc}</td><td><button class="btn-preset" data-cmd="${item.name.split(' / ')[0]}">Run</button></td>`;
         cmdTableBody.appendChild(row);
       });
+      const interactive = new Set(['ls','cd','pwd','cat','nano','gcc','whoami','hostname','uname','clear','history']);
       const interactiveCount = commandDatabase.filter(item => interactive.has(item.name.split(' / ')[0])).length; totalCmdBadge.textContent = `${filtered.length} shown • ${interactiveCount} interactive • ${commandDatabase.length - interactiveCount} reference`; 
 
       cmdTableBody.querySelectorAll('.btn-preset').forEach(button => {
