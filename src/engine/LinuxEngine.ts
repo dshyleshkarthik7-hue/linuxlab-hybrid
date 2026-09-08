@@ -220,6 +220,10 @@ export class InBrowserLinuxEngine {
     return `[SIMULATED — Engine A, no real kernel/network]\n${label}\n${output}`;
   }
 
+  private normalizeDemoArgs(args: string[]): string[] {
+    return args.filter((arg) => !arg.startsWith('-') && !arg.startsWith('--'));
+  }
+
   private isFailure(output: string): boolean {
     // The educational engine returns shell-style error text instead of POSIX exit
     // codes. Detect the stable error phrases anywhere in the command result.
@@ -252,17 +256,17 @@ export class InBrowserLinuxEngine {
           : 'Linux';
 
       case 'ping': {
-        const host = args[0] || '8.8.8.8';
+        const host = this.normalizeDemoArgs(args)[0] || '8.8.8.8';
         return this.simulated('Network demonstration only', `PING ${host} (${host}) 56(84) bytes of data.\n64 bytes from ${host}: icmp_seq=1 ttl=118 time=12.4 ms\n64 bytes from ${host}: icmp_seq=2 ttl=118 time=11.8 ms\n64 bytes from ${host}: icmp_seq=3 ttl=118 time=12.1 ms\n--- ${host} ping statistics ---\n3 packets transmitted, 3 received, 0% packet loss, time 2003ms`);
       }
 
       case 'curl': {
-        const target = args[0] || 'https://api.linuxlab.internal';
+        const target = this.normalizeDemoArgs(args)[0] || 'https://api.linuxlab.internal';
         return this.simulated('HTTP demonstration only', `\x1b[32mHTTP/1.1 200 OK\x1b[0m\nContent-Type: application/json\n\n{"status":"connected","engine":"Engine A (Simulator)","target":"${target}"}`);
       }
 
       case 'traceroute': {
-        const host = args[0] || 'google.com';
+        const host = this.normalizeDemoArgs(args)[0] || 'google.com';
         return this.simulated('Route demonstration only', `traceroute to ${host} (142.250.190.46), 30 hops max, 60 byte packets\n 1  _gateway (192.168.1.1)  0.312 ms  0.289 ms  0.267 ms\n 2  10.0.0.1 (10.0.0.1)  4.120 ms  4.090 ms  4.050 ms\n 3  ${host} (142.250.190.46)  11.450 ms  11.410 ms  11.380 ms`);
       }
 
