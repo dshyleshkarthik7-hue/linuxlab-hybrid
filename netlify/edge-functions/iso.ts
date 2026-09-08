@@ -1,4 +1,5 @@
 const ALPINE_ISO = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso';
+const LINUX4_ISO = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/linux4.iso';
 const TIMEOUT_MS = 60_000;
 const headers = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +12,7 @@ export default async function handler(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') return new Response(null,{status:204,headers});
   if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method Not Allowed',{status:405,headers:{...headers,Allow:'GET, HEAD, OPTIONS'}});
   const range=request.headers.get('Range');
+  const target = request.url.includes('/api/iso-linux4') ? LINUX4_ISO : ALPINE_ISO;
   if (range && (!/^bytes=(\d*)-(\d*)$/.test(range.trim()) || range.includes(','))) {
     return new Response('Invalid Range',{status:416,headers:{...headers,'Accept-Ranges':'bytes'}});
   }
@@ -19,7 +21,7 @@ export default async function handler(request: Request): Promise<Response> {
   try {
     const upstreamHeaders=new Headers();
     if(range) upstreamHeaders.set('Range',range);
-    const upstream=await fetch(ALPINE_ISO,{method:request.method,headers:upstreamHeaders,redirect:'follow',signal:controller.signal});
+    const upstream=await fetch(target,{method:request.method,headers:upstreamHeaders,redirect:'follow',signal:controller.signal});
     const wantsRange=Boolean(range);
     if(wantsRange && (upstream.status!==206 || !upstream.headers.get('Content-Range'))) {
       await upstream.body?.cancel();
