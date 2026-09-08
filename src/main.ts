@@ -112,6 +112,8 @@ class LinuxLabApp {
     this.simTerm.writeln('\x1b[1;36m====================================================\x1b[0m');
     this.simTerm.writeln('\x1b[1;32m   LinuxLab Engine A: Interactive Web Shell & POSIX  \x1b[0m');
     this.simTerm.writeln('\x1b[1;36m====================================================\x1b[0m');
+    this.simTerm.writeln('\x1b[1;33mEDUCATIONAL SANDBOX — NOT A REAL LINUX KERNEL. Some commands, networking, and compilation behavior are simulated.\x1b[0m');
+    this.simTerm.writeln('For real kernel/system behavior use the Real Linux Lab. Never treat sandbox network output as a real connection.');
     this.simTerm.writeln('C runtime: \x1b[33mgcc main.c -o app && ./app\x1b[0m | input: \x1b[33m./app 42\x1b[0m | \x1b[33mhelp\x1b[0m');
     this.simTerm.writeln('Supports educational C: variables, arrays, functions, if/else, for/while, printf, scanf, strings/math helpers. Real/full C: Engine B + GCC.\r\n');
     this.simTerm.write(this.engine.getPrompt());
@@ -212,7 +214,7 @@ class LinuxLabApp {
       if (restored !== undefined) this.switchFileTab(this.currentFile, restored);
       const feedback = document.getElementById('test-output-list');
       if (feedback && Object.keys(saved).length) {
-        feedback.innerHTML = '<span style="color:#38bdf8;">↻ Restored saved workspace from IndexedDB.</span>';
+        feedback.replaceChildren(); const notice = document.createElement('span'); notice.style.color = '#38bdf8'; notice.textContent = '↻ Restored saved workspace from IndexedDB.'; feedback.appendChild(notice);
       }
     } catch (error) {
       console.warn('[LinuxLab] Workspace restore unavailable:', error);
@@ -227,7 +229,7 @@ class LinuxLabApp {
 
     const feedback = document.getElementById('test-output-list');
     if (feedback) {
-      feedback.innerHTML = `<span style="color: #4ade80;">✓ Saved '/root/${this.currentFile}' to Virtual File System.</span>`;
+      feedback.replaceChildren(); const notice = document.createElement('span'); notice.style.color = '#4ade80'; notice.textContent = `✓ Saved '/root/${this.currentFile}' to Virtual File System.`; feedback.appendChild(notice);
     }
   }
 
@@ -262,6 +264,9 @@ class LinuxLabApp {
     document.getElementById('btn-run-tests')?.addEventListener('click', () => this.runAutomatedGrading());
 
     document.getElementById('btn-reset')?.addEventListener('click', () => {
+      this.currentInputBuffer = '';
+      this.waitingForProgramInput = false;
+      this.pendingProgramCommand = '';
       this.engine = new InBrowserLinuxEngine();
       this.attachEditorHook();
       this.assessment = new AssessmentRunner(this.engine);
