@@ -40,14 +40,6 @@ class LinuxLabApp {
   private waitingForProgramInput = false;
   private pendingProgramCommand = '';
   private commandHistory: string[] = [];
-  private replaceTerminalInput(next: string): void {
-    while (this.currentInputBuffer.length) {
-      this.simTerm.write('\\b \\b');
-      this.currentInputBuffer = this.currentInputBuffer.slice(0, -1);
-    }
-    this.currentInputBuffer = next;
-    this.simTerm.write(next);
-  }
 
   private sessionId = crypto.randomUUID();
   private sessionStartedAt = Date.now();
@@ -165,14 +157,6 @@ class LinuxLabApp {
     }
   }
 
-  private replaceTerminalInput(next: string): void {
-    while (this.currentInputBuffer.length) {
-      this.simTerm.write('\\b \\b');
-      this.currentInputBuffer = this.currentInputBuffer.slice(0, -1);
-    }
-    this.currentInputBuffer = next;
-    this.simTerm.write(next);
-  }
 
   private async executeTerminalCommand(cmd: string): Promise<void> {
     // The learning runtime normally receives stdin as arguments. Make scanf feel
