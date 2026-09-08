@@ -74,6 +74,23 @@ export class StorageService {
   static async saveQuizAttempt(attempt: QuizAttempt): Promise<void> {
     await this.op('quizAttempts', 'readwrite', store => store.put(attempt));
   }
+  static async clearLearningData(): Promise<void> {
+    const db = await this.getDB();
+    try {
+      await new Promise<void>((resolve, reject) => {
+        const tx = db.transaction(['workspace', 'progress', 'sessions', 'quizAttempts'], 'readwrite');
+        for (const name of ['workspace', 'progress', 'sessions', 'quizAttempts']) {
+          tx.objectStore(name).clear();
+        }
+        tx.oncomplete = () => resolve();
+        tx.onerror = () => reject(tx.error);
+        tx.onabort = () => reject(tx.error);
+      });
+    } finally {
+      db.close();
+    }
+  }
+
   static async exportData(): Promise<Record<string, unknown>> {
     const db = await this.getDB();
     try {
