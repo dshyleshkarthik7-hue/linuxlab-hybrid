@@ -1,6 +1,7 @@
 const PRIMARY_ISO_URL = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso';
 const FALLBACK_ISO_URL = 'https://huggingface.co/datasets/shyleshkarthikd/alpine-iso/resolve/main/alpine.iso?download=true';
 const TIMEOUT_MS = 15_000;
+const MAX_RANGE_HEADER_LENGTH = 128;
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
@@ -38,7 +39,11 @@ export default async function handler(request: Request): Promise<Response> {
   if (!['GET', 'HEAD'].includes(request.method)) {
     return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD, OPTIONS', ...corsHeaders } });
   }
-  const wantsRange = request.headers.has('Range');
+  const rangeHeader = request.headers.get('Range');
+  if (rangeHeader && (rangeHeader.length > MAX_RANGE_HEADER_LENGTH || !/^bytes=\d*-\d*(?:,\d*-\d*)*$/.test(rangeHeader))) {
+    return new Response('Invalid Range header', { status: 416, headers: corsHeaders });
+  }
+  const wantsRange = Boolean(rangeHeader);
   const failures: string[] = [];
   for (const [name, url] of [['github-release', PRIMARY_ISO_URL], ['fallback-mirror', FALLBACK_ISO_URL]] as const) {
     try {
