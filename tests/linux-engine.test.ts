@@ -89,6 +89,16 @@ async function run() {
   const composite = javaAssessment.checks.find(check => check.label === 'Composite test for 8');
   assert.equal(composite?.passed, true);
 
+  // CI compatibility: files imported by Node's --experimental-strip-types mode
+  // must avoid non-erasable TypeScript syntax such as parameter properties.
+  const assessment = new AssessmentRunner(e);
+  assert.equal(assessment.runCTestSuite(e.readFile('/root/main.c') || '').total > 0, true);
+
+  // Simulator transparency: illustrative Engine A memory must not be confused
+  // with the real Engine B 1 GiB VM allocation.
+  assert.ok((await e.execute('free')).includes('illustrative 256 MiB model'));
+  assert.ok((await e.execute('top')).includes('illustrative 256 MiB model'));
+
   console.log('LinuxLab happy-path engine checks passed');
 }
 
