@@ -629,7 +629,7 @@ export class InBrowserLinuxEngine {
     return this.executeJavaEducational(code);
   }
 
-  private executeJavaEducational(code: string): string {
+  private executeJavaEducational(code: string, injectedVars: Record<string, number> = {}): string {
     // Deliberately conservative educational parser. This is not a JVM and never
     // executes generated JavaScript. It supports the small print-focused subset
     // used by LinuxLab lessons and reports unsupported constructs honestly.
@@ -642,6 +642,7 @@ export class InBrowserLinuxEngine {
       return '\x1b[31m[Java Educational Parser]:\x1b[0m This construct is outside the safe simulator subset.';
     }
     const vars = new Map<string, string | number | boolean>();
+    for (const [name, value] of Object.entries(injectedVars)) vars.set(name, value);
     const declarations = text.matchAll(/\b(?:int|long|short|float|double|boolean|char|String)\s+(\w+)\s*=\s*([^;]+);/g);
     for (const match of declarations) {
       const raw = match[2].trim();
