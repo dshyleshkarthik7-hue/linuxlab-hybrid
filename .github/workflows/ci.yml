@@ -21,6 +21,8 @@ jobs:
         run: npm run test
       - name: Type-check and production build
         run: npm run build
+      - name: Full CI script parity
+        run: npm run check
       - name: Verify production entry points
         run: |
           test -f dist/index.html
