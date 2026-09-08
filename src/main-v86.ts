@@ -2,272 +2,154 @@ import * as xtermModule from '@xterm/xterm';
 import * as fitModule from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 
-const TerminalConstructor = (xtermModule as any).Terminal || (xtermModule as any).default?.Terminal || (xtermModule as any).default || xtermModule;
-const FitAddonConstructor = (fitModule as any).FitAddon || (fitModule as any).default?.FitAddon || (fitModule as any).default || fitModule;
+const Terminal = (xtermModule as any).Terminal ?? (xtermModule as any).default?.Terminal;
+const FitAddon = (fitModule as any).FitAddon ?? (fitModule as any).default?.FitAddon;
+const ISO_URL = '/api/iso';
 
-type VMState = 'stopped' | 'loading' | 'booting' | 'ready' | 'error';
-type BootProfile = { name: string; iso: string; memoryMiB: number };
-const ISO_STREAM_ENDPOINT = '/api/iso';
+type Profile = { name: string; memoryMiB: number };
 
 export class V86LinuxTerminal {
-  private term: any = null;
-  private fitAddon: any = null;
+  private term: any;
+  private fitAddon: any;
   private emulator: any = null;
-  private readonly containerId: string;
-  private resizeObserver: ResizeObserver | null = null;
-  private resizeDebounceTimer: number | null = null;
-  private state: VMState = 'stopped';
-  private shellReady = false;
-  private serialBuffer = '';
-  private progressTimer: number | null = null;
-  private monitorTimer: number | null = null;
-  private gccSetupStarted = false;
-  private bootStartedAt = 0;
-  private lastOutputAt = 0;
-  private bootGeneration = 0;
+  private state: 'idle'|'loading'|'booting'|'ready'|'error' = 'idle';
+  private bootToken = 0;
   private bootPromise: Promise<void> | null = null;
-  private currentProfile: BootProfile = { name: 'Alpine Linux (Developer)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 };
-  private static v86LoadPromise: Promise<void> | null = null;
-
-  private assetUrl(path: string): string { return new URL(path, document.baseURI).toString(); }
+  private profile: Profile = { name: 'Developer Alpine', memoryMiB: 1024 };
+  private serial = '';
+  private ready = false;
+  private static loader: Promise<void> | null = null;
 
   constructor(containerId = 'v86-terminal-container') {
-    this.containerId = containerId;
-    this.initTerminal();
-    this.bindExternalButtons();
-  }
-
-  private initTerminal(): void {
-    const container = document.getElementById(this.containerId);
-    if (!container) throw new Error(`Missing #${this.containerId}`);
-    this.term = new TerminalConstructor({ cursorBlink: true, fontSize: 14, convertEol: true, scrollback: 10000 });
-    this.fitAddon = new FitAddonConstructor();
+    if (!Terminal || !FitAddon) throw new Error('Terminal runtime failed to load');
+    const container = document.getElementById(containerId);
+    if (!container) throw new Error(`Missing #${containerId}`);
+    this.term = new Terminal({ cursorBlink: true, fontSize: 14, convertEol: true, scrollback: 10000 });
+    this.fitAddon = new FitAddon();
     this.term.loadAddon(this.fitAddon);
     this.term.open(container);
-    window.setTimeout(() => this.fit(), 50);
-    if (typeof ResizeObserver !== 'undefined') {
-      this.resizeObserver = new ResizeObserver(() => this.handleViewportResize());
-      this.resizeObserver.observe(container);
-    }
-    window.addEventListener('resize', this.onWindowResize);
-    this.term.onData((data: string) => { if (this.emulator) this.sendSerial(data); });
-    container.addEventListener('click', () => this.term?.focus());
+    this.term.onData((data: string) => this.send(data));
+    new ResizeObserver(() => this.fit()).observe(container);
+    window.setTimeout(() => this.fit(), 100);
+    this.bindButtons();
   }
 
-  private onWindowResize = (): void => this.handleViewportResize();
-  private handleViewportResize(): void {
-    if (this.resizeDebounceTimer !== null) window.clearTimeout(this.resizeDebounceTimer);
-    this.resizeDebounceTimer = window.setTimeout(() => this.fit(), 50);
-  }
-  public fit(): void { try { this.fitAddon?.fit(); } catch {} }
-  public sendMobileInput(data: string): void { this.term?.focus(); this.sendSerial(data); }
-  private writeLine(text: string): void { try { this.term?.writeln(text); } catch { console.log(text); } }
-
-  private bindExternalButtons(): void {
-    document.getElementById('btn-v86-restart')?.addEventListener('click', () => void this.restart());
+  private bindButtons(): void {
     document.getElementById('btn-v86-alpine')?.addEventListener('click', () => void this.bootAlpine(true));
     document.getElementById('btn-v86-fallback')?.addEventListener('click', () => void this.bootQuick());
-    document.getElementById('btn-v86-gcc')?.addEventListener('click', () => this.requestGcc());
-    const network = document.getElementById('btn-v86-network') as HTMLButtonElement | null;
-    if (network) { network.disabled = true; network.textContent = '🌐 Network unavailable'; }
+    document.getElementById('btn-v86-restart')?.addEventListener('click', () => void this.restart());
+    document.getElementById('btn-v86-gcc')?.addEventListener('click', () => this.gcc());
   }
 
-  private setStatus(text: string): void { const el = document.getElementById('v86-status'); if (el) el.textContent = text; }
-  private setMonitor(text: string): void { const el = document.getElementById('v86-monitor'); if (el) el.textContent = text; }
+  private fit(): void { try { this.fitAddon.fit(); } catch {} }
+  private status(s: string): void { const e=document.getElementById('v86-status'); if(e)e.textContent=s; }
+  private monitor(s: string): void { const e=document.getElementById('v86-monitor'); if(e)e.textContent=s; }
+  private asset(path: string): string { return new URL(path, window.location.origin + '/').href; }
 
   public async boot(): Promise<void> { await this.bootAlpine(false); }
-  public async bootAlpine(force = true): Promise<void> { await this.startProfile({ name: 'Alpine Linux (Developer)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 }, force); }
-  public async bootQuick(): Promise<void> { await this.startProfile({ name: 'Alpine Linux (Quick)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 256 }, true); }
+  public async bootAlpine(force=true): Promise<void> { await this.start({name:'Developer Alpine',memoryMiB:1024},force); }
+  public async bootQuick(): Promise<void> { await this.start({name:'Quick Alpine',memoryMiB:256},true); }
+  public async restart(): Promise<void> { await this.start(this.profile,true); }
 
-  private async startProfile(profile: BootProfile, force: boolean): Promise<void> {
-    if (!force && this.emulator && this.state !== 'error') { this.term?.focus(); return; }
-    if (this.bootPromise) {
-      this.bootGeneration++;
-      try { await this.bootPromise; } catch {}
-    }
-    const generation = ++this.bootGeneration;
-    const promise: Promise<void> = this.startProfileInternal(profile, generation).then(
-      () => undefined,
-      (error: unknown) => { throw error; }
-    ).finally(() => {
-      if (generation === this.bootGeneration) this.bootPromise = null;
-    });
-    this.bootPromise = promise;
-    await promise;
+  private async start(profile: Profile, force: boolean): Promise<void> {
+    if (!force && this.emulator && this.state !== 'error') { this.term.focus(); return; }
+    const token = ++this.bootToken;
+    if (this.bootPromise) { try { await this.bootPromise; } catch {} }
+    if (token !== this.bootToken) return;
+    const run = this.startInternal(profile, token);
+    this.bootPromise = run;
+    try { await run; } finally { if (this.bootPromise === run) this.bootPromise = null; }
   }
 
-  private async startProfileInternal(profile: BootProfile, generation: number): Promise<void> {
-    this.stopTimers();
-    await this.destroyEmulator();
-    if (generation !== this.bootGeneration) return;
-    this.currentProfile = profile;
-    this.state = 'loading';
-    this.shellReady = false;
-    this.serialBuffer = '';
-    this.gccSetupStarted = false;
-    this.bootStartedAt = performance.now();
-    this.lastOutputAt = this.bootStartedAt;
-    this.term?.clear();
-    this.writeLine(`LinuxLab — ${profile.name}`);
-    this.setStatus(`${profile.name} • loading`);
-    this.setMonitor(`RAM allocation: ${profile.memoryMiB} MiB • guest network disabled`);
-
+  private async startInternal(profile: Profile, token: number): Promise<void> {
+    await this.disposeVM();
+    if (token !== this.bootToken) return;
+    this.profile=profile; this.ready=false; this.serial=''; this.state='loading';
+    this.term.clear(); this.term.writeln(`LinuxTerminal — ${profile.name}`);
+    this.term.writeln('Loading real Alpine Linux…');
+    this.status(`${profile.name} • loading`);
+    this.monitor(`${profile.memoryMiB} MiB`);
     try {
-      await this.loadScript();
-      if (generation !== this.bootGeneration) return;
-      const V86Starter = (window as any).V86Starter;
-      if (!V86Starter) throw new Error('v86 runtime loaded but V86Starter was not exported');
-      const screen = document.getElementById('screen_container');
-      if (!screen) throw new Error('Missing #screen_container');
-      const emulator = new V86Starter({
-        wasm_path: this.assetUrl('v86.wasm'),
-        memory_size: profile.memoryMiB * 1024 * 1024,
-        vga_memory_size: 8 * 1024 * 1024,
-        bios: { url: this.assetUrl('seabios.bin') },
-        vga_bios: { url: this.assetUrl('vgabios.bin') },
-        cdrom: { url: profile.iso, async: true },
-        screen_container: screen, autostart: true,
-        disable_speaker: true, disable_keyboard: false, disable_mouse: true
+      await this.loadV86();
+      if (token !== this.bootToken) return;
+      const screen=document.getElementById('screen_container');
+      if(!screen) throw new Error('Missing VM screen container');
+      const V86Starter=(window as any).V86Starter;
+      if(!V86Starter) throw new Error('V86Starter is unavailable');
+      const emulator=new V86Starter({
+        wasm_path:this.asset('/v86.wasm'),
+        memory_size:profile.memoryMiB*1024*1024,
+        vga_memory_size:8*1024*1024,
+        bios:{url:this.asset('/seabios.bin')},
+        vga_bios:{url:this.asset('/vgabios.bin')},
+        cdrom:{url:ISO_URL,async:true},
+        screen_container:screen,
+        autostart:true,
+        disable_speaker:true,
+        disable_mouse:true
       });
-      if (generation !== this.bootGeneration) { try { emulator.stop?.(); emulator.destroy?.(); } catch {} return; }
-      this.emulator = emulator;
-      emulator.add_listener('serial0-output-byte', (byte: number) => {
-        if (generation === this.bootGeneration) this.handleSerialByte(byte);
-      });
-      this.state = 'booting';
-      this.progressTimer = window.setInterval(() => this.reportBootProgress(), 5000);
-      this.monitorTimer = window.setInterval(() => this.updateUsageMonitor(), 1000);
-      this.fit();
-      this.term?.focus();
-    } catch (error: any) {
-      if (generation === this.bootGeneration) await this.handleBootError(error?.message || String(error));
+      if(token!==this.bootToken){ try{emulator.stop?.();emulator.destroy?.();}catch{} return; }
+      this.emulator=emulator; this.state='booting';
+      emulator.add_listener('serial0-output-byte',(b:number)=>{if(token===this.bootToken)this.output(b);});
+      this.status(`${profile.name} • booting`);
+      this.monitor(`${profile.memoryMiB} MiB • booting`);
+      this.fit(); this.term.focus();
+    } catch (e) {
+      if(token===this.bootToken) this.fail(e instanceof Error?e.message:String(e));
     }
   }
 
-  private handleSerialByte(byte: number): void {
-    const char = String.fromCharCode(byte & 0xff);
-    this.lastOutputAt = performance.now();
-    this.serialBuffer = (this.serialBuffer + char).slice(-16000);
-    this.term?.write(char);
-    const visible = this.stripAnsi(this.serialBuffer);
-    if (!this.shellReady && (/No space left on device/i.test(visible) || /emergency recovery shell/i.test(visible))) {
-      void this.handleBootError('Alpine failed during boot. The boot image or writable overlay needs rebuilding.');
-      return;
+  private output(byte:number):void {
+    const ch=String.fromCharCode(byte&255);
+    this.serial=(this.serial+ch).slice(-12000);
+    this.term.write(ch);
+    if(!this.ready && /(?:^|\n)(?:[^\n]*[#>$])\s*$/m.test(this.clean(this.serial))) {
+      this.ready=true; this.state='ready';
+      this.status(`${this.profile.name} • ready`);
+      this.monitor(`${this.profile.memoryMiB} MiB • ready`);
+      window.setTimeout(()=>this.send('export TERM=xterm-256color; clear\r'),200);
     }
-    if (!this.shellReady && this.isShellPrompt(visible)) this.markReady();
   }
 
-  private isShellPrompt(text: string): boolean {
-    const lines = text.replace(/\r/g, '\n').split('\n').map(line => line.trim()).filter(Boolean).slice(-20);
-    return lines.some(line => /(?:^|\s)(?:[\w.-]+@)?[\w.-]+:[^\n]*[#$>]$/.test(line) || /^(?:~|\/|\.)?[^\s]*[#$>]$/.test(line));
+  private clean(s:string):string{return s.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g,'').replace(/\r/g,'\n');}
+  private send(data:string):void{try{this.emulator?.serial0_send?.(data);}catch(e){this.term.writeln('\r\n[Serial error] '+String(e));}}
+  private gcc():void{if(!this.ready){this.term.writeln('\r\n[GCC] Wait for Alpine to finish booting.');return;}this.send('command -v gcc >/dev/null && gcc --version || echo "GCC is not installed in this image"\r');}
+
+  private fail(message:string):void {
+    this.state='error'; this.ready=false;
+    this.status(`${this.profile.name} • error`); this.monitor('Boot failed');
+    this.term.writeln(`\r\n[VM Boot Error] ${message}`);
+    void this.disposeVM();
   }
 
-  private markReady(): void {
-    if (this.shellReady) return;
-    this.shellReady = true; this.state = 'ready'; this.stopTimers();
-    this.setStatus(`${this.currentProfile.name} • ready`);
-    this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • guest network disabled • ready`);
-    const cols = this.term?.cols || 120, rows = this.term?.rows || 30;
-    window.setTimeout(() => {
-      if (!this.shellReady) return;
-      this.sendSerial(`stty cols ${cols} rows ${rows}; export TERM=xterm-256color; clear\r`);
-      this.checkGccToolchain();
-    }, 300);
+  private async disposeVM():Promise<void>{
+    const vm=this.emulator; this.emulator=null; this.ready=false;
+    if(!vm)return;
+    try{vm.stop?.();}catch{}
+    try{vm.destroy?.();}catch{}
   }
 
-  public requestGcc(): void {
-    this.term?.focus();
-    if (!this.shellReady) { this.writeLine('[GCC] VM is still booting.'); return; }
-    this.checkGccToolchain();
-  }
-  private checkGccToolchain(): void {
-    if (!this.shellReady || !this.emulator || this.gccSetupStarted) return;
-    this.gccSetupStarted = true;
-    this.sendSerial('command -v gcc >/dev/null 2>&1 && gcc --version || echo "[LinuxLab] GCC is not installed in this image"\r');
-  }
-  private sendSerial(data: string): void {
-    if (!this.emulator || typeof this.emulator.serial0_send !== 'function') return;
-    try { this.emulator.serial0_send(data); } catch (error) { this.writeLine(`[Serial Error] ${String(error)}`); }
-  }
-
-  public async restart(): Promise<void> { await this.bootAlpine(true); }
-  public async destroy(): Promise<void> {
-    this.bootGeneration++; this.stopTimers();
-    if (this.resizeDebounceTimer !== null) window.clearTimeout(this.resizeDebounceTimer);
-    this.resizeObserver?.disconnect();
-    window.removeEventListener('resize', this.onWindowResize);
-    await this.destroyEmulator();
-    this.state = 'stopped'; this.shellReady = false; this.setStatus('stopped');
-  }
-  private async destroyEmulator(): Promise<void> {
-    const emulator = this.emulator;
-    this.emulator = null; this.shellReady = false;
-    if (!emulator) return;
-    try { if (typeof emulator.stop === 'function') emulator.stop(); } catch {}
-    try { if (typeof emulator.destroy === 'function') emulator.destroy(); } catch {}
-  }
-
-  private reportBootProgress(): void {
-    if (!this.emulator || this.shellReady || this.state === 'error') return;
-    const elapsed = Math.round((performance.now() - this.bootStartedAt) / 1000);
-    const silent = Math.round((performance.now() - this.lastOutputAt) / 1000);
-    if (silent >= 20) this.writeLine(`[Boot monitor] ${elapsed}s elapsed; waiting for guest output...`);
-    this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • Boot: ${elapsed}s • guest network disabled`);
-  }
-  private updateUsageMonitor(): void {
-    if (!this.emulator || this.state === 'error') return;
-    const elapsed = Math.round((performance.now() - this.bootStartedAt) / 1000);
-    this.setMonitor(`RAM allocation: ${this.memoryMiB()} MiB • Boot: ${elapsed}s • ${this.shellReady ? 'ready' : 'booting'}`);
-  }
-  private memoryMiB(): number { return this.currentProfile.memoryMiB; }
-
-  private async handleBootError(message: string): Promise<void> {
-    if (this.state === 'error') return;
-    this.stopTimers(); this.state = 'error';
-    this.writeLine(`[VM Boot Error] ${message}`);
-    this.setStatus(`${this.currentProfile.name} • error`);
-    this.setMonitor('boot error');
-    await this.destroyEmulator();
-  }
-  private stopTimers(): void {
-    if (this.progressTimer !== null) { window.clearInterval(this.progressTimer); this.progressTimer = null; }
-    if (this.monitorTimer !== null) { window.clearInterval(this.monitorTimer); this.monitorTimer = null; }
-  }
-  private stripAnsi(text: string): string {
-    return text.replace(/\x1b\[[0-?]*[ -/]*[@-~]/g, '').replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '');
-  }
-
-  private loadScript(): Promise<void> {
-    if ((window as any).V86Starter) return Promise.resolve(undefined);
-    if (V86LinuxTerminal.v86LoadPromise) return V86LinuxTerminal.v86LoadPromise;
-
-    const promise: Promise<void> = new Promise<void>((resolve, reject) => {
-      const existing = document.querySelector('script[data-linuxlab-v86]') as HTMLScriptElement | null;
-      if (existing) {
-        if ((window as any).V86Starter) { resolve(undefined); return; }
-        existing.addEventListener('load', () => {
-          if ((window as any).V86Starter) resolve(undefined);
-          else reject(new Error('libv86.js loaded without V86Starter'));
-        }, { once: true });
-        existing.addEventListener('error', () => reject(new Error('Failed to load libv86.js')), { once: true });
-        return;
-      }
-      const script = document.createElement('script');
-      script.src = this.assetUrl('libv86.js');
-      script.async = true;
-      script.dataset.linuxlabV86 = 'true';
-      script.addEventListener('load', () => {
-        if ((window as any).V86Starter) resolve(undefined);
-        else reject(new Error('libv86.js loaded without V86Starter'));
-      }, { once: true });
-      script.addEventListener('error', () => reject(new Error('Failed to load libv86.js')), { once: true });
-      document.head.appendChild(script);
-    });
-
-    V86LinuxTerminal.v86LoadPromise = promise.catch((error: unknown): never => {
-      V86LinuxTerminal.v86LoadPromise = null;
-      throw error;
-    });
-    return V86LinuxTerminal.v86LoadPromise!;
+  private loadV86():Promise<void>{
+    if((window as any).V86Starter)return Promise.resolve();
+    if(V86LinuxTerminal.loader)return V86LinuxTerminal.loader;
+    V86LinuxTerminal.loader=new Promise<void>((resolve,reject)=>{
+      const s=document.createElement('script');
+      s.src=this.asset('/libv86.js'); s.async=true;
+      s.onload=()=> (window as any).V86Starter ? resolve() : reject(new Error('libv86.js did not expose V86Starter'));
+      s.onerror=()=>reject(new Error('Failed to load /libv86.js'));
+      document.head.appendChild(s);
+    }).catch((e:unknown)=>{V86LinuxTerminal.loader=null;throw e;});
+    return V86LinuxTerminal.loader;
   }
 }
+
+window.addEventListener('DOMContentLoaded',()=>{
+  try{
+    const vm=new V86LinuxTerminal();
+    (window as any).linuxLabVM=vm;
+    void vm.boot();
+  }catch(e){
+    console.error(e);
+    const s=document.getElementById('v86-status');if(s)s.textContent='Terminal initialization failed';
+  }
+});
