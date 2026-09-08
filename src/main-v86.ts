@@ -30,7 +30,8 @@ export class V86LinuxTerminal {
   private decoder = new TextDecoder('utf-8');
   private bootTimer: number | null = null;
   private progressTimer: number | null = null;
-  private monitorTimer: number | null = null;  private gccSetupStarted = false;
+  private monitorTimer: number | null = null;
+  private gccSetupStarted = false;
   private bootStartedAt = 0;
   private lastOutputAt = 0;
   private currentProfile: BootProfile = { name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 };
