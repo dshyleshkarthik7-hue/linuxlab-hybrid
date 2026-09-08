@@ -39,6 +39,8 @@ class LinuxLabApp {
   private currentInputBuffer: string = '';
   private waitingForProgramInput = false;
   private pendingProgramCommand = '';
+  private commandHistory: string[] = [];
+  private historyIndex = -1;
   private sessionId = crypto.randomUUID();
   private sessionStartedAt = Date.now();
 
@@ -155,6 +157,15 @@ class LinuxLabApp {
     }
   }
 
+  private replaceTerminalInput(next: string): void {
+    while (this.currentInputBuffer.length) {
+      this.simTerm.write('\\b \\b');
+      this.currentInputBuffer = this.currentInputBuffer.slice(0, -1);
+    }
+    this.currentInputBuffer = next;
+    this.simTerm.write(next);
+  }
+
   private async executeTerminalCommand(cmd: string): Promise<void> {
     // The learning runtime normally receives stdin as arguments. Make scanf feel
     // interactive by pausing the terminal and collecting those values first.
@@ -177,6 +188,9 @@ class LinuxLabApp {
     }
 
     try {
+      this.commandHistory.push(cmd);
+      if (this.commandHistory.length > 200) this.commandHistory.shift();
+      this.historyIndex = -1;
       const output = await this.engine.execute(cmd);
       if (output) this.simTerm.writeln(output);
       void this.persistSession(cmd);
@@ -269,9 +283,14 @@ class LinuxLabApp {
     }
 
     feedbackList.replaceChildren();
-    for (const entry of res.logs) {
+    const summary = document.createElement('div');
+    summary.className = 'assessment-summary';
+    summary.textContent = `${res.score}% — ${res.passed}/${res.total} checks passed`;
+    feedbackList.appendChild(summary);
+    for (const check of res.checks) {
       const line = document.createElement('div');
-      line.textContent = entry;
+      line.className = check.passed ? 'assessment-check passed' : 'assessment-check failed';
+      line.textContent = `${check.passed ? '✓' : '○'} ${check.label} — ${check.feedback}`;
       feedbackList.appendChild(line);
     }
     void StorageService.saveProgress(this.currentFile.endsWith('.java') ? 'java-prime' : 'c-table', res.score, res.score >= 80)
