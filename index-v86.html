@@ -1,36 +1,39 @@
-<!DOCTYPE html>
-<html lang="en"><head>
-<meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<meta name="description" content="Boot and practice with real Alpine Linux directly in your browser." />
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Boot and practice with real Alpine Linux directly in your browser.">
 <title>Real Alpine Linux Online | LinuxTerminal</title>
-<link rel="stylesheet" href="/src/style.css" />
-<link rel="canonical" href="https://linuxterminal.me/real-linux/" />
-</head><body><div id="app">
-<header class="app-header"><div class="logo-group"><span style="font-size:1.3rem;">🖥️</span><span class="logo-title">LinuxTerminal <span class="badge" style="color:#4ade80;border-color:#4ade80;">REAL • x86 Emulator</span></span></div>
-<div class="header-actions" id="v86-controls">
-<span id="v86-status" class="action-btn" aria-live="polite">starting…</span>
-<span id="v86-monitor" class="action-btn" aria-live="polite">Loading profile…</span>
-<button id="btn-v86-alpine" class="action-btn" type="button">🐧 Developer Alpine (1 GB)</button>
-<button id="btn-v86-fallback" class="action-btn" type="button">⚡ Quick Alpine (256 MB)</button>
-<button id="btn-v86-gcc" class="action-btn" type="button">⚙ GCC</button>
-<button id="btn-v86-network" class="action-btn" type="button">🌐 Network unavailable</button>
-<button id="btn-v86-restart" class="action-btn" type="button">↺ Reboot VM</button>
-<a href="/" class="action-btn" style="text-decoration:none;">🏠 Home</a></div></header>
-<main style="display:flex;flex:1;height:calc(100vh - 55px);min-height:0;background:#020617;position:relative;overflow:hidden;">
-<div id="v86-terminal-container" style="flex:1;width:100%;height:100%;min-width:0;min-height:0;padding:12px;position:relative;"></div>
-<div id="screen_container" aria-hidden="true" style="position:absolute;left:-10000px;top:-10000px;width:640px;height:400px;visibility:hidden;pointer-events:none;overflow:hidden;"><div style="white-space:pre;font:14px monospace;line-height:14px;"></div><canvas></canvas></div>
-<div id="mobile-linux-keyboard" aria-label="LinuxTerminal mobile keyboard"></div></main></div>
-<style>#mobile-linux-keyboard{display:none;position:fixed;bottom:0;left:0;right:0;padding:8px;background:rgba(2,6,23,.72);backdrop-filter:blur(12px);z-index:99;gap:5px;flex-wrap:wrap}#mobile-linux-keyboard button{min-width:38px;min-height:38px;border:1px solid #334155;border-radius:8px;background:rgba(15,23,42,.72);color:#e2e8f0}@media(max-width:700px){#mobile-linux-keyboard{display:flex}#v86-terminal-container{padding-bottom:230px!important}}</style>
-<script type="module">
-import { V86LinuxTerminal } from './src/main-v86.ts';
-window.addEventListener('DOMContentLoaded', async () => {
-  const vm = new V86LinuxTerminal('v86-terminal-container');
-  (window).linuxLabVM = vm;
-  try { await vm.bootAlpine(false); } catch (error) {
-    console.error('[LinuxTerminal] VM startup failed:', error);
-    document.getElementById('v86-status').textContent = 'Alpine emulator failed to start';
-  }
-  const kb=document.getElementById('mobile-linux-keyboard'); const keys=['ESC','TAB','↑','↓','←','→','/','-','_','|','~','Q','W','E','R','T','Y','U','I','O','P','A','S','D','F','G','H','J','K','L','Z','X','C','V','B','N','M','⌫','SPACE','ENTER'];
-  keys.forEach(k=>{const b=document.createElement('button');b.textContent=k;b.onclick=()=>{const data=k==='ESC'?'\x1b':k==='TAB'?'\t':k==='ENTER'?'\r':k==='SPACE'?' ':k==='⌫'?'\x7f':k;vm.sendMobileInput(data);};kb.appendChild(b);});
-});
-</script></body></html>
+<link rel="canonical" href="https://linuxterminal.me/real-linux/">
+</head>
+<body>
+<div id="app">
+<header class="app-header">
+  <div class="logo-group"><span>🖥️</span><span class="logo-title">LinuxTerminal <span class="badge">REAL • x86 Emulator</span></span></div>
+  <div class="header-actions" id="v86-controls">
+    <span id="v86-status" class="action-btn" aria-live="polite">Starting…</span>
+    <span id="v86-monitor" class="action-btn" aria-live="polite">Preparing VM…</span>
+    <button id="btn-v86-alpine" class="action-btn" type="button">🐧 Developer (1 GB)</button>
+    <button id="btn-v86-fallback" class="action-btn" type="button">⚡ Quick (256 MB)</button>
+    <button id="btn-v86-gcc" class="action-btn" type="button">⚙ GCC</button>
+    <button id="btn-v86-restart" class="action-btn" type="button">↺ Reboot</button>
+    <a href="/" class="action-btn">🏠 Home</a>
+  </div>
+</header>
+<main class="vm-main">
+  <div id="v86-terminal-container"></div>
+  <div id="screen_container" aria-hidden="true"><div></div><canvas></canvas></div>
+</main>
+</div>
+<style>
+html,body,#app{margin:0;width:100%;height:100%;background:#020617}
+.vm-main{height:calc(100vh - 64px);min-height:0;position:relative}
+#v86-terminal-container{position:absolute;inset:0;padding:12px;box-sizing:border-box}
+#screen_container{position:absolute;left:-10000px;top:-10000px;width:640px;height:400px;visibility:hidden;pointer-events:none}
+.header-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+@media(max-width:700px){.vm-main{height:calc(100vh - 150px)}}
+</style>
+<script type="module" src="/src/main-v86.ts"></script>
+</body>
+</html>
