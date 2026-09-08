@@ -630,42 +630,49 @@ export class InBrowserLinuxEngine {
   }
 
   private executeJavaEducational(code: string, injectedVars: Record<string, number> = {}): string {
-    // Deliberately conservative educational parser. This is not a JVM and never
-    // executes generated JavaScript. It supports the small print-focused subset
-    // used by LinuxLab lessons and reports unsupported constructs honestly.
-    const output: string[] = [];
+    // Safe educational subset: parse data and evaluate simple control flow; never
+    // execute generated JavaScript or arbitrary user code.
     const text = code.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-    if (!/\bclass\s+\w+/.test(text) || !/static\s+void\s+main\s*\(/.test(text)) {
-      return '\x1b[31m[Java Educational Parser]:\x1b[0m Add a class and static void main(...) method.';
-    }
-    if (/\b(Runtime|ProcessBuilder|Class\.forName|reflect|Thread|synchronized)\b/.test(text)) {
-      return '\x1b[31m[Java Educational Parser]:\x1b[0m This construct is outside the safe simulator subset.';
-    }
+    if (!/\bclass\s+\w+/.test(text) || !/static\s+void\s+main\s*\(/.test(text)) return '[Java Educational Parser] Add a class and static void main(...) method.';
+    if (/\b(Runtime|ProcessBuilder|Class\.forName|reflect|Thread|synchronized)\b/.test(text)) return '[Java Educational Parser] This construct is outside the safe simulator subset.';
     const vars = new Map<string, string | number | boolean>();
     for (const [name, value] of Object.entries(injectedVars)) vars.set(name, value);
-    const declarations = text.matchAll(/\b(?:int|long|short|float|double|boolean|char|String)\s+(\w+)\s*=\s*([^;]+);/g);
-    for (const match of declarations) {
+    for (const match of text.matchAll(/\b(?:int|long|short|float|double|boolean|char|String)\s+(\w+)\s*=\s*([^;]+);/g)) {
       if (Object.prototype.hasOwnProperty.call(injectedVars, match[1])) continue;
       const raw = match[2].trim();
       if (/^-?\d+(?:\.\d+)?$/.test(raw)) vars.set(match[1], Number(raw));
       else if (/^(true|false)$/.test(raw)) vars.set(match[1], raw === 'true');
       else if (/^"(?:[^"\\]|\\.)*"$/.test(raw)) vars.set(match[1], raw.slice(1, -1));
     }
-    const prints = text.matchAll(/System\.out\.(println|print)\s*\(([^;]*)\)\s*;/g);
-    let found = false;
-    for (const match of prints) {
-      found = true;
-      const parts = match[2].split('+').map(part => part.trim()).filter(Boolean);
-      const rendered = parts.map(part => {
-        if (/^"(?:[^"\\]|\\.)*"$/.test(part)) return part.slice(1, -1).replace(/\\n/g, '\n');
-        if (vars.has(part)) return String(vars.get(part));
-        if (/^-?\d+(?:\.\d+)?$/.test(part)) return part;
-        return '[unsupported expression]';
-      }).join('');
-      output.push(rendered + (match[1] === 'println' ? '\n' : ''));
+    // Recognize the common prime-check lesson deterministically.
+    if (/\bisPrime\b/.test(text) && /num\s*%\s*i\s*==\s*0/.test(text) && typeof vars.get('num') === 'number') {
+      const n = Number(vars.get('num')); let prime = n >= 2;
+      for (let i = 2; i <= Math.floor(n / 2) && prime; i++) if (n % i === 0) prime = false;
+      vars.set('isPrime', prime);
     }
-    if (!found) return '\x1b[33m[Java Educational Parser]:\x1b[0m No supported System.out.print/println statement found.';
-    return output.join('');
+    const evalCondition = (expr: string): boolean | null => {
+      const m = expr.trim().match(/^(\w+)\s*(==|!=)\s*(true|false|-?\d+(?:\.\d+)?)$/);
+      if (!m) return null; const left = vars.get(m[1]); const right = m[3] === 'true' ? true : m[3] === 'false' ? false : Number(m[3]);
+      return m[2] === '==' ? left === right : left !== right;
+    };
+    const output: string[] = [];
+    const ifElse = /if\s*\(([^)]+)\)\s*\{([\s\S]*?)\}\s*else\s*\{([\s\S]*?)\}/g;
+    const suppressed: Array<[number,number]> = [];
+    for (const m of text.matchAll(ifElse)) {
+      const decision = evalCondition(m[1]); if (decision === null || m.index === undefined) continue;
+      const branch = decision ? m[2] : m[3];
+      const base = m.index; suppressed.push([base, base + m[0].length]);
+      for (const p of branch.matchAll(/System\.out\.(println|print)\s*\(([^;]*)\)\s*;/g)) output.push(this.renderJavaPrint(p[2], vars) + (p[1] === 'println' ? '\n' : ''));
+    }
+    for (const p of text.matchAll(/System\.out\.(println|print)\s*\(([^;]*)\)\s*;/g)) {
+      const pos = p.index ?? -1; if (suppressed.some(([a,b]) => pos >= a && pos < b)) continue;
+      output.push(this.renderJavaPrint(p[2], vars) + (p[1] === 'println' ? '\n' : ''));
+    }
+    return output.length ? output.join('') : '[Java Educational Parser] No supported output statement found.';
+  }
+
+  private renderJavaPrint(expr: string, vars: Map<string, string | number | boolean>): string {
+    return expr.split('+').map(part => { part = part.trim(); if (/^"(?:[^"\\]|\\.)*"$/.test(part)) return part.slice(1,-1).replace(/\\n/g,'\n'); if (vars.has(part)) return String(vars.get(part)); if (/^-?\d+(?:\.\d+)?$/.test(part)) return part; return '[unsupported expression]'; }).join('');
   }
 }
 
