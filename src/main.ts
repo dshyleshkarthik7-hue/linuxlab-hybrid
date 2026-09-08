@@ -115,7 +115,7 @@ class LinuxLabApp {
     }, 150);
 
     this.simTerm.writeln('\x1b[1;36m====================================================\x1b[0m');
-    this.simTerm.writeln('\x1b[1;32m   LinuxLab Engine A: Interactive Web Shell & POSIX  \x1b[0m');
+    this.simTerm.writeln('\x1b[1;32m   LinuxTerminal Engine A: Interactive Web Shell & POSIX  \x1b[0m');
     this.simTerm.writeln('\x1b[1;36m====================================================\x1b[0m');
     this.simTerm.writeln('\x1b[1;33mEDUCATIONAL SANDBOX — NOT A REAL LINUX KERNEL. Some commands, networking, and compilation behavior are simulated.\x1b[0m');
     this.simTerm.writeln('For real kernel/system behavior use the Real Linux Lab. Never treat sandbox network output as a real connection.');
@@ -289,11 +289,40 @@ class LinuxLabApp {
       .catch((error) => console.warn('[LinuxLab] Progress save failed:', error));
   }
 
+  private async clearSavedData(): Promise<void> {
+    const confirmed = window.confirm(
+      'Clear all saved workspace files, learning progress, sessions, and quiz attempts? This cannot be undone.'
+    );
+    if (!confirmed) return;
+
+    try {
+      await StorageService.clearLearningData();
+      this.sessionCommands = [];
+      this.sessionId = crypto.randomUUID();
+      this.sessionStartedAt = Date.now();
+
+      const feedback = document.getElementById('test-output-list');
+      if (feedback) {
+        feedback.replaceChildren();
+        const notice = document.createElement('span');
+        notice.style.color = '#fbbf24';
+        notice.textContent = '✓ Saved learning data cleared. Your current in-memory Linux environment is still running.';
+        feedback.appendChild(notice);
+      }
+    } catch (error) {
+      console.error('[LinuxTerminal] Failed to clear saved data:', error);
+      window.alert('Saved data could not be cleared. Please try again.');
+    }
+  }
+
   private bindEvents(): void {
     document.getElementById('tab-main-c')?.addEventListener('click', () => this.switchFileTab('main.c'));
     document.getElementById('tab-main-java')?.addEventListener('click', () => this.switchFileTab('Main.java'));
     document.getElementById('btn-save-fs')?.addEventListener('click', () => this.saveCurrentEditorToFS());
     document.getElementById('btn-run-tests')?.addEventListener('click', () => this.runAutomatedGrading());
+    document.getElementById('btn-clear-data')?.addEventListener('click', () => {
+      void this.clearSavedData();
+    });
 
     document.getElementById('btn-clear-terminal')?.addEventListener('click', () => {
       this.simTerm.clear();
