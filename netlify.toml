@@ -3,7 +3,7 @@
   command = "npm run check"
 
 [[edge_functions]]
-  path = "/api/iso"
+  path = "/api/iso*"
   function = "iso"
 
 [[headers]]
