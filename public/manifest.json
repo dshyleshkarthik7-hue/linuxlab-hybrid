@@ -1,7 +1,7 @@
 {
-  "name": "LinuxLab — Interactive OS Platform",
-  "short_name": "LinuxLab",
-  "description": "Interactive Linux & Operating Systems learning platform with live terminal and labs",
+  "name": "LinuxTerminal — Learn Linux in Your Browser",
+  "short_name": "LinuxTerminal",
+  "description": "Interactive Linux learning platform with a quick preview, POSIX simulator, and real browser-based Alpine Linux lab",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#1e1e1e",
