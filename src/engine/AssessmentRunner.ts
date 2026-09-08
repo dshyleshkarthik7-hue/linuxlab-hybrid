@@ -1,4 +1,4 @@
-import { InBrowserLinuxEngine } from './LinuxEngine';
+import { InBrowserLinuxEngine } from './LinuxEngine.ts';
 
 export interface TestCase { id:number; description:string; injectedVar:{name:string;value:number}; expectedSubstring:string; forbiddenSubstring?:string; }
 export interface AssessmentCheck { label:string; passed:boolean; feedback:string; }
