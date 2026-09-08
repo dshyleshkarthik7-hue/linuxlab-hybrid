@@ -5,6 +5,8 @@ async function run() {
   const e = new InBrowserLinuxEngine();
 
   assert.equal(await e.execute('pwd'), '/root');
+  assert.ok((await e.execute('ping example.com')).startsWith('[SIMULATED — Engine A'));
+  assert.ok((await e.execute('df')).startsWith('[SIMULATED — Engine A'));
   assert.equal(await e.execute('cd /tmp && pwd'), '/tmp');
   assert.equal(await e.execute('cd /root && pwd'), '/root');
 
