@@ -276,13 +276,13 @@ export class InBrowserLinuxEngine {
 
       case 'htop':
       case 'top':
-        return this.simulated('Process monitor demonstration only', '\x1b[1;36mTasks: 3 total, 1 running, 2 sleeping\n%Cpu(s):  1.2 us,  0.4 sy,  0.0 ni, 98.4 id\nMiB Mem :   256.0 total,   198.4 free,    32.6 used\n\n  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n    1 root      20   0    4120   1240   1100 S   0.0   0.5   0:01.02 init\n   45 root      20   0    6580   2410   1980 S   0.0   0.9   0:00.15 bash\x1b[0m');
+        return this.simulated('Process monitor demonstration only — illustrative 256 MiB model, not Engine B VM RAM', '\x1b[1;36mTasks: 3 total, 1 running, 2 sleeping\n%Cpu(s):  1.2 us,  0.4 sy,  0.0 ni, 98.4 id\nMiB Mem :   256.0 total,   198.4 free,    32.6 used\n\n  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n    1 root      20   0    4120   1240   1100 S   0.0   0.5   0:01.02 init\n   45 root      20   0    6580   2410   1980 S   0.0   0.9   0:00.15 bash\x1b[0m');
 
       case 'ps':
         return this.simulated('Process list demonstration only', '  PID TTY          TIME CMD\n    1 ?        00:00:01 init\n   45 pts/0    00:00:00 bash\n  102 pts/0    00:00:00 ps');
 
       case 'free':
-        return this.simulated('Memory report demonstration only', '               total        used        free      shared  buff/cache   available\nMem:          256000       58240      197760           0       12000      185760\nSwap:              0           0           0');
+        return this.simulated('Memory report demonstration only — illustrative 256 MiB model, not Engine B VM RAM', '               total        used        free      shared  buff/cache   available\nMem:          256000       58240      197760           0       12000      185760\nSwap:              0           0           0');
 
       case 'df':
         return this.simulated('Disk report demonstration only', 'Filesystem     1K-blocks      Used Available Use% Mounted on\n/dev/root        8256000   1420000   6416000  18% /\ntmpfs             128000         0    128000   0% /dev/shm');
