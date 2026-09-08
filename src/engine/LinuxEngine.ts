@@ -630,27 +630,40 @@ export class InBrowserLinuxEngine {
   }
 
   private executeJavaEducational(code: string): string {
-    const outputBuffer: string[] = [];
-    const push = (v: unknown) => {
-      const text = String(v);
-      if (outputBuffer.join('').length + text.length > 100_000) throw new Error('Output limit exceeded (100 KB).');
-      outputBuffer.push(text);
-    };
-    try {
-      let runnable = code.replace(/#include\s*<[^>]+>/g, '').replace(/import\s+[^;]+;/g, '').replace(/package\s+[^;]+;/g, '');
-      runnable = runnable.replace(/(?:public\s+)?class\s+\w+\s*\{/, '').replace(/\bpublic\s+static\s+void\s+main\s*\([^)]*\)\s*\{/, 'function main() {');
-      const last = runnable.lastIndexOf('}');
-      if (last >= 0) runnable = runnable.slice(0, last) + runnable.slice(last + 1);
-      runnable = runnable.replace(/System\.out\.println\s*\(([^;]*?)\)\s*;/g, (_m, e) => `__out.push(String(${e}) + "\\n");`);
-      runnable = runnable.replace(/System\.out\.print\s*\(([^;]*?)\)\s*;/g, (_m, e) => `__out.push(String(${e}));`);
-      runnable = runnable.replace(/\b(?:int|long|short|float|double|boolean|char|String)\s+([A-Za-z_]\w*)/g, 'let $1');
-      runnable = runnable.replace(/return\s+0\s*;/g, 'return;');
-      const runner = new Function('__out', `${runnable}\nif (typeof main === 'function') main();`);
-      runner({ push });
-      return outputBuffer.join('');
-    } catch (err: any) {
-      return `\x1b[31m[Java Educational Runtime]:\x1b[0m ${err?.message || String(err)}`;
+    // Deliberately conservative educational parser. This is not a JVM and never
+    // executes generated JavaScript. It supports the small print-focused subset
+    // used by LinuxLab lessons and reports unsupported constructs honestly.
+    const output: string[] = [];
+    const text = code.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
+    if (!/\bclass\s+\w+/.test(text) || !/static\s+void\s+main\s*\(/.test(text)) {
+      return '\x1b[31m[Java Educational Parser]:\x1b[0m Add a class and static void main(...) method.';
     }
+    if (/\b(Runtime|ProcessBuilder|Class\.forName|reflect|Thread|synchronized)\b/.test(text)) {
+      return '\x1b[31m[Java Educational Parser]:\x1b[0m This construct is outside the safe simulator subset.';
+    }
+    const vars = new Map<string, string | number | boolean>();
+    const declarations = text.matchAll(/\b(?:int|long|short|float|double|boolean|char|String)\s+(\w+)\s*=\s*([^;]+);/g);
+    for (const match of declarations) {
+      const raw = match[2].trim();
+      if (/^-?\d+(?:\.\d+)?$/.test(raw)) vars.set(match[1], Number(raw));
+      else if (/^(true|false)$/.test(raw)) vars.set(match[1], raw === 'true');
+      else if (/^"(?:[^"\\]|\\.)*"$/.test(raw)) vars.set(match[1], raw.slice(1, -1));
+    }
+    const prints = text.matchAll(/System\.out\.(println|print)\s*\(([^;]*)\)\s*;/g);
+    let found = false;
+    for (const match of prints) {
+      found = true;
+      const parts = match[2].split('+').map(part => part.trim()).filter(Boolean);
+      const rendered = parts.map(part => {
+        if (/^"(?:[^"\\]|\\.)*"$/.test(part)) return part.slice(1, -1).replace(/\\n/g, '\n');
+        if (vars.has(part)) return String(vars.get(part));
+        if (/^-?\d+(?:\.\d+)?$/.test(part)) return part;
+        return '[unsupported expression]';
+      }).join('');
+      output.push(rendered + (match[1] === 'println' ? '\n' : ''));
+    }
+    if (!found) return '\x1b[33m[Java Educational Parser]:\x1b[0m No supported System.out.print/println statement found.';
+    return output.join('');
   }
 }
 
