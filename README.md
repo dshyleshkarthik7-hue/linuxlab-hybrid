@@ -25,9 +25,11 @@ This environment is an educational simulator, not a full Linux kernel.
 ### Engine B — Real Alpine Linux
 Run a real Alpine Linux guest in the browser using v86, WebAssembly and xterm.js.
 
-Profiles:
-- Quick: 512 MiB RAM
-- Developer: 1 GiB RAM
+Current browser VM:
+- Alpine Linux (Custom GCC): 1 GiB RAM
+- Compatibility boot option: same maintained Alpine image and 1 GiB RAM
+
+The 256 MiB figures shown by some Engine A `top`/`free` demonstrations are illustrative simulator data, not the RAM allocated to Engine B.
 
 Real VM sessions are temporary. Do not enter real passwords, private keys, tokens, or sensitive information.
 
