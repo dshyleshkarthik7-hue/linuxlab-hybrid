@@ -1,9 +1,13 @@
 [build]
   publish = "dist"
-  command = "npm run check"
+  command = "npm run build"
 
 [[edge_functions]]
-  path = "/api/iso*"
+  path = "/api/iso"
+  function = "iso"
+
+[[edge_functions]]
+  path = "/api/iso-linux4"
   function = "iso"
 
 [[headers]]
@@ -24,7 +28,3 @@
   from = "/simulator/"
   to = "/simulator.html"
   status = 200
-
-[[edge_functions]]
-  path = "/api/iso-linux4"
-  function = "iso-linux4"
