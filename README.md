@@ -26,10 +26,12 @@ This environment is an educational simulator, not a full Linux kernel.
 Run a real Alpine Linux guest in the browser using v86, WebAssembly and xterm.js.
 
 Profiles:
-- Quick: 256 MB RAM
-- Developer: 1 GB RAM
+- Quick: 512 MiB RAM
+- Developer: 1 GiB RAM
 
-Real VM sessions are temporary. Do not enter real passwords or sensitive information.
+Real VM sessions are temporary. Do not enter real passwords, private keys, tokens, or sensitive information.
+
+Alpine uses `apk` for package management (for example, `apk add python3`). `apt` is not the Alpine package manager.
 
 ## Learning goal
 

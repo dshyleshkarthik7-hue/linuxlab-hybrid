@@ -1,4 +1,3 @@
-```bash
 #!/usr/bin/env bash
 
 set -Eeuo pipefail
@@ -641,4 +640,3 @@ log "============================================================"
 log " LinuxLab Alpine GCC ISO BUILD COMPLETE"
 log "============================================================"
 log "ISO: $OUTPUT/alpine.iso"
-```

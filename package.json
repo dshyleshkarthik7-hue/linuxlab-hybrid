@@ -9,7 +9,7 @@
     "preview": "vite preview",
     "test": "node --experimental-strip-types tests/linux-engine.test.ts",
     "test:ci": "npm run test && npm run build",
-    "build:iso": "powershell.exe -ExecutionPolicy Bypass -File ./iso-builder/build-alpine-gcc.ps1",
+    "build:iso": "node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
     "check": "npm run test:ci"
   },

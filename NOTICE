@@ -1,0 +1,17 @@
+LinuxLab Hybrid redistributes browser/runtime assets from third-party projects.
+
+Third-party components include:
+- v86 — x86 virtualization in the browser. See the upstream project and its license.
+- xterm.js — terminal emulator components used by the browser UI.
+- Monaco Editor — code editor components used by the learning simulator.
+- SeaBIOS and VGABIOS — firmware assets used by the browser VM.
+
+This NOTICE does not replace the upstream license terms. The repository's proprietary
+LICENSE applies only to original LinuxLab code and content and does not override
+rights granted by third-party licenses.
+
+Upstream project pages:
+- https://github.com/copy/v86
+- https://github.com/xtermjs/xterm.js
+- https://github.com/microsoft/monaco-editor
+- https://www.seabios.org/
