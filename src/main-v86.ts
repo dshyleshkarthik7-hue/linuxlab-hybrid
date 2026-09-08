@@ -5,7 +5,7 @@ import '@xterm/xterm/css/xterm.css';
 const TerminalCtor = (xtermModule as any).Terminal ?? (xtermModule as any).default?.Terminal;
 const FitAddonCtor = (fitModule as any).FitAddon ?? (fitModule as any).default?.FitAddon;
 const ALPINE_ISO = '/api/iso';
-const LINUX4_ISO = '/linux4.iso';
+const LINUX4_ISO = '/api/iso-linux4';
 
 type Profile = { name: string; memoryMiB: number; cdrom: string };
 type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_send(data:string):void; stop?:()=>void; destroy?:()=>void };
@@ -123,7 +123,7 @@ export class V86LinuxTerminal {
 
   private isPrompt(text:string): boolean {
     const lines = text.split('\n').map((line:string) => line.trim()).filter(Boolean).slice(-12);
-    return lines.some((line:string) => /(?:^|\s)[^\s]+(?::[^\s]+)?[#$>]\s*$/.test(line));
+    return lines.some((line:string) => /(?:^|\\s)[^\\s]+(?::[^\\s]+)?[#$>]\\s*$/.test(line));
   }
 
   private runGccCheck(): void {
@@ -166,6 +166,7 @@ export class V86LinuxTerminal {
     V86LinuxTerminal.runtimePromise = new Promise<void>((resolve,reject) => {
       const existing = document.querySelector<HTMLScriptElement>('script[data-v86-runtime="true"]');
       if (existing) {
+        if ((window as any).V86Starter) { resolve(); return; }
         existing.addEventListener('load', () => (window as any).V86Starter ? resolve() : reject(new Error('v86 runtime did not initialize')), { once:true });
         existing.addEventListener('error', () => reject(new Error('Failed to load v86 runtime')), { once:true });
         return;
