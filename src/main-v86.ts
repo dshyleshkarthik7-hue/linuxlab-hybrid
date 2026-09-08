@@ -89,7 +89,10 @@ export class V86LinuxTerminal {
 
   public async boot(): Promise<void> { await this.bootAlpine(false); }
   public async bootAlpine(force = true): Promise<void> { await this.startProfile({ name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 }, force); }
-  public async bootLinux4(): Promise<void> { await this.startProfile({ name: 'Linux4', iso: './linux4.iso', memoryMiB: 256, fallback: true }, true); }
+  public async bootLinux4(): Promise<void> {
+    this.writeLine('\r\n\x1b[33m[LinuxLab] Quick fallback uses the maintained Alpine image. The old linux4.iso asset was removed because Git LFS pointers are not safe to deploy as boot media.\x1b[0m');
+    await this.startProfile({ name: 'Alpine Linux (Quick)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 512, fallback: true }, true);
+  }
 
   private async startProfile(profile: BootProfile, force: boolean): Promise<void> {
     if (!force && this.emulator && this.state !== 'error') { this.term?.focus(); return; }
