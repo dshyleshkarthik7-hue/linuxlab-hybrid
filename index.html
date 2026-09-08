@@ -524,6 +524,7 @@
       const cmd = raw.trim();
       if (!cmd) return;
       if (!chained) { commandHistory.push(cmd); historyIndex = commandHistory.length; printPromptCommand(cmd); }
+      const pipe = cmd.split(/\s*\|\s*/); if (pipe.length > 1) { const left = pipe[0].trim(); const right = pipe[1].trim(); if (/^ls\b/.test(left) && /^grep\s+/.test(right)) { const term = right.replace(/^grep\s+/, '').trim(); const prefix = currentWorkingDir === '/' ? '/' : currentWorkingDir + '/'; const entries = [...new Set(Object.keys(virtualFS).filter(p => p.startsWith(prefix)).map(p => p.slice(prefix.length).split('/')[0]).filter(Boolean))]; return printLog(entries.filter(name => name.includes(term)).join('\n')); } return printLog('Quick Preview: this pipe is reference-only — use the full Learning Simulator for general pipelines.', 'info'); }
       const chain = cmd.split(/\s*(?:&&|;)\s*/);
       if (chain.length > 1) { for (const part of chain) shellCommand(part, true); return; }
       const [base, ...args] = cmd.split(/\s+/);
@@ -615,7 +616,7 @@
         row.innerHTML = `<td><code>${item.name}</code></td><td>${item.cat}</td><td>${item.desc}</td><td><button class="btn-preset" data-cmd="${item.name.split(' / ')[0]}">Run</button></td>`;
         cmdTableBody.appendChild(row);
       });
-      totalCmdBadge.textContent = `${filtered.length} commands shown • ${commandDatabase.length} indexed`;
+      const interactiveCount = commandDatabase.filter(item => interactive.has(item.name.split(' / ')[0])).length; totalCmdBadge.textContent = `${filtered.length} shown • ${interactiveCount} interactive • ${commandDatabase.length - interactiveCount} reference`; 
 
       cmdTableBody.querySelectorAll('.btn-preset').forEach(button => {
         button.addEventListener('click', () => {
