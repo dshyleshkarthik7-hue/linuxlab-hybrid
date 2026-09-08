@@ -1,6 +1,6 @@
 [build]
   publish = "dist"
-  command = "npm run build"
+  command = "npm run check"
 
 [[edge_functions]]
   path = "/api/iso"
@@ -10,8 +10,8 @@
   for = "/*"
   [headers.values]
     X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "no-referrer"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
     Cross-Origin-Opener-Policy = "same-origin"
     Cross-Origin-Embedder-Policy = "require-corp"
 
@@ -20,5 +20,5 @@
   [headers.values]
     Access-Control-Allow-Origin = "*"
     Access-Control-Allow-Methods = "GET, HEAD, OPTIONS"
-    Access-Control-Allow-Headers = "Range, Content-Type"
-    Access-Control-Expose-Headers = "Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified"
+    Access-Control-Allow-Headers = "Range"
+    Access-Control-Expose-Headers = "Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified, X-LinuxLab-ISO-Source"
