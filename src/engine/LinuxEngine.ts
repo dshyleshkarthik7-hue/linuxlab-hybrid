@@ -626,7 +626,7 @@ export class InBrowserLinuxEngine {
     }
 
     // Java remains a lightweight educational transpiler. Real Java should be run in Engine B.
-    return this.executeJavaEducational(code);
+    return this.executeJavaEducational(code, injectedVars);
   }
 
   private executeJavaEducational(code: string, injectedVars: Record<string, number> = {}): string {
@@ -645,6 +645,7 @@ export class InBrowserLinuxEngine {
     for (const [name, value] of Object.entries(injectedVars)) vars.set(name, value);
     const declarations = text.matchAll(/\b(?:int|long|short|float|double|boolean|char|String)\s+(\w+)\s*=\s*([^;]+);/g);
     for (const match of declarations) {
+      if (Object.prototype.hasOwnProperty.call(injectedVars, match[1])) continue;
       const raw = match[2].trim();
       if (/^-?\d+(?:\.\d+)?$/.test(raw)) vars.set(match[1], Number(raw));
       else if (/^(true|false)$/.test(raw)) vars.set(match[1], raw === 'true');
