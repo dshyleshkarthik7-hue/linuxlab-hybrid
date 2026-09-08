@@ -54,7 +54,7 @@ async function run() {
   assert.equal(await e.execute('echo "a | b"'), 'a | b');
   assert.equal(await e.execute("echo 'a && b'"), 'a && b');
   assert.equal(await e.execute('echo first > /tmp/a; cat /tmp/a'), 'first');
-  assert.equal(await e.execute('mkdir /tmp/nested && touch /tmp/nested/x && find /tmp -type f'), '/tmp/nested/x');
+  assert.equal(await e.execute('mkdir /tmp/nested && touch /tmp/nested/x && find /tmp -type f'), '/tmp/a\n/tmp/nested/x');
   assert.equal(await e.execute('rm /tmp/nested'), "rm: cannot remove '/tmp/nested': Is a directory");
   assert.equal(await e.execute('rm -r /tmp/nested && test -e /tmp/nested'), '');
 
