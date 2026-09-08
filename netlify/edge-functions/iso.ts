@@ -1,43 +1,44 @@
 const PRIMARY_ISO_URL = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso';
 const FALLBACK_ISO_URL = 'https://huggingface.co/datasets/shyleshkarthikd/alpine-iso/resolve/main/alpine.iso?download=true';
-const TIMEOUT_MS = 15_000;
+const TIMEOUT_MS = 45_000;
 const MAX_RANGE_HEADER_LENGTH = 128;
-const corsHeaders = {
+const corsHeaders: Record<string, string> = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
   'Access-Control-Allow-Headers': 'Range',
   'Access-Control-Expose-Headers': 'Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified, X-LinuxLab-ISO-Source',
 };
 
+function isValidRangeHeader(range: string): boolean {
+  if (range.length > MAX_RANGE_HEADER_LENGTH || range.includes(',')) return false;
+  const match = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+  if (!match || (!match[1] && !match[2])) return false;
+  return !(match[1] && match[2] && Number(match[1]) > Number(match[2]));
+}
+
 async function fetchIso(url: string, request: Request): Promise<Response> {
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
-  const headers = new Headers({ 'User-Agent': 'LinuxLab-ISO-Proxy/1.0' });
+  const headers = new Headers();
   const range = request.headers.get('Range');
   if (range) headers.set('Range', range);
   try {
     return await fetch(url, { method: request.method, headers, redirect: 'follow', signal: controller.signal });
-  } finally {
-    clearTimeout(timeout);
-  }
+  } finally { clearTimeout(timeout); }
 }
 
-function isValidRangeHeader(range: string): boolean {
-  // v86 requests one byte range at a time. Reject multi-range requests so this
-  // endpoint cannot be amplified into a multipart bandwidth relay.
-  if (range.length > MAX_RANGE_HEADER_LENGTH || range.includes(',')) return false;
-  const match = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
-  if (!match || (!match[1] && !match[2])) return false;
-  if (match[1] && match[2] && Number(match[1]) > Number(match[2])) return false;
-  return true;
-}
-
-function usable(response: Response, wantsRange: boolean): boolean {
-  return wantsRange ? response.status === 206 && response.headers.has('Content-Range') : response.ok;
+function validUpstream(response: Response, wantsRange: boolean): boolean {
+  if (wantsRange) return response.status === 206 && /^bytes \d+-\d+\/\d+$/i.test(response.headers.get('Content-Range') || '');
+  return response.status >= 200 && response.status < 300;
 }
 
 function proxyResponse(upstream: Response, source: string, method: string): Response {
-  const headers = new Headers(upstream.headers);
+  const headers = new Headers();
+  for (const key of ['Content-Type','Content-Length','Content-Range','Accept-Ranges','ETag','Last-Modified']) {
+    const value = upstream.headers.get(key);
+    if (value) headers.set(key, value);
+  }
+  if (!headers.has('Accept-Ranges')) headers.set('Accept-Ranges', 'bytes');
   for (const [key, value] of Object.entries(corsHeaders)) headers.set(key, value);
   headers.set('X-LinuxLab-ISO-Source', source);
   headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400');
@@ -46,24 +47,23 @@ function proxyResponse(upstream: Response, source: string, method: string): Resp
 
 export default async function handler(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: corsHeaders });
-  if (!['GET', 'HEAD'].includes(request.method)) {
-    return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD, OPTIONS', ...corsHeaders } });
-  }
-  const rangeHeader = request.headers.get('Range');
-  if (rangeHeader && !isValidRangeHeader(rangeHeader)) {
-    return new Response('Invalid Range header', { status: 416, headers: corsHeaders });
-  }
-  const wantsRange = Boolean(rangeHeader);
+  if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method Not Allowed', { status: 405, headers: { ...corsHeaders, Allow: 'GET, HEAD, OPTIONS' } });
+
+  const range = request.headers.get('Range');
+  if (range && !isValidRangeHeader(range)) return new Response('Invalid Range header', { status: 416, headers: { ...corsHeaders, 'Accept-Ranges': 'bytes' } });
+
+  const wantsRange = Boolean(range);
   const failures: string[] = [];
   for (const [name, url] of [['github-release', PRIMARY_ISO_URL], ['fallback-mirror', FALLBACK_ISO_URL]] as const) {
     try {
       const response = await fetchIso(url, request);
-      if (usable(response, wantsRange)) return proxyResponse(response, name, request.method);
+      if (validUpstream(response, wantsRange)) return proxyResponse(response, name, request.method);
+      failures.push(`${name}:${response.status}`);
       await response.body?.cancel();
-      failures.push(name + ':' + response.status);
-    } catch {
-      failures.push(name + ':network-error');
-    }
+    } catch { failures.push(`${name}:network-error`); }
   }
-  return new Response('Linux image temporarily unavailable', { status: 502, headers: { ...corsHeaders, 'X-LinuxLab-ISO-Source': 'unavailable', 'Cache-Control': 'no-store' } });
+  return new Response('Linux image temporarily unavailable', {
+    status: 502,
+    headers: { ...corsHeaders, 'X-LinuxLab-ISO-Source': 'unavailable', 'X-LinuxLab-Upstream-Failures': failures.join(','), 'Cache-Control': 'no-store' }
+  });
 }
