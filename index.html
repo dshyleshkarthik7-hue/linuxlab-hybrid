@@ -271,10 +271,10 @@
        1. Virtual File System & State
     ========================================================= */
     const virtualFS = {
-      'main.c': '#include <stdio.h>\n\nint main() {\n    int num = 5;\n    printf("Multiplication Table of %d:\\n", num);\n    for(int i = 1; i <= 10; i++) {\n        printf("%d x %d = %d\\n", num, i, num * i);\n    }\n    return 0;\n}',
-      'abc.c': '#include <stdio.h>\n\nint main() {\n    printf("Hello from nano editor!\\n");\n    return 0;\n}',
-      'Main.java': 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Java Environment initialized.");\n    }\n}',
-      'notes.txt': 'LinuxLab Workstation v2.0 POSIX file system.\nSupports real file operations, pipelining, and nano/vi editors.',
+      '/root/main.c': '#include <stdio.h>\n\nint main() {\n    int num = 5;\n    printf("Multiplication Table of %d:\\n", num);\n    for(int i = 1; i <= 10; i++) {\n        printf("%d x %d = %d\\n", num, i, num * i);\n    }\n    return 0;\n}',
+      '/root/abc.c': '#include <stdio.h>\n\nint main() {\n    printf("Hello from nano editor!\\n");\n    return 0;\n}',
+      '/root/Main.java': 'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Java Environment initialized.");\n    }\n}',
+      '/root/notes.txt': 'LinuxLab Workstation v2.0 POSIX file system.\nSupports real file operations, pipelining, and nano/vi editors.',
       '/etc/os-release': 'NAME="LinuxLab POSIX Workstation"\nVERSION="2.0-Transpiler"\nID=linuxlab\nPRETTY_NAME="LinuxLab Hypervisor v2.0"',
       '/etc/hostname': 'linuxlab-node\n'
     };
