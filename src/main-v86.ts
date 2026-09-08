@@ -23,6 +23,7 @@ export class V86LinuxTerminal {
   private resizeDebounceTimer: number | null = null;
   private state: VMState = 'stopped';
   private shellReady = false;
+  private gccRequested: boolean = false;
   private bootPromptHandled = false;
   private guestTtyConfigured = false;
   private alpineLoginState: AlpineLoginState = 'waiting';
