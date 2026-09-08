@@ -61,6 +61,16 @@ export class StorageService {
     const sessions = await this.op<LearningSession[]>('sessions', 'readonly', store => store.getAll());
     return sessions.sort((a, b) => b.updatedAt - a.updatedAt);
   }
+  static async deleteSession(id: string): Promise<void> {
+    await this.op('sessions', 'readwrite', store => store.delete(id));
+  }
+  static async clearSessions(): Promise<void> {
+    await this.op('sessions', 'readwrite', store => store.clear());
+  }
+  static async getQuizAttempts(): Promise<QuizAttempt[]> {
+    const attempts = await this.op<QuizAttempt[]>('quizAttempts', 'readonly', store => store.getAll());
+    return attempts.sort((a, b) => b.timestamp - a.timestamp);
+  }
   static async saveQuizAttempt(attempt: QuizAttempt): Promise<void> {
     await this.op('quizAttempts', 'readwrite', store => store.put(attempt));
   }
