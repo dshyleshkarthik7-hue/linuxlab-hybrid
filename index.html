@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>LinuxLab Hybrid — Learn Linux Free in Your Browser</title>
-  <meta name="description" content="Learn Linux with a safe command simulator, interactive practice, 200+ commands, and real Alpine Linux in your browser." />
+  <title>LinuxLab — Learn Linux by Doing, Free in Your Browser</title>
+  <meta name="description" content="Learn Linux by doing: understand concepts, practice commands safely, solve challenges, and explore real Alpine Linux in your browser." />
   <meta name="keywords" content="learn Linux, Linux commands, Linux simulator, online Linux terminal, Alpine Linux, Linux for beginners, Linux practice" />
   <meta name="author" content="LinuxLab" />
   <meta name="robots" content="index, follow, max-image-preview:large" />
@@ -43,7 +43,7 @@
   <main class="container">
     <header class="hero">
       <div class="hero-badge">⚡ LEARN • PRACTICE • EXPLORE</div>
-      <h1>Learn Linux Without Fear</h1>
+      <h1>Learn Linux by Doing</h1>
       <p>Start with a safe learning sandbox, understand real Linux commands, and when you are ready, boot a real Alpine Linux system directly in your browser.</p>
     </header>
 
@@ -204,7 +204,7 @@
         <button class="btn-preset quiz-answer" data-correct="false">A text editor</button>
         <button class="btn-preset quiz-answer" data-correct="true">An executable program named hello</button>
         <button class="btn-preset quiz-answer" data-correct="false">A new Linux kernel</button>
-        <span id="quizFeedback" aria-live="polite" style="display:block;margin-top:.7rem;color:var(--cyan)"></span>
+        <span id="quizFeedback" aria-live="polite" style="display:block;margin-top:.7rem;color:var(--cyan)"></span><p id="quizProgress" style="color:var(--text-dim);margin-top:.5rem">Your quiz attempts are saved locally on this device.</p>
       </div>
     </section>
 
@@ -264,7 +264,7 @@
         </table>
       </div>
     </section>
-  </main>
+  <section class="guide-section" id="privacy"><div class="section-header"><div class="section-kicker">Local-first learning</div><h2>Your progress stays on your device</h2><p class="section-description">LinuxLab can store workspace files, quiz attempts and learning sessions in your browser using IndexedDB. No account is required for core learning features.</p></div><div class="terminal-presets"><button class="btn-preset" id="exportProgress">⬇ Export my learning data</button><button class="btn-preset" id="showSessions">🕘 Previous sessions</button><pre id="sessionList" style="white-space:pre-wrap;color:var(--text-dim)"></pre></div></section></main>
 
   <script>
     /* =========================================================
@@ -701,5 +701,5 @@ document.querySelectorAll('.quiz-answer').forEach(btn=>btn.addEventListener('cli
 document.querySelectorAll('.lesson-try,.learn-try').forEach(b=>b.addEventListener('click',()=>{const i=document.getElementById('termInput');if(i){location.hash='terminal';i.value=b.dataset.cmd||'';i.focus();}}));
 const tourSteps=[['Step 1/4: You are in a folder. Try pwd.','pwd'],['Step 2/4: List what is here with ls.','ls'],['Step 3/4: Open a source file with nano main.c.','nano main.c'],['Step 4/4: Compile it with GCC, then run the program.','gcc main.c -o program && ./program']];
 let tourIndex=0;document.getElementById('tourStart')?.addEventListener('click',()=>{tourIndex=0;const i=document.getElementById('termInput'),m=document.getElementById('tourMessage');const next=()=>{if(tourIndex>=tourSteps.length){m.textContent='🎉 Tour complete! Next, explore the How It Works section and Real Linux.';return;}const [text,cmd]=tourSteps[tourIndex++];m.textContent=text;i.value=cmd;i.focus();};location.hash='terminal';next();i.onkeydown=e=>{if(e.key==='Enter')setTimeout(next,600);};});
-</script></body>
+</script><script type="module">import { StorageService } from "./src/core/StorageService.ts"; const q=document.getElementById("quizProgress"); document.querySelectorAll(".quiz-answer").forEach((b,i)=>b.addEventListener("click",async()=>{const ok=b.dataset.correct==="true"; const f=document.getElementById("quizFeedback"); if(f) f.textContent=ok?"✓ Correct — an executable program is created.":"Not quite. Review the compiler section and try again."; await StorageService.saveQuizAttempt({id:crypto.randomUUID(),quizId:"compiler-basics",score:ok?1:0,total:1,timestamp:Date.now(),answers:[String(i)]}); if(q) q.textContent="✓ Attempt saved locally."; })); document.getElementById("exportProgress")?.addEventListener("click",async()=>{const data=await StorageService.exportData(); const a=document.createElement("a"); a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)],{type:"application/json"})); a.download="linuxlab-progress.json"; a.click(); URL.revokeObjectURL(a.href);}); document.getElementById("showSessions")?.addEventListener("click",async()=>{const sessions=await StorageService.getSessions(); const out=document.getElementById("sessionList"); if(out) out.textContent=sessions.length?sessions.map(s=>`${new Date(s.updatedAt).toLocaleString()} — ${s.title} (${s.mode})`).join("\n"):"No saved sessions yet.";});</script></body>
 </html>
