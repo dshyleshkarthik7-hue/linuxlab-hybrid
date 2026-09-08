@@ -74,12 +74,25 @@ export class V86LinuxTerminal {
     document.getElementById('btn-v86-fallback')?.addEventListener('click', () => void this.bootLinux4());
     document.getElementById('btn-v86-gcc')?.addEventListener('click', () => this.requestGcc());
     document.getElementById('btn-v86-network')?.addEventListener('click', () => this.toggleNetwork());
+    this.updateNetworkButton();
+  }
+
+  private updateNetworkButton(): void {
+    const button = document.getElementById('btn-v86-network') as HTMLButtonElement | null;
+    if (!button) return;
+    const enabled = this.networkMode === 'public-relay';
+    button.textContent = enabled ? '🌐 Network: Relay ON' : '🌐 Network: OFF';
+    button.setAttribute('aria-pressed', String(enabled));
+    button.title = enabled
+      ? 'Experimental shared relay selected. Restart the VM to apply.'
+      : 'Guest networking is disabled.';
   }
 
   private toggleNetwork(): void {
     this.networkMode = this.networkMode === 'off' ? 'public-relay' : 'off';
+    this.updateNetworkButton();
     this.writeLine(this.networkMode === 'public-relay'
-      ? '\r\n\x1b[33m[Network] Public experimental relay selected. Restart VM to apply. Never enter passwords, private keys, tokens, or sensitive data.\x1b[0m'
+      ? '\r\n\x1b[33m[Network] Public experimental relay selected. Restart VM to apply. This relay is shared and untrusted: never enter passwords, private keys, tokens, or sensitive data.\x1b[0m'
       : '\r\n\x1b[33m[Network] Guest networking disabled.\x1b[0m');
   }
 
@@ -90,7 +103,7 @@ export class V86LinuxTerminal {
   public async bootAlpine(force = true): Promise<void> { await this.startProfile({ name: 'Alpine Linux (Custom GCC)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024 }, force); }
   public async bootLinux4(): Promise<void> {
     this.writeLine('\r\n\x1b[33m[LinuxLab] Quick fallback uses the maintained Alpine image. The old linux4.iso asset was removed because Git LFS pointers are not safe to deploy as boot media.\x1b[0m');
-    await this.startProfile({ name: 'Alpine Linux (Quick)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 512, fallback: true }, true);
+    await this.startProfile({ name: 'Alpine Linux (Compatibility)', iso: ISO_STREAM_ENDPOINT, memoryMiB: 1024, fallback: true }, true);
   }
 
   private async startProfile(profile: BootProfile, force: boolean): Promise<void> {
@@ -138,7 +151,7 @@ export class V86LinuxTerminal {
     if (/Launching initramfs emergency recovery shell/i.test(visible) && !this.shellReady) { this.handleBootError('Alpine entered initramfs emergency recovery instead of reaching the normal system shell.'); return; }
     if (!this.shellReady && this.isShellPrompt(visible)) { this.markReady(); return; }
     if (!this.bootPromptHandled && /(?:^|\n)\s*boot:\s*$/im.test(visible)) { this.bootPromptHandled = true; window.setTimeout(() => { if (!this.shellReady && this.emulator) this.sendSerial('\r'); }, 250); }
-    if (this.currentProfile.iso === ISO_STREAM_ENDPOINT && !this.shellReady && this.alpineLoginState === 'waiting' && /(?:^|\n)\s*(?:localhost\s+)?login:\s*$/im.test(visible)) { this.alpineLoginState = 'login-detected'; this.writeLine('\x1b[36m[Alpine] Login prompt detected. Logging in as root...\x1b[0m'); if (!this.shellReady && this.emulator) { this.alpineLoginState = 'username-sent'; this.sendAutomaticLogin('root\r'); } }
+    if (this.currentProfile.iso === ISO_STREAM_ENDPOINT && !this.shellReady && this.alpineLoginState === 'waiting' && /(?:^|\n)\s*(?:localhost\s+)?login:\s*$/im.test(visible)) { this.alpineLoginState = 'login-detected'; this.writeLine('\x1b[36m[Alpine] Temporary local sandbox login detected. Logging in as root inside this disposable VM; never enter real secrets.\x1b[0m'); if (!this.shellReady && this.emulator) { this.alpineLoginState = 'username-sent'; this.sendAutomaticLogin('root\r'); } }
     if (!this.shellReady && this.isShellPrompt(visible)) this.markReady();
   }
 

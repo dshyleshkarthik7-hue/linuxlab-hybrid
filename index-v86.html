@@ -31,6 +31,7 @@
       <span id="v86-monitor" class="action-btn" style="cursor:default;user-select:none;" aria-live="polite">Loading profile…</span>
       <button id="btn-v86-alpine" class="action-btn" type="button">🐧 Developer Linux (1 GB)</button>
       <button id="btn-v86-gcc" class="action-btn" type="button">⚙ GCC</button>
+      <button id="btn-v86-network" class="action-btn" type="button" aria-pressed="false">🌐 Network: OFF</button>
       <button id="btn-v86-fallback" class="action-btn" type="button">⚡ Quick Linux (256 MB)</button>
       <button id="btn-v86-restart" class="action-btn" type="button">↺ Reboot VM</button>
       <a href="./index.html" class="action-btn" style="text-decoration:none;">🏠 Home</a>
@@ -56,7 +57,7 @@
     try {
       const vm = new V86LinuxTerminal('v86-terminal-container');
       window.linuxLabVM = vm;
-      await vm.bootLinux4();
+      await vm.bootAlpine(false);
     } catch (error) {
       console.error('[LinuxLab] Engine B startup failed:', error);
       const status = document.getElementById('v86-status');

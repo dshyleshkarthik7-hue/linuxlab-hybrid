@@ -22,6 +22,16 @@ async function fetchIso(url: string, request: Request): Promise<Response> {
   }
 }
 
+function isValidRangeHeader(range: string): boolean {
+  // v86 requests one byte range at a time. Reject multi-range requests so this
+  // endpoint cannot be amplified into a multipart bandwidth relay.
+  if (range.length > MAX_RANGE_HEADER_LENGTH || range.includes(',')) return false;
+  const match = /^bytes=(\d*)-(\d*)$/.exec(range.trim());
+  if (!match || (!match[1] && !match[2])) return false;
+  if (match[1] && match[2] && Number(match[1]) > Number(match[2])) return false;
+  return true;
+}
+
 function usable(response: Response, wantsRange: boolean): boolean {
   return wantsRange ? response.status === 206 && response.headers.has('Content-Range') : response.ok;
 }
@@ -40,7 +50,7 @@ export default async function handler(request: Request): Promise<Response> {
     return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'GET, HEAD, OPTIONS', ...corsHeaders } });
   }
   const rangeHeader = request.headers.get('Range');
-  if (rangeHeader && (rangeHeader.length > MAX_RANGE_HEADER_LENGTH || !/^bytes=\d*-\d*(?:,\d*-\d*)*$/.test(rangeHeader))) {
+  if (rangeHeader && !isValidRangeHeader(rangeHeader)) {
     return new Response('Invalid Range header', { status: 416, headers: corsHeaders });
   }
   const wantsRange = Boolean(rangeHeader);

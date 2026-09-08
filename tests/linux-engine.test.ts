@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { InBrowserLinuxEngine } from '../src/engine/LinuxEngine.ts';
+import { AssessmentRunner } from '../src/engine/AssessmentRunner.ts';
 
 async function run() {
   const e = new InBrowserLinuxEngine();
@@ -59,6 +60,34 @@ async function run() {
   assert.equal(await e.execute('mkdir /tmp/nested && touch /tmp/nested/x && find /tmp -type f'), '/tmp/a\n/tmp/nested/x');
   assert.equal(await e.execute('rm /tmp/nested'), "rm: cannot remove '/tmp/nested': Is a directory");
   assert.equal(await e.execute('rm -r /tmp/nested && test -e /tmp/nested'), '');
+
+  // Java educational parser must choose the evaluated branch instead of emitting
+  // both sides of a bare-boolean if/else. This protects assessment correctness.
+  const javaPrimeProgram = `public class Main {
+    public static void main(String[] args) {
+      int num = 7;
+      boolean isPrime = true;
+      for (int i = 2; i <= num / 2; i++) {
+        if (num % i == 0) { isPrime = false; break; }
+      }
+      if (isPrime) {
+        System.out.println(num + " is a Prime Number");
+      } else {
+        System.out.println(num + " is not a Prime Number");
+      }
+    }
+  }`;
+  assert.equal(
+    e.executeGeneralCode(javaPrimeProgram, 'java', { num: 7 }),
+    '7 is a Prime Number\n'
+  );
+  assert.equal(
+    e.executeGeneralCode(javaPrimeProgram, 'java', { num: 8 }),
+    '8 is not a Prime Number\n'
+  );
+  const javaAssessment = new AssessmentRunner(e).runJavaTestSuite(javaPrimeProgram);
+  const composite = javaAssessment.checks.find(check => check.label === 'Composite test for 8');
+  assert.equal(composite?.passed, true);
 
   console.log('LinuxLab happy-path engine checks passed');
 }
