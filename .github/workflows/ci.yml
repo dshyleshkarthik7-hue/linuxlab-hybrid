@@ -46,9 +46,17 @@ jobs:
           echo "Production build smoke test passed"
       - name: Preview HTTP smoke test
         run: |
-          (npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/linuxlab-preview.log 2>&1 & echo $! > /tmp/linuxlab-preview.pid)
-          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          set -eu
+          npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/linuxlab-preview.log 2>&1 &
+          pid=$!
+          trap 'kill "$pid" 2>/dev/null || true' EXIT
+          ready=0
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then ready=1; break; fi
+            sleep 1
+          done
+          test "$ready" = 1
           curl -fsS http://127.0.0.1:4173/ | grep -Fq "LinuxTerminal"
           curl -fsS http://127.0.0.1:4173/commands/ | grep -Fq "50 Essential Linux Commands"
+          curl -fsS http://127.0.0.1:4173/linux-cd-command/ | grep -Fq "Linux cd Command"
           test -s /tmp/linuxlab-preview.log
-          kill $(cat /tmp/linuxlab-preview.pid) 2>/dev/null || true

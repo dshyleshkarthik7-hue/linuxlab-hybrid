@@ -17,7 +17,7 @@ export class V86LinuxTerminal {
  private static runtimePromise:Promise<void>|null=null;
  private terminalDataDisposable:{dispose():void}|null=null;
  private profile:Profile={name:'Developer Alpine',memoryMiB:1024,cdrom:ALPINE_ISO,supported:true};
- private bootId=0; private ready=false; private serial=''; private bootTimeout:number|null=null; private bootPromptSent=false;
+ private bootId=0; private ready=false; private serial=''; private bootTimeout:number|null=null; private bootPromptSent=false; private bootPromptTimer:number|null=null;
  constructor(containerId='v86-terminal-container'){
   if(!TerminalCtor||!FitAddonCtor) throw new Error('Terminal runtime failed to load');
   const container=document.getElementById(containerId); if(!container) throw new Error('Terminal container is missing');
@@ -64,23 +64,23 @@ export class V86LinuxTerminal {
   V86LinuxTerminal.runtimePromise=new Promise<void>((resolve,reject)=>{
    const existing=document.querySelector<HTMLScriptElement>('script[data-linuxlab-v86]');
    const finish=()=>typeof (window as any).V86==='function'?resolve():reject(new Error('Local libv86.js loaded but window.V86 was not exposed'));
-   if(existing){existing.addEventListener('load',finish,{once:true});existing.addEventListener('error',()=>reject(new Error('Failed to load local libv86.js')),{once:true});return;}
+   if(existing){if(typeof (window as any).V86==='function'){resolve();return;}existing.addEventListener('load',finish,{once:true});existing.addEventListener('error',()=>reject(new Error('Failed to load local libv86.js')),{once:true});return;}
    const script=document.createElement('script');script.dataset.linuxlabV86='true';script.src='/libv86.js';script.async=true;
    script.onload=finish;script.onerror=()=>reject(new Error('Failed to load /libv86.js'));
    document.head.appendChild(script);
   }).catch((error:unknown)=>{V86LinuxTerminal.runtimePromise=null;throw error;});
   return V86LinuxTerminal.runtimePromise;
  }
- private serialOutput(byte:number):void{const ch=String.fromCharCode(byte&255);this.serial=(this.serial+ch).slice(-16000);this.term.write(ch);if(!this.bootPromptSent&&/\bboot:\s*$/i.test(this.serial)){this.bootPromptSent=true;this.status(this.profile.name+' • starting Alpine');this.monitor(profileMemory(this.profile)+' MiB • bootloader');window.setTimeout(()=>this.emulator?.serial0_send('\n'),250);}if(!this.ready&&/[#$>]\s*$/.test(this.serial.trim())){this.ready=true;if(this.bootTimeout!==null)clearTimeout(this.bootTimeout);this.bootTimeout=null;this.status(this.profile.name+' • ready');this.monitor(this.profile.memoryMiB+' MiB • ready');}}
+ private serialOutput(byte:number):void{const ch=String.fromCharCode(byte&255);this.serial=(this.serial+ch).slice(-16000);this.term.write(ch);if(!this.bootPromptSent&&/\bboot:\s*(?:\r?\n)?$/i.test(this.serial)){this.bootPromptSent=true;this.status(this.profile.name+' • starting Alpine');this.monitor(profileMemory(this.profile)+' MiB • bootloader');this.bootPromptTimer=window.setTimeout(()=>{this.bootPromptTimer=null;this.emulator?.serial0_send('\n');},250);}if(!this.ready&&/[#$>]\s*$/.test(this.serial.trim())){this.ready=true;if(this.bootTimeout!==null)clearTimeout(this.bootTimeout);this.bootTimeout=null;this.status(this.profile.name+' • ready');this.monitor(this.profile.memoryMiB+' MiB • ready');}}
  private showTerminal():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=true;if(t)t.hidden=false;this.fit();this.term.focus();}
  private showScreen():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=false;if(t)t.hidden=true;this.fit();}
  private status(t:string):void{const e=document.getElementById('v86-status');if(e)e.textContent=t;}
  private monitor(t:string):void{const e=document.getElementById('v86-monitor');if(e)e.textContent=t;}
  private fit():void{try{this.fitAddon.fit();}catch{}}
- private error(message:string):void{this.ready=false;this.status(this.profile.name+' • error');this.monitor('Boot failed');this.term.writeln('\r\n[VM] '+message);}
- private async dispose():Promise<void>{if(this.bootTimeout!==null){clearTimeout(this.bootTimeout);this.bootTimeout=null;}const vm=this.emulator;this.emulator=null;try{vm?.stop?.();vm?.destroy?.();}catch{}}
+ private error(message:string):void{this.ready=false;if(this.bootTimeout!==null){clearTimeout(this.bootTimeout);this.bootTimeout=null;}if(this.bootPromptTimer!==null){clearTimeout(this.bootPromptTimer);this.bootPromptTimer=null;}this.status(this.profile.name+' • error');this.monitor('Boot failed');this.term.writeln('\r\n[VM] '+message);}
+ private async dispose():Promise<void>{if(this.bootTimeout!==null){clearTimeout(this.bootTimeout);this.bootTimeout=null;}if(this.bootPromptTimer!==null){clearTimeout(this.bootPromptTimer);this.bootPromptTimer=null;}const vm=this.emulator;this.emulator=null;try{vm?.stop?.();vm?.destroy?.();}catch{}}
  public destroy():void{this.bootId++;void this.dispose();this.terminalDataDisposable?.dispose();this.terminalDataDisposable=null;try{this.term.dispose();}catch{}}
- private showDiagnostics():void{const p=document.getElementById('v86-diagnostics');if(!p)return;p.textContent=['VM diagnostics','Profile: '+this.profile.name,'VM mode: '+(this.profile.name==='Developer Alpine'?'primary':'optional compatibility'),'VM object: '+(this.emulator?'created':'not created'),'Runtime: local version-matched browser bundle','Shell detected: '+(this.ready?'yes':'waiting'),'ISO endpoint: '+this.profile.cdrom,'Architecture: '+(this.profile.supported?'compatible x86':'compatible 32-bit x86')].join('\n');p.hidden=!p.hidden;}
+ private showDiagnostics():void{const p=document.getElementById('v86-diagnostics');if(!p)return;p.textContent=['VM diagnostics','Profile: '+this.profile.name,'VM mode: '+(this.profile.name==='Developer Alpine'?'primary':'optional compatibility'),'VM object: '+(this.emulator?'created':'not created'),'Runtime: local version-matched browser bundle','Shell detected: '+(this.ready?'yes':'waiting'),'ISO endpoint: '+this.profile.cdrom,'Architecture: '+(this.profile.arch==='x86_64'?'x86_64 (unsupported)':this.profile.supported?'compatible 32-bit x86':'unsupported')].join('\n');p.hidden=!p.hidden;}
  private async copyDiagnostics():Promise<void>{this.showDiagnostics();const t=document.getElementById('v86-diagnostics')?.textContent||'';try{await navigator.clipboard.writeText(t);this.term.writeln('[Diagnostics copied]');}catch{this.term.writeln('[Diagnostics] Clipboard unavailable');}}
 }
 window.addEventListener('DOMContentLoaded',()=>{try{const vm=new V86LinuxTerminal();(window as any).linuxLabVM=vm;window.addEventListener('pagehide',()=>vm.destroy(),{once:true});}catch(e){console.error(e);}});
