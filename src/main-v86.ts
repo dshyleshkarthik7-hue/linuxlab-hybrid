@@ -23,6 +23,7 @@ export class V86LinuxTerminal {
   private bootStartedAt = 0;
   private bootTimer: number | null = null;
   private bootMetrics: Array<{profile:string; startedAt:number; readyAt?:number; error?:string}> = [];
+  private screenMode = false;
   private static runtimePromise: Promise<void> | null = null;
 
   constructor(containerId = 'v86-terminal-container') {
@@ -50,6 +51,8 @@ export class V86LinuxTerminal {
     document.getElementById('btn-v86-restart')?.addEventListener('click', () => void this.restart());
     document.getElementById('btn-v86-gcc')?.addEventListener('click', () => this.runGccCheck());
     document.getElementById('btn-v86-diagnostics')?.addEventListener('click', () => this.showDiagnostics());
+    document.getElementById('btn-v86-screen')?.addEventListener('click', () => this.showScreen());
+    document.getElementById('btn-v86-terminal')?.addEventListener('click', () => this.showTerminal());
   }
 
   public async boot(): Promise<void> { await this.bootDeveloper(); }
@@ -73,6 +76,7 @@ export class V86LinuxTerminal {
     this.profile = profile;
     this.ready = false;
     this.serial = '';
+    this.showTerminal();
     this.term.clear();
     this.writeLine('LinuxTerminal — ' + profile.name);
     this.writeLine('Loading browser x86 emulator…');
@@ -137,6 +141,10 @@ export class V86LinuxTerminal {
     return lines.some((line:string) => /(?:^|\s)[^\s]+(?::[^\s]+)?[#$>]\s*$/.test(line));
   }
 
+  private showScreen(): void { this.screenMode=true; const s=document.getElementById('screen_container'); const t=document.getElementById('v86-terminal-container'); if(s)s.hidden=false; if(t)t.hidden=true; this.fit(); }
+
+  private showTerminal(): void { this.screenMode=false; const s=document.getElementById('screen_container'); const t=document.getElementById('v86-terminal-container'); if(s)s.hidden=true; if(t)t.hidden=false; this.fit(); this.term.focus(); }
+
   private showDiagnostics(): void {
     const panel = document.getElementById('v86-diagnostics');
     if (!panel) return;
@@ -190,11 +198,13 @@ export class V86LinuxTerminal {
   }
 
   private async verifyAssets(cdrom: string): Promise<void> {
-    const required = ['/v86.wasm', '/seabios.bin', '/vgabios.bin', cdrom];
+    const required = ['/v86.wasm', '/seabios.bin', '/vgabios.bin'];
     for (const url of required) {
       const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
       if (!response.ok) throw new Error(`Required VM asset failed to load: ${url} (${response.status})`);
     }
+    const iso = await fetch(cdrom, { method: 'HEAD', cache: 'no-store' });
+    if (!iso.ok) throw new Error(`Linux image is unavailable (${iso.status})`);
   }
 
   private startBootTimer(profile: Profile): void {
