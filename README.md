@@ -31,6 +31,10 @@ Run compatible 32-bit x86 Linux guests in the browser using a deployment-local, 
 Current browser VM profiles:
 - **Developer Alpine**: primary learning image, 1 GiB RAM
 - **Alpine Virt 3.24.1 Lightweight x86**: compatibility profile, 512 MiB RAM
+- **Ultra Light Linux 4**: approximately 7.4 MB release image, 256 MiB RAM
+
+### Developer Alpine networking
+Developer Alpine may expose an **experimental network relay** when the deployment provides one. It is best-effort only and is not a VPN, anonymity service, privacy boundary, or guarantee of Internet access. Package installation can therefore work when guest networking is available (for example, Alpine's `apk add` for supported repositories), but downloads can fail because of browser, emulator, relay, repository, CORS, or deployment limits. Never enter passwords, tokens, private keys, or other sensitive information in the VM.
 
 The real-Linux page reports three health states: orange while booting, green when the guest is running or a shell is ready, and black when booting fails. Slow devices are not marked offline merely because Alpine takes longer to initialize.
 
