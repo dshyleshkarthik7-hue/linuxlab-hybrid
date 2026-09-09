@@ -22,6 +22,7 @@ export class V86LinuxTerminal {
   private resizeObserver: ResizeObserver | null = null;
   private bootStartedAt = 0;
   private bootTimer: number | null = null;
+  private bootTimeout: number | null = null;
   private bootMetrics: Array<{profile:string; startedAt:number; readyAt?:number; error?:string}> = [];
   private screenMode = false;
   private static runtimePromise: Promise<void> | null = null;
@@ -52,6 +53,7 @@ export class V86LinuxTerminal {
     document.getElementById('btn-v86-gcc')?.addEventListener('click', () => this.runGccCheck());
     document.getElementById('btn-v86-diagnostics')?.addEventListener('click', () => this.showDiagnostics());
     document.getElementById('btn-v86-screen')?.addEventListener('click', () => this.showScreen());
+    document.getElementById('btn-v86-copydiag')?.addEventListener('click', () => void this.copyDiagnostics());
     document.getElementById('btn-v86-terminal')?.addEventListener('click', () => this.showTerminal());
   }
 
@@ -84,6 +86,7 @@ export class V86LinuxTerminal {
     this.setMonitor(profile.memoryMiB + ' MiB • preparing');
     this.bootStartedAt = performance.now();
     this.startBootTimer(profile);
+    this.startBootTimeout(profile, id);
 
     try {
       await this.verifyAssets(profile.cdrom);
@@ -132,6 +135,7 @@ export class V86LinuxTerminal {
       this.setMonitor(this.profile.memoryMiB + ' MiB • ready in ' + (elapsed / 1000).toFixed(1) + 's');
       this.recordBoot({ profile: this.profile.name, startedAt: Date.now() - elapsed, readyAt: Date.now() });
       this.stopBootTimer();
+      this.stopBootTimeout();
       window.setTimeout(() => this.send('export TERM=xterm-256color; clear\r'), 150);
     }
   }
@@ -155,11 +159,14 @@ export class V86LinuxTerminal {
       'VM object: ' + (this.emulator ? 'created' : 'not created'),
       'Shell detected: ' + (this.ready ? 'yes' : 'waiting'),
       'Recent boots: ' + JSON.stringify(stored.slice(-5), null, 2),
+      'ISO endpoint: ' + this.profile.cdrom,
       'Tip: diagnostics are stored locally; they are not automatically uploaded.'
     ];
     panel.textContent = lines.join('\n');
     panel.hidden = !panel.hidden;
   }
+
+  private async copyDiagnostics(): Promise<void> { this.showDiagnostics(); const text=document.getElementById('v86-diagnostics')?.textContent||'No diagnostics available'; try { await navigator.clipboard.writeText(text); this.writeLine('[Diagnostics] Copied to clipboard.'); } catch { this.writeLine('[Diagnostics] Clipboard access was unavailable.'); } }
 
   private runGccCheck(): void {
     if (!this.emulator) { this.writeLine('[GCC] Start a VM first.'); return; }
@@ -182,6 +189,7 @@ export class V86LinuxTerminal {
     this.setStatus(this.profile.name + ' • error');
     this.setMonitor('Boot failed');
     this.stopBootTimer();
+    this.stopBootTimeout();
     this.recordBoot({ profile: this.profile.name, startedAt: Date.now() - Math.round(performance.now() - this.bootStartedAt), error: message });
     this.writeLine('');
     this.writeLine('[VM Boot Error] ' + message);
@@ -203,7 +211,7 @@ export class V86LinuxTerminal {
       const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
       if (!response.ok) throw new Error(`Required VM asset failed to load: ${url} (${response.status})`);
     }
-    const iso = await fetch(cdrom, { method: 'HEAD', cache: 'no-store' });
+    const iso = await fetch(cdrom, { method: 'HEAD', cache: 'no-store', signal: AbortSignal.timeout(15000) });
     if (!iso.ok) throw new Error(`Linux image is unavailable (${iso.status})`);
   }
 
@@ -216,6 +224,9 @@ export class V86LinuxTerminal {
   }
 
   private stopBootTimer(): void { if (this.bootTimer !== null) { window.clearInterval(this.bootTimer); this.bootTimer = null; } }
+
+  private startBootTimeout(profile: Profile, id: number): void { this.stopBootTimeout(); this.bootTimeout=window.setTimeout(()=>{ if(id===this.bootId&&!this.ready) void this.fail(profile.name+' did not reach a shell prompt within 180 seconds. Try Screen mode or reboot.'); },180000); }
+  private stopBootTimeout(): void { if(this.bootTimeout!==null){window.clearTimeout(this.bootTimeout);this.bootTimeout=null;} }
 
   private recordBoot(metric: {profile:string; startedAt:number; readyAt?:number; error?:string}): void {
     this.bootMetrics = [...this.bootMetrics.slice(-19), metric];
@@ -253,6 +264,7 @@ export class V86LinuxTerminal {
     this.resizeObserver?.disconnect();
     window.removeEventListener('resize', this.fitBound);
     this.stopBootTimer();
+    this.stopBootTimeout();
     await this.disposeVM();
     this.setStatus('stopped');
   }
