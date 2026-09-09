@@ -40,10 +40,10 @@ export class V86LinuxTerminal {
   const id=++this.bootId; await this.dispose(); this.profile=profile; this.ready=false; this.setHealth('booting'); this.serial=''; this.lastSerialAt=0; this.bootStartedAt=Date.now(); this.bootPromptSent=false; this.bootStage='starting'; this.showTerminal(); this.term.clear();
   if(!profile.supported){this.setHealth('offline');this.showTerminal();this.term.clear();this.status(profile.name+' • incompatible with browser VM');this.monitor('Not booted • '+(profile.arch||'unknown architecture'));this.term.writeln('LinuxTerminal — '+profile.name);this.term.writeln('\r\n[Compatibility] '+(profile.note||'This image cannot run in this browser emulator.'));this.term.writeln('[Use Developer Alpine for the real VM.]');return;}
   this.setHealth('booting'); this.status(profile.name+' • checking runtime'); this.term.writeln('LinuxTerminal — '+profile.name);
+  try{
    await this.loadRuntime();
    if(id!==this.bootId)return;
    this.status(profile.name+' • checking image');
-  try{
    const iso=await fetch(profile.cdrom,{method:'GET',headers:{Range:'bytes=0-0'},cache:'no-store',signal:AbortSignal.timeout(30000)});
    if(!iso.ok&&iso.status!==206) throw new Error('Linux image unavailable ('+iso.status+')');
    if(id!==this.bootId)return;
