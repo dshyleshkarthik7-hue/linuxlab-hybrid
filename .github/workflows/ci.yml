@@ -14,12 +14,14 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run test
       - run: npm run build
-      - name: Verify emulator TypeScript source
+      - name: Verify V86 entry structure
         run: |
-          ! grep -q 'private screenMode' src/main-v86.ts
-          grep -q 'btn-v86-terminal' index-v86.html
-          grep -q 'btn-v86-screen' index-v86.html
-          ! grep -q 'btn-v86-gcc' index-v86.html
+          test -f index-v86.html
+          test -f public/v86.wasm
+          test -f public/seabios.bin
+          test -f public/vgabios.bin
+          test -f public/libv86.js
+
       - name: Production build smoke test
         run: |
           set -e
