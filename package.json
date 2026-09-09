@@ -13,7 +13,7 @@
     "build:all": "npm run build && npm run build:iso",
     "check": "npm run test:ci",
     "test:smoke": "node tests/browser-vm-smoke.mjs",
-    "test:all": "npm run test && npm run build"
+    "test:all": "npm run test && npm run build && npm run test:smoke"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",
@@ -22,7 +22,8 @@
   },
   "devDependencies": {
     "typescript": "^5.6.3",
-    "vite": "^8.2.1"
+    "vite": "^8.2.1",
+    "playwright": "1.56.0"
   },
   "engines": {
     "node": ">=22.0.0",
