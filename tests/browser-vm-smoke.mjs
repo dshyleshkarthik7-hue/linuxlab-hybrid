@@ -6,30 +6,75 @@ if (!chromium) throw new Error('Playwright chromium export is unavailable');
 
 const baseURL=process.argv[2];
 if(!baseURL) throw new Error('Missing base URL');
+
 const browser=await chromium.launch({headless:true});
 const page=await browser.newPage({viewport:{width:1280,height:900}});
-try{
+
+try {
   await page.route('**/api/iso**', async route=>{
     const range=route.request().headers().range;
     await route.fulfill({
       status:range?206:200,
-      headers:range?{'content-range':'bytes 0-0/1','accept-ranges':'bytes','content-length':'1','content-type':'application/octet-stream'}:{'content-length':'1','content-type':'application/octet-stream'},
+      headers:range
+        ? {'content-range':'bytes 0-0/1','accept-ranges':'bytes','content-length':'1','content-type':'application/octet-stream'}
+        : {'content-length':'1','content-type':'application/octet-stream'},
       body:Buffer.from([0])
     });
   });
-  await page.goto(baseURL+'/real-linux/',{waitUntil:'networkidle',timeout:30000});
-  for(const selector of ['#btn-v86-terminal','#btn-v86-screen','#btn-v86-alpine','#btn-v86-virt','#btn-v86-restart','#v86-health']) {
-    if(await page.locator(selector).count()!==1) throw new Error('Missing control '+selector);
+
+  await page.goto(baseURL+'/real-linux/', {waitUntil:'networkidle',timeout:30000});
+
+  const required = ['#v86-health','#v86-status','#v86-monitor','#v86-terminal-container','#screen_container'];
+  for (const selector of required) {
+    if (await page.locator(selector).count() !== 1) {
+      throw new Error('Missing control '+selector);
+    }
   }
+
+  const buttons = {
+    terminal:'#btn-v86-terminal',
+    screen:'#btn-v86-screen',
+    alpine:'#btn-v86-alpine',
+    virt:'#btn-v86-virt',
+    restart:'#btn-v86-restart'
+  };
+
+  for (const [name, selector] of Object.entries(buttons)) {
+    await page.waitForFunction(
+      selector => document.querySelectorAll(selector).length === 1,
+      selector,
+      {timeout:10000}
+    );
+    console.log('Found '+name+' control');
+  }
+
   await page.waitForFunction(()=>Boolean(window.linuxLabVM),(null),{timeout:20000});
-  await page.waitForFunction(()=>Boolean(window.linuxLabVM && window.linuxLabVM.emulator),(null),{timeout:20000});
-  await page.click('#btn-v86-screen');
-  await page.waitForFunction(()=>!document.getElementById('screen_container')?.hidden && Boolean(document.getElementById('v86-terminal-container')?.hidden));
-  await page.click('#btn-v86-terminal');
-  await page.waitForFunction(()=>Boolean(document.getElementById('screen_container')?.hidden) && !document.getElementById('v86-terminal-container')?.hidden);
-  await page.click('#btn-v86-virt');
-  await page.waitForFunction(()=>document.getElementById('v86-status')?.textContent?.includes('Alpine Virt') || false,{timeout:20000});
-  await page.waitForFunction(()=>Boolean(window.linuxLabVM && window.linuxLabVM.emulator),null,{timeout:20000});
+  await page.waitForFunction(()=>Boolean(window.linuxLabVM?.emulator),(null),{timeout:20000});
+
+  await page.click(buttons.screen);
+  await page.waitForFunction(
+    ()=>!document.getElementById('screen_container')?.hidden &&
+        Boolean(document.getElementById('v86-terminal-container')?.hidden),
+    null,
+    {timeout:10000}
+  );
+
+  await page.click(buttons.terminal);
+  await page.waitForFunction(
+    ()=>Boolean(document.getElementById('screen_container')?.hidden) &&
+        !document.getElementById('v86-terminal-container')?.hidden,
+    null,
+    {timeout:10000}
+  );
+
+  await page.click(buttons.virt);
+  await page.waitForFunction(
+    ()=>document.getElementById('v86-status')?.textContent?.includes('Alpine Virt') || false,
+    null,
+    {timeout:20000}
+  );
+  await page.waitForFunction(()=>Boolean(window.linuxLabVM?.emulator),null,{timeout:20000});
+
   console.log('Browser VM controls smoke test passed');
 } finally {
   await browser.close();
