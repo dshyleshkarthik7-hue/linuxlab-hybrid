@@ -17,8 +17,7 @@
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",
     "@xterm/xterm": "^5.5.0",
-    "monaco-editor": "^0.52.0",
-    "v86": "0.5.458"
+    "monaco-editor": "^0.52.0"
   },
   "devDependencies": {
     "typescript": "^5.6.3",
