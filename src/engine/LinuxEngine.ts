@@ -264,8 +264,10 @@ export class InBrowserLinuxEngine {
     // Most simulator commands return GNU-style diagnostics as text. Keep shell
     // control operators correct by translating diagnostics into a non-zero status
     // without inspecting arbitrary successful command output.
-    if (this.exitCode === 0 && /^(?:bash: |(?:cat|grep|head|tail|wc|sort|uniq|ls|cd|mkdir|touch|rm|cp|mv|find|chmod|stat|gcc|clang|javac|java|export|which): .*?(?:No such file or directory|missing |cannot |invalid |usage:|file not found|File exists|Is a directory|Not a directory|not specified|omitting directory))/i.test(output)) {
-      this.exitCode = 1;
+    if (this.exitCode === 0) {
+      const diagnostic = /^(?:bash: |(?:cat|grep|head|tail|wc|sort|uniq|ls|cd|mkdir|touch|rm|cp|mv|find|chmod|stat|gcc|clang|javac|java|export|which): )/i.test(output);
+      const failure = /(?:No such file or directory|missing (?:operand|file operand|destination|search pattern|argument)|cannot (?:access|create|remove|stat|touch|move|read)|invalid (?:mode|option)|usage:|file not found|File exists|Is a directory|Not a directory|not specified|omitting directory)/i.test(output);
+      if (diagnostic && failure) this.exitCode = 1;
     }
     return output;
   }
