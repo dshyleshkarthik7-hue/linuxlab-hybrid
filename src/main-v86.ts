@@ -29,8 +29,18 @@ interface V86Options {
 const ALPINE_ISO = '/api/iso';
 const ALPINE_VIRT_ISO = '/api/iso?image=virt';
 const ULTRA_LIGHT_ISO = '/api/iso?image=linux4';
-const profileMemory=(profile:Profile)=>profile.memoryMiB;
-type Profile = { name:string; memoryMiB:number; cdrom:string; supported:boolean; note?:string; arch?:'x86'|'x86_64' };
+type Profile = {
+  name: string;
+  memoryMiB: number;
+  cdrom: string;
+  supported: boolean;
+  note?: string;
+  arch?: 'x86' | 'x86_64';
+};
+
+function profileMemory(profile: Profile): number {
+  return profile.memoryMiB;
+}
 type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_send(data:string):void; keyboard_send_text?:(data:string)=>void; stop?:()=>void; destroy?:()=>void };
 
 export class V86LinuxTerminal {
@@ -81,7 +91,7 @@ export class V86LinuxTerminal {
   this.setHealth('booting'); this.status(profile.name+' • checking runtime'); this.term.writeln('LinuxTerminal — '+profile.name);
   try{
    await this.loadRuntime();
-   if(id!==this.bootId)return;
+   if(id!==this.bootId || signal.aborted)return;
    await this.preflightRuntimeAssets();
    if(id!==this.bootId)return;
    this.status(profile.name+' • checking image');
@@ -121,7 +131,42 @@ export class V86LinuxTerminal {
   }));
  }
  private scheduleBootWatchdog(id:number):void{if(this.bootTimeout!==null)clearTimeout(this.bootTimeout);this.bootTimeout=window.setTimeout(()=>{if(this.ready||id!==this.bootId)return;const serialAge=this.lastSerialAt?Date.now()-this.lastSerialAt:Number.POSITIVE_INFINITY;if(this.lastSerialAt&&serialAge<120000){this.bootStage='guest still booting';this.setHealth('booting');this.status(this.profile.name+' • still booting');this.monitor('Serial activity detected • continuing to wait');this.scheduleBootWatchdog(id);return;}const elapsed=Math.round((Date.now()-this.bootStartedAt)/60000);this.bootStage='boot taking longer than expected';this.setHealth('booting');this.status(this.profile.name+' • still booting');this.monitor('No recent serial output • '+elapsed+' min elapsed');this.term.writeln('\r\n[VM] Boot is taking longer than expected. The VM is still running; open Screen to check the guest console or keep waiting.');this.scheduleBootWatchdog(id);},120000);}
- private serialOutput(byte:number):void{const ch=String.fromCharCode(byte&255);this.lastSerialAt=Date.now();this.serial=(this.serial+ch).slice(-16000);this.term.write(ch);if(!this.bootPromptSent&&/\bboot:\s*$/i.test(this.serial)){this.bootPromptSent=true;this.bootStage='bootloader prompt';this.status(this.profile.name+' • starting default boot');this.monitor(profileMemory(this.profile)+' MiB • bootloader');this.bootPromptTimer=window.setTimeout(()=>{this.bootPromptTimer=null;const vm=this.emulator;if(!vm)return;this.bootStage='default boot selected';if(typeof vm.keyboard_send_text==='function')vm.keyboard_send_text('\n');else vm.serial0_send('\n');this.bootRetryTimer=window.setTimeout(()=>{this.bootRetryTimer=null;if(!this.ready&&this.emulator){this.bootStage='waiting for guest console';this.status(this.profile.name+' • booting guest');}},8000);},250);}if(!this.ready&&/(?:Welcome to Alpine Linux|OpenRC .*starting up Linux|localhost login:|(?:^|\r?\n)[^\r\n]{0,100}[#$>]\s*$)/mi.test(this.serial)){this.ready=true;this.bootStage=/(?:[#$>]\s*$)/m.test(this.serial)?'shell ready':'guest running';if(this.bootTimeout!==null)clearTimeout(this.bootTimeout);this.bootTimeout=null;if(this.bootRetryTimer!==null)clearTimeout(this.bootRetryTimer);this.bootRetryTimer=null;this.setHealth('ready');this.status(this.profile.name+' • '+(this.bootStage==='shell ready'?'ready':'running'));this.monitor(this.profile.memoryMiB+' MiB • '+(this.bootStage==='shell ready'?'shell ready':'guest running'));}} private showTerminal():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=true;if(t)t.hidden=false;this.fit();this.term.focus();}
+ private serialOutput(byte: number): void {
+    const ch = String.fromCharCode(byte & 255);
+    this.lastSerialAt = Date.now();
+    this.serial = (this.serial + ch).slice(-16000);
+    this.term.write(ch);
+
+    if (!this.bootPromptSent && /\bboot:\s*$/i.test(this.serial)) {
+      this.bootPromptSent = true;
+      this.bootStage = 'bootloader prompt';
+      this.status(this.profile.name + ' • starting default boot');
+      this.monitor(profileMemory(this.profile) + ' MiB • bootloader');
+      this.bootPromptTimer = window.setTimeout(() => {
+        this.bootPromptTimer = null;
+        const vm = this.emulator;
+        if (!vm) return;
+        this.bootStage = 'default boot selected';
+        if (typeof vm.keyboard_send_text === 'function') vm.keyboard_send_text('\n');
+        else vm.serial0_send('\n');
+      }, 250);
+    }
+
+    const promptDetected = /(?:Welcome to Alpine Linux|OpenRC .*starting up Linux|localhost login:|(?:^|\r?\n)[^\r\n]{0,100}[#$>]\s*$)/mi.test(this.serial);
+    if (!this.ready && promptDetected) {
+      this.ready = true;
+      this.bootStage = /(?:[#$>]\s*$)/m.test(this.serial) ? 'shell ready' : 'guest running';
+      if (this.bootTimeout !== null) clearTimeout(this.bootTimeout);
+      this.bootTimeout = null;
+      if (this.bootRetryTimer !== null) clearTimeout(this.bootRetryTimer);
+      this.bootRetryTimer = null;
+      this.setHealth('ready');
+      this.status(this.profile.name + ' • ' + (this.bootStage === 'shell ready' ? 'ready' : 'running'));
+      this.monitor(this.profile.memoryMiB + ' MiB • ' + (this.bootStage === 'shell ready' ? 'shell ready' : 'guest running'));
+    }
+  }
+
+ private showTerminal():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=true;if(t)t.hidden=false;this.fit();this.term.focus();}
  private showScreen():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=false;if(t)t.hidden=true;this.fit();}
  private status(t:string):void{const e=document.getElementById('v86-status');if(e)e.textContent=t;} private setHealth(state:'booting'|'ready'|'offline'):void{this.health=state;const e=document.getElementById('v86-health');if(e){e.dataset.state=state;e.setAttribute('aria-label',state==='ready'?'VM working':state==='booting'?'VM booting':'VM offline');}}
  private monitor(t:string):void{const e=document.getElementById('v86-monitor');if(e)e.textContent=t;}
