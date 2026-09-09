@@ -21,11 +21,16 @@ jobs:
           grep -q 'btn-v86-screen' index-v86.html
       - name: Production smoke test
         run: |
-          npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/linuxlab.log 2>&1 &
-          PID=$!; trap 'kill $PID 2>/dev/null || true; cat /tmp/linuxlab.log' EXIT
+          nohup npm run preview -- --host 0.0.0.0 --port 4173 >/tmp/linuxlab.log 2>&1 < /dev/null &
+          PID=$!
+          trap 'kill $PID 2>/dev/null || true; cat /tmp/linuxlab.log' EXIT
           READY=0
+          sleep 2
           for i in {1..60}; do
-            if curl -fsS --retry 1 --connect-timeout 2 http://127.0.0.1:4173/ >/dev/null; then READY=1; break; fi
+            if ! kill -0 "$PID" 2>/dev/null; then
+              echo "Vite preview exited unexpectedly"; cat /tmp/linuxlab.log; exit 1
+            fi
+            if curl -fsS --connect-timeout 2 http://localhost:4173/ >/dev/null; then READY=1; break; fi
             sleep 1
           done
           if [ "$READY" -ne 1 ]; then
@@ -33,6 +38,6 @@ jobs:
             cat /tmp/linuxlab.log
             exit 1
           fi
-          for path in / /simulator.html /index-v86.html /linux-cd-command/index.html /linux-ls-command/index.html /libv86.js /v86.wasm /seabios.bin /vgabios.bin; do curl -fsS --connect-timeout 5 "http://127.0.0.1:4173$path" >/dev/null; done
-          curl -fsS http://127.0.0.1:4173/index-v86.html | grep -q 'btn-v86-alpine'
-          curl -fsS http://127.0.0.1:4173/index-v86.html | grep -q 'main-v86'
+          for path in / /simulator.html /index-v86.html /linux-cd-command/index.html /linux-ls-command/index.html /libv86.js /v86.wasm /seabios.bin /vgabios.bin; do curl -fsS --connect-timeout 5 "http://localhost:4173$path" >/dev/null; done
+          curl -fsS http://localhost:4173/index-v86.html | grep -q 'btn-v86-alpine'
+          curl -fsS http://localhost:4173/index-v86.html | grep -q 'main-v86'
