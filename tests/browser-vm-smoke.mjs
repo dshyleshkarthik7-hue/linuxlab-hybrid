@@ -1,6 +1,7 @@
-import pkg from '/tmp/linuxlab-playwright/node_modules/playwright/lib/index.js';
+import { createRequire } from 'node:module';
 
-const { chromium } = pkg;
+const require = createRequire(import.meta.url);
+const { chromium } = require('/tmp/linuxlab-playwright/node_modules/playwright');
 if (!chromium) throw new Error('Playwright chromium export is unavailable');
 
 const baseURL=process.argv[2];
