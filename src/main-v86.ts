@@ -6,6 +6,7 @@ const TerminalCtor = (xtermModule as any).Terminal ?? (xtermModule as any).defau
 const FitAddonCtor = (fitModule as any).FitAddon ?? (fitModule as any).default?.FitAddon;
 const ALPINE_ISO = '/api/iso';
 const ALPINE_VIRT_ISO = '/api/iso?image=virt';
+const V86_RUNTIME_URL = 'https://copy.sh/v86/build/libv86.js';
 
 type Profile = { name: string; memoryMiB: number; cdrom: string };
 type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_send(data:string):void; stop?:()=>void; destroy?:()=>void };
@@ -208,11 +209,11 @@ export class V86LinuxTerminal {
   private async verifyAssets(cdrom: string): Promise<void> {
     const required = ['/v86.wasm', '/seabios.bin', '/vgabios.bin'];
     for (const url of required) {
-      const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
-      if (!response.ok) throw new Error(`Required VM asset failed to load: ${url} (${response.status})`);
+      const response = await fetch(this.asset(url), { method: 'GET', cache: 'no-store', headers: { Range: 'bytes=0-0' } });
+      if (!response.ok && response.status !== 206) throw new Error(`Required VM asset failed to load: ${url} (${response.status})`);
     }
-    const iso = await fetch(cdrom, { method: 'HEAD', cache: 'no-store', signal: AbortSignal.timeout(15000) });
-    if (!iso.ok) throw new Error(`Linux image is unavailable (${iso.status})`);
+    const iso = await fetch(cdrom, { method: 'GET', cache: 'no-store', headers: { Range: 'bytes=0-0' }, signal: AbortSignal.timeout(30000) });
+    if (!iso.ok && iso.status !== 206) throw new Error(`Linux image is unavailable (${iso.status})`);
   }
 
   private startBootTimer(profile: Profile): void {
@@ -237,30 +238,15 @@ export class V86LinuxTerminal {
   private loadRuntime(): Promise<void> {
     if ((window as any).V86Starter) return Promise.resolve();
     if (V86LinuxTerminal.runtimePromise) return V86LinuxTerminal.runtimePromise;
-    V86LinuxTerminal.runtimePromise = (async () => {
-      const sources = [this.asset('/libv86.js'), 'https://copy.sh/v86/build/libv86.js'];
-      let lastError = 'V86Starter was not exposed';
-      for (const src of sources) {
-        try {
-          await new Promise<void>((resolve, reject) => {
-            const script = document.createElement('script');
-            script.dataset.v86Runtime = 'true';
-            script.src = src;
-            script.async = true;
-            script.onload = () => (window as any).V86Starter ? resolve() : reject(new Error('runtime loaded but V86Starter was not exposed'));
-            script.onerror = () => reject(new Error('script failed to load'));
-            document.head.appendChild(script);
-          });
-          return;
-        } catch (error) {
-          lastError = src + ': ' + (error instanceof Error ? error.message : String(error));
-          document.querySelectorAll<HTMLScriptElement>('script[data-v86-runtime="true"]').forEach(node => {
-            if (!(window as any).V86Starter) node.remove();
-          });
-        }
-      }
-      throw new Error('No compatible v86 browser runtime available. ' + lastError);
-    })().catch((error: unknown) => {
+    V86LinuxTerminal.runtimePromise = new Promise<void>((resolve, reject) => {
+      const script = document.createElement('script');
+      script.src = V86_RUNTIME_URL;
+      script.async = true;
+      script.crossOrigin = 'anonymous';
+      script.onload = () => (window as any).V86Starter ? resolve() : reject(new Error('The v86 runtime loaded but did not expose V86Starter'));
+      script.onerror = () => reject(new Error('Unable to download the v86 runtime. Check network access or host libv86.js with the matching v86.wasm.'));
+      document.head.appendChild(script);
+    }).catch((error: unknown) => {
       V86LinuxTerminal.runtimePromise = null;
       throw error;
     });
