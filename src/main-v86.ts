@@ -56,7 +56,7 @@ export class V86LinuxTerminal {
    vm.add_listener('serial0-output-byte',(byte:number)=>{if(id===this.bootId)this.serialOutput(byte);});
    this.scheduleBootWatchdog(id);
    this.fit();
-  }catch(e){this.error(e instanceof Error?e.message:String(e));}
+  }catch(e){if(id===this.bootId)this.error(e instanceof Error?e.message:String(e));}
  }
  private loadRuntime():Promise<void>{
   if(typeof (window as any).V86==='function') return Promise.resolve();
