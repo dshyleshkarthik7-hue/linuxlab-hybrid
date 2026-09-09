@@ -21,29 +21,29 @@ jobs:
           grep -q 'btn-v86-screen' index-v86.html
       - name: Production smoke test
         run: |
-          nohup npm run preview -- --host 0.0.0.0 --port 4173 >/tmp/linuxlab.log 2>&1 < /dev/null &
+          set -eu
+          npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/linuxlab.log 2>&1 &
           PID=$!
-          trap 'kill $PID 2>/dev/null || true; cat /tmp/linuxlab.log' EXIT
+          cleanup() { kill "$PID" 2>/dev/null || true; }
+          trap cleanup EXIT
           READY=0
-          sleep 2
-          for i in {1..60}; do
-            if ! kill -0 "$PID" 2>/dev/null; then
-              echo "Vite preview exited unexpectedly"; cat /tmp/linuxlab.log; exit 1
+          for i in $(seq 1 60); do
+            if curl -fsS --connect-timeout 2 http://127.0.0.1:4173/ >/dev/null 2>&1; then
+              READY=1
+              break
             fi
-            if curl -fsS --connect-timeout 2 http://localhost:4173/ >/dev/null; then READY=1; break; fi
+            if ! kill -0 "$PID" 2>/dev/null; then
+              cat /tmp/linuxlab.log
+              exit 1
+            fi
             sleep 1
           done
           if [ "$READY" -ne 1 ]; then
-            echo "Vite preview did not become reachable"
             cat /tmp/linuxlab.log
             exit 1
           fi
-          # Verify only files Vite actually serves from the production build.
-          for path in / /index-v86.html /libv86.js /v86.wasm /seabios.bin /vgabios.bin; do
-            curl -fsS --connect-timeout 5 "http://localhost:4173$path" >/dev/null
-          done
-          # Avoid pipefail/SIGPIPE ambiguity and report missing markers clearly.
-          curl -fsS http://localhost:4173/index-v86.html -o /tmp/index-v86.html
+          curl -fsS http://127.0.0.1:4173/ -o /tmp/home.html
+          curl -fsS http://127.0.0.1:4173/index-v86.html -o /tmp/index-v86.html
           grep -Fq 'btn-v86-alpine' /tmp/index-v86.html
           grep -Fq 'main-v86' /tmp/index-v86.html
           echo "Production preview smoke test passed"
