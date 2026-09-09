@@ -1,6 +1,7 @@
 import * as xtermModule from '@xterm/xterm';
 import * as fitModule from '@xterm/addon-fit';
-import { V86Starter } from 'v86';
+// The npm package's public entry point does not export the emulator constructor.
+// Load the version-matched browser bundle shipped with this deployment instead.
 import '@xterm/xterm/css/xterm.css';
 
 const TerminalCtor = (xtermModule as any).Terminal;
@@ -12,6 +13,7 @@ type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_se
 
 export class V86LinuxTerminal {
  private term:any; private fitAddon:any; private emulator:V86|null=null;
+ private static runtimePromise:Promise<void>|null=null;
  private terminalDataDisposable:{dispose():void}|null=null;
  private profile:Profile={name:'Developer Alpine',memoryMiB:1024,cdrom:ALPINE_ISO,supported:true};
  private bootId=0; private ready=false; private serial=''; private bootTimeout:number|null=null;
@@ -36,19 +38,37 @@ export class V86LinuxTerminal {
   // A new boot invalidates all callbacks from the previous VM.
   const id=++this.bootId; await this.dispose(); this.profile=profile; this.ready=false; this.serial=''; this.showTerminal(); this.term.clear();
   if(!profile.supported){this.error(profile.note||'Unsupported image');return;}
-  this.status(profile.name+' • checking image'); this.term.writeln('LinuxTerminal — '+profile.name);
+  this.status(profile.name+' • checking runtime'); this.term.writeln('LinuxTerminal — '+profile.name);
+   await this.loadRuntime();
+   if(id!==this.bootId)return;
+   this.status(profile.name+' • checking image');
   try{
    const iso=await fetch(profile.cdrom,{method:'GET',headers:{Range:'bytes=0-0'},cache:'no-store',signal:AbortSignal.timeout(30000)});
    if(!iso.ok&&iso.status!==206) throw new Error('Linux image unavailable ('+iso.status+')');
    if(id!==this.bootId)return;
    const screen=document.getElementById('screen_container'); if(!screen)throw new Error('VM screen container is missing');
    this.status(profile.name+' • booting'); this.monitor(profile.memoryMiB+' MiB • starting');
-   const vm:any=new (V86Starter as any)({memory_size:profile.memoryMiB*1024*1024,vga_memory_size:8*1024*1024,screen_container:screen,cdrom:{url:profile.cdrom,async:true},boot_order:0x20,autostart:true,disable_speaker:true});
+   const Runtime=(window as any).V86;
+   if(typeof Runtime!=='function') throw new Error('Local v86 runtime did not expose window.V86');
+   const vm:any=new Runtime({memory_size:profile.memoryMiB*1024*1024,vga_memory_size:8*1024*1024,screen_container:screen,cdrom:{url:profile.cdrom,async:true},boot_order:0x20,autostart:true,disable_speaker:true});
    this.emulator=vm as V86;
    vm.add_listener('serial0-output-byte',(byte:number)=>{if(id===this.bootId)this.serialOutput(byte);});
    this.bootTimeout=window.setTimeout(()=>{if(!this.ready&&id===this.bootId)this.error('Boot timed out. Try the learning simulator or reboot the compatible image.');},180000);
    this.fit();
   }catch(e){this.error(e instanceof Error?e.message:String(e));}
+ }
+ private loadRuntime():Promise<void>{
+  if(typeof (window as any).V86==='function') return Promise.resolve();
+  if(V86LinuxTerminal.runtimePromise) return V86LinuxTerminal.runtimePromise;
+  V86LinuxTerminal.runtimePromise=new Promise<void>((resolve,reject)=>{
+   const existing=document.querySelector<HTMLScriptElement>('script[data-linuxlab-v86]');
+   const finish=()=>typeof (window as any).V86==='function'?resolve():reject(new Error('Local libv86.js loaded but window.V86 was not exposed'));
+   if(existing){existing.addEventListener('load',finish,{once:true});existing.addEventListener('error',()=>reject(new Error('Failed to load local libv86.js')),{once:true});return;}
+   const script=document.createElement('script');script.dataset.linuxlabV86='true';script.src='/libv86.js';script.async=true;
+   script.onload=finish;script.onerror=()=>reject(new Error('Failed to load /libv86.js'));
+   document.head.appendChild(script);
+  }).catch((error:unknown)=>{V86LinuxTerminal.runtimePromise=null;throw error;});
+  return V86LinuxTerminal.runtimePromise;
  }
  private serialOutput(byte:number):void{const ch=String.fromCharCode(byte&255);this.serial=(this.serial+ch).slice(-16000);this.term.write(ch);if(!this.ready&&/[#$>]\s*$/.test(this.serial.trim())){this.ready=true;if(this.bootTimeout!==null)clearTimeout(this.bootTimeout);this.bootTimeout=null;this.status(this.profile.name+' • ready');this.monitor(this.profile.memoryMiB+' MiB • ready');}}
  private showTerminal():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=true;if(t)t.hidden=false;this.fit();this.term.focus();}
