@@ -37,8 +37,8 @@ class LinuxLabApp {
   private engine: InBrowserLinuxEngine;
   private assessment: AssessmentRunner;
   private editor: monaco.editor.IStandaloneCodeEditor | null = null;
-  private simTerm: xtermModule.Terminal;
-  private simFitAddon: fitModule.FitAddon;
+  private simTerm!: xtermModule.Terminal;
+  private simFitAddon!: fitModule.FitAddon;
 
   private currentFile: string = 'main.c';
   private currentInputBuffer: string = '';
