@@ -5,7 +5,7 @@ import '@xterm/xterm/css/xterm.css';
 const TerminalCtor = (xtermModule as any).Terminal ?? (xtermModule as any).default?.Terminal;
 const FitAddonCtor = (fitModule as any).FitAddon ?? (fitModule as any).default?.FitAddon;
 const ALPINE_ISO = '/api/iso';
-const LINUX4_ISO = '/api/iso-linux4';
+const LINUX4_ISO = '/linux4.iso';
 
 type Profile = { name: string; memoryMiB: number; cdrom: string };
 type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_send(data:string):void; stop?:()=>void; destroy?:()=>void };
