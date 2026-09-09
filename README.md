@@ -83,9 +83,24 @@ Tests:
 ```bash
 npm test
 npm run check
+npm run test:smoke
 ```
 
+Browser smoke testing uses the pinned `playwright@1.56.0` development dependency. The exact dependency graph is committed in `package-lock.json`, so CI and local development use `npm ci` for reproducible installs.
+
 `npm run check` runs the learning-engine regression checks followed by the TypeScript and production build checks used by CI.
+
+### ISO integrity
+
+Each VM profile has a primary source and, where configured, a fallback source. The relay improves availability but does **not** currently calculate a SHA-256 digest while streaming an ISO to the browser.
+
+For release verification, treat the published release checksum as the source of truth and verify a downloaded ISO locally:
+
+```bash
+sha256sum linux4.iso
+```
+
+Only use an ISO when its SHA-256 matches the checksum published by the release owner. A fallback mirror must contain the same verified artifact; availability fallback is not a substitute for cryptographic verification.
 
 ## Transparency
 
