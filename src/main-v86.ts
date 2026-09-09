@@ -76,6 +76,7 @@ export class V86LinuxTerminal {
     this.setMonitor(profile.memoryMiB + ' MiB • preparing');
 
     try {
+      await this.verifyAssets(profile.cdrom);
       await this.loadRuntime();
       if (id !== this.bootId) return;
       const V86Starter = (window as any).V86Starter;
@@ -91,6 +92,7 @@ export class V86LinuxTerminal {
         vga_bios: { url: this.asset('/vgabios.bin') },
         cdrom: { url: profile.cdrom, async: true },
         screen_container: screen,
+        boot_order: 0x20,
         autostart: true,
         disable_speaker: true,
         disable_mouse: true
@@ -158,6 +160,14 @@ export class V86LinuxTerminal {
     if (!vm) return;
     try { vm.stop?.(); } catch {}
     try { vm.destroy?.(); } catch {}
+  }
+
+  private async verifyAssets(cdrom: string): Promise<void> {
+    const required = ['/libv86.js', '/v86.wasm', '/seabios.bin', '/vgabios.bin', cdrom];
+    for (const url of required) {
+      const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
+      if (!response.ok) throw new Error(`Required VM asset failed to load: ${url} (${response.status})`);
+    }
   }
 
   private loadRuntime(): Promise<void> {
