@@ -8,7 +8,7 @@ permissions:
 jobs:
   quality:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-node@v5
@@ -17,14 +17,20 @@ jobs:
           cache: npm
       - name: Install dependencies
         run: npm ci --no-audit --no-fund
-      - name: Happy-path learning checks
+      - name: Unit tests
         run: npm run test
       - name: Type-check and production build
         run: npm run build
-      - name: Verify production entry points
+      - name: Production smoke test
         run: |
-          test -f dist/index.html
-          test -f dist/simulator.html
-          test -f dist/index-v86.html
-          test -f dist/libv86.js
-          test -f dist/v86.wasm
+          npm run preview -- --host 127.0.0.1 --port 4173 > /tmp/linuxlab-preview.log 2>&1 &
+          PID=$!
+          trap 'kill $PID 2>/dev/null || true; cat /tmp/linuxlab-preview.log' EXIT
+          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && break || sleep 1; done
+          curl -fsS http://127.0.0.1:4173/ >/dev/null
+          curl -fsS http://127.0.0.1:4173/simulator.html >/dev/null
+          curl -fsS http://127.0.0.1:4173/index-v86.html >/dev/null
+          curl -fsS http://127.0.0.1:4173/libv86.js >/dev/null
+          curl -fsS http://127.0.0.1:4173/v86.wasm >/dev/null
+          curl -fsS http://127.0.0.1:4173/seabios.bin >/dev/null
+          curl -fsS http://127.0.0.1:4173/vgabios.bin >/dev/null
