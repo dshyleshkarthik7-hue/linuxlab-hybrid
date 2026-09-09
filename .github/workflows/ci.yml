@@ -14,6 +14,11 @@ jobs:
       - run: npm ci --no-audit --no-fund
       - run: npm run test
       - run: npm run build
+      - name: Verify emulator TypeScript source
+        run: |
+          ! grep -q 'private screenMode' src/main-v86.ts
+          grep -q 'btn-v86-terminal' index-v86.html
+          grep -q 'btn-v86-screen' index-v86.html
       - name: Production smoke test
         run: |
           npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/linuxlab.log 2>&1 &

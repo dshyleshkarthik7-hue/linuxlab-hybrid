@@ -24,7 +24,6 @@ export class V86LinuxTerminal {
   private bootTimer: number | null = null;
   private bootTimeout: number | null = null;
   private bootMetrics: Array<{profile:string; startedAt:number; readyAt?:number; error?:string}> = [];
-  private screenMode = false;
   private static runtimePromise: Promise<void> | null = null;
 
   constructor(containerId = 'v86-terminal-container') {
@@ -145,9 +144,9 @@ export class V86LinuxTerminal {
     return lines.some((line:string) => /(?:^|\s)[^\s]+(?::[^\s]+)?[#$>]\s*$/.test(line));
   }
 
-  private showScreen(): void { this.screenMode=true; const s=document.getElementById('screen_container'); const t=document.getElementById('v86-terminal-container'); if(s)s.hidden=false; if(t)t.hidden=true; this.fit(); }
+  private showScreen(): void { const s=document.getElementById('screen_container'); const t=document.getElementById('v86-terminal-container'); if(s)s.hidden=false; if(t)t.hidden=true; this.fit(); }
 
-  private showTerminal(): void { this.screenMode=false; const s=document.getElementById('screen_container'); const t=document.getElementById('v86-terminal-container'); if(s)s.hidden=true; if(t)t.hidden=false; this.fit(); this.term.focus(); }
+  private showTerminal(): void { const s=document.getElementById('screen_container'); const t=document.getElementById('v86-terminal-container'); if(s)s.hidden=true; if(t)t.hidden=false; this.fit(); this.term.focus(); }
 
   private showDiagnostics(): void {
     const panel = document.getElementById('v86-diagnostics');
