@@ -2,12 +2,20 @@ const DB_NAME='LinuxLab_IDB'; const DB_VERSION=5;
 export interface WorkspaceFile{filename:string;content:string;timestamp:number}
 export interface LearningSession{id:string;mode:'simulator'|'real-linux';title:string;startedAt:number;updatedAt:number;commands:string[];lessonId?:string;completed?:boolean}
 export interface QuizAttempt{id:string;quizId:string;score:number;total:number;timestamp:number;answers:string[]}
+const ALLOWED_WORKSPACE_FILES = new Set(['main.c', 'Main.java']);
+
+function assertWorkspaceFilename(filename: string): void {
+  if (!ALLOWED_WORKSPACE_FILES.has(filename)) {
+    throw new Error(`Unsupported workspace filename: ${filename}`);
+  }
+}
+
 export class StorageService{
  private static dbPromise:Promise<IDBDatabase>|null=null;
  private static getDB():Promise<IDBDatabase>{ if(this.dbPromise)return this.dbPromise; this.dbPromise=new Promise((resolve,reject)=>{if(!('indexedDB'in window)){reject(new Error('IndexedDB is unavailable'));return;} const r=indexedDB.open(DB_NAME,DB_VERSION); r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('workspace'))db.createObjectStore('workspace',{keyPath:'filename'});if(!db.objectStoreNames.contains('progress'))db.createObjectStore('progress',{keyPath:'labId'});if(!db.objectStoreNames.contains('sessions')){const s=db.createObjectStore('sessions',{keyPath:'id'});s.createIndex('updatedAt','updatedAt');}if(!db.objectStoreNames.contains('quizAttempts'))db.createObjectStore('quizAttempts',{keyPath:'id'});};r.onblocked=()=>{this.dbPromise=null;reject(new Error('IndexedDB upgrade is blocked by another open LinuxLab tab'))};r.onerror=()=>{this.dbPromise=null;reject(r.error)};r.onsuccess=()=>{const db=r.result;db.onversionchange=()=>{db.close();this.dbPromise=null};resolve(db)}});return this.dbPromise}
  private static async op<T>(store:string,mode:IDBTransactionMode,action:(s:IDBObjectStore)=>IDBRequest<T>):Promise<T>{const db=await this.getDB();return new Promise((resolve,reject)=>{let result!:T;let failed=false;const tx=db.transaction(store,mode);let req:IDBRequest<T>;try{req=action(tx.objectStore(store));}catch(error){reject(error);return;}req.onsuccess=()=>{result=req.result};req.onerror=()=>{failed=true;reject(req.error||new Error('IndexedDB request failed'))};tx.oncomplete=()=>{if(!failed)resolve(result)};tx.onerror=()=>{if(!failed){failed=true;reject(tx.error||new Error('IndexedDB transaction failed'))}};tx.onabort=()=>{if(!failed){failed=true;reject(tx.error||new Error('IndexedDB transaction aborted'))}}});}
- static saveFile(f:string,c:string){return this.op('workspace','readwrite',s=>s.put({filename:f,content:c,timestamp:Date.now()})).then(()=>undefined)}
- static async getFile(f:string){const x=await this.op<WorkspaceFile|undefined>('workspace','readonly',s=>s.get(f));return x?.content??null}
+ static saveFile(f:string,c:string){assertWorkspaceFilename(f);return this.op('workspace','readwrite',s=>s.put({filename:f,content:c,timestamp:Date.now()})).then(()=>undefined)}
+ static async getFile(f:string){assertWorkspaceFilename(f);const x=await this.op<WorkspaceFile|undefined>('workspace','readonly',s=>s.get(f));return x?.content??null}
  static async getWorkspace(){const x=await this.op<WorkspaceFile[]>('workspace','readonly',s=>s.getAll());return Object.fromEntries(x.map(f=>[f.filename,f.content]))}
  static saveProgress(labId:string,score:number,passed:boolean){return this.op('progress','readwrite',s=>s.put({labId,score,passed,timestamp:Date.now()})).then(()=>undefined)}
  static async getProgress(l:string){const x=await this.op<{score:number;passed:boolean}|undefined>('progress','readonly',s=>s.get(l));return x??null}
