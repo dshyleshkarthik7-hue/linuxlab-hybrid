@@ -12,7 +12,8 @@
     "build:iso": "node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
     "check": "npm run test:ci",
-    "test:smoke": "npm run build"
+    "test:smoke": "node tests/browser-vm-smoke.mjs",
+    "test:all": "npm run test && npm run build"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",
