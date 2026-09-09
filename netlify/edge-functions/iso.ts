@@ -105,14 +105,28 @@ export default async function handler(request: Request): Promise<Response> {
 
   try {
     const source = IMAGES[image];
-    let upstream = await fetchSource(source.primary, request, controller.signal);
+    let upstream: Response;
+    try {
+      upstream = await fetchSource(source.primary, request, controller.signal);
+    } catch (primaryError) {
+      if (!source.fallback) throw primaryError;
+      console.warn('[LinuxLab] Primary ISO source failed; trying fallback', {
+        image,
+        message: primaryError instanceof Error ? primaryError.message : String(primaryError),
+      });
+      upstream = await fetchSource(source.fallback, request, controller.signal);
+    }
 
     if (
       !upstream.ok &&
       upstream.status !== 206 &&
       source.fallback &&
-      [401, 403, 429, 500, 502, 503].includes(upstream.status)
+      upstream.url !== source.fallback
     ) {
+      console.warn('[LinuxLab] Primary ISO returned an error; trying fallback', {
+        image,
+        status: upstream.status,
+      });
       upstream = await fetchSource(source.fallback, request, controller.signal);
     }
 
