@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const playwrightRoot = process.env.PLAYWRIGHT_NODE_PATH || '/tmp/linuxlab-playwright/node_modules/playwright';
+const playwrightRoot = process.env.PLAYWRIGHT_NODE_PATH || 'playwright';
 const { chromium } = require(playwrightRoot);
 if (!chromium) throw new Error('Playwright chromium export is unavailable');
 
@@ -51,6 +51,7 @@ try {
     screen: '#btn-v86-screen',
     alpine: '#btn-v86-alpine',
     virt: '#btn-v86-virt',
+    linux4: '#btn-v86-linux4',
     restart: '#btn-v86-restart'
   };
 
@@ -84,7 +85,13 @@ try {
     { timeout: 20000 }
   );
 
-  await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Alpine Virt') || false, null, { timeout: 20000 });
+  await page.click(buttons.linux4);
+  await page.waitForFunction(
+    () => document.getElementById('v86-status')?.textContent?.includes('Ultra Light Linux') || false,
+    null,
+    { timeout: 20000 }
+  );
+
   console.log('Browser VM controls smoke test passed');
 } finally {
   await browser.close();
