@@ -33,11 +33,24 @@ type Profile = { name:string; memoryMiB:number; cdrom:string; supported:boolean;
 type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_send(data:string):void; keyboard_send_text?:(data:string)=>void; stop?:()=>void; destroy?:()=>void };
 
 export class V86LinuxTerminal {
- private term: xtermModule.Terminal; private fitAddon: fitModule.FitAddon; private emulator: V86 | null = null;
+ private term: xtermModule.Terminal;
+  private fitAddon: fitModule.FitAddon;
+  private emulator: V86 | null = null;
  private static runtimePromise:Promise<void>|null=null;
  private terminalDataDisposable:{dispose():void}|null=null;
  private profile:Profile={name:'Developer Alpine',memoryMiB:1024,cdrom:ALPINE_ISO,supported:true};
- private bootId=0; private bootController: AbortController | null = null; private ready=false; private health:'booting'|'ready'|'offline'='booting'; private serial=''; private bootTimeout:number|null=null; private bootPromptSent=false; private bootPromptTimer:number|null=null; private bootRetryTimer:number|null=null; private bootStage='starting'; private lastSerialAt=0; private bootStartedAt=0;
+ private bootId=0;
+  private bootController: AbortController | null = null;
+  private ready=false;
+  private health:'booting'|'ready'|'offline'='booting';
+  private serial='';
+  private bootTimeout:number|null=null;
+  private bootPromptSent=false;
+  private bootPromptTimer:number|null=null;
+  private bootRetryTimer:number|null=null;
+  private bootStage='starting';
+  private lastSerialAt=0;
+  private bootStartedAt=0;
  constructor(containerId='v86-terminal-container'){
   if(!TerminalCtor||!FitAddonCtor) throw new Error('Terminal runtime failed to load');
   const container=document.getElementById(containerId); if(!container) throw new Error('Terminal container is missing');
