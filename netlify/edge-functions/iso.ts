@@ -1,4 +1,5 @@
 const DEVELOPER_ISO = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso';
+const LINUX4_ISO = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso';
 const VIRT_ISO = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/V2.00/alpine-virt-3.24.1-x86.iso';
 const TIMEOUT_MS = 120_000;
 const DEVELOPER_FALLBACK = 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/assets/533942157';
@@ -8,8 +9,8 @@ export default async function handler(request: Request): Promise<Response> {
   if (request.method === 'OPTIONS') return new Response(null,{status:204,headers:cors});
   if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method Not Allowed',{status:405,headers:{...cors,Allow:'GET, HEAD, OPTIONS'}});
   const url=new URL(request.url), image=url.searchParams.get('image');
-  if(image && image!=='virt') return new Response('Unknown image',{status:404,headers:cors});
-  const source=image==='virt'?VIRT_ISO:DEVELOPER_ISO, range=request.headers.get('Range');
+  if(image && !['virt','linux4'].includes(image)) return new Response('Unknown image',{status:404,headers:cors});
+  const source=image==='linux4'?LINUX4_ISO:image==='virt'?VIRT_ISO:DEVELOPER_ISO, range=request.headers.get('Range');
   if(range && (!/^bytes=(\d*)-(\d*)$/.test(range.trim()) || range.includes(','))) return new Response('Invalid Range',{status:416,headers:{...cors,'Accept-Ranges':'bytes'}});
   const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),TIMEOUT_MS);
   try {
