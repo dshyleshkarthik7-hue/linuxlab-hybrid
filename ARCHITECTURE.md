@@ -31,6 +31,8 @@ Lifecycle:
 
 The VM is temporary and should not be treated as a secure place for passwords, keys, tokens, or private data.
 
+The ISO Edge Function is only an ISO transport relay. It is intentionally separate from guest networking and must not be represented as a guest Internet relay. Any future guest-network feature requires explicit VM device configuration, a controlled backend, and end-to-end tests.
+
 ## State ownership
 
 - `LinuxLabApp` owns simulator UI state.
