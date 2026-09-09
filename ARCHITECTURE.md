@@ -23,7 +23,7 @@ Lifecycle:
 
 1. Load the local v86 browser bundle.
 2. Preflight required runtime assets.
-3. Check the selected ISO endpoint.
+3. Check the selected ISO endpoint (Developer Alpine, Alpine Virt, or Ultra Light Linux 4).
 4. Create one VM instance.
 5. Observe serial output and health state.
 6. Cancel stale boot work when a newer boot begins.
