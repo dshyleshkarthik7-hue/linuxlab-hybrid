@@ -10,30 +10,35 @@ import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
 import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
 import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 
-// Define the global Monaco environment to resolve workers
-(self as any).MonacoEnvironment = {
-  getWorker(_: any, label: string) {
-    if (label === 'json') return new jsonWorker();
-    if (label === 'css' || label === 'scss' || label === 'less') return new cssWorker();
-    if (label === 'html' || label === 'handlebars' || label === 'razor') return new htmlWorker();
-    if (label === 'typescript' || label === 'javascript') return new tsWorker();
-    return new editorWorker();
-  },
-};
-
 import { InBrowserLinuxEngine } from './engine/LinuxEngine';
 import { AssessmentRunner } from './engine/AssessmentRunner';
 import { StorageService } from './core/StorageService';
 
-const TerminalConstructor = (xtermModule as any).Terminal || (xtermModule as any).default?.Terminal || (xtermModule as any).default || xtermModule;
-const FitAddonConstructor = (fitModule as any).FitAddon || (fitModule as any).default?.FitAddon || (fitModule as any).default || fitModule;
+const TerminalConstructor = xtermModule.Terminal;
+const FitAddonConstructor = fitModule.FitAddon;
+
+type MonacoEnvironmentWithWorkers = {
+  getWorker(_: string, label: string): Worker;
+};
+
+Object.assign(self, {
+  MonacoEnvironment: {
+    getWorker(_: string, label: string): Worker {
+      if (label === 'json') return new jsonWorker();
+      if (label === 'css' || label === 'scss' || label === 'less') return new cssWorker();
+      if (label === 'html' || label === 'handlebars' || label === 'razor') return new htmlWorker();
+      if (label === 'typescript' || label === 'javascript') return new tsWorker();
+      return new editorWorker();
+    },
+  } satisfies MonacoEnvironmentWithWorkers,
+});
 
 class LinuxLabApp {
   private engine: InBrowserLinuxEngine;
   private assessment: AssessmentRunner;
   private editor: monaco.editor.IStandaloneCodeEditor | null = null;
-  private simTerm: any;
-  private simFitAddon: any;
+  private simTerm: xtermModule.Terminal;
+  private simFitAddon: fitModule.FitAddon;
 
   private currentFile: string = 'main.c';
   private currentInputBuffer: string = '';
@@ -59,7 +64,7 @@ class LinuxLabApp {
 
   private initMonaco(): void {
     const container = document.getElementById('monaco-container');
-    if (!container) return;
+    if (!container) throw new Error('Monaco editor container is missing');
 
     const initialCode = this.engine.readFile('/root/main.c') || '';
 
@@ -87,7 +92,7 @@ class LinuxLabApp {
 
   private initSimulatorTerminal(): void {
     const container = document.getElementById('simulator-terminal-container');
-    if (!container) return;
+    if (!container) throw new Error('Simulator terminal container is missing');
 
     this.simTerm = new TerminalConstructor({
       cursorBlink: true,
@@ -108,11 +113,7 @@ class LinuxLabApp {
     this.simTerm.loadAddon(this.simFitAddon);
     this.simTerm.open(container);
 
-    setTimeout(() => {
-      try {
-        this.simFitAddon.fit();
-      } catch (error) { console.warn('[LinuxLab] Terminal fit failed:', error); }
-    }, 150);
+    setTimeout(() => this.fitSimulatorTerminal('initial layout'), 150);
 
     this.simTerm.writeln('\x1b[1;36m====================================================\x1b[0m');
     this.simTerm.writeln('\x1b[1;32m   LinuxTerminal Engine A: Interactive Web Shell & POSIX  \x1b[0m');
@@ -156,6 +157,14 @@ class LinuxLabApp {
     }
   }
 
+
+  private fitSimulatorTerminal(context: string): void {
+    try {
+      this.simFitAddon.fit();
+    } catch (error) {
+      console.warn(`[LinuxLab] Terminal fit failed during ${context}:`, error);
+    }
+  }
 
   private async executeTerminalCommand(cmd: string): Promise<void> {
     // The learning runtime normally receives stdin as arguments. Make scanf feel
@@ -366,9 +375,7 @@ class LinuxLabApp {
 
     window.addEventListener('resize', () => {
       this.editor?.layout();
-      try {
-        this.simFitAddon?.fit();
-      } catch (error) { console.warn('[LinuxLab] Terminal resize failed:', error); }
+      this.fitSimulatorTerminal('window resize');
     });
   }
 }
