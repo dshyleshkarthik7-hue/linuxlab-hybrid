@@ -1,4 +1,7 @@
-import { chromium } from '/tmp/linuxlab-playwright/node_modules/playwright/lib/index.js';
+import pkg from '/tmp/linuxlab-playwright/node_modules/playwright/lib/index.js';
+
+const { chromium } = pkg;
+if (!chromium) throw new Error('Playwright chromium export is unavailable');
 
 const baseURL=process.argv[2];
 if(!baseURL) throw new Error('Missing base URL');
