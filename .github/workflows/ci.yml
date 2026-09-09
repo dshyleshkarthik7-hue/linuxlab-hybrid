@@ -36,6 +36,8 @@ jobs:
           grep -Fq "script.src='/libv86.js'" src/main-v86.ts
           grep -Fq "bootPromptSent" src/main-v86.ts
           grep -Fq "console=ttyS0,115200" src/main-v86.ts
+          grep -Fq "keyboard_send_text" src/main-v86.ts
+          grep -Fq "Boot stage:" src/main-v86.ts
           grep -Fq "void this.start(this.profile)" src/main-v86.ts
           ! grep -Fq 'copy.sh/v86/build/libv86.js' src/main-v86.ts
           node -e "const p=require('./package.json'); if(p.dependencies?.v86 || p.devDependencies?.v86) process.exit(1)"
