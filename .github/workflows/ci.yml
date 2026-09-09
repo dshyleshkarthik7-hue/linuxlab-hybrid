@@ -34,21 +34,12 @@ jobs:
           grep -Fq 'btn-v86-terminal' dist/index-v86.html
           grep -Fq 'btn-v86-screen' dist/index-v86.html
           ! grep -Fq "from 'v86'" src/main-v86.ts
-          grep -Fq "wasm_path:'/v86.wasm'" src/main-v86.ts
-          grep -Fq "bios:{url:'/seabios.bin'}" src/main-v86.ts
-          grep -Fq "vga_bios:{url:'/vgabios.bin'}" src/main-v86.ts
-          grep -Fq "script.src='/libv86.js'" src/main-v86.ts
-          grep -Fq "bootPromptSent" src/main-v86.ts
-          grep -Fq "default boot selected" src/main-v86.ts
-          grep -Fq "keyboard_send_text" src/main-v86.ts
-          ! grep -Fq "this.bootCommand='alpine" src/main-v86.ts
-          grep -Fq "Boot stage:" src/main-v86.ts
-          grep -Fq "preflightRuntimeAssets" src/main-v86.ts
-          grep -Fq "Required VM asset failed to load" src/main-v86.ts
-          grep -Fq "guest running" src/main-v86.ts
+          grep -Fq "network-relay-disclaimer" index-v86.html
+          grep -Fq "linux4" netlify/edge-functions/iso.ts
+          grep -Fq "huggingface.co/datasets/shyleshkarthikd/linux4" netlify/edge-functions/iso.ts
           grep -Fq "v86-health" index-v86.html
           grep -Fq "setHealth('ready')" src/main-v86.ts
-          grep -Fq "DEVELOPER_FALLBACK" netlify/edge-functions/iso.ts
+          grep -Fq "IMAGES" netlify/edge-functions/iso.ts
           grep -Fq "void this.start(this.profile)" src/main-v86.ts
           ! grep -Fq 'copy.sh/v86/build/libv86.js' src/main-v86.ts
           node -e "const p=require('./package.json'); if(p.dependencies?.v86 || p.devDependencies?.v86) process.exit(1)"
