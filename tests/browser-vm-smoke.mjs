@@ -1,7 +1,8 @@
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
+const playwrightRoot = process.env.PLAYWRIGHT_NODE_PATH || '/tmp/linuxlab-playwright/node_modules/playwright';
+const { chromium } = require(playwrightRoot);
 if (!chromium) throw new Error('Playwright chromium export is unavailable');
 
 const baseURL = process.argv[2];
