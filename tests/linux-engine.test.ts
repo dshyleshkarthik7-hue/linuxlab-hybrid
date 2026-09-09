@@ -51,6 +51,8 @@ async function run() {
   assert.equal(await e.execute('false && echo no'), '');
   assert.equal(await e.execute('false || echo fallback'), 'fallback');
   assert.equal(await e.execute('echo a && false || echo b'), 'a\nb');
+  assert.equal(await e.execute('echo a && false || echo b || echo c'), 'a\nb');
+  assert.equal(await e.execute('cat missing || echo a && echo b'), 'a\nb');
   assert.equal(await e.execute('false || echo a && echo b'), 'a\nb');
   assert.equal(await e.execute('echo "invalid output" && echo ok'), 'invalid output\nok');
   assert.equal(await e.execute('echo first; false; echo last'), 'first\nlast');
