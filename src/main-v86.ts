@@ -27,7 +27,7 @@ export class V86LinuxTerminal {
  }
  private bindControls():void{
   document.getElementById('btn-v86-alpine')?.addEventListener('click',()=>void this.start({name:'Developer Alpine',memoryMiB:1024,cdrom:ALPINE_ISO,supported:true}));
-  document.getElementById('btn-v86-virt')?.addEventListener('click',()=>void this.start({name:'Alpine Virt 3.24',memoryMiB:512,cdrom:ALPINE_VIRT_ISO,supported:false,arch:'x86_64',note:'The published Alpine Virt ISO is a 64-bit guest. Browser v86 emulates 32-bit x86 and cannot boot it.'}));
+  document.getElementById('btn-v86-virt')?.addEventListener('click',()=>void this.start({name:'Alpine Virt 3.24',memoryMiB:512,cdrom:ALPINE_VIRT_ISO,supported:true,arch:'x86',note:'Lightweight 32-bit Alpine Virt profile.'}));
   document.getElementById('btn-v86-restart')?.addEventListener('click',()=>void this.start(this.profile));
   document.getElementById('btn-v86-terminal')?.addEventListener('click',()=>this.showTerminal());
   document.getElementById('btn-v86-screen')?.addEventListener('click',()=>this.showScreen());
@@ -79,7 +79,7 @@ export class V86LinuxTerminal {
  private error(message:string):void{this.ready=false;this.status(this.profile.name+' • error');this.monitor('Boot failed');this.term.writeln('\r\n[VM] '+message);}
  private async dispose():Promise<void>{if(this.bootTimeout!==null){clearTimeout(this.bootTimeout);this.bootTimeout=null;}const vm=this.emulator;this.emulator=null;try{vm?.stop?.();vm?.destroy?.();}catch{}}
  public destroy():void{this.bootId++;void this.dispose();this.terminalDataDisposable?.dispose();this.terminalDataDisposable=null;try{this.term.dispose();}catch{}}
- private showDiagnostics():void{const p=document.getElementById('v86-diagnostics');if(!p)return;p.textContent=['VM diagnostics','Profile: '+this.profile.name,'VM mode: '+(this.profile.name==='Developer Alpine'?'primary':'optional compatibility'),'VM object: '+(this.emulator?'created':'not created'),'Runtime: local version-matched browser bundle','Shell detected: '+(this.ready?'yes':'waiting'),'ISO endpoint: '+this.profile.cdrom,'Architecture: '+(this.profile.supported?'compatible x86':'x86_64 guest • incompatible with 32-bit v86')].join('\n');p.hidden=!p.hidden;}
+ private showDiagnostics():void{const p=document.getElementById('v86-diagnostics');if(!p)return;p.textContent=['VM diagnostics','Profile: '+this.profile.name,'VM mode: '+(this.profile.name==='Developer Alpine'?'primary':'optional compatibility'),'VM object: '+(this.emulator?'created':'not created'),'Runtime: local version-matched browser bundle','Shell detected: '+(this.ready?'yes':'waiting'),'ISO endpoint: '+this.profile.cdrom,'Architecture: '+(this.profile.supported?'compatible x86':'compatible 32-bit x86')].join('\n');p.hidden=!p.hidden;}
  private async copyDiagnostics():Promise<void>{this.showDiagnostics();const t=document.getElementById('v86-diagnostics')?.textContent||'';try{await navigator.clipboard.writeText(t);this.term.writeln('[Diagnostics copied]');}catch{this.term.writeln('[Diagnostics] Clipboard unavailable');}}
 }
 window.addEventListener('DOMContentLoaded',()=>{try{const vm=new V86LinuxTerminal();(window as any).linuxLabVM=vm;window.addEventListener('pagehide',()=>vm.destroy(),{once:true});}catch(e){console.error(e);}});
