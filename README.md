@@ -33,8 +33,10 @@ Current browser VM profiles:
 - **Alpine Virt 3.24.1 Lightweight x86**: compatibility profile, 512 MiB RAM
 - **Ultra Light Linux 4**: approximately 7.4 MB release image, 256 MiB RAM
 
-### Developer Alpine networking
-Developer Alpine may expose an **experimental network relay** when the deployment provides one. It is best-effort only and is not a VPN, anonymity service, privacy boundary, or guarantee of Internet access. Package installation can therefore work when guest networking is available (for example, Alpine's `apk add` for supported repositories), but downloads can fail because of browser, emulator, relay, repository, CORS, or deployment limits. Never enter passwords, tokens, private keys, or other sensitive information in the VM.
+### Networking and package installation
+The ISO download endpoint is a server-side **ISO relay only**. It does not by itself provide Internet access to the guest VM.
+
+Developer Alpine package installation (for example, `apk add`) works only when a guest-network backend is explicitly available and configured. The current browser VM must not claim arbitrary Internet access unless that path has been verified end-to-end. This service is not a VPN, anonymity service, privacy boundary, or guarantee of Internet access. Never enter passwords, tokens, private keys, or other sensitive information in the VM.
 
 The real-Linux page reports three health states: orange while booting, green when the guest is running or a shell is ready, and black when booting fails. Slow devices are not marked offline merely because Alpine takes longer to initialize.
 
