@@ -53,6 +53,12 @@ Engine A tracks command success separately from returned text. This matters beca
 
 Regression tests cover mixed chains and quoted operators.
 
+## ISO source integrity
+
+The ISO relay has separate primary and fallback URLs for each image profile. Fallback improves availability only; it is not proof that two independently hosted files are identical.
+
+Release owners should publish a SHA-256 checksum for every ISO. CI or release tooling should verify the built artifact before publishing, and users who download an ISO directly can verify it with `sha256sum`. The browser relay intentionally streams large images without buffering the entire ISO, so cryptographic verification is performed at the release/distribution boundary rather than by loading the full artifact into edge-function memory.
+
 ## Persistence safety
 
 Only supported workspace files are persisted:
