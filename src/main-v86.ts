@@ -113,12 +113,12 @@ export class V86LinuxTerminal {
   if(typeof window.V86==='function') return Promise.resolve();
   if(V86LinuxTerminal.runtimePromise) return V86LinuxTerminal.runtimePromise;
   V86LinuxTerminal.runtimePromise=new Promise<void>((resolve,reject)=>{
-   const existing=document.querySelector<HTMLScriptElement>('script[data-linuxlab-v86]');
+   const script=document.querySelector<HTMLScriptElement>('script[data-linuxlab-v86]');
+   if(!script){reject(new Error('Missing static /libv86.js runtime tag'));return;}
    const finish=()=>typeof window.V86==='function'?resolve():reject(new Error('Local libv86.js loaded but window.V86 was not exposed'));
-   if(existing){if(typeof window.V86==='function'){resolve();return;}existing.addEventListener('load',finish,{once:true});existing.addEventListener('error',()=>reject(new Error('Failed to load local libv86.js')),{once:true});return;}
-   const script=document.createElement('script');script.dataset.linuxlabV86='true';script.src='/libv86.js';script.async=true;
-   script.onload=finish;script.onerror=()=>reject(new Error('Failed to load /libv86.js'));
-   document.head.appendChild(script);
+   script.addEventListener('load',finish,{once:true});
+   script.addEventListener('error',()=>reject(new Error('Failed to load /libv86.js')),{once:true});
+   queueMicrotask(finish);
   }).catch((error:unknown)=>{V86LinuxTerminal.runtimePromise=null;throw error;});
   return V86LinuxTerminal.runtimePromise;
  }
