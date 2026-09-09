@@ -28,6 +28,7 @@ interface V86Options {
 }
 const ALPINE_ISO = '/api/iso';
 const ALPINE_VIRT_ISO = '/api/iso?image=virt';
+const ULTRA_LIGHT_ISO = '/api/iso?image=linux4';
 const profileMemory=(profile:Profile)=>profile.memoryMiB;
 type Profile = { name:string; memoryMiB:number; cdrom:string; supported:boolean; note?:string; arch?:'x86'|'x86_64' };
 type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_send(data:string):void; keyboard_send_text?:(data:string)=>void; stop?:()=>void; destroy?:()=>void };
@@ -62,6 +63,7 @@ export class V86LinuxTerminal {
  private bindControls():void{
   document.getElementById('btn-v86-alpine')?.addEventListener('click',()=>void this.start({name:'Developer Alpine',memoryMiB:1024,cdrom:ALPINE_ISO,supported:true}));
   document.getElementById('btn-v86-virt')?.addEventListener('click',()=>void this.start({name:'Alpine Virt 3.24.1',memoryMiB:512,cdrom:ALPINE_VIRT_ISO,supported:true,arch:'x86',note:'Lightweight 32-bit Alpine Virt profile.'}));
+  document.getElementById('btn-v86-linux4')?.addEventListener('click',()=>void this.start({name:'Ultra Light Linux 4',memoryMiB:256,cdrom:ULTRA_LIGHT_ISO,supported:true,arch:'x86',note:'Approx. 7.4 MB ultra-light Linux practice image.'}));
   document.getElementById('btn-v86-restart')?.addEventListener('click',()=>void this.start(this.profile));
   document.getElementById('btn-v86-terminal')?.addEventListener('click',()=>this.showTerminal());
   document.getElementById('btn-v86-screen')?.addEventListener('click',()=>this.showScreen());
