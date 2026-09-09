@@ -8,6 +8,7 @@ const TerminalCtor = (xtermModule as any).Terminal;
 const FitAddonCtor = (fitModule as any).FitAddon;
 const ALPINE_ISO = '/api/iso';
 const ALPINE_VIRT_ISO = '/api/iso?image=virt';
+const profileMemory=(profile:Profile)=>profile.memoryMiB;
 type Profile = { name:string; memoryMiB:number; cdrom:string; supported:boolean; note?:string; arch?:'x86'|'x86_64' };
 type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_send(data:string):void; stop?:()=>void; destroy?:()=>void };
 
@@ -16,7 +17,7 @@ export class V86LinuxTerminal {
  private static runtimePromise:Promise<void>|null=null;
  private terminalDataDisposable:{dispose():void}|null=null;
  private profile:Profile={name:'Developer Alpine',memoryMiB:1024,cdrom:ALPINE_ISO,supported:true};
- private bootId=0; private ready=false; private serial=''; private bootTimeout:number|null=null;
+ private bootId=0; private ready=false; private serial=''; private bootTimeout:number|null=null; private bootPromptSent=false;
  constructor(containerId='v86-terminal-container'){
   if(!TerminalCtor||!FitAddonCtor) throw new Error('Terminal runtime failed to load');
   const container=document.getElementById(containerId); if(!container) throw new Error('Terminal container is missing');
@@ -27,7 +28,7 @@ export class V86LinuxTerminal {
  }
  private bindControls():void{
   document.getElementById('btn-v86-alpine')?.addEventListener('click',()=>void this.start({name:'Developer Alpine',memoryMiB:1024,cdrom:ALPINE_ISO,supported:true}));
-  document.getElementById('btn-v86-virt')?.addEventListener('click',()=>void this.start({name:'Alpine Virt 3.24',memoryMiB:512,cdrom:ALPINE_VIRT_ISO,supported:true,arch:'x86',note:'Lightweight 32-bit Alpine Virt profile.'}));
+  document.getElementById('btn-v86-virt')?.addEventListener('click',()=>void this.start({name:'Alpine Virt 3.24.1',memoryMiB:512,cdrom:ALPINE_VIRT_ISO,supported:true,arch:'x86',note:'Lightweight 32-bit Alpine Virt profile.'}));
   document.getElementById('btn-v86-restart')?.addEventListener('click',()=>void this.start(this.profile));
   document.getElementById('btn-v86-terminal')?.addEventListener('click',()=>this.showTerminal());
   document.getElementById('btn-v86-screen')?.addEventListener('click',()=>this.showScreen());
@@ -36,7 +37,7 @@ export class V86LinuxTerminal {
  }
  private async start(profile:Profile):Promise<void>{
   // A new boot invalidates all callbacks from the previous VM.
-  const id=++this.bootId; await this.dispose(); this.profile=profile; this.ready=false; this.serial=''; this.showTerminal(); this.term.clear();
+  const id=++this.bootId; await this.dispose(); this.profile=profile; this.ready=false; this.serial=''; this.bootPromptSent=false; this.showTerminal(); this.term.clear();
   if(!profile.supported){this.showTerminal();this.term.clear();this.status(profile.name+' • incompatible with browser VM');this.monitor('Not booted • '+(profile.arch||'unknown architecture'));this.term.writeln('LinuxTerminal — '+profile.name);this.term.writeln('\r\n[Compatibility] '+(profile.note||'This image cannot run in this browser emulator.'));this.term.writeln('[Use Developer Alpine for the real VM.]');return;}
   this.status(profile.name+' • checking runtime'); this.term.writeln('LinuxTerminal — '+profile.name);
    await this.loadRuntime();
@@ -53,7 +54,7 @@ export class V86LinuxTerminal {
    const vm:any=new Runtime({wasm_path:'/v86.wasm',memory_size:profile.memoryMiB*1024*1024,vga_memory_size:8*1024*1024,screen_container:screen,bios:{url:'/seabios.bin'},vga_bios:{url:'/vgabios.bin'},cdrom:{url:profile.cdrom,async:true},boot_order:0x20,autostart:true,disable_speaker:true});
    this.emulator=vm as V86;
    vm.add_listener('serial0-output-byte',(byte:number)=>{if(id===this.bootId)this.serialOutput(byte);});
-   this.bootTimeout=window.setTimeout(()=>{if(!this.ready&&id===this.bootId)this.error('Boot timed out. Try the learning simulator or reboot the compatible image.');},180000);
+   this.bootTimeout=window.setTimeout(()=>{if(!this.ready&&id===this.bootId)this.error('Boot timed out. The VM started but did not reach a shell. Reboot and try again.');},300000);
    this.fit();
   }catch(e){this.error(e instanceof Error?e.message:String(e));}
  }
@@ -70,7 +71,7 @@ export class V86LinuxTerminal {
   }).catch((error:unknown)=>{V86LinuxTerminal.runtimePromise=null;throw error;});
   return V86LinuxTerminal.runtimePromise;
  }
- private serialOutput(byte:number):void{const ch=String.fromCharCode(byte&255);this.serial=(this.serial+ch).slice(-16000);this.term.write(ch);if(!this.ready&&/[#$>]\s*$/.test(this.serial.trim())){this.ready=true;if(this.bootTimeout!==null)clearTimeout(this.bootTimeout);this.bootTimeout=null;this.status(this.profile.name+' • ready');this.monitor(this.profile.memoryMiB+' MiB • ready');}}
+ private serialOutput(byte:number):void{const ch=String.fromCharCode(byte&255);this.serial=(this.serial+ch).slice(-16000);this.term.write(ch);if(!this.bootPromptSent&&/\bboot:\s*$/i.test(this.serial)){this.bootPromptSent=true;this.status(this.profile.name+' • starting Alpine');this.monitor(profileMemory(this.profile)+' MiB • bootloader');window.setTimeout(()=>this.emulator?.serial0_send('\n'),250);}if(!this.ready&&/[#$>]\s*$/.test(this.serial.trim())){this.ready=true;if(this.bootTimeout!==null)clearTimeout(this.bootTimeout);this.bootTimeout=null;this.status(this.profile.name+' • ready');this.monitor(this.profile.memoryMiB+' MiB • ready');}}
  private showTerminal():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=true;if(t)t.hidden=false;this.fit();this.term.focus();}
  private showScreen():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=false;if(t)t.hidden=true;this.fit();}
  private status(t:string):void{const e=document.getElementById('v86-status');if(e)e.textContent=t;}
