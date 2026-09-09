@@ -18,5 +18,5 @@ export class StorageService{
  static async getQuizAttempts(){const x=await this.op<QuizAttempt[]>('quizAttempts','readonly',s=>s.getAll());return x.sort((a,b)=>b.timestamp-a.timestamp)}
  static saveQuizAttempt(x:QuizAttempt){return this.op('quizAttempts','readwrite',s=>s.put(x)).then(()=>undefined)}
  static async clearLearningData(){const db=await this.getDB();await new Promise<void>((resolve,reject)=>{const tx=db.transaction(['workspace','progress','sessions','quizAttempts'],'readwrite');for(const n of ['workspace','progress','sessions','quizAttempts'])tx.objectStore(n).clear();tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('IndexedDB transaction aborted'))})}
- static async exportData(){const db=await this.getDB();const names=['workspace','progress','sessions','quizAttempts'];const data:Record<string,unknown>={version:1,exportedAt:new Date().toISOString()};for(const n of names)data[n]=await this.op<unknown[]>(n,'readonly',s=>s.getAll());return data}
+ static async exportData(){const names=['workspace','progress','sessions','quizAttempts'];const data:Record<string,unknown>={version:1,exportedAt:new Date().toISOString()};for(const n of names)data[n]=await this.op<unknown[]>(n,'readonly',s=>s.getAll());return data}
 }
