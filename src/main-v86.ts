@@ -17,7 +17,7 @@ export class V86LinuxTerminal {
  private static runtimePromise:Promise<void>|null=null;
  private terminalDataDisposable:{dispose():void}|null=null;
  private profile:Profile={name:'Developer Alpine',memoryMiB:1024,cdrom:ALPINE_ISO,supported:true};
- private bootId=0; private ready=false; private serial=''; private bootTimeout:number|null=null; private bootPromptSent=false; private bootPromptTimer:number|null=null; private bootRetryTimer:number|null=null; private bootCommand=''; private bootStage='starting';
+ private bootId=0; private ready=false; private serial=''; private bootTimeout:number|null=null; private bootPromptSent=false; private bootPromptTimer:number|null=null; private bootRetryTimer:number|null=null; private bootStage='starting';
  constructor(containerId='v86-terminal-container'){
   if(!TerminalCtor||!FitAddonCtor) throw new Error('Terminal runtime failed to load');
   const container=document.getElementById(containerId); if(!container) throw new Error('Terminal container is missing');
@@ -37,7 +37,7 @@ export class V86LinuxTerminal {
  }
  private async start(profile:Profile):Promise<void>{
   // A new boot invalidates all callbacks from the previous VM.
-  const id=++this.bootId; await this.dispose(); this.profile=profile; this.ready=false; this.serial=''; this.bootPromptSent=false; this.bootStage='starting'; this.bootCommand='alpine console=tty0 console=ttyS0,115200'; this.showTerminal(); this.term.clear();
+  const id=++this.bootId; await this.dispose(); this.profile=profile; this.ready=false; this.serial=''; this.bootPromptSent=false; this.bootStage='starting'; this.showTerminal(); this.term.clear();
   if(!profile.supported){this.showTerminal();this.term.clear();this.status(profile.name+' • incompatible with browser VM');this.monitor('Not booted • '+(profile.arch||'unknown architecture'));this.term.writeln('LinuxTerminal — '+profile.name);this.term.writeln('\r\n[Compatibility] '+(profile.note||'This image cannot run in this browser emulator.'));this.term.writeln('[Use Developer Alpine for the real VM.]');return;}
   this.status(profile.name+' • checking runtime'); this.term.writeln('LinuxTerminal — '+profile.name);
    await this.loadRuntime();
@@ -54,7 +54,7 @@ export class V86LinuxTerminal {
    const vm:any=new Runtime({wasm_path:'/v86.wasm',memory_size:profile.memoryMiB*1024*1024,vga_memory_size:8*1024*1024,screen_container:screen,bios:{url:'/seabios.bin'},vga_bios:{url:'/vgabios.bin'},cdrom:{url:profile.cdrom,async:true},boot_order:0x20,autostart:true,disable_speaker:true});
    this.emulator=vm as V86;
    vm.add_listener('serial0-output-byte',(byte:number)=>{if(id===this.bootId)this.serialOutput(byte);});
-   this.bootTimeout=window.setTimeout(()=>{if(!this.ready&&id===this.bootId)this.error('Boot timed out before a serial shell appeared. Open Screen to check VGA output, then reboot.');},300000);
+   this.bootTimeout=window.setTimeout(()=>{if(!this.ready&&id===this.bootId){this.bootStage='serial shell timeout';this.status(this.profile.name+' • VGA may still be running');this.monitor('No serial shell detected');this.term.writeln('\r\n[VM] No serial shell was detected. Open Screen to use the guest console.');}},300000);
    this.fit();
   }catch(e){this.error(e instanceof Error?e.message:String(e));}
  }
@@ -71,7 +71,7 @@ export class V86LinuxTerminal {
   }).catch((error:unknown)=>{V86LinuxTerminal.runtimePromise=null;throw error;});
   return V86LinuxTerminal.runtimePromise;
  }
- private serialOutput(byte:number):void{const ch=String.fromCharCode(byte&255);this.serial=(this.serial+ch).slice(-16000);this.term.write(ch);if(!this.bootPromptSent&&/\bboot:\s*$/i.test(this.serial)){this.bootPromptSent=true;this.bootStage='bootloader prompt';this.status(this.profile.name+' • selecting boot profile');this.monitor(profileMemory(this.profile)+' MiB • bootloader');this.bootPromptTimer=window.setTimeout(()=>{this.bootPromptTimer=null;const vm=this.emulator;if(!vm)return;const command=this.bootCommand+'\n';if(typeof vm.keyboard_send_text==='function'){this.bootStage='boot command via keyboard';vm.keyboard_send_text(command);}else{this.bootStage='boot command via serial fallback';vm.serial0_send(command);}this.bootRetryTimer=window.setTimeout(()=>{this.bootRetryTimer=null;if(!this.ready&&this.emulator){this.bootStage='boot retry';this.status(this.profile.name+' • retrying default boot');if(typeof this.emulator.keyboard_send_text==='function')this.emulator.keyboard_send_text('\n');else this.emulator.serial0_send('\n');}},8000);},250);}if(!this.ready&&/(?:^|\r?\n)[^\r\n]{0,100}[#$>]\s*$/m.test(this.serial)){this.ready=true;this.bootStage='shell ready';if(this.bootTimeout!==null)clearTimeout(this.bootTimeout);this.bootTimeout=null;if(this.bootRetryTimer!==null)clearTimeout(this.bootRetryTimer);this.bootRetryTimer=null;this.status(this.profile.name+' • ready');this.monitor(this.profile.memoryMiB+' MiB • ready');}} private showTerminal():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=true;if(t)t.hidden=false;this.fit();this.term.focus();}
+ private serialOutput(byte:number):void{const ch=String.fromCharCode(byte&255);this.serial=(this.serial+ch).slice(-16000);this.term.write(ch);if(!this.bootPromptSent&&/\bboot:\s*$/i.test(this.serial)){this.bootPromptSent=true;this.bootStage='bootloader prompt';this.status(this.profile.name+' • starting default boot');this.monitor(profileMemory(this.profile)+' MiB • bootloader');this.bootPromptTimer=window.setTimeout(()=>{this.bootPromptTimer=null;const vm=this.emulator;if(!vm)return;this.bootStage='default boot selected';if(typeof vm.keyboard_send_text==='function')vm.keyboard_send_text('\n');else vm.serial0_send('\n');this.bootRetryTimer=window.setTimeout(()=>{this.bootRetryTimer=null;if(!this.ready&&this.emulator){this.bootStage='waiting for guest console';this.status(this.profile.name+' • booting guest');}},8000);},250);}if(!this.ready&&/(?:^|\r?\n)[^\r\n]{0,100}[#$>]\s*$/m.test(this.serial)){this.ready=true;this.bootStage='shell ready';if(this.bootTimeout!==null)clearTimeout(this.bootTimeout);this.bootTimeout=null;if(this.bootRetryTimer!==null)clearTimeout(this.bootRetryTimer);this.bootRetryTimer=null;this.status(this.profile.name+' • ready');this.monitor(this.profile.memoryMiB+' MiB • ready');}} private showTerminal():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=true;if(t)t.hidden=false;this.fit();this.term.focus();}
  private showScreen():void{const s=document.getElementById('screen_container'),t=document.getElementById('v86-terminal-container');if(s)s.hidden=false;if(t)t.hidden=true;this.fit();}
  private status(t:string):void{const e=document.getElementById('v86-status');if(e)e.textContent=t;}
  private monitor(t:string):void{const e=document.getElementById('v86-monitor');if(e)e.textContent=t;}
