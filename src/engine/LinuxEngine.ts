@@ -1130,9 +1130,43 @@ class EducationalCInterpreter {
   }
   private nextInput():string { if(this.inputPos>=this.input.length) return '0'; return String(this.input[this.inputPos++]); }
   private formatPrintf(fmt:string,args:any[]):string { let i=0; return fmt.replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/%[-+0-9.]*[dfsxc%]/gi,(m)=>m==='%%'?'%':this.formatSpec(m,args[i++])); }
-  private formatSpec(spec:string,v:any):string { if(spec.endsWith('f')) return Number(v??0).toFixed(spec.includes('.')?Number(spec.split('.')[1])||6:6); if(spec.endsWith('x')) return Number(v??0).toString(16); if(spec.endsWith('c')) return typeof v === 'string' ? v.charAt(0) : String.fromCharCode(Number(v??0)); return String(v??0); }
-  private apply(op:string,a:any,b:any):any { if(op==='+') return typeof a==='string'||typeof b==='string'?String(a)+String(b):Number(a)+Number(b); if(op==='-') return Number(a)-Number(b); if(op==='*') return Number(a)*Number(b); if(op==='/') return Number(b)===0?0:Number(a)/Number(b); if(op==='%') return Number(a)%Number(b); return b; }
-  private truthy(v:any):boolean { return typeof v==='string'?v.length>0:Number(v)!==0; }
+  private formatSpec(spec: string, value: unknown): string {
+    if (spec.endsWith('f')) {
+      const precisionMatch = spec.match(/\.(\d+)/);
+      const precision = precisionMatch ? Number(precisionMatch[1]) : 6;
+      return Number(value ?? 0).toFixed(precision);
+    }
+    if (spec.endsWith('x')) return Number(value ?? 0).toString(16);
+    if (spec.endsWith('c')) {
+      return typeof value === 'string'
+        ? value.charAt(0)
+        : String.fromCharCode(Number(value ?? 0));
+    }
+    return String(value ?? 0);
+  }
+
+  private apply(operator: string, left: unknown, right: unknown): unknown {
+    switch (operator) {
+      case '+':
+        return typeof left === 'string' || typeof right === 'string'
+          ? String(left) + String(right)
+          : Number(left) + Number(right);
+      case '-':
+        return Number(left) - Number(right);
+      case '*':
+        return Number(left) * Number(right);
+      case '/':
+        return Number(right) === 0 ? 0 : Number(left) / Number(right);
+      case '%':
+        return Number(left) % Number(right);
+      default:
+        return right;
+    }
+  }
+
+  private truthy(value: unknown): boolean {
+    return typeof value === 'string' ? value.length > 0 : Number(value) !== 0;
+  }
   private expect(s:string[],t:string):void { if(s[this.pos]!==t) throw new Error(`expected '${t}', got '${s[this.pos]??'<end>'}'`); this.pos++; }
   private unquote(t:string):string { return t.slice(1,-1).replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/\\r/g,'\r').replace(/\\"/g,'"').replace(/\\'/g,"'").replace(/\\\\/g,'\\'); }
 }
