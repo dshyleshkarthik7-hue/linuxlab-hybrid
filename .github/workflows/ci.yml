@@ -39,7 +39,8 @@ jobs:
           grep -Fq "huggingface.co/datasets/shyleshkarthikd/linux4" netlify/edge-functions/iso.ts
           grep -Fq "v86-health" index-v86.html
           grep -Fq "setHealth('ready')" src/main-v86.ts
-          grep -Fq "IMAGES" netlify/edge-functions/iso.ts
+          grep -Fq "Primary ISO source failed; trying fallback" netlify/edge-functions/iso.ts
+          grep -Fq "Primary ISO returned an error; trying fallback" netlify/edge-functions/iso.ts
           grep -Fq "void this.start(this.profile)" src/main-v86.ts
           ! grep -Fq 'copy.sh/v86/build/libv86.js' src/main-v86.ts
           node -e "const p=require('./package.json'); if(p.dependencies?.v86 || p.devDependencies?.v86) process.exit(1)"
