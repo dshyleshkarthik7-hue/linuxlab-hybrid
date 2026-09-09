@@ -6,10 +6,6 @@
   path = "/api/iso"
   function = "iso"
 
-[[edge_functions]]
-  path = "/api/iso-linux4"
-  function = "iso"
-
 [[headers]]
   for = "/*"
   [headers.values]
