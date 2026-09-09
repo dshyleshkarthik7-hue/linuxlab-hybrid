@@ -118,7 +118,6 @@ export class V86LinuxTerminal {
    const finish=()=>typeof window.V86==='function'?resolve():reject(new Error('Local libv86.js loaded but window.V86 was not exposed'));
    script.addEventListener('load',finish,{once:true});
    script.addEventListener('error',()=>reject(new Error('Failed to load /libv86.js')),{once:true});
-   queueMicrotask(finish);
   }).catch((error:unknown)=>{V86LinuxTerminal.runtimePromise=null;throw error;});
   return V86LinuxTerminal.runtimePromise;
  }
