@@ -16,7 +16,6 @@ declare global {
 
 interface V86Options {
   wasm_path: string;
-  wasm_fallback_path?: string;
   memory_size: number;
   vga_memory_size: number;
   screen_container: HTMLElement;
@@ -103,7 +102,7 @@ export class V86LinuxTerminal {
    this.bootStage='creating VM'; this.status(profile.name+' • booting'); this.monitor(profile.memoryMiB+' MiB • starting');
    const Runtime=window.V86;
    if(typeof Runtime!=='function') throw new Error('Local v86 runtime did not expose window.V86');
-   const vm=new Runtime({wasm_path:'/v86.wasm',wasm_fallback_path:'/v86.wasm',memory_size:profile.memoryMiB*1024*1024,vga_memory_size:8*1024*1024,screen_container:screen,bios:{url:'/seabios.bin'},vga_bios:{url:'/vgabios.bin'},cdrom:{url:profile.cdrom,async:true},boot_order:0x20,autostart:true,disable_speaker:true});
+   const vm=new Runtime({wasm_path:'/v86.wasm',memory_size:profile.memoryMiB*1024*1024,vga_memory_size:8*1024*1024,screen_container:screen,bios:{url:'/seabios.bin'},vga_bios:{url:'/vgabios.bin'},cdrom:{url:profile.cdrom,async:true},boot_order:0x20,autostart:true,disable_speaker:true});
    this.emulator=vm;
    vm.add_listener('serial0-output-byte',(byte:number)=>{if(id===this.bootId)this.serialOutput(byte);});
    this.scheduleBootWatchdog(id);
