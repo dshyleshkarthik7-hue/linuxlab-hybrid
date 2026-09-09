@@ -5,7 +5,7 @@ import '@xterm/xterm/css/xterm.css';
 const TerminalCtor = (xtermModule as any).Terminal ?? (xtermModule as any).default?.Terminal;
 const FitAddonCtor = (fitModule as any).FitAddon ?? (fitModule as any).default?.FitAddon;
 const ALPINE_ISO = '/api/iso';
-const LINUX4_ISO = '/linux4.iso';
+const ALPINE_VIRT_ISO = '/api/iso?image=virt';
 
 type Profile = { name: string; memoryMiB: number; cdrom: string };
 type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_send(data:string):void; stop?:()=>void; destroy?:()=>void };
@@ -43,14 +43,14 @@ export class V86LinuxTerminal {
   private fitBound = (): void => this.fit();
   private bindControls(): void {
     document.getElementById('btn-v86-alpine')?.addEventListener('click', () => void this.bootDeveloper());
-    document.getElementById('btn-v86-fallback')?.addEventListener('click', () => void this.bootLinux4());
+    document.getElementById('btn-v86-virt')?.addEventListener('click', () => void this.bootVirt());
     document.getElementById('btn-v86-restart')?.addEventListener('click', () => void this.restart());
     document.getElementById('btn-v86-gcc')?.addEventListener('click', () => this.runGccCheck());
   }
 
   public async boot(): Promise<void> { await this.bootDeveloper(); }
   public async bootDeveloper(): Promise<void> { await this.start({ name:'Developer Alpine', memoryMiB:1024, cdrom:ALPINE_ISO }); }
-  public async bootLinux4(): Promise<void> { await this.start({ name:'Linux 4 compatibility', memoryMiB:256, cdrom:LINUX4_ISO }); }
+  public async bootVirt(): Promise<void> { await this.start({ name:'Alpine Virt 3.24', memoryMiB:512, cdrom:ALPINE_VIRT_ISO }); }
   public async restart(): Promise<void> { await this.start(this.profile); }
 
   private async start(profile: Profile): Promise<void> {
@@ -123,7 +123,7 @@ export class V86LinuxTerminal {
 
   private isPrompt(text:string): boolean {
     const lines = text.split('\n').map((line:string) => line.trim()).filter(Boolean).slice(-12);
-    return lines.some((line:string) => /(?:^|\\s)[^\\s]+(?::[^\\s]+)?[#$>]\\s*$/.test(line));
+    return lines.some((line:string) => /(?:^|\s)[^\s]+(?::[^\s]+)?[#$>]\s*$/.test(line));
   }
 
   private runGccCheck(): void {

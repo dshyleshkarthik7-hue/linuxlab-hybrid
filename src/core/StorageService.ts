@@ -1,5 +1,5 @@
 const DB_NAME = 'LinuxLab_IDB';
-const DB_VERSION = 3;
+const DB_VERSION = 4;
 
 export interface WorkspaceFile { filename: string; content: string; timestamp: number; }
 export interface LearningSession { id: string; mode: 'simulator' | 'real-linux'; title: string; startedAt: number; updatedAt: number; commands: string[]; lessonId?: string; completed?: boolean; }
@@ -19,6 +19,7 @@ export class StorageService {
         }
         if (!db.objectStoreNames.contains('quizAttempts')) db.createObjectStore('quizAttempts', { keyPath: 'id' });
       };
+      request.onblocked = () => reject(new Error('IndexedDB upgrade is blocked by another open LinuxLab tab'));
       request.onsuccess = () => resolve(request.result);
       request.onerror = () => reject(request.error);
     });
