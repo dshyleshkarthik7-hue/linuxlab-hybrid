@@ -260,6 +260,17 @@ export class InBrowserLinuxEngine {
   }
 
   private async executeSingle(cmdLine: string, stdin = ''): Promise<string> {
+    const output = await this.executeCommand(cmdLine, stdin);
+    // Most simulator commands return GNU-style diagnostics as text. Keep shell
+    // control operators correct by translating diagnostics into a non-zero status
+    // without inspecting arbitrary successful command output.
+    if (this.exitCode === 0 && /^(?:bash: |(?:cat|grep|head|tail|wc|sort|uniq|ls|cd|mkdir|touch|rm|cp|mv|find|chmod|stat|gcc|clang|javac|java|export|which): .*?(?:No such file or directory|missing |cannot |invalid |usage:|file not found|File exists|Is a directory|Not a directory|not specified|omitting directory))/i.test(output)) {
+      this.exitCode = 1;
+    }
+    return output;
+  }
+
+  private async executeCommand(cmdLine: string, stdin = ''): Promise<string> {
     // Tokenize simple shell arguments while preserving quoted strings.
     const tokens = (cmdLine.match(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || [])
       .map((token) => token.replace(/^(['"])([\s\S]*)\1$/, '$2'));
