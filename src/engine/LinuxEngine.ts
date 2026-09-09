@@ -175,10 +175,21 @@ export class InBrowserLinuxEngine {
       let output = result.output;
       for (let i = 0; i < operators.length; i++) {
         const op = operators[i];
-        if ((op === '&&' && !result.failed) || (op === '||' && result.failed)) {
-          result = await runChain(parts[i + 1]);
-          if (result.output) output = output ? output + '\n' + result.output : result.output;
+        const shouldRun = (op === '&&' && !result.failed) || (op === '||' && result.failed);
+        if (!shouldRun) continue;
+
+        const previousFailed = result.failed;
+        const next = await runChain(parts[i + 1]);
+
+        // Shell diagnostics are written to stderr, so a successful fallback after
+        // `||` should return stdout from the fallback rather than concatenating
+        // the previous command's diagnostic into the captured stdout result.
+        if (op === '||' && previousFailed) {
+          output = next.output;
+        } else if (next.output) {
+          output = output ? output + '\n' + next.output : next.output;
         }
+        result = next;
       }
       return { output, failed: result.failed };
     };
