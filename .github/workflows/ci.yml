@@ -23,7 +23,16 @@ jobs:
         run: |
           npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/linuxlab.log 2>&1 &
           PID=$!; trap 'kill $PID 2>/dev/null || true; cat /tmp/linuxlab.log' EXIT
-          for i in {1..30}; do curl -fsS http://127.0.0.1:4173/ >/dev/null && break || sleep 1; done
-          for path in / /simulator.html /index-v86.html /linux-cd-command/index.html /linux-ls-command/index.html /libv86.js /v86.wasm /seabios.bin /vgabios.bin; do curl -fsS "http://127.0.0.1:4173$path" >/dev/null; done
+          READY=0
+          for i in {1..60}; do
+            if curl -fsS --retry 1 --connect-timeout 2 http://127.0.0.1:4173/ >/dev/null; then READY=1; break; fi
+            sleep 1
+          done
+          if [ "$READY" -ne 1 ]; then
+            echo "Vite preview did not become reachable"
+            cat /tmp/linuxlab.log
+            exit 1
+          fi
+          for path in / /simulator.html /index-v86.html /linux-cd-command/index.html /linux-ls-command/index.html /libv86.js /v86.wasm /seabios.bin /vgabios.bin; do curl -fsS --connect-timeout 5 "http://127.0.0.1:4173$path" >/dev/null; done
           curl -fsS http://127.0.0.1:4173/index-v86.html | grep -q 'btn-v86-alpine'
           curl -fsS http://127.0.0.1:4173/index-v86.html | grep -q 'main-v86'
