@@ -25,8 +25,8 @@ Practice Linux concepts safely:
 
 This environment is an educational simulator, not a full Linux kernel.
 
-### Engine B — Real Alpine Linux
-Run a real Alpine Linux guest in the browser using v86, WebAssembly and xterm.js.
+### Engine B — Real Linux Lab
+Run a compatible 32-bit/x86 Linux guest in the browser using the official bundled v86 package, WebAssembly and xterm.js. Unsupported 64-bit images are detected before boot instead of failing silently.
 
 Current browser VM:
 - Alpine Linux (Custom GCC): 1 GiB RAM
