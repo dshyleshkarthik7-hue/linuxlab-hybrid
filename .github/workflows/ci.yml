@@ -82,7 +82,5 @@ jobs:
             sleep 1
           done
           curl -fsS http://127.0.0.1:4174/real-linux/ >/dev/null
-          rm -rf /tmp/linuxlab-playwright
-          npm install --prefix /tmp/linuxlab-playwright --no-audit --no-fund playwright@1.56.0
-          /tmp/linuxlab-playwright/node_modules/.bin/playwright install --with-deps chromium
+          npx playwright install --with-deps chromium
           node tests/browser-vm-smoke.mjs http://127.0.0.1:4174
