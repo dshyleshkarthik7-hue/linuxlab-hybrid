@@ -13,6 +13,8 @@ async function run() {
 
   assert.equal(await e.execute('echo hi > f && cat f'), 'hi');
   assert.equal(await e.execute('cat missing && echo should-not-run'), 'cat: missing: No such file or directory');
+  assert.equal(await e.execute('grep needle missing && echo should-not-run'), 'grep: missing: No such file or directory');
+  assert.equal(await e.execute('echo invalid output && echo still-runs'), 'invalid output\nstill-runs');
   assert.equal(await e.execute('cat missing || echo recovered'), 'recovered');
   assert.equal(await e.execute('echo one; echo two'), 'one\ntwo');
   assert.equal((await e.execute('echo alpha | grep alpha')).trim(), 'alpha');
