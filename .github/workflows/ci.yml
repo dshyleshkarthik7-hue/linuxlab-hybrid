@@ -30,4 +30,5 @@ jobs:
           grep -Fq 'btn-v86-screen' dist/index-v86.html
           test -f dist/v86.wasm
           test -f dist/libv86.js
+          grep -Fq 'https://copy.sh/v86/build/libv86.js' src/main-v86.ts
           echo "Production build smoke test passed"

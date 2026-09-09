@@ -156,6 +156,7 @@ export class V86LinuxTerminal {
       'VM diagnostics',
       'Profile: ' + this.profile.name,
       'VM object: ' + (this.emulator ? 'created' : 'not created'),
+      'V86 runtime: ' + ((window as any).V86Starter ? 'ready' : 'not ready'),
       'Shell detected: ' + (this.ready ? 'yes' : 'waiting'),
       'Recent boots: ' + JSON.stringify(stored.slice(-5), null, 2),
       'ISO endpoint: ' + this.profile.cdrom,
@@ -236,28 +237,35 @@ export class V86LinuxTerminal {
   private loadRuntime(): Promise<void> {
     if ((window as any).V86Starter) return Promise.resolve();
     if (V86LinuxTerminal.runtimePromise) return V86LinuxTerminal.runtimePromise;
-    V86LinuxTerminal.runtimePromise = new Promise<void>((resolve,reject) => {
-      const existing = document.querySelector<HTMLScriptElement>('script[data-v86-runtime="true"]');
-      if (existing) {
-        if ((window as any).V86Starter) { resolve(); return; }
-        existing.addEventListener('load', () => (window as any).V86Starter ? resolve() : reject(new Error('v86 runtime did not initialize')), { once:true });
-        existing.addEventListener('error', () => reject(new Error('Failed to load v86 runtime')), { once:true });
-        return;
+    V86LinuxTerminal.runtimePromise = (async () => {
+      const sources = [this.asset('/libv86.js'), 'https://copy.sh/v86/build/libv86.js'];
+      let lastError = 'V86Starter was not exposed';
+      for (const src of sources) {
+        try {
+          await new Promise<void>((resolve, reject) => {
+            const script = document.createElement('script');
+            script.dataset.v86Runtime = 'true';
+            script.src = src;
+            script.async = true;
+            script.onload = () => (window as any).V86Starter ? resolve() : reject(new Error('runtime loaded but V86Starter was not exposed'));
+            script.onerror = () => reject(new Error('script failed to load'));
+            document.head.appendChild(script);
+          });
+          return;
+        } catch (error) {
+          lastError = src + ': ' + (error instanceof Error ? error.message : String(error));
+          document.querySelectorAll<HTMLScriptElement>('script[data-v86-runtime="true"]').forEach(node => {
+            if (!(window as any).V86Starter) node.remove();
+          });
+        }
       }
-      const script = document.createElement('script');
-      script.dataset.v86Runtime = 'true';
-      script.src = this.asset('/libv86.js');
-      script.async = true;
-      script.onload = () => (window as any).V86Starter ? resolve() : reject(new Error('libv86.js did not expose V86Starter'));
-      script.onerror = () => reject(new Error('Failed to load /libv86.js'));
-      document.head.appendChild(script);
-    }).catch((error:unknown) => {
+      throw new Error('No compatible v86 browser runtime available. ' + lastError);
+    })().catch((error: unknown) => {
       V86LinuxTerminal.runtimePromise = null;
       throw error;
     });
     return V86LinuxTerminal.runtimePromise;
   }
-
   public async destroy(): Promise<void> {
     ++this.bootId;
     this.resizeObserver?.disconnect();
