@@ -1,7 +1,7 @@
 import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require('/tmp/linuxlab-playwright/node_modules/playwright');
+const { chromium } = require('playwright');
 if (!chromium) throw new Error('Playwright chromium export is unavailable');
 
 const baseURL = process.argv[2];
@@ -58,8 +58,7 @@ try {
     console.log('Found ' + name + ' control');
   }
 
-  await page.waitForFunction(() => Boolean(window.linuxLabVM), null, { timeout: 20000 });
-  await page.waitForFunction(() => Boolean(window.linuxLabVM?.emulator), null, { timeout: 20000 });
+  await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('booting') || false, null, { timeout: 20000 });
 
   await page.click(buttons.screen);
   await page.waitForFunction(
@@ -84,7 +83,7 @@ try {
     { timeout: 20000 }
   );
 
-  await page.waitForFunction(() => Boolean(window.linuxLabVM?.emulator), null, { timeout: 20000 });
+  await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Alpine Virt') || false, null, { timeout: 20000 });
   console.log('Browser VM controls smoke test passed');
 } finally {
   await browser.close();
