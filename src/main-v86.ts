@@ -1,6 +1,6 @@
 import * as xtermModule from '@xterm/xterm';
 import * as fitModule from '@xterm/addon-fit';
-import V86Starter from 'v86';
+import { V86Starter } from 'v86';
 import '@xterm/xterm/css/xterm.css';
 
 const TerminalCtor = (xtermModule as any).Terminal;
