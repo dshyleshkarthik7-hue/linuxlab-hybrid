@@ -6,7 +6,7 @@ const entry = (name: string) =>
 
 export default defineConfig({
   plugins: [],
-  base: './',
+  base: '/',
   server: {
     port: 3000,
     headers: {
