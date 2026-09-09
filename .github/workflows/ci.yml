@@ -40,4 +40,15 @@ jobs:
           node -e "const p=require('./package.json'); if(p.dependencies?.v86 || p.devDependencies?.v86) process.exit(1)"
           test -f public/robots.txt
           test -f public/sitemap.xml
+          test -f public/commands/index.html
+          grep -Fq "50 Essential Linux Commands" public/commands/index.html
+          grep -Fq "linux-cd-command" public/sitemap.xml
           echo "Production build smoke test passed"
+      - name: Preview HTTP smoke test
+        run: |
+          (npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/linuxlab-preview.log 2>&1 & echo $! > /tmp/linuxlab-preview.pid)
+          for i in $(seq 1 30); do curl -fsS http://127.0.0.1:4173/ >/dev/null && break; sleep 1; done
+          curl -fsS http://127.0.0.1:4173/ | grep -Fq "LinuxTerminal"
+          curl -fsS http://127.0.0.1:4173/commands/ | grep -Fq "50 Essential Linux Commands"
+          test -s /tmp/linuxlab-preview.log
+          kill $(cat /tmp/linuxlab-preview.pid) 2>/dev/null || true
