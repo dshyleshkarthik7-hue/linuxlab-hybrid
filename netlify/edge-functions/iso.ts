@@ -1,34 +1,154 @@
-const DEVELOPER_ISO = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso';
-const LINUX4_ISO = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso';
-const VIRT_ISO = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/V2.00/alpine-virt-3.24.1-x86.iso';
 const TIMEOUT_MS = 120_000;
-const DEVELOPER_FALLBACK = 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/assets/533942157';
-const VIRT_FALLBACK = 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/assets/552238914';
-const cors = {'Access-Control-Allow-Origin':'*','Access-Control-Allow-Methods':'GET, HEAD, OPTIONS','Access-Control-Allow-Headers':'Range','Access-Control-Expose-Headers':'Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified'};
+
+type ImageName = 'developer' | 'virt' | 'linux4';
+
+type ImageSource = {
+  primary: string;
+  fallback?: string;
+};
+
+const IMAGES: Record<ImageName, ImageSource> = {
+  developer: {
+    primary: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso',
+    fallback: 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/assets/533942157',
+  },
+  virt: {
+    primary: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/V2.00/alpine-virt-3.24.1-x86.iso',
+    fallback: 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/assets/552238914',
+  },
+  linux4: {
+    primary: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso',
+    fallback: 'https://huggingface.co/datasets/shyleshkarthikd/linux4/resolve/main/linux4.iso?download=true',
+  },
+};
+
+const FORWARDED_HEADERS = [
+  'Content-Type',
+  'Content-Length',
+  'Content-Range',
+  'Accept-Ranges',
+  'ETag',
+  'Last-Modified',
+] as const;
+
+function parseImage(request: Request): ImageName | null {
+  const image = new URL(request.url).searchParams.get('image');
+  if (image === null || image === '') return 'developer';
+  return image === 'virt' || image === 'linux4' ? image : null;
+}
+
+function corsHeaders(): Headers {
+  return new Headers({
+    'Access-Control-Allow-Origin': new URL('https://linuxterminal.me').origin,
+    'Access-Control-Allow-Methods': 'GET, HEAD, OPTIONS',
+    'Access-Control-Allow-Headers': 'Range',
+    'Access-Control-Expose-Headers': 'Content-Length, Content-Range, Accept-Ranges, ETag, Last-Modified',
+  });
+}
+
+function invalidRange(range: string | null): boolean {
+  return range !== null && (!/^bytes=(\d*)-(\d*)$/.test(range.trim()) || range.includes(','));
+}
+
+async function fetchSource(
+  source: string,
+  request: Request,
+  signal: AbortSignal,
+): Promise<Response> {
+  const headers = new Headers({
+    'User-Agent': 'LinuxTerminal-ISO-Relay/1.1',
+    Accept: 'application/octet-stream',
+  });
+
+  const range = request.headers.get('Range');
+  if (range) headers.set('Range', range);
+
+  return fetch(source, {
+    method: request.method,
+    headers,
+    redirect: 'follow',
+    signal,
+  });
+}
+
+function unavailable(status: number, cors: Headers): Response {
+  const headers = new Headers(cors);
+  headers.set('Cache-Control', 'no-store');
+  return new Response(`ISO unavailable (${status})`, { status, headers });
+}
+
 export default async function handler(request: Request): Promise<Response> {
-  if (request.method === 'OPTIONS') return new Response(null,{status:204,headers:cors});
-  if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method Not Allowed',{status:405,headers:{...cors,Allow:'GET, HEAD, OPTIONS'}});
-  const url=new URL(request.url), image=url.searchParams.get('image');
-  if(image && !['virt','linux4'].includes(image)) return new Response('Unknown image',{status:404,headers:cors});
-  const source=image==='linux4'?LINUX4_ISO:image==='virt'?VIRT_ISO:DEVELOPER_ISO, range=request.headers.get('Range');
-  if(range && (!/^bytes=(\d*)-(\d*)$/.test(range.trim()) || range.includes(','))) return new Response('Invalid Range',{status:416,headers:{...cors,'Accept-Ranges':'bytes'}});
-  const controller=new AbortController(), timer=setTimeout(()=>controller.abort(),TIMEOUT_MS);
+  const cors = corsHeaders();
+
+  if (request.method === 'OPTIONS') {
+    return new Response(null, { status: 204, headers: cors });
+  }
+
+  if (request.method !== 'GET' && request.method !== 'HEAD') {
+    const headers = new Headers(cors);
+    headers.set('Allow', 'GET, HEAD, OPTIONS');
+    return new Response('Method Not Allowed', { status: 405, headers });
+  }
+
+  const image = parseImage(request);
+  if (!image) return new Response('Unknown image', { status: 404, headers: cors });
+
+  const range = request.headers.get('Range');
+  if (invalidRange(range)) {
+    const headers = new Headers(cors);
+    headers.set('Accept-Ranges', 'bytes');
+    return new Response('Invalid Range', { status: 416, headers });
+  }
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
   try {
-    const upstreamHeaders=new Headers({'User-Agent':'LinuxTerminal-ISO-Relay/1.0','Accept':'application/octet-stream'}); if(range) upstreamHeaders.set('Range',range);
-    let upstream=await fetch(source,{method:request.method,headers:upstreamHeaders,redirect:'follow',signal:controller.signal});
-    if(!upstream.ok && upstream.status!==206 && [401,403,429,502,503].includes(upstream.status)){
-      const fallback=image==='virt'?VIRT_FALLBACK:DEVELOPER_FALLBACK;
-      const apiHeaders=new Headers(upstreamHeaders);apiHeaders.set('Accept','application/octet-stream');
-      upstream=await fetch(fallback,{method:request.method,headers:apiHeaders,redirect:'follow',signal:controller.signal});
+    const source = IMAGES[image];
+    let upstream = await fetchSource(source.primary, request, controller.signal);
+
+    if (
+      !upstream.ok &&
+      upstream.status !== 206 &&
+      source.fallback &&
+      [401, 403, 429, 500, 502, 503].includes(upstream.status)
+    ) {
+      upstream = await fetchSource(source.fallback, request, controller.signal);
     }
-    if(!upstream.ok && upstream.status!==206) return new Response('ISO unavailable ('+upstream.status+')',{status:upstream.status,headers:{...cors,'Cache-Control':'no-store'}});
-    if(range && upstream.status!==206) return new Response('Upstream does not support byte ranges',{status:502,headers:{...cors,'Accept-Ranges':'bytes'}});
-    const out=new Headers(cors);
-    for(const key of ['Content-Type','Content-Length','Content-Range','Accept-Ranges','ETag','Last-Modified']) { const value=upstream.headers.get(key); if(value) out.set(key,value); }
-    if(!out.has('Content-Type')) out.set('Content-Type','application/octet-stream');
-    if(!out.has('Accept-Ranges')) out.set('Accept-Ranges','bytes');
-    out.set('Cache-Control','public, max-age=3600, s-maxage=86400');
-    return new Response(request.method==='HEAD'?null:upstream.body,{status:upstream.status,headers:out});
-  } catch { return new Response('ISO temporarily unavailable',{status:502,headers:{...cors,'Cache-Control':'no-store'}}); }
-  finally { clearTimeout(timer); }
+
+    if (!upstream.ok && upstream.status !== 206) {
+      return unavailable(upstream.status, cors);
+    }
+
+    if (range && upstream.status !== 206) {
+      const headers = new Headers(cors);
+      headers.set('Accept-Ranges', 'bytes');
+      return new Response('Upstream does not support byte ranges', { status: 502, headers });
+    }
+
+    const headers = new Headers(cors);
+    for (const name of FORWARDED_HEADERS) {
+      const value = upstream.headers.get(name);
+      if (value) headers.set(name, value);
+    }
+
+    headers.set('Content-Type', headers.get('Content-Type') ?? 'application/octet-stream');
+    headers.set('Accept-Ranges', headers.get('Accept-Ranges') ?? 'bytes');
+    headers.set('Cache-Control', 'public, max-age=3600, s-maxage=86400');
+
+    return new Response(request.method === 'HEAD' ? null : upstream.body, {
+      status: upstream.status,
+      headers,
+    });
+  } catch (error) {
+    console.error('[LinuxLab] ISO relay request failed', {
+      image,
+      message: error instanceof Error ? error.message : String(error),
+    });
+    const headers = new Headers(cors);
+    headers.set('Cache-Control', 'no-store');
+    return new Response('ISO temporarily unavailable', { status: 502, headers });
+  } finally {
+    clearTimeout(timer);
+  }
 }
