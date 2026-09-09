@@ -1,1 +1,8 @@
-<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://linuxterminal.me/</loc></url><url><loc>https://linuxterminal.me/simulator/</loc></url><url><loc>https://linuxterminal.me/real-linux/</loc></url><url><loc>https://linuxterminal.me/linux-cd-command/</loc></url><url><loc>https://linuxterminal.me/linux-ls-command/</loc></url></urlset>
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://linuxterminal.me/</loc></url>
+  <url><loc>https://linuxterminal.me/simulator/</loc></url>
+  <url><loc>https://linuxterminal.me/real-linux/</loc></url>
+  <url><loc>https://linuxterminal.me/linux-cd-command/</loc></url>
+  <url><loc>https://linuxterminal.me/linux-ls-command/</loc></url>
+</urlset>
