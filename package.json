@@ -11,7 +11,8 @@
     "test:ci": "npm run test && npm run build",
     "build:iso": "node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
-    "check": "npm run test:ci"
+    "check": "npm run test:ci",
+    "test:smoke": "npm run build"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",

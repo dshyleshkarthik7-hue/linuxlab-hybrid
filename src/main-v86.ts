@@ -6,13 +6,14 @@ import '@xterm/xterm/css/xterm.css';
 const TerminalCtor = (xtermModule as any).Terminal;
 const FitAddonCtor = (fitModule as any).FitAddon;
 const ALPINE_ISO = '/api/iso';
+const ALPINE_VIRT_ISO = '/api/iso?image=virt';
 type Profile = { name:string; memoryMiB:number; cdrom:string; supported:boolean; note?:string };
 type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_send(data:string):void; stop?:()=>void; destroy?:()=>void };
 
 export class V86LinuxTerminal {
  private term:any; private fitAddon:any; private emulator:V86|null=null;
  private terminalDataDisposable:{dispose():void}|null=null;
- private profile:Profile={name:'Developer Alpine',memoryMiB:512,cdrom:ALPINE_ISO,supported:true};
+ private profile:Profile={name:'Developer Alpine',memoryMiB:1024,cdrom:ALPINE_ISO,supported:true};
  private bootId=0; private ready=false; private serial=''; private bootTimeout:number|null=null;
  constructor(containerId='v86-terminal-container'){
   if(!TerminalCtor||!FitAddonCtor) throw new Error('Terminal runtime failed to load');
@@ -23,8 +24,8 @@ export class V86LinuxTerminal {
   window.addEventListener('resize',()=>this.fit()); setTimeout(()=>this.fit(),100); this.bindControls();
  }
  private bindControls():void{
-  document.getElementById('btn-v86-alpine')?.addEventListener('click',()=>void this.start({name:'Developer Alpine',memoryMiB:512,cdrom:ALPINE_ISO,supported:true}));
-  document.getElementById('btn-v86-virt')?.addEventListener('click',()=>void this.start({name:'Alpine Virt 3.24',memoryMiB:512,cdrom:'/api/iso?image=virt',supported:false,note:'This image requires 64-bit CPU extensions, which browser v86 does not emulate.'}));
+  document.getElementById('btn-v86-alpine')?.addEventListener('click',()=>void this.start({name:'Developer Alpine',memoryMiB:1024,cdrom:ALPINE_ISO,supported:true}));
+  document.getElementById('btn-v86-virt')?.addEventListener('click',()=>void this.start({name:'Alpine Virt 3.24',memoryMiB:512,cdrom:ALPINE_VIRT_ISO,supported:false,note:'This lightweight image is kept as an optional compatibility profile. Developer Alpine is the primary real Linux experience.'}));
   document.getElementById('btn-v86-restart')?.addEventListener('click',()=>void this.start(this.profile));
   document.getElementById('btn-v86-terminal')?.addEventListener('click',()=>this.showTerminal());
   document.getElementById('btn-v86-screen')?.addEventListener('click',()=>this.showScreen());
@@ -32,6 +33,7 @@ export class V86LinuxTerminal {
   document.getElementById('btn-v86-copydiag')?.addEventListener('click',()=>void this.copyDiagnostics());
  }
  private async start(profile:Profile):Promise<void>{
+  // A new boot invalidates all callbacks from the previous VM.
   const id=++this.bootId; await this.dispose(); this.profile=profile; this.ready=false; this.serial=''; this.showTerminal(); this.term.clear();
   if(!profile.supported){this.error(profile.note||'Unsupported image');return;}
   this.status(profile.name+' • checking image'); this.term.writeln('LinuxTerminal — '+profile.name);
@@ -57,7 +59,7 @@ export class V86LinuxTerminal {
  private error(message:string):void{this.ready=false;this.status(this.profile.name+' • error');this.monitor('Boot failed');this.term.writeln('\r\n[VM] '+message);}
  private async dispose():Promise<void>{if(this.bootTimeout!==null){clearTimeout(this.bootTimeout);this.bootTimeout=null;}const vm=this.emulator;this.emulator=null;try{vm?.stop?.();vm?.destroy?.();}catch{}}
  public destroy():void{this.bootId++;void this.dispose();this.terminalDataDisposable?.dispose();this.terminalDataDisposable=null;try{this.term.dispose();}catch{}}
- private showDiagnostics():void{const p=document.getElementById('v86-diagnostics');if(!p)return;p.textContent=['VM diagnostics','Profile: '+this.profile.name,'VM object: '+(this.emulator?'created':'not created'),'Runtime: bundled npm package','Shell detected: '+(this.ready?'yes':'waiting'),'ISO endpoint: '+this.profile.cdrom,'Architecture: '+(this.profile.supported?'compatible x86':'unsupported 64-bit guest')].join('\n');p.hidden=!p.hidden;}
+ private showDiagnostics():void{const p=document.getElementById('v86-diagnostics');if(!p)return;p.textContent=['VM diagnostics','Profile: '+this.profile.name,'VM mode: '+(this.profile.name==='Developer Alpine'?'primary':'optional compatibility'),'VM object: '+(this.emulator?'created':'not created'),'Runtime: bundled npm package','Shell detected: '+(this.ready?'yes':'waiting'),'ISO endpoint: '+this.profile.cdrom,'Architecture: '+(this.profile.supported?'compatible x86':'unsupported 64-bit guest')].join('\n');p.hidden=!p.hidden;}
  private async copyDiagnostics():Promise<void>{this.showDiagnostics();const t=document.getElementById('v86-diagnostics')?.textContent||'';try{await navigator.clipboard.writeText(t);this.term.writeln('[Diagnostics copied]');}catch{this.term.writeln('[Diagnostics] Clipboard unavailable');}}
 }
 window.addEventListener('DOMContentLoaded',()=>{try{const vm=new V86LinuxTerminal();(window as any).linuxLabVM=vm;window.addEventListener('pagehide',()=>vm.destroy(),{once:true});}catch(e){console.error(e);}});
