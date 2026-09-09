@@ -147,69 +147,104 @@ export class InBrowserLinuxEngine {
     if (!line) return '';
     this.history.push(line);
 
-    const splitOperator = (input: string, operator: string): string[] => {
+    const splitOperator = (input: string, operators: string[]): { parts: string[]; operators: string[] } => {
+      const parts: string[] = []; const found: string[] = [];
+      let current = ''; let quote = ''; let escaped = false;
+      for (let i = 0; i < input.length; i++) {
+        const ch = input[i];
+        if (escaped) { current += ch; escaped = false; continue; }
+        if (ch === '\\') { current += ch; escaped = true; continue; }
+        if (ch === '"' || ch === "'") { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; }
+        if (!quote) {
+          const op = operators.find(candidate => input.startsWith(candidate, i));
+          if (op) { parts.push(current.trim()); found.push(op); current = ''; i += op.length - 1; continue; }
+        }
+        current += ch;
+      }
+      parts.push(current.trim());
+      return { parts, operators: found };
+    };
+
+    const runChain = async (input: string): Promise<{ output: string; failed: boolean }> => {
+      const { parts, operators } = splitOperator(input, ['&&', '||']);
+      if (!operators.length) {
+        const output = await this.executePipeline(parts[0]);
+        return { output, failed: this.exitCode !== 0 };
+      }
+      let result = await runChain(parts[0]);
+      let output = result.output;
+      for (let i = 0; i < operators.length; i++) {
+        const op = operators[i];
+        if ((op === '&&' && !result.failed) || (op === '||' && result.failed)) {
+          result = await runChain(parts[i + 1]);
+          if (result.output) output = output ? output + '\n' + result.output : result.output;
+        }
+      }
+      return { output, failed: result.failed };
+    };
+
+    const sequence = splitOperator(line, [';']);
+    if (sequence.operators.length) {
+      const outputs: string[] = [];
+      let failed = false;
+      for (const part of sequence.parts) {
+        if (!part) continue;
+        const result = await runChain(part);
+        if (result.output) outputs.push(result.output);
+        failed = result.failed;
+      }
+      this.exitCode = failed ? 1 : 0;
+      return outputs.join('\n');
+    }
+
+    const result = await runChain(line);
+    this.exitCode = result.failed ? 1 : 0;
+    return result.output;
+  }
+
+  private async executePipeline(line: string): Promise<string> {
+    const split = (input: string): string[] => {
       const parts: string[] = []; let current = ''; let quote = ''; let escaped = false;
       for (let i = 0; i < input.length; i++) {
         const ch = input[i];
         if (escaped) { current += ch; escaped = false; continue; }
         if (ch === '\\') { current += ch; escaped = true; continue; }
-        if ((ch === '"' || ch === "'")) { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; }
-        if (!quote && input.startsWith(operator, i)) { parts.push(current.trim()); current = ''; i += operator.length - 1; continue; }
+        if (ch === '"' || ch === "'") { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; }
+        if (!quote && ch === '|') { parts.push(current.trim()); current = ''; continue; }
         current += ch;
       }
       parts.push(current.trim());
-      return parts.filter(Boolean);
+      return parts;
     };
 
-    const orParts = splitOperator(line, '||');
-    if (orParts.length > 1) {
-      let last = '';
-      for (const part of orParts) {
-        last = await this.execute(part);
-        if (!this.isFailure(last)) return last;
-      }
-      return last;
-    }
-
-    const andParts = splitOperator(line, '&&');
-    if (andParts.length > 1) {
-      const outputs: string[] = [];
-      for (const part of andParts) {
-        const out = await this.execute(part);
-        if (out) outputs.push(out);
-        if (this.isFailure(out)) return outputs.join('\n');
-      }
-      return outputs.join('\n');
-    }
-
-    const sequenceParts = splitOperator(line, ';');
-    if (sequenceParts.length > 1) {
-      const outputs: string[] = [];
-      for (const part of sequenceParts) { const out = await this.execute(part); if (out) outputs.push(out); }
-      return outputs.join('\n');
-    }
-
-    const pipeParts = splitOperator(line, '|');
+    const pipeParts = split(line);
     if (pipeParts.length > 1) {
       let pipeOut = '';
       for (const stage of pipeParts) pipeOut = await this.executeSingle(stage, pipeOut);
       return pipeOut;
     }
 
-    // Basic redirection. Keep quoted filenames intact and prefer >> over >.
-    const appendParts = splitOperator(line, '>>');
-    if (appendParts.length === 2) {
-      const res = await this.executeSingle(appendParts[0]);
-      const target = appendParts[1].replace(/^['"]|['"]$/g, '');
-      const prev = this.readFile(target) || '';
-      if (!this.writeFile(target, prev + res)) return `bash: ${target}: No such file or directory`;
+    const redirect = (operator: '>>' | '>'): { command: string; target: string } | null => {
+      const index = line.lastIndexOf(operator);
+      if (index < 0) return null;
+      const command = line.slice(0, index).trim();
+      const target = line.slice(index + operator.length).trim().replace(/^['"]|['"]$/g, '');
+      return command && target ? { command, target } : null;
+    };
+
+    const append = redirect('>>');
+    if (append) {
+      const res = await this.executeSingle(append.command);
+      if (this.exitCode !== 0) return res;
+      const prev = this.readFile(append.target) || '';
+      if (!this.writeFile(append.target, prev + res)) { this.exitCode = 1; return `bash: ${append.target}: No such file or directory`; }
       return '';
     }
-    const redirectParts = splitOperator(line, '>');
-    if (redirectParts.length === 2) {
-      const res = await this.executeSingle(redirectParts[0]);
-      const target = redirectParts[1].replace(/^['"]|['"]$/g, '');
-      if (!this.writeFile(target, res)) return `bash: ${target}: No such file or directory`;
+    const overwrite = redirect('>');
+    if (overwrite) {
+      const res = await this.executeSingle(overwrite.command);
+      if (this.exitCode !== 0) return res;
+      if (!this.writeFile(overwrite.target, res)) { this.exitCode = 1; return `bash: ${overwrite.target}: No such file or directory`; }
       return '';
     }
 
@@ -224,12 +259,6 @@ export class InBrowserLinuxEngine {
     return args.filter((arg) => !arg.startsWith('-') && !arg.startsWith('--'));
   }
 
-  private isFailure(output: string): boolean {
-    // The educational engine returns shell-style error text instead of POSIX exit
-    // codes. Detect the stable error phrases anywhere in the command result.
-    return this.exitCode !== 0 || /(?:command not found|No such file or directory|Not a directory|Is a directory|cannot (?:access|create|remove|stat|touch|move)|missing (?:operand|file operand|destination)|invalid)/i.test(output);
-  }
-
   private async executeSingle(cmdLine: string, stdin = ''): Promise<string> {
     // Tokenize simple shell arguments while preserving quoted strings.
     const tokens = (cmdLine.match(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || [])
@@ -238,6 +267,19 @@ export class InBrowserLinuxEngine {
     const args = tokens.slice(1);
 
     this.exitCode = 0;
+    if (cmd?.startsWith('./')) {
+      const binName = cmd.slice(2);
+      const bin = this.readFile(binName);
+      if (!bin) { this.exitCode = 127; return `bash: ${cmd}: No such file or directory`; }
+      if (bin.startsWith('__TRANSPILED_C__:')) {
+        const srcFile = bin.slice('__TRANSPILED_C__:'.length);
+        const src = this.readFile(srcFile);
+        if (src === null) { this.exitCode = 1; return `bash: ${cmd}: compiled source is unavailable`; }
+        return this.executeGeneralCode(src, 'c', undefined, args);
+      }
+      this.exitCode = 126;
+      return `bash: ${cmd}: cannot execute binary file`;
+    }
     switch (cmd) {
       case 'clear':
         return '\x1b[2J\x1b[H';
@@ -565,24 +607,6 @@ export class InBrowserLinuxEngine {
         return `LinuxLab simulator: transpiled ${args[0]} -> ${bin}`;
       }
 
-      case './a.out':
-      case './table':
-      case './' + cmd.replace(/^\.\//, ''): {
-        const binName = cmd.replace(/^\.\//, '');
-        const bin = this.readFile(binName);
-        if (!bin) return `bash: ${cmd}: No such file or directory`;
-
-        if (bin.startsWith('__TRANSPILED_C__:')) {
-          const srcFile = bin.slice('__TRANSPILED_C__:'.length);
-          const src = this.readFile(srcFile) || '';
-          // Arguments after ./program are supplied to the educational stdin queue.
-          // This makes common scanf/getchar programs testable without pretending the
-          // simulator has a real interactive process/TTY implementation.
-          const input = args.length ? args : [];
-          return this.executeGeneralCode(src, 'c', undefined, input);
-        }
-        return `bash: ${cmd}: cannot execute binary file`;
-      }
 
       case 'javac': {
         if (!args[0]) return 'javac: no source files specified';
