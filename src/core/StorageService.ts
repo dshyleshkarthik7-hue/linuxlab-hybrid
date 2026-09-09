@@ -1,112 +1,22 @@
-const DB_NAME = 'LinuxLab_IDB';
-const DB_VERSION = 4;
-
-export interface WorkspaceFile { filename: string; content: string; timestamp: number; }
-export interface LearningSession { id: string; mode: 'simulator' | 'real-linux'; title: string; startedAt: number; updatedAt: number; commands: string[]; lessonId?: string; completed?: boolean; }
-export interface QuizAttempt { id: string; quizId: string; score: number; total: number; timestamp: number; answers: string[]; }
-
-export class StorageService {
-  private static getDB(): Promise<IDBDatabase> {
-    return new Promise((resolve, reject) => {
-      const request = indexedDB.open(DB_NAME, DB_VERSION);
-      request.onupgradeneeded = (event) => {
-        const db = (event.target as IDBOpenDBRequest).result;
-        if (!db.objectStoreNames.contains('workspace')) db.createObjectStore('workspace', { keyPath: 'filename' });
-        if (!db.objectStoreNames.contains('progress')) db.createObjectStore('progress', { keyPath: 'labId' });
-        if (!db.objectStoreNames.contains('sessions')) {
-          const store = db.createObjectStore('sessions', { keyPath: 'id' });
-          store.createIndex('updatedAt', 'updatedAt');
-        }
-        if (!db.objectStoreNames.contains('quizAttempts')) db.createObjectStore('quizAttempts', { keyPath: 'id' });
-      };
-      request.onblocked = () => reject(new Error('IndexedDB upgrade is blocked by another open LinuxLab tab'));
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-    });
-  }
-
-  private static async op<T>(store: string, mode: IDBTransactionMode, action: (store: IDBObjectStore) => IDBRequest<T>): Promise<T> {
-    const db = await this.getDB();
-    return new Promise((resolve, reject) => {
-      const tx = db.transaction(store, mode);
-      const request = action(tx.objectStore(store));
-      request.onsuccess = () => resolve(request.result);
-      request.onerror = () => reject(request.error);
-      tx.oncomplete = () => db.close();
-      tx.onerror = () => reject(tx.error);
-    });
-  }
-
-  static async saveFile(filename: string, content: string): Promise<void> {
-    await this.op('workspace', 'readwrite', store => store.put({ filename, content, timestamp: Date.now() }));
-  }
-  static async getFile(filename: string): Promise<string | null> {
-    const file = await this.op<WorkspaceFile | undefined>('workspace', 'readonly', store => store.get(filename));
-    return file?.content ?? null;
-  }
-  static async getWorkspace(): Promise<Record<string, string>> {
-    const files = await this.op<WorkspaceFile[]>('workspace', 'readonly', store => store.getAll());
-    return Object.fromEntries(files.map(file => [file.filename, file.content]));
-  }
-  static async saveProgress(labId: string, score: number, passed: boolean): Promise<void> {
-    await this.op('progress', 'readwrite', store => store.put({ labId, score, passed, timestamp: Date.now() }));
-  }
-  static async getProgress(labId: string): Promise<{ score: number; passed: boolean } | null> {
-    const value = await this.op<any>('progress', 'readonly', store => store.get(labId));
-    return value ? { score: value.score, passed: value.passed } : null;
-  }
-  static async saveSession(session: LearningSession): Promise<void> {
-    await this.op('sessions', 'readwrite', store => store.put({ ...session, updatedAt: Date.now() }));
-  }
-  static async getSessions(): Promise<LearningSession[]> {
-    const sessions = await this.op<LearningSession[]>('sessions', 'readonly', store => store.getAll());
-    return sessions.sort((a, b) => b.updatedAt - a.updatedAt);
-  }
-  static async deleteSession(id: string): Promise<void> {
-    await this.op('sessions', 'readwrite', store => store.delete(id));
-  }
-  static async clearSessions(): Promise<void> {
-    await this.op('sessions', 'readwrite', store => store.clear());
-  }
-  static async getQuizAttempts(): Promise<QuizAttempt[]> {
-    const attempts = await this.op<QuizAttempt[]>('quizAttempts', 'readonly', store => store.getAll());
-    return attempts.sort((a, b) => b.timestamp - a.timestamp);
-  }
-  static async saveQuizAttempt(attempt: QuizAttempt): Promise<void> {
-    await this.op('quizAttempts', 'readwrite', store => store.put(attempt));
-  }
-  static async clearLearningData(): Promise<void> {
-    const db = await this.getDB();
-    try {
-      await new Promise<void>((resolve, reject) => {
-        const tx = db.transaction(['workspace', 'progress', 'sessions', 'quizAttempts'], 'readwrite');
-        for (const name of ['workspace', 'progress', 'sessions', 'quizAttempts']) {
-          tx.objectStore(name).clear();
-        }
-        tx.oncomplete = () => resolve();
-        tx.onerror = () => reject(tx.error);
-        tx.onabort = () => reject(tx.error);
-      });
-    } finally {
-      db.close();
-    }
-  }
-
-  static async exportData(): Promise<Record<string, unknown>> {
-    const db = await this.getDB();
-    try {
-      const names = ['workspace', 'progress', 'sessions', 'quizAttempts'];
-      const data: Record<string, unknown> = { version: 1, exportedAt: new Date().toISOString() };
-      for (const name of names) {
-        data[name] = await new Promise<unknown[]>((resolve, reject) => {
-          const request = db.transaction(name, 'readonly').objectStore(name).getAll();
-          request.onsuccess = () => resolve(request.result);
-          request.onerror = () => reject(request.error);
-        });
-      }
-      return data;
-    } finally {
-      db.close();
-    }
-  }
+const DB_NAME='LinuxLab_IDB'; const DB_VERSION=5;
+export interface WorkspaceFile{filename:string;content:string;timestamp:number}
+export interface LearningSession{id:string;mode:'simulator'|'real-linux';title:string;startedAt:number;updatedAt:number;commands:string[];lessonId?:string;completed?:boolean}
+export interface QuizAttempt{id:string;quizId:string;score:number;total:number;timestamp:number;answers:string[]}
+export class StorageService{
+ private static dbPromise:Promise<IDBDatabase>|null=null;
+ private static getDB():Promise<IDBDatabase>{ if(this.dbPromise)return this.dbPromise; this.dbPromise=new Promise((resolve,reject)=>{if(!('indexedDB'in window)){reject(new Error('IndexedDB is unavailable'));return;} const r=indexedDB.open(DB_NAME,DB_VERSION); r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains('workspace'))db.createObjectStore('workspace',{keyPath:'filename'});if(!db.objectStoreNames.contains('progress'))db.createObjectStore('progress',{keyPath:'labId'});if(!db.objectStoreNames.contains('sessions')){const s=db.createObjectStore('sessions',{keyPath:'id'});s.createIndex('updatedAt','updatedAt');}if(!db.objectStoreNames.contains('quizAttempts'))db.createObjectStore('quizAttempts',{keyPath:'id'});};r.onblocked=()=>reject(new Error('IndexedDB upgrade is blocked by another open LinuxLab tab'));r.onerror=()=>{this.dbPromise=null;reject(r.error)};r.onsuccess=()=>{const db=r.result;db.onversionchange=()=>{db.close();this.dbPromise=null};resolve(db)}});return this.dbPromise}
+ private static async op<T>(store:string,mode:IDBTransactionMode,action:(s:IDBObjectStore)=>IDBRequest<T>):Promise<T>{const db=await this.getDB();return new Promise((resolve,reject)=>{let settled=false;const finish=(fn:()=>void)=>{if(!settled){settled=true;fn()}};const tx=db.transaction(store,mode);const req=action(tx.objectStore(store));req.onsuccess=()=>finish(()=>resolve(req.result));req.onerror=()=>finish(()=>reject(req.error));tx.onerror=()=>finish(()=>reject(tx.error));tx.onabort=()=>finish(()=>reject(tx.error||new Error('IndexedDB transaction aborted')))});}
+ static saveFile(f:string,c:string){return this.op('workspace','readwrite',s=>s.put({filename:f,content:c,timestamp:Date.now()})).then(()=>undefined)}
+ static async getFile(f:string){const x=await this.op<WorkspaceFile|undefined>('workspace','readonly',s=>s.get(f));return x?.content??null}
+ static async getWorkspace(){const x=await this.op<WorkspaceFile[]>('workspace','readonly',s=>s.getAll());return Object.fromEntries(x.map(f=>[f.filename,f.content]))}
+ static saveProgress(labId:string,score:number,passed:boolean){return this.op('progress','readwrite',s=>s.put({labId,score,passed,timestamp:Date.now()})).then(()=>undefined)}
+ static async getProgress(l:string){const x=await this.op<{score:number;passed:boolean}|undefined>('progress','readonly',s=>s.get(l));return x??null}
+ static saveSession(x:LearningSession){return this.op('sessions','readwrite',s=>s.put({...x,updatedAt:Date.now()})).then(()=>undefined)}
+ static async getSessions(){const x=await this.op<LearningSession[]>('sessions','readonly',s=>s.getAll());return x.sort((a,b)=>b.updatedAt-a.updatedAt)}
+ static deleteSession(id:string){return this.op('sessions','readwrite',s=>s.delete(id)).then(()=>undefined)}
+ static clearSessions(){return this.op('sessions','readwrite',s=>s.clear()).then(()=>undefined)}
+ static async getQuizAttempts(){const x=await this.op<QuizAttempt[]>('quizAttempts','readonly',s=>s.getAll());return x.sort((a,b)=>b.timestamp-a.timestamp)}
+ static saveQuizAttempt(x:QuizAttempt){return this.op('quizAttempts','readwrite',s=>s.put(x)).then(()=>undefined)}
+ static async clearLearningData(){const db=await this.getDB();await new Promise<void>((resolve,reject)=>{const tx=db.transaction(['workspace','progress','sessions','quizAttempts'],'readwrite');for(const n of ['workspace','progress','sessions','quizAttempts'])tx.objectStore(n).clear();tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error);tx.onabort=()=>reject(tx.error||new Error('IndexedDB transaction aborted'))})}
+ static async exportData(){const db=await this.getDB();const names=['workspace','progress','sessions','quizAttempts'];const data:Record<string,unknown>={version:1,exportedAt:new Date().toISOString()};for(const n of names)data[n]=await this.op<unknown[]>(n,'readonly',s=>s.getAll());return data}
 }

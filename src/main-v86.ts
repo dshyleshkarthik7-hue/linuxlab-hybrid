@@ -20,6 +20,9 @@ export class V86LinuxTerminal {
   private serial = '';
   private ready = false;
   private resizeObserver: ResizeObserver | null = null;
+  private bootStartedAt = 0;
+  private bootTimer: number | null = null;
+  private bootMetrics: Array<{profile:string; startedAt:number; readyAt?:number; error?:string}> = [];
   private static runtimePromise: Promise<void> | null = null;
 
   constructor(containerId = 'v86-terminal-container') {
@@ -46,6 +49,7 @@ export class V86LinuxTerminal {
     document.getElementById('btn-v86-virt')?.addEventListener('click', () => void this.bootVirt());
     document.getElementById('btn-v86-restart')?.addEventListener('click', () => void this.restart());
     document.getElementById('btn-v86-gcc')?.addEventListener('click', () => this.runGccCheck());
+    document.getElementById('btn-v86-diagnostics')?.addEventListener('click', () => this.showDiagnostics());
   }
 
   public async boot(): Promise<void> { await this.bootDeveloper(); }
@@ -74,6 +78,8 @@ export class V86LinuxTerminal {
     this.writeLine('Loading browser x86 emulator…');
     this.setStatus(profile.name + ' • loading');
     this.setMonitor(profile.memoryMiB + ' MiB • preparing');
+    this.bootStartedAt = performance.now();
+    this.startBootTimer(profile);
 
     try {
       await this.verifyAssets(profile.cdrom);
@@ -118,7 +124,10 @@ export class V86LinuxTerminal {
     if (!this.ready && this.isPrompt(text)) {
       this.ready = true;
       this.setStatus(this.profile.name + ' • ready');
-      this.setMonitor(this.profile.memoryMiB + ' MiB • ready');
+      const elapsed = Math.round(performance.now() - this.bootStartedAt);
+      this.setMonitor(this.profile.memoryMiB + ' MiB • ready in ' + (elapsed / 1000).toFixed(1) + 's');
+      this.recordBoot({ profile: this.profile.name, startedAt: Date.now() - elapsed, readyAt: Date.now() });
+      this.stopBootTimer();
       window.setTimeout(() => this.send('export TERM=xterm-256color; clear\r'), 150);
     }
   }
@@ -126,6 +135,22 @@ export class V86LinuxTerminal {
   private isPrompt(text:string): boolean {
     const lines = text.split('\n').map((line:string) => line.trim()).filter(Boolean).slice(-12);
     return lines.some((line:string) => /(?:^|\s)[^\s]+(?::[^\s]+)?[#$>]\s*$/.test(line));
+  }
+
+  private showDiagnostics(): void {
+    const panel = document.getElementById('v86-diagnostics');
+    if (!panel) return;
+    const stored = (() => { try { return JSON.parse(localStorage.getItem('linuxlab-v86-metrics') || '[]'); } catch { return []; } })();
+    const lines = [
+      'VM diagnostics',
+      'Profile: ' + this.profile.name,
+      'VM object: ' + (this.emulator ? 'created' : 'not created'),
+      'Shell detected: ' + (this.ready ? 'yes' : 'waiting'),
+      'Recent boots: ' + JSON.stringify(stored.slice(-5), null, 2),
+      'Tip: diagnostics are stored locally; they are not automatically uploaded.'
+    ];
+    panel.textContent = lines.join('\n');
+    panel.hidden = !panel.hidden;
   }
 
   private runGccCheck(): void {
@@ -148,6 +173,8 @@ export class V86LinuxTerminal {
     this.ready = false;
     this.setStatus(this.profile.name + ' • error');
     this.setMonitor('Boot failed');
+    this.stopBootTimer();
+    this.recordBoot({ profile: this.profile.name, startedAt: Date.now() - Math.round(performance.now() - this.bootStartedAt), error: message });
     this.writeLine('');
     this.writeLine('[VM Boot Error] ' + message);
     await this.disposeVM();
@@ -163,11 +190,27 @@ export class V86LinuxTerminal {
   }
 
   private async verifyAssets(cdrom: string): Promise<void> {
-    const required = ['/libv86.js', '/v86.wasm', '/seabios.bin', '/vgabios.bin', cdrom];
+    const required = ['/v86.wasm', '/seabios.bin', '/vgabios.bin', cdrom];
     for (const url of required) {
       const response = await fetch(url, { method: 'HEAD', cache: 'no-store' });
       if (!response.ok) throw new Error(`Required VM asset failed to load: ${url} (${response.status})`);
     }
+  }
+
+  private startBootTimer(profile: Profile): void {
+    this.stopBootTimer();
+    this.bootTimer = window.setInterval(() => {
+      const seconds = ((performance.now() - this.bootStartedAt) / 1000).toFixed(1);
+      this.setMonitor(profile.memoryMiB + ' MiB • booting ' + seconds + 's');
+    }, 250);
+  }
+
+  private stopBootTimer(): void { if (this.bootTimer !== null) { window.clearInterval(this.bootTimer); this.bootTimer = null; } }
+
+  private recordBoot(metric: {profile:string; startedAt:number; readyAt?:number; error?:string}): void {
+    this.bootMetrics = [...this.bootMetrics.slice(-19), metric];
+    try { localStorage.setItem('linuxlab-v86-metrics', JSON.stringify(this.bootMetrics)); } catch {}
+    window.dispatchEvent(new CustomEvent('linuxlab-v86-metric', { detail: metric }));
   }
 
   private loadRuntime(): Promise<void> {
@@ -199,6 +242,7 @@ export class V86LinuxTerminal {
     ++this.bootId;
     this.resizeObserver?.disconnect();
     window.removeEventListener('resize', this.fitBound);
+    this.stopBootTimer();
     await this.disposeVM();
     this.setStatus('stopped');
   }
