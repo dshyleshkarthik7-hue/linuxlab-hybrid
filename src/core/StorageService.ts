@@ -129,11 +129,11 @@ export class StorageService {
     });
   }
 
-  private static async write(
+  private static async write<T>(
     storeName: StoreName,
-    action: (store: IDBObjectStore) => IDBRequest<unknown>,
+    action: (store: IDBObjectStore) => IDBRequest<T>,
   ): Promise<void> {
-    await this.request(storeName, 'readwrite', action);
+    await this.request<T>(storeName, 'readwrite', action);
   }
 
   static saveFile(filename: string, content: string): Promise<void> {
