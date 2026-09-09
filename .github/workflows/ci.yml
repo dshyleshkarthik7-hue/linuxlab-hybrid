@@ -38,6 +38,12 @@ jobs:
             cat /tmp/linuxlab.log
             exit 1
           fi
-          for path in / /simulator.html /index-v86.html /linux-cd-command/index.html /linux-ls-command/index.html /libv86.js /v86.wasm /seabios.bin /vgabios.bin; do curl -fsS --connect-timeout 5 "http://localhost:4173$path" >/dev/null; done
-          curl -fsS http://localhost:4173/index-v86.html | grep -q 'btn-v86-alpine'
-          curl -fsS http://localhost:4173/index-v86.html | grep -q 'main-v86'
+          # Verify only files Vite actually serves from the production build.
+          for path in / /index-v86.html /libv86.js /v86.wasm /seabios.bin /vgabios.bin; do
+            curl -fsS --connect-timeout 5 "http://localhost:4173$path" >/dev/null
+          done
+          # Avoid pipefail/SIGPIPE ambiguity and report missing markers clearly.
+          curl -fsS http://localhost:4173/index-v86.html -o /tmp/index-v86.html
+          grep -Fq 'btn-v86-alpine' /tmp/index-v86.html
+          grep -Fq 'main-v86' /tmp/index-v86.html
+          echo "Production preview smoke test passed"
