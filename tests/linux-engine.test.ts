@@ -46,6 +46,9 @@ async function run() {
   assert.equal(await e.execute('true && echo ok'), 'ok');
   assert.equal(await e.execute('false && echo no'), '');
   assert.equal(await e.execute('false || echo fallback'), 'fallback');
+  assert.equal(await e.execute('echo a && false || echo b'), 'a\nb');
+  assert.equal(await e.execute('false || echo a && echo b'), 'a\nb');
+  assert.equal(await e.execute('echo "invalid output" && echo ok'), 'invalid output\nok');
   assert.equal(await e.execute('echo first; false; echo last'), 'first\nlast');
   assert.equal((await e.execute('echo alpha | grep alpha | wc -l')).trim(), '1');
   assert.equal(await e.execute('echo hi > quoted && cat quoted'), 'hi');
