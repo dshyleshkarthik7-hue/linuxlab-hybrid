@@ -31,4 +31,5 @@ jobs:
           grep -Fq '"v86": "0.5.458"' package.json
           grep -Fq "from 'v86'" src/main-v86.ts
           ! grep -Fq 'copy.sh/v86/build/libv86.js' src/main-v86.ts
+          node -e "const p=require('./package.json'); const l=require('./package-lock.json'); if(p.dependencies.v86!==l.packages[''].dependencies.v86) process.exit(1)"
           echo "Production build smoke test passed"

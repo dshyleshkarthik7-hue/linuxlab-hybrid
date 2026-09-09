@@ -20,7 +20,7 @@ export default defineConfig({
     },
   },
   optimizeDeps: {
-    include: ['@xterm/xterm', '@xterm/addon-fit', 'monaco-editor'],
+    include: ['@xterm/xterm', '@xterm/addon-fit', 'monaco-editor', 'v86'],
   },
   build: {
     outDir: 'dist',
@@ -37,6 +37,7 @@ export default defineConfig({
         manualChunks(id) {
           if (id.includes('monaco-editor')) return 'monaco';
           if (id.includes('@xterm')) return 'xterm';
+          if (id.includes('/node_modules/v86/')) return 'v86';
         },
       },
     },
