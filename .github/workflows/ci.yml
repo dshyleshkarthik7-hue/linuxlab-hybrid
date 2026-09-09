@@ -19,6 +19,7 @@ jobs:
           ! grep -q 'private screenMode' src/main-v86.ts
           grep -q 'btn-v86-terminal' index-v86.html
           grep -q 'btn-v86-screen' index-v86.html
+          ! grep -q 'btn-v86-gcc' index-v86.html
       - name: Production build smoke test
         run: |
           set -e

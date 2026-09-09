@@ -1,6 +1,6 @@
 import * as xtermModule from '@xterm/xterm';
 import * as fitModule from '@xterm/addon-fit';
-import { V86Starter } from 'v86';
+import V86Starter from 'v86';
 import '@xterm/xterm/css/xterm.css';
 
 const TerminalCtor = (xtermModule as any).Terminal;
@@ -11,6 +11,7 @@ type V86 = { add_listener(name:string, cb:(value:number)=>void):void; serial0_se
 
 export class V86LinuxTerminal {
  private term:any; private fitAddon:any; private emulator:V86|null=null;
+ private terminalDataDisposable:{dispose():void}|null=null;
  private profile:Profile={name:'Developer Alpine',memoryMiB:512,cdrom:ALPINE_ISO,supported:true};
  private bootId=0; private ready=false; private serial=''; private bootTimeout:number|null=null;
  constructor(containerId='v86-terminal-container'){
@@ -18,7 +19,7 @@ export class V86LinuxTerminal {
   const container=document.getElementById(containerId); if(!container) throw new Error('Terminal container is missing');
   this.term=new TerminalCtor({cursorBlink:true,fontSize:14,convertEol:true,scrollback:10000});
   this.fitAddon=new FitAddonCtor(); this.term.loadAddon(this.fitAddon); this.term.open(container);
-  this.term.onData((d:string)=>this.emulator?.serial0_send(d));
+  this.terminalDataDisposable=this.term.onData((d:string)=>this.emulator?.serial0_send(d));
   window.addEventListener('resize',()=>this.fit()); setTimeout(()=>this.fit(),100); this.bindControls();
  }
  private bindControls():void{
@@ -41,7 +42,7 @@ export class V86LinuxTerminal {
    const screen=document.getElementById('screen_container'); if(!screen)throw new Error('VM screen container is missing');
    this.status(profile.name+' • booting'); this.monitor(profile.memoryMiB+' MiB • starting');
    const vm:any=new (V86Starter as any)({memory_size:profile.memoryMiB*1024*1024,vga_memory_size:8*1024*1024,screen_container:screen,cdrom:{url:profile.cdrom,async:true},boot_order:0x20,autostart:true,disable_speaker:true});
-   this.emulator=vm;
+   this.emulator=vm as V86;
    vm.add_listener('serial0-output-byte',(byte:number)=>{if(id===this.bootId)this.serialOutput(byte);});
    this.bootTimeout=window.setTimeout(()=>{if(!this.ready&&id===this.bootId)this.error('Boot timed out. Try the learning simulator or reboot the compatible image.');},180000);
    this.fit();
@@ -55,7 +56,8 @@ export class V86LinuxTerminal {
  private fit():void{try{this.fitAddon.fit();}catch{}}
  private error(message:string):void{this.ready=false;this.status(this.profile.name+' • error');this.monitor('Boot failed');this.term.writeln('\r\n[VM] '+message);}
  private async dispose():Promise<void>{if(this.bootTimeout!==null){clearTimeout(this.bootTimeout);this.bootTimeout=null;}const vm=this.emulator;this.emulator=null;try{vm?.stop?.();vm?.destroy?.();}catch{}}
+ public destroy():void{this.bootId++;void this.dispose();this.terminalDataDisposable?.dispose();this.terminalDataDisposable=null;try{this.term.dispose();}catch{}}
  private showDiagnostics():void{const p=document.getElementById('v86-diagnostics');if(!p)return;p.textContent=['VM diagnostics','Profile: '+this.profile.name,'VM object: '+(this.emulator?'created':'not created'),'Runtime: bundled npm package','Shell detected: '+(this.ready?'yes':'waiting'),'ISO endpoint: '+this.profile.cdrom,'Architecture: '+(this.profile.supported?'compatible x86':'unsupported 64-bit guest')].join('\n');p.hidden=!p.hidden;}
  private async copyDiagnostics():Promise<void>{this.showDiagnostics();const t=document.getElementById('v86-diagnostics')?.textContent||'';try{await navigator.clipboard.writeText(t);this.term.writeln('[Diagnostics copied]');}catch{this.term.writeln('[Diagnostics] Clipboard unavailable');}}
 }
-window.addEventListener('DOMContentLoaded',()=>{try{(window as any).linuxLabVM=new V86LinuxTerminal();}catch(e){console.error(e);}});
+window.addEventListener('DOMContentLoaded',()=>{try{const vm=new V86LinuxTerminal();(window as any).linuxLabVM=vm;window.addEventListener('pagehide',()=>vm.destroy(),{once:true});}catch(e){console.error(e);}});
