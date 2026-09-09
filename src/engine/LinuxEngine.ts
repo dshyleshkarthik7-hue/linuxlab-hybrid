@@ -185,7 +185,9 @@ export class InBrowserLinuxEngine {
         // `||` should return stdout from the fallback rather than concatenating
         // the previous command's diagnostic into the captured stdout result.
         if (op === '||' && previousFailed) {
-          output = next.output;
+          // If earlier successful commands in this chain produced stdout, retain it.
+          // Only discard the immediately preceding failed command's diagnostic.
+          output = output === result.output ? next.output : (next.output ? output + '\n' + next.output : output);
         } else if (next.output) {
           output = output ? output + '\n' + next.output : next.output;
         }
