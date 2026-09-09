@@ -26,11 +26,13 @@ Practice Linux concepts safely:
 This environment is an educational simulator, not a full Linux kernel.
 
 ### Engine B — Real Linux Lab
-Run a compatible 32-bit/x86 Linux guest in the browser using the official bundled v86 package, WebAssembly and xterm.js. Unsupported 64-bit images are detected before boot instead of failing silently.
+Run compatible 32-bit x86 Linux guests in the browser using a deployment-local, version-matched v86 browser bundle, WebAssembly and xterm.js. The emulator runtime is preflight-checked before a VM is created, and unsupported architectures are rejected instead of failing silently.
 
-Current browser VM:
-- Alpine Linux (Custom GCC): 1 GiB RAM
-- Compatibility boot option: same maintained Alpine image and 1 GiB RAM
+Current browser VM profiles:
+- **Developer Alpine**: primary learning image, 1 GiB RAM
+- **Alpine Virt 3.24.1 Lightweight x86**: compatibility profile, 512 MiB RAM
+
+The real-Linux page reports three health states: orange while booting, green when the guest is running or a shell is ready, and black when booting fails. Slow devices are not marked offline merely because Alpine takes longer to initialize.
 
 The 256 MiB figures shown by some Engine A `top`/`free` demonstrations are illustrative simulator data, not the RAM allocated to Engine B.
 
