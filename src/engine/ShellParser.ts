@@ -18,7 +18,6 @@ export class ShellParser {
     return node;
   }
 
-  // ; has the lowest precedence, &&/|| are next, and | binds most tightly.
   private parseSequence(): ShellNode {
     let left: ShellNode = this.parseConditional();
     while (true) {
@@ -45,10 +44,11 @@ export class ShellParser {
     let left: ShellNode = this.parseCommand();
     while (true) {
       this.skipWhitespace();
-      const operator = this.readOperator('|');
-      if (!operator) return left;
+      // A single | is a pipeline; || belongs to the conditional grammar.
+      if (!this.source.startsWith('|', this.index) || this.source.startsWith('||', this.index)) return left;
+      this.index++;
       const right = this.parseCommand();
-      left = { type: 'binary', operator, left, right };
+      left = { type: 'binary', operator: '|', left, right };
     }
   }
 
