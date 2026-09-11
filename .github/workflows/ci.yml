@@ -16,6 +16,7 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      - run: npx playwright install --with-deps chromium
       - run: npm run test:ci
       - run: npm run test:smoke
       - run: node tests/p2-p3-contract.test.mjs
