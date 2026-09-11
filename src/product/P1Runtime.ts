@@ -41,7 +41,9 @@ export class LinuxTutorContext {
 export class AlpineIntegration { readonly distro = 'Alpine Linux'; readonly status = 'SIMULATED'; }
 export class MobileTerminalController { private compact = false; setCompactMode(value: boolean): void { this.compact = value; } isCompactMode(): boolean { return this.compact; } }
 
-const EXECUTABLE_COMMANDS = new Set(['pwd','ls','cd','mkdir','touch','cat','cp','mv','rm','find','echo','printf','true','false','test','history','help','env','export','head','tail','wc','sort','uniq','grep','which','chmod','whoami','ps','top','htop','free','uname','hostname','uptime','df','date','gcc','clang','javac','java','clear','ping','curl','traceroute','ifconfig','ip','nano','vi','vim']);
+// Only commands that the structured simulator can execute deterministically belong here.
+// Commands delegated to a real Alpine VM are intentionally not advertised by this catalog.
+const EXECUTABLE_COMMANDS = new Set(['pwd','ls','cd','mkdir','touch','cat','cp','mv','rm','find','echo','printf','true','false','test','history','help','env','export','head','tail','wc','sort','uniq','grep','which','chmod','whoami','ps','top','htop','free','uname','uptime','df','date','gcc','clang','javac','java','clear','ping','curl','traceroute','ifconfig','ip','nano','vi','vim']);
 export class ExecutableCommandCatalog { readonly commands = COMMAND_LESSONS.filter(item => EXECUTABLE_COMMANDS.has(item.name)).map(item => item.name); has(command: string): boolean { return EXECUTABLE_COMMANDS.has(command); } get size(): number { return this.commands.length; } }
 
 export class P1Runtime {
