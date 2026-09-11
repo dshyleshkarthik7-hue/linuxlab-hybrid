@@ -1,12 +1,43 @@
 import { createRequire } from 'node:module';
+import { spawn } from 'node:child_process';
+import { setTimeout as sleep } from 'node:timers/promises';
 
 const require = createRequire(import.meta.url);
 const playwrightRoot = process.env.PLAYWRIGHT_NODE_PATH || 'playwright';
 const { chromium } = require(playwrightRoot);
 if (!chromium) throw new Error('Playwright chromium export is unavailable');
 
-const baseURL = process.argv[2];
-if (!baseURL) throw new Error('Missing base URL');
+const explicitURL = process.argv[2] || process.env.SMOKE_BASE_URL || process.env.BASE_URL;
+let server;
+let baseURL = explicitURL;
+
+async function waitForServer(url, timeoutMs = 30000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(url);
+      if (response.ok) return;
+    } catch {}
+    await sleep(250);
+  }
+  throw new Error('Timed out waiting for local Vite server at ' + url);
+}
+
+if (!baseURL) {
+  const port = process.env.SMOKE_PORT || '4173';
+  baseURL = `http://127.0.0.1:${port}`;
+  server = spawn('npx', ['vite', 'preview', '--host', '127.0.0.1', '--port', port], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: process.env,
+  });
+  server.stderr.on('data', data => process.stderr.write(String(data)));
+  try {
+    await waitForServer(baseURL);
+  } catch (error) {
+    server.kill('SIGTERM');
+    throw error;
+  }
+}
 
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
@@ -23,76 +54,35 @@ try {
     });
   });
 
-  // The Vite build emits index-v86.html for the /real-linux/ route only when
-  // the hosting rewrite is present. CI's local server does not necessarily apply
-  // that rewrite, so load the actual V86 entry directly.
-  const response = await page.goto(baseURL + '/index-v86.html', {
-    waitUntil: 'domcontentloaded',
-    timeout: 30000
+  const response = await page.goto(baseURL.replace(/\/$/, '') + '/index-v86.html', {
+    waitUntil: 'domcontentloaded', timeout: 30000
   });
-  if (!response || !response.ok()) {
-    throw new Error('Unable to load V86 page: ' + baseURL + '/index-v86.html');
-  }
+  if (!response || !response.ok()) throw new Error('Unable to load V86 page: ' + baseURL + '/index-v86.html');
 
-  const required = [
-    '#v86-health',
-    '#v86-status',
-    '#v86-monitor',
-    '#v86-terminal-container',
-    '#screen_container'
-  ];
-
-  for (const selector of required) {
-    await page.waitForSelector(selector, { state: 'attached', timeout: 10000 });
-  }
+  const required = ['#v86-health', '#v86-status', '#v86-monitor', '#v86-terminal-container', '#screen_container'];
+  for (const selector of required) await page.waitForSelector(selector, { state: 'attached', timeout: 10000 });
 
   const buttons = {
-    terminal: '#btn-v86-terminal',
-    screen: '#btn-v86-screen',
-    alpine: '#btn-v86-alpine',
-    virt: '#btn-v86-virt',
-    linux4: '#btn-v86-linux4',
-    restart: '#btn-v86-restart'
+    terminal: '#btn-v86-terminal', screen: '#btn-v86-screen', alpine: '#btn-v86-alpine',
+    virt: '#btn-v86-virt', linux4: '#btn-v86-linux4', restart: '#btn-v86-restart'
   };
-
   for (const [name, selector] of Object.entries(buttons)) {
     await page.waitForSelector(selector, { state: 'visible', timeout: 10000 });
     console.log('Found ' + name + ' control');
   }
 
   await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('booting') || false, null, { timeout: 20000 });
-
   await page.click(buttons.screen);
-  await page.waitForFunction(
-    () => !document.getElementById('screen_container')?.hidden &&
-      Boolean(document.getElementById('v86-terminal-container')?.hidden),
-    null,
-    { timeout: 10000 }
-  );
-
+  await page.waitForFunction(() => !document.getElementById('screen_container')?.hidden && Boolean(document.getElementById('v86-terminal-container')?.hidden), null, { timeout: 10000 });
   await page.click(buttons.terminal);
-  await page.waitForFunction(
-    () => Boolean(document.getElementById('screen_container')?.hidden) &&
-      !document.getElementById('v86-terminal-container')?.hidden,
-    null,
-    { timeout: 10000 }
-  );
-
+  await page.waitForFunction(() => Boolean(document.getElementById('screen_container')?.hidden) && !document.getElementById('v86-terminal-container')?.hidden, null, { timeout: 10000 });
   await page.click(buttons.virt);
-  await page.waitForFunction(
-    () => document.getElementById('v86-status')?.textContent?.includes('Alpine Virt') || false,
-    null,
-    { timeout: 20000 }
-  );
-
+  await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Alpine Virt') || false, null, { timeout: 20000 });
   await page.click(buttons.linux4);
-  await page.waitForFunction(
-    () => document.getElementById('v86-status')?.textContent?.includes('Ultra Light Linux') || false,
-    null,
-    { timeout: 20000 }
-  );
+  await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Ultra Light Linux') || false, null, { timeout: 20000 });
 
   console.log('Browser VM controls smoke test passed');
 } finally {
   await browser.close();
+  if (server) server.kill('SIGTERM');
 }
