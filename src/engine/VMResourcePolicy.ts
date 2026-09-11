@@ -18,12 +18,21 @@ export const VM_RESOURCE_POLICIES = {
   linux4: { memoryMiB: 256, vgaMemoryMiB: 4, bootTimeoutMs: 3 * 60_000, maxSessionMs: 30 * 60_000, maxSerialBytes: 16_000, maxCommandMs: 15_000, maxOutputBytes: 512_000, maxFileBytes: 4_000_000, maxPipelineStages: 8, maxProcesses: 32, networkAllowed: false },
 } as const satisfies Record<string, VMResourcePolicy>;
 
+function utf8Prefix(value: string, maxBytes: number): string {
+  if (maxBytes <= 0) return '';
+  const bytes = new TextEncoder().encode(value);
+  if (bytes.byteLength <= maxBytes) return value;
+  let end = maxBytes;
+  while (end > 0 && (bytes[end] & 0xc0) === 0x80) end--;
+  return new TextDecoder().decode(bytes.slice(0, end));
+}
+
 export function boundedSerial(previous: string, next: string, maxBytes: number): string {
-  const value = previous + next;
-  return value.length <= maxBytes ? value : value.slice(-maxBytes);
+  return utf8Prefix(previous + next, maxBytes);
 }
 
 export function boundedText(value: string, maxBytes: number): { value: string; truncated: boolean } {
-  if (value.length <= maxBytes) return { value, truncated: false };
-  return { value: value.slice(0, maxBytes), truncated: true };
+  const encoded = new TextEncoder().encode(value);
+  if (encoded.byteLength <= maxBytes) return { value, truncated: false };
+  return { value: utf8Prefix(value, maxBytes), truncated: true };
 }
