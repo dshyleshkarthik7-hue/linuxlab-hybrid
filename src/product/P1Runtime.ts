@@ -20,10 +20,7 @@ export class ProductObservatory extends LinuxObservatory {
     if (this.commandTelemetry.length > 500) this.commandTelemetry.shift();
   }
   recentCommands(limit = 50): ProductTelemetry[] { return this.commandTelemetry.slice(-Math.max(0, limit)).map(item => ({ ...item })); }
-  override system() {
-    const base = super.system();
-    return { ...base, commandCount: this.commandTelemetry.length, failedCommandCount: this.commandTelemetry.filter(item => item.exitCode !== 0).length };
-  }
+  override system() { const base = super.system(); return { ...base, commandCount: this.commandTelemetry.length, failedCommandCount: this.commandTelemetry.filter(item => item.exitCode !== 0).length }; }
 }
 
 export class LinuxTutorContext {
@@ -43,14 +40,13 @@ export class LinuxTutorContext {
 export class AlpineIntegration { readonly distro = 'Alpine Linux'; readonly status = 'SIMULATED'; }
 export class MobileTerminalController { private compact = false; setCompactMode(value: boolean): void { this.compact = value; } isCompactMode(): boolean { return this.compact; } }
 
-const EXECUTABLE_COMMANDS = new Set(['pwd','ls','cd','tree','touch','cat','cp','mv','rm','mkdir','rmdir','head','tail','wc','cut','grep','find','which','echo','printf','true','false','test','history','help','env','printenv','chmod','whoami','ps','top','free','uname','hostname','uptime','df','date','basename','dirname','realpath','sort','uniq','rev','diff','cmp','gcc','clang','clear','alias','unalias','export','unset','sudo','su']);
+// This list is deliberately derived from commands with implemented Engine A semantics.
+// A curriculum entry that is not in this set remains a lesson, not a false executable claim.
+const EXECUTABLE_COMMANDS = new Set(['pwd','ls','cd','mkdir','touch','cat','cp','mv','rm','find','echo','printf','true','false','test','history','help','env','export','head','tail','wc','sort','uniq','grep','which','chmod','whoami','ps','top','htop','free','uname','hostname','uptime','df','date','gcc','clang','javac','java','clear','ping','curl','traceroute','ifconfig','ip','nano','vi','vim']);
 export class ExecutableCommandCatalog { readonly commands = COMMAND_LESSONS.filter(item => EXECUTABLE_COMMANDS.has(item.name)).map(item => item.name); has(command: string): boolean { return EXECUTABLE_COMMANDS.has(command); } get size(): number { return this.commands.length; } }
 
 export class P1Runtime {
-  readonly engine = new StructuredLinuxEngine();
-  readonly observatory: ProductObservatory;
-  readonly tutor: LinuxTutorContext;
-  readonly alpine = new AlpineIntegration(); readonly mobile = new MobileTerminalController(); readonly catalog = new ExecutableCommandCatalog(); readonly paths = LEARNING_PATHS;
+  readonly engine = new StructuredLinuxEngine(); readonly observatory: ProductObservatory; readonly tutor: LinuxTutorContext; readonly alpine = new AlpineIntegration(); readonly mobile = new MobileTerminalController(); readonly catalog = new ExecutableCommandCatalog(); readonly paths = LEARNING_PATHS;
   private level: LearningLevel;
   constructor(level: LearningLevel = 'beginner', observatory = new ProductObservatory('SIMULATED')) { this.level = level; this.observatory = observatory; this.tutor = new LinuxTutorContext(observatory); }
   setLevel(level: LearningLevel): void { this.level = level; } getLevel(): LearningLevel { return this.level; }
