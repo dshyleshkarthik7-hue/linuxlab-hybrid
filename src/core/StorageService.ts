@@ -92,6 +92,11 @@ export class StorageService {
     return this.dbPromise;
   }
 
+  /**
+   * Resolve only after the IndexedDB transaction commits. IDBRequest.onsuccess
+   * fires before the enclosing readwrite transaction is durably complete, so
+   * resolving there can report a successful save that is later aborted.
+   */
   private static async request<T>(
     storeName: StoreName,
     mode: IDBTransactionMode,
@@ -102,6 +107,7 @@ export class StorageService {
     return new Promise((resolve, reject) => {
       const transaction = db.transaction(storeName, mode);
       let settled = false;
+      let result!: T;
 
       const fail = (error: unknown): void => {
         if (settled) return;
@@ -118,12 +124,15 @@ export class StorageService {
       }
 
       request.onsuccess = () => {
-        if (!settled) {
-          settled = true;
-          resolve(request.result);
-        }
+        result = request.result;
       };
       request.onerror = () => fail(request.error ?? new Error('IndexedDB request failed'));
+      transaction.oncomplete = () => {
+        if (!settled) {
+          settled = true;
+          resolve(result);
+        }
+      };
       transaction.onerror = () => fail(transaction.error ?? new Error('IndexedDB transaction failed'));
       transaction.onabort = () => fail(transaction.error ?? new Error('IndexedDB transaction aborted'));
     });
