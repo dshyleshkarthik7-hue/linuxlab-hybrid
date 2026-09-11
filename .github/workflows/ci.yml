@@ -1,82 +1,21 @@
 name: CI
 on:
-  push: {branches: [main]}
+  push:
+    branches: [main]
   pull_request:
-permissions: {contents: read}
+    branches: [main]
+permissions:
+  contents: read
 jobs:
-  quality:
+  verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
     steps:
-      - uses: actions/checkout@v5
-      - uses: actions/setup-node@v5
-        with: {node-version: 22, cache: npm}
-      - run: npm ci --no-audit --no-fund
-      - run: npm run test
-      - run: npm run build
-      - name: Verify V86 entry structure
-        run: |
-          test -f index-v86.html
-          test -f public/v86.wasm
-          test -f public/seabios.bin
-          test -f public/vgabios.bin
-          test -f public/libv86.js
-
-      - name: Production build smoke test
-        run: |
-          set -e
-          test -f dist/index.html
-          test -f dist/index-v86.html
-          grep -Fq 'LinuxTerminal' dist/index.html
-          grep -Fq 'btn-v86-alpine' dist/index-v86.html
-          grep -Fq 'btn-v86-linux4' dist/index-v86.html
-          grep -Fq 'network-relay-disclaimer' dist/index-v86.html
-          grep -Fq 'btn-v86-terminal' dist/index-v86.html
-          grep -Fq 'btn-v86-screen' dist/index-v86.html
-          ! grep -Fq "from 'v86'" src/main-v86.ts
-          grep -Fq "network-relay-disclaimer" index-v86.html
-          grep -Fq "linux4" netlify/edge-functions/iso.ts
-          grep -Fq "huggingface.co/datasets/shyleshkarthikd/linux4" netlify/edge-functions/iso.ts
-          grep -Fq "v86-health" index-v86.html
-          grep -Fq "setHealth('ready')" src/main-v86.ts
-          grep -Fq "Primary ISO source failed; trying fallback" netlify/edge-functions/iso.ts
-          grep -Fq "Primary ISO returned an error; trying fallback" netlify/edge-functions/iso.ts
-          grep -Fq "void this.start(this.profile)" src/main-v86.ts
-          ! grep -Fq 'copy.sh/v86/build/libv86.js' src/main-v86.ts
-          node -e "const p=require('./package.json'); if(p.dependencies?.v86 || p.devDependencies?.v86) process.exit(1)"
-          test -f public/robots.txt
-          test -f public/sitemap.xml
-          test -f public/commands/index.html
-          grep -Fq "50 Essential Linux Commands" public/commands/index.html
-          grep -Fq "linux-cd-command" public/sitemap.xml
-          echo "Production build smoke test passed"
-      - name: Preview HTTP smoke test
-        run: |
-          set -eu
-          npm run preview -- --host 127.0.0.1 --port 4173 >/tmp/linuxlab-preview.log 2>&1 &
-          pid=$!
-          trap 'kill "$pid" 2>/dev/null || true' EXIT
-          ready=0
-          for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:4173/ >/dev/null; then ready=1; break; fi
-            sleep 1
-          done
-          test "$ready" = 1
-          curl -fsS http://127.0.0.1:4173/ | grep -Fq "LinuxTerminal"
-          curl -fsS http://127.0.0.1:4173/commands/ | grep -Fq "50 Essential Linux Commands"
-          curl -fsS http://127.0.0.1:4173/linux-cd-command/ | grep -Fq "Linux cd Command"
-          test -s /tmp/linuxlab-preview.log
-
-      - name: Browser VM controls smoke test
-        run: |
-          set -eu
-          npm run preview -- --host 127.0.0.1 --port 4174 >/tmp/linuxlab-browser.log 2>&1 &
-          pid=$!
-          trap 'kill "$pid" 2>/dev/null || true' EXIT
-          for i in $(seq 1 30); do
-            curl -fsS http://127.0.0.1:4174/real-linux/ >/dev/null && break
-            sleep 1
-          done
-          curl -fsS http://127.0.0.1:4174/real-linux/ >/dev/null
-          npx playwright install --with-deps chromium
-          node tests/browser-vm-smoke.mjs http://127.0.0.1:4174
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm run test:ci
+      - run: npm run test:smoke
+      - run: node tests/p2-p3-contract.test.mjs
