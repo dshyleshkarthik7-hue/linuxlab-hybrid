@@ -1,7 +1,6 @@
 import { InBrowserLinuxEngine } from './LinuxEngine.ts';
 import type { CommandResult } from './CommandResult.ts';
 import { ShellParser } from './ShellParser.ts';
-import type { ShellNode } from './ShellParser.ts';
 import { ShellPlanner } from './ShellPlanner.ts';
 import type { ShellPlan } from './ShellPlanner.ts';
 import { VM_RESOURCE_POLICIES, boundedText } from './VMResourcePolicy.ts';
@@ -27,12 +26,8 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
       const stdout = boundedText(result.stdout, this.policy.maxOutputBytes);
       const stderr = boundedText(result.stderr, this.policy.maxOutputBytes);
       return {
-        command,
-        stdout: stdout.value,
-        stderr: stderr.value,
-        exitCode: result.exitCode,
-        durationMs: performance.now() - started,
-        timedOut: false,
+        command, stdout: stdout.value, stderr: stderr.value, exitCode: result.exitCode,
+        durationMs: performance.now() - started, timedOut: false,
         truncated: stdout.truncated || stderr.truncated,
       };
     } catch (error) {
@@ -66,7 +61,7 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
     let stderr = '';
     let result: Omit<CommandResult, 'durationMs' | 'command' | 'timedOut' | 'truncated'> = { stdout: '', stderr: '', exitCode: 0 };
     for (const stage of stages) {
-      result = await this.runCommand(stage, stdin);
+      result = await this.runCommand(stage.command, stdin);
       stderr += result.stderr;
       if (result.exitCode !== 0) break;
       stdin = result.stdout;
@@ -111,7 +106,17 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
   private async invokeLegacyCommand(command: string, stdin: string): Promise<{ output: string; exitCode: number }> {
     const legacy = this as unknown as { executeCommand: (line: string, input?: string) => Promise<string>; exitCode: number };
     const output = await legacy.executeCommand(command, stdin);
-    return { output, exitCode: Number.isInteger(legacy.exitCode) ? legacy.exitCode : 0 };
+    let exitCode = Number.isInteger(legacy.exitCode) ? legacy.exitCode : 0;
+    // The legacy simulator historically returned diagnostics as strings without
+    // consistently setting its private status field. Normalize those diagnostics
+    // here so structured execution has a reliable exit-code contract.
+    if (exitCode === 0 && this.isFailureDiagnostic(output)) exitCode = 1;
+    return { output, exitCode };
+  }
+
+  private isFailureDiagnostic(output: string): boolean {
+    return /^(?:bash: |(?:cat|grep|head|tail|wc|sort|uniq|ls|cd|mkdir|touch|rm|cp|mv|find|chmod|stat|gcc|clang|javac|java|export|which): )/i.test(output)
+      && /(?:No such file or directory|missing (?:operand|file operand|destination|search pattern|argument)|cannot (?:access|create|remove|stat|touch|move|read)|invalid (?:mode|option)|usage:|file not found|File exists|Is a directory|Not a directory|not specified|omitting directory)/i.test(output);
   }
 
   private combine(left: Omit<CommandResult, 'durationMs' | 'command' | 'timedOut' | 'truncated'>, right: Omit<CommandResult, 'durationMs' | 'command' | 'timedOut' | 'truncated'>, exitCode: number) {
@@ -132,13 +137,8 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
   private async withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
     let timer: ReturnType<typeof setTimeout> | undefined;
     try {
-      return await Promise.race([
-        promise,
-        new Promise<T>((_, reject) => { timer = setTimeout(() => reject(new Error('command timed out')), ms); }),
-      ]);
-    } finally {
-      if (timer) clearTimeout(timer);
-    }
+      return await Promise.race([promise, new Promise<T>((_, reject) => { timer = setTimeout(() => reject(new Error('command timed out')), ms); })]);
+    } finally { if (timer) clearTimeout(timer); }
   }
 
   private extractRedirections(input: string): RedirectionSpec {
@@ -167,8 +167,7 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
       else if (input.startsWith('>', i)) op = '>';
       else if (input.startsWith('<', i)) op = '<';
       if (!op) { current += ch; continue; }
-      flush();
-      i += op.length;
+      flush(); i += op.length;
       while (/\s/.test(input[i] || '')) i++;
       let target = '';
       let targetQuote: '"' | "'" | null = null;
