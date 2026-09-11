@@ -62,9 +62,9 @@ await new Promise(resolve => setTimeout(resolve, 30));
 assert.equal(session.getState(), 'STOPPED');
 assert.equal(stopped, 1);
 
-await assert.rejects(() => verifyArtifact(new ArrayBuffer(0), ALPINE_ARTIFACT), /no trusted SHA-256 digest configured/);
+assert.match(ALPINE_ARTIFACT.sha256, /^[a-f0-9]{64}$/i);
+await assert.rejects(() => verifyArtifact(new ArrayBuffer(0), ALPINE_ARTIFACT), /failed SHA-256 integrity verification/);
 assert.match(ALPINE_ARTIFACT.filename, /^alpine-virt-3\.24\.1-x86\.iso$/);
 assert.equal(ALPINE_ARTIFACT.version, '3.24.1');
-assert.match(ALPINE_ARTIFACT.sha256, /REPLACE_WITH_TRUSTED_RELEASE_SHA256/);
 
 console.log('VNext correctness checks passed');
