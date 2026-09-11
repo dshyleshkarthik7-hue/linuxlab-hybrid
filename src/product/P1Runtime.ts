@@ -24,7 +24,8 @@ export class ProductObservatory extends LinuxObservatory {
 }
 
 export class LinuxTutorContext {
-  constructor(private readonly observatory: ProductObservatory) {}
+  private readonly observatory: ProductObservatory;
+  constructor(observatory: ProductObservatory) { this.observatory = observatory; }
   build(level: LearningLevel, command: string, result: CommandResult, cwd: string): TutorContext {
     this.observatory.recordCommand(result, level, cwd);
     const telemetry = this.observatory.system();
@@ -40,8 +41,6 @@ export class LinuxTutorContext {
 export class AlpineIntegration { readonly distro = 'Alpine Linux'; readonly status = 'SIMULATED'; }
 export class MobileTerminalController { private compact = false; setCompactMode(value: boolean): void { this.compact = value; } isCompactMode(): boolean { return this.compact; } }
 
-// This list is deliberately derived from commands with implemented Engine A semantics.
-// A curriculum entry that is not in this set remains a lesson, not a false executable claim.
 const EXECUTABLE_COMMANDS = new Set(['pwd','ls','cd','mkdir','touch','cat','cp','mv','rm','find','echo','printf','true','false','test','history','help','env','export','head','tail','wc','sort','uniq','grep','which','chmod','whoami','ps','top','htop','free','uname','hostname','uptime','df','date','gcc','clang','javac','java','clear','ping','curl','traceroute','ifconfig','ip','nano','vi','vim']);
 export class ExecutableCommandCatalog { readonly commands = COMMAND_LESSONS.filter(item => EXECUTABLE_COMMANDS.has(item.name)).map(item => item.name); has(command: string): boolean { return EXECUTABLE_COMMANDS.has(command); } get size(): number { return this.commands.length; } }
 
