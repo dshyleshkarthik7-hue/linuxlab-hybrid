@@ -10,7 +10,10 @@ assert.equal(parser.parse('echo "a && b"').type, 'command');
 assert.equal(parser.parse("echo 'a | b'").type, 'command');
 assert.throws(() => parser.parse('echo "unterminated'), /Unterminated quote/);
 assert.throws(() => parser.parse('echo foo ||'), /Expected command/);
-assert.throws(() => parser.parse('echo | bar'), /Expected command/);
+// A pipe with commands on both sides is valid shell syntax.
+assert.equal(parser.parse('echo | bar').type, 'binary');
+assert.throws(() => parser.parse('echo |'), /Expected command/);
+assert.throws(() => parser.parse('echo &&'), /Expected command/);
 
 const assessment = summarizeAssessment([
   { label: 'verified', state: 'passed', feedback: 'ok' },
