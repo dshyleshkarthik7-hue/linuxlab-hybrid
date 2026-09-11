@@ -35,7 +35,7 @@ export class ShellParser {
   }
 
   private parseSequence(): ShellNode {
-    let left = this.parsePipeline();
+    let left: ShellNode = this.parsePipeline();
     while (true) {
       this.skipWhitespace();
       const operator = this.readOperator(';');
@@ -46,7 +46,7 @@ export class ShellParser {
   }
 
   private parsePipeline(): ShellNode {
-    let left = this.parseConditional();
+    let left: ShellNode = this.parseConditional();
     while (true) {
       this.skipWhitespace();
       const operator = this.readOperator('|');
@@ -57,7 +57,7 @@ export class ShellParser {
   }
 
   private parseConditional(): ShellNode {
-    let left = this.parseCommand();
+    let left: ShellNode = this.parseCommand();
     while (true) {
       this.skipWhitespace();
       const operator = this.readOperator('&&') || this.readOperator('||');
