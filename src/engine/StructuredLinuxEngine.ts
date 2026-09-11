@@ -1,21 +1,43 @@
 import { InBrowserLinuxEngine } from './LinuxEngine.ts';
-import { CommandResult } from './CommandResult.ts';
-import { ShellParser, ShellNode, ShellCommandNode } from './ShellParser.ts';
+import type { CommandResult } from './CommandResult.ts';
+import { ShellParser } from './ShellParser.ts';
+import type { ShellNode } from './ShellParser.ts';
+import { ShellPlanner } from './ShellPlanner.ts';
+import type { ShellPlan } from './ShellPlanner.ts';
+import { VM_RESOURCE_POLICIES, boundedText } from './VMResourcePolicy.ts';
 
-/** Correctness-first shell facade for the simulator. */
+/** Parser -> planner -> executor facade for the educational simulator. */
 export class StructuredLinuxEngine extends InBrowserLinuxEngine {
   private readonly parser = new ShellParser();
+  private readonly planner = new ShellPlanner(VM_RESOURCE_POLICIES.linux4.maxPipelineStages);
+  private readonly policy = VM_RESOURCE_POLICIES.linux4;
 
   public async executeResult(source: string): Promise<CommandResult> {
     const started = performance.now();
-    const text = source.trim();
-    if (!text) return { stdout: '', stderr: '', exitCode: 0, durationMs: 0 };
-    this.history.push(text);
+    const command = source.trim();
+    if (!command) return { command, stdout: '', stderr: '', exitCode: 0, durationMs: 0 };
+    if (command.length > 64_000) return this.fail(command, 'command line exceeds the session input limit', started, 2);
+    if (this.isBlockedAdversarialInput(command)) return this.fail(command, 'command rejected by sandbox safety policy', started, 126);
+    this.history.push(command);
+
     try {
-      const result = await this.evaluate(this.parser.parse(text));
-      return { ...result, durationMs: performance.now() - started };
+      const ast = this.parser.parse(command);
+      const plan = this.planner.plan(ast);
+      const result = await this.withTimeout(this.executePlan(plan), this.policy.maxCommandMs);
+      const stdout = boundedText(result.stdout, this.policy.maxOutputBytes);
+      const stderr = boundedText(result.stderr, this.policy.maxOutputBytes);
+      return {
+        command,
+        stdout: stdout.value,
+        stderr: stderr.value,
+        exitCode: result.exitCode,
+        durationMs: performance.now() - started,
+        timedOut: false,
+        truncated: stdout.truncated || stderr.truncated,
+      };
     } catch (error) {
-      return { stdout: '', stderr: `bash: ${error instanceof Error ? error.message : String(error)}\n`, exitCode: 2, durationMs: performance.now() - started };
+      const timedOut = error instanceof Error && error.message === 'command timed out';
+      return this.fail(command, timedOut ? 'command timed out' : (error instanceof Error ? error.message : String(error)), started, timedOut ? 124 : 2, timedOut);
     }
   }
 
@@ -24,53 +46,43 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
     return result.stdout || result.stderr.replace(/\n$/, '');
   }
 
-  private async evaluate(node: ShellNode): Promise<Omit<CommandResult, 'durationMs'>> {
-    if (node.type === 'command') return this.runCommandNode(node, '');
-    if (node.operator === ';') {
-      const left = await this.evaluate(node.left);
-      const right = await this.evaluate(node.right);
+  private async executePlan(plan: ShellPlan): Promise<Omit<CommandResult, 'durationMs' | 'command' | 'timedOut' | 'truncated'>> {
+    if (plan.kind === 'command') return this.runCommand(plan.command, '');
+    if (plan.kind === 'sequence') {
+      const left = await this.executePlan(plan.left);
+      const right = await this.executePlan(plan.right);
       return this.combine(left, right, right.exitCode);
     }
-    if (node.operator === '&&' || node.operator === '||') {
-      const left = await this.evaluate(node.left);
-      const shouldRun = node.operator === '&&' ? left.exitCode === 0 : left.exitCode !== 0;
+    if (plan.kind === 'and' || plan.kind === 'or') {
+      const left = await this.executePlan(plan.left);
+      const shouldRun = plan.kind === 'and' ? left.exitCode === 0 : left.exitCode !== 0;
       if (!shouldRun) return left;
-      const right = await this.evaluate(node.right);
+      const right = await this.executePlan(plan.right);
       return this.combine(left, right, right.exitCode);
     }
-    if (node.operator === '|') {
-      const stages = this.flattenPipeline(node);
-      let stdin = '';
-      let stderr = '';
-      let result: Omit<CommandResult, 'durationMs'> = { stdout: '', stderr: '', exitCode: 0 };
-      for (const stage of stages) {
-        result = await this.runCommandNode(stage, stdin);
-        stdin = result.stdout;
-        stderr += result.stderr;
-      }
-      return { stdout: result.stdout, stderr, exitCode: result.exitCode };
+
+    const stages = this.flatten(plan);
+    let stdin = '';
+    let stderr = '';
+    let result: Omit<CommandResult, 'durationMs' | 'command' | 'timedOut' | 'truncated'> = { stdout: '', stderr: '', exitCode: 0 };
+    for (const stage of stages) {
+      result = await this.runCommand(stage, stdin);
+      stderr += result.stderr;
+      if (result.exitCode !== 0) break;
+      stdin = result.stdout;
     }
-    return { stdout: '', stderr: 'bash: unsupported operator\n', exitCode: 2 };
+    return { stdout: result.stdout, stderr, exitCode: result.exitCode };
   }
 
-  private combine(left: Omit<CommandResult, 'durationMs'>, right: Omit<CommandResult, 'durationMs'>, exitCode: number) {
-    return {
-      stdout: [left.stdout, right.stdout].filter(Boolean).join('\n'),
-      stderr: [left.stderr, right.stderr].filter(Boolean).join('\n'),
-      exitCode,
-    };
+  private flatten(plan: ShellPlan): Array<Extract<ShellPlan, { kind: 'command' }>> {
+    if (plan.kind === 'command') return [plan];
+    if (plan.kind !== 'pipeline') throw new Error('invalid pipeline plan');
+    return [...this.flatten(plan.left), ...this.flatten(plan.right)];
   }
 
-  private flattenPipeline(node: ShellNode): ShellCommandNode[] {
-    if (node.type === 'command') return [node];
-    if (node.operator !== '|') throw new Error('Invalid pipeline');
-    return [...this.flattenPipeline(node.left), ...this.flattenPipeline(node.right)];
-  }
-
-  private async runCommandNode(node: ShellCommandNode, stdin: string): Promise<Omit<CommandResult, 'durationMs'>> {
-    const parsed = this.extractRedirections(node.text);
+  private async runCommand(source: string, stdin: string): Promise<Omit<CommandResult, 'durationMs' | 'command' | 'timedOut' | 'truncated'>> {
+    const parsed = this.extractRedirections(source);
     if (!parsed.command) throw new Error('Expected command');
-
     let input = stdin;
     if (parsed.stdinFile) {
       const file = this.readFile(parsed.stdinFile);
@@ -78,13 +90,22 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
       input = file;
     }
 
-    const result = await this.invokeLegacyCommand(parsed.command, input);
-    return this.applyOutputRedirections(
-      result.exitCode === 0 ? result.output : '',
-      result.exitCode === 0 ? '' : result.output,
-      result.exitCode,
-      parsed,
-    );
+    const output = await this.invokeLegacyCommand(parsed.command, input);
+    let stdout = output.exitCode === 0 ? output.output : '';
+    let stderr = output.exitCode === 0 ? '' : output.output;
+    if (parsed.stdoutFile) {
+      const previous = parsed.appendStdout ? (this.readFile(parsed.stdoutFile) ?? '') : '';
+      if (previous.length + stdout.length > this.policy.maxFileBytes) return { stdout: '', stderr: 'bash: file size limit exceeded\n', exitCode: 1 };
+      if (!this.writeFile(parsed.stdoutFile, previous + stdout)) return { stdout: '', stderr: `bash: ${parsed.stdoutFile}: cannot create file\n`, exitCode: 1 };
+      stdout = '';
+    }
+    if (parsed.stderrFile) {
+      const previous = parsed.appendStderr ? (this.readFile(parsed.stderrFile) ?? '') : '';
+      if (previous.length + stderr.length > this.policy.maxFileBytes) return { stdout, stderr: 'bash: file size limit exceeded\n', exitCode: 1 };
+      if (!this.writeFile(parsed.stderrFile, previous + stderr)) return { stdout, stderr: `bash: ${parsed.stderrFile}: cannot create file\n`, exitCode: 1 };
+      stderr = '';
+    }
+    return { stdout, stderr, exitCode: output.exitCode };
   }
 
   private async invokeLegacyCommand(command: string, stdin: string): Promise<{ output: string; exitCode: number }> {
@@ -93,18 +114,31 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
     return { output, exitCode: Number.isInteger(legacy.exitCode) ? legacy.exitCode : 0 };
   }
 
-  private applyOutputRedirections(stdout: string, stderr: string, exitCode: number, redir: RedirectionSpec) {
-    if (redir.stdoutFile) {
-      const previous = redir.appendStdout ? (this.readFile(redir.stdoutFile) ?? '') : '';
-      if (!this.writeFile(redir.stdoutFile, previous + stdout)) return { stdout: '', stderr: `bash: ${redir.stdoutFile}: No such file or directory\n`, exitCode: 1 };
-      stdout = '';
+  private combine(left: Omit<CommandResult, 'durationMs' | 'command' | 'timedOut' | 'truncated'>, right: Omit<CommandResult, 'durationMs' | 'command' | 'timedOut' | 'truncated'>, exitCode: number) {
+    return { stdout: [left.stdout, right.stdout].filter(Boolean).join('\n'), stderr: [left.stderr, right.stderr].filter(Boolean).join('\n'), exitCode };
+  }
+
+  private fail(command: string, message: string, started: number, exitCode: number, timedOut = false): CommandResult {
+    return { command, stdout: '', stderr: `bash: ${message}\n`, exitCode, durationMs: performance.now() - started, timedOut };
+  }
+
+  private isBlockedAdversarialInput(command: string): boolean {
+    return /:\(\)\s*\{\s*:\s*\|\s*:\s*&\s*\}\s*;\s*:/u.test(command)
+      || /(?:^|[;&|])\s*while\s+(?:true|:|1)\s*;?/u.test(command)
+      || /\bfork\s*\(/u.test(command)
+      || /\b(?:exec|system|popen)\s*\(/u.test(command);
+  }
+
+  private async withTimeout<T>(promise: Promise<T>, ms: number): Promise<T> {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      return await Promise.race([
+        promise,
+        new Promise<T>((_, reject) => { timer = setTimeout(() => reject(new Error('command timed out')), ms); }),
+      ]);
+    } finally {
+      if (timer) clearTimeout(timer);
     }
-    if (redir.stderrFile) {
-      const previous = redir.appendStderr ? (this.readFile(redir.stderrFile) ?? '') : '';
-      if (!this.writeFile(redir.stderrFile, previous + stderr)) return { stdout, stderr: `bash: ${redir.stderrFile}: No such file or directory\n`, exitCode: 1 };
-      stderr = '';
-    }
-    return { stdout, stderr, exitCode };
   }
 
   private extractRedirections(input: string): RedirectionSpec {
@@ -119,7 +153,6 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
     const tokens: string[] = [];
     let current = '';
     const flush = () => { if (current.trim()) tokens.push(current.trim()); current = ''; };
-
     for (let i = 0; i < input.length; i++) {
       const ch = input[i];
       if (escaped) { current += ch; escaped = false; continue; }
@@ -133,29 +166,26 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
       else if (input.startsWith('>>', i)) op = '>>';
       else if (input.startsWith('>', i)) op = '>';
       else if (input.startsWith('<', i)) op = '<';
-      if (op) {
-        flush();
-        i += op.length;
-        while (/\s/.test(input[i] || '')) i++;
-        let target = '';
-        let targetQuote: '"' | "'" | null = null;
-        for (; i < input.length; i++) {
-          const t = input[i];
-          if (targetQuote) { if (t === targetQuote) targetQuote = null; else target += t; continue; }
-          if (t === '"' || t === "'") { targetQuote = t; continue; }
-          if (/\s/.test(t)) break;
-          target += t;
-        }
-        i--;
-        if (!target) throw new Error(`missing file operand for ${op}`);
-        if (op === '<') stdinFile = target;
-        else if (op === '>') stdoutFile = target;
-        else if (op === '>>') { stdoutFile = target; appendStdout = true; }
-        else if (op === '2>') stderrFile = target;
-        else { stderrFile = target; appendStderr = true; }
-        continue;
+      if (!op) { current += ch; continue; }
+      flush();
+      i += op.length;
+      while (/\s/.test(input[i] || '')) i++;
+      let target = '';
+      let targetQuote: '"' | "'" | null = null;
+      for (; i < input.length; i++) {
+        const t = input[i];
+        if (targetQuote) { if (t === targetQuote) targetQuote = null; else target += t; continue; }
+        if (t === '"' || t === "'") { targetQuote = t; continue; }
+        if (/\s/.test(t)) break;
+        target += t;
       }
-      current += ch;
+      i--;
+      if (!target) throw new Error(`missing file operand for ${op}`);
+      if (op === '<') stdinFile = target;
+      else if (op === '>') stdoutFile = target;
+      else if (op === '>>') { stdoutFile = target; appendStdout = true; }
+      else if (op === '2>') stderrFile = target;
+      else { stderrFile = target; appendStderr = true; }
     }
     flush();
     command = tokens.join(' ');

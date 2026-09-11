@@ -4,6 +4,7 @@ export type PinnedArtifact = {
   filename: string;
   url: string;
   sha256: string;
+  releaseManifestUrl: string;
 };
 
 export async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
@@ -15,16 +16,19 @@ export async function verifyArtifact(bytes: ArrayBuffer, artifact: PinnedArtifac
   if (!/^[a-f0-9]{64}$/i.test(artifact.sha256)) {
     throw new Error(`Artifact ${artifact.filename} has no trusted SHA-256 digest configured`);
   }
-  const actual = await sha256Hex(bytes);
-  return actual.toLowerCase() === artifact.sha256.toLowerCase();
+  return (await sha256Hex(bytes)).toLowerCase() === artifact.sha256.toLowerCase();
 }
 
-/** Expected digests belong in version-controlled configuration; the artifact cannot supply its own expected digest. */
+/**
+ * Version and artifact are pinned to an official Alpine release. The digest must be
+ * copied from the signed Alpine release metadata before a production VM may boot.
+ * Failing closed is intentional: a missing digest is never treated as trusted.
+ */
 export const ALPINE_ARTIFACT: PinnedArtifact = {
   version: '3.24.1',
   architecture: 'x86',
   filename: 'alpine-virt-3.24.1-x86.iso',
-  url: '/.netlify/edge-functions/iso?image=virt',
-  // Populate from a trusted Alpine release manifest before enabling integrity enforcement.
+  url: 'https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/x86/alpine-virt-3.24.1-x86.iso',
+  releaseManifestUrl: 'https://dl-cdn.alpinelinux.org/alpine/v3.24/releases/x86/alpine-virt-3.24.1-x86.iso.sha256',
   sha256: 'REPLACE_WITH_TRUSTED_RELEASE_SHA256',
 };
