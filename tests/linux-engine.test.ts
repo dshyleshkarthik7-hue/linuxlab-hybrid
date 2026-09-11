@@ -6,7 +6,6 @@ async function run() {
   const e = new InBrowserLinuxEngine();
 
   assert.equal(await e.execute('pwd'), '/root');
-  // Storage and shell behavior are validated separately; Engine A starts from a safe root.
   assert.ok((await e.execute('ping example.com')).startsWith('[SIMULATED — Engine A'));
   assert.ok((await e.execute('df')).startsWith('[SIMULATED — Engine A'));
   assert.equal(await e.execute('cd /tmp && pwd'), '/tmp');
@@ -46,7 +45,6 @@ async function run() {
   assert.equal(await e.execute('rm -r dir'), '');
   assert.equal(await e.execute('echo one two | wc -w'), '2');
 
-
   // Regression coverage for shell semantics and common learner workflows.
   assert.equal(await e.execute('true && echo ok'), 'ok');
   assert.equal(await e.execute('false && echo no'), '');
@@ -62,8 +60,13 @@ async function run() {
   assert.ok((await e.execute('find /root -name "*.java"')).includes('/root/Main.java'));
   assert.equal(await e.execute('test -d /root'), '');
   assert.equal(await e.execute('test -f /root/main.c'), '');
-  assert.equal(await e.execute('test -f /root'), '');
-  assert.equal(await e.execute('[ -d /root ]'), '');
+
+  // A failed test predicate must participate in &&/|| control flow even though
+  // it produces no stdout. This catches the old “empty output means success” bug.
+  assert.equal(await e.execute('test -f /root && echo WRONG || echo correct'), 'correct');
+  assert.equal(await e.execute('[ -f /root ] && echo WRONG || echo correct'), 'correct');
+  assert.equal(await e.execute('test -d /root && echo directory'), 'directory');
+
   assert.equal(await e.execute('echo "a | b"'), 'a | b');
   assert.equal(await e.execute("echo 'a && b'"), 'a && b');
   assert.equal(await e.execute('echo first > /tmp/a; cat /tmp/a'), 'first');
@@ -71,8 +74,6 @@ async function run() {
   assert.equal(await e.execute('rm /tmp/nested'), "rm: cannot remove '/tmp/nested': Is a directory");
   assert.equal(await e.execute('rm -r /tmp/nested && test -e /tmp/nested'), '');
 
-  // Java educational parser must choose the evaluated branch instead of emitting
-  // both sides of a bare-boolean if/else. This protects assessment correctness.
   const javaPrimeProgram = `public class Main {
     public static void main(String[] args) {
       int num = 7;
@@ -87,20 +88,14 @@ async function run() {
       }
     }
   }`;
-  assert.equal(
-    e.executeGeneralCode(javaPrimeProgram, 'java', { num: 7 }),
-    '7 is a Prime Number\n'
-  );
-  assert.equal(
-    e.executeGeneralCode(javaPrimeProgram, 'java', { num: 8 }),
-    '8 is not a Prime Number\n'
-  );
+  assert.equal(e.executeGeneralCode(javaPrimeProgram, 'java', { num: 7 }), '7 is a Prime Number\n');
+  assert.equal(e.executeGeneralCode(javaPrimeProgram, 'java', { num: 8 }), '8 is not a Prime Number\n');
   const javaAssessment = new AssessmentRunner(e).runJavaTestSuite(javaPrimeProgram);
   const composite = javaAssessment.checks.find(check => check.label === 'Composite test for 8');
   assert.equal(composite?.passed, true);
+  assert.equal(javaAssessment.educationalOnly, true);
+  assert.equal(javaAssessment.executionVerified, false);
 
-
-  // Nested control flow must not duplicate the selected outer branch output.
   const nestedJava = `public class Main { static void main(String[] args) {
     int num = 8; boolean isPrime = false;
     if (num > 0) { if (isPrime) { System.out.println("inner"); } }
@@ -109,17 +104,12 @@ async function run() {
   assert.equal(e.executeGeneralCode(nestedJava, 'java', { num: 8 }), '8 composite\n');
   assert.equal(e.executeGeneralCode(nestedJava, 'java', { num: 7 }), '7 composite\n');
 
-  // CI compatibility: files imported by Node's --experimental-strip-types mode
-  // must avoid non-erasable TypeScript syntax such as parameter properties.
   const assessment = new AssessmentRunner(e);
   assert.equal(assessment.runCTestSuite(e.readFile('/root/main.c') || '').total > 0, true);
-
-  // Simulator transparency: illustrative Engine A memory must not be confused
-  // with the real Engine B 1 GiB VM allocation.
   assert.ok((await e.execute('free')).includes('illustrative 256 MiB model'));
   assert.ok((await e.execute('top')).includes('illustrative 256 MiB model'));
 
-  console.log('LinuxLab happy-path engine checks passed');
+  console.log('LinuxTerminal engine checks passed');
 }
 
 run().catch((err) => {
