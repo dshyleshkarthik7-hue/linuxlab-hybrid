@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>LinuxTerminal.me — Beginner Linux Sandbox</title>
+  <meta name="description" content="Practice Linux safely in a browser with 200 command lessons, an interactive simulator, AI Tutor guidance, and system observability." />
+  <link rel="canonical" href="https://linuxterminal.me/beginner/" />
+  <meta name="robots" content="index,follow" />
+  <link rel="stylesheet" href="../src/beginner.css" />
+</head>
+<body>
+  <header class="topbar">
+    <a class="brand" href="../">&gt;_ <span>LinuxTerminal</span><small>.me</small></a>
+    <div class="mode"><b>BEGINNER</b><span>Safe simulated Linux</span></div>
+    <button id="tutorToggle" class="ghost">🤖 AI Tutor</button>
+  </header>
+  <main class="shell">
+    <section class="hero">
+      <div><p class="eyebrow">LEARN • PRACTICE • UNDERSTAND</p><h1>Your Linux playground.</h1><p>Experiment freely. This sandbox is isolated from your device and clearly marked as a simulation.</p></div>
+      <div class="hero-actions"><a href="../simulator/" class="primary">Open full simulator ↗</a><a href="../real-linux/" class="secondary">Try real Alpine →</a></div>
+    </section>
+    <section class="workspace">
+      <aside class="commands panel">
+        <div class="panel-head"><div><strong>200 COMMANDS</strong><small>Every lesson is searchable</small></div><span id="count">200</span></div>
+        <input id="search" aria-label="Search commands" placeholder="Search commands…" />
+        <div id="categories" class="chips"></div>
+        <div id="commandList" class="command-list"></div>
+      </aside>
+      <section class="terminal panel">
+        <div class="terminal-head"><div><span class="led"></span><strong>Sandbox Terminal</strong><small id="status">Engine A • simulated</small></div><button id="reset" class="ghost">Reset</button></div>
+        <div id="output" class="output" role="log" aria-live="polite"></div>
+        <form id="commandForm" class="input-row"><span>root@linuxterminal:~#</span><input id="input" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Try: ls -la" /><button>Run</button></form>
+        <div id="keyboard" class="keyboard" aria-label="Terminal keyboard"></div>
+      </section>
+      <aside id="tutor" class="tutor panel">
+        <div class="panel-head"><div><strong>AI TUTOR</strong><small>Context-aware learning help</small></div><span>FREE</span></div>
+        <div id="tutorBody" class="tutor-body"><p>Ask about the command you're using, or choose a lesson. I’ll explain concepts and errors without taking control of your computer.</p></div>
+        <div class="suggestions"><button data-q="Explain my last command">Explain last command</button><button data-q="Give me a hint">Give me a hint</button><button data-q="What should I learn next?">What next?</button></div>
+        <form id="tutorForm" class="tutor-input"><input id="tutorInput" placeholder="Ask the tutor…" /><button>Ask</button></form>
+      </aside>
+    </section>
+    <section class="observatory panel">
+      <div class="panel-head"><div><strong>🔬 LINUX OBSERVATORY</strong><small>Educational telemetry — simulated guest</small></div><span>SIMULATED</span></div>
+      <div class="metrics"><div><b id="pid">7</b><small>Processes</small></div><div><b id="created">7</b><small>PIDs created</small></div><div><b id="ram">48 MB</b><small>RAM</small></div><div><b id="cpu">3%</b><small>CPU</small></div><div><b id="syscalls">12/s</b><small>Syscalls</small></div><div><b>6.6</b><small>Kernel model</small></div></div>
+    </section>
+  </main>
+  <script type="module" src="../src/beginner.ts"></script>
+</body>
+</html>
