@@ -7,50 +7,11 @@
   <meta name="robots" content="index,follow,max-image-preview:large">
   <meta property="og:title" content="Online Linux Terminal Emulator | LinuxTerminal">
   <meta property="og:description" content="Boot Alpine Linux in your browser and practice real Linux commands.">
-  <meta property="og:type" content="website">
-  <meta property="og:site_name" content="LinuxTerminal">
-  <meta property="og:url" content="https://linuxterminal.me/real-linux/">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="theme-color" content="#020617">
-  <title>Online Linux Terminal Emulator — Real Alpine in Browser | LinuxTerminal</title>
-  <link rel="canonical" href="https://linuxterminal.me/real-linux/">
-  <link rel="alternate" href="https://linuxterminal.me/real-linux/" hreflang="en">
-  <meta name="application-name" content="LinuxTerminal Real Alpine Linux">
+  <meta property="og:type" content="website"><meta property="og:site_name" content="LinuxTerminal"><meta property="og:url" content="https://linuxterminal.me/real-linux/">
+  <meta name="twitter:card" content="summary_large_image"><meta name="theme-color" content="#020617"><title>Online Linux Terminal Emulator — Real Alpine in Browser | LinuxTerminal</title><link rel="canonical" href="https://linuxterminal.me/real-linux/"><link rel="alternate" href="https://linuxterminal.me/real-linux/" hreflang="en"><meta name="application-name" content="LinuxTerminal Real Alpine Linux">
 </head>
 <body>
-  <div id="app">
-    <header class="app-header" id="vm-header">
-      <div class="logo-group"><span>🖥️</span><span class="logo-title">LinuxTerminal <span class="badge">REAL • x86</span></span></div>
-      <div class="header-actions">
-        <span id="v86-health" class="vm-health" data-state="booting" role="status" aria-label="VM booting"></span><span id="v86-status" class="action-btn" aria-live="polite">Starting…</span>
-        <span id="v86-monitor" class="action-btn" aria-live="polite">Preparing…</span><button id="btn-v86-diagnostics" class="action-btn" type="button">📈 Diagnostics</button><button id="btn-v86-terminal" class="action-btn" type="button">⌨ Terminal</button><button id="btn-v86-screen" class="action-btn" type="button">🖥 Screen</button>
-        <button id="btn-v86-alpine" class="action-btn" type="button">🐧 Developer Alpine</button>
-        <button id="btn-v86-virt" class="action-btn" type="button">⚡ Alpine Virt 3.24.1 • Lightweight x86</button>
-        <button id="btn-v86-linux4" class="action-btn" type="button">🪶 Ultra Light Linux 4 • ~7.4 MB</button>
-        
-        <button id="btn-v86-restart" class="action-btn" type="button">↺ Reboot</button><button id="btn-v86-copydiag" class="action-btn" type="button">📋 Copy diagnostics</button>
-        <a href="/" class="action-btn">🏠 Home</a>
-      </div>
-    </header>
-    <main id="vm-main">
-      <div id="v86-terminal-container"></div>
-      <div id="screen_container" hidden><div></div><canvas></canvas></div><div id="v86-diagnostics" hidden aria-live="polite"></div>
-    <section id="network-relay-disclaimer" role="note" aria-label="Network relay disclaimer" style="margin:12px;padding:12px;border:1px solid #7c2d12;border-radius:8px;background:#1c1917;color:#fed7aa;font:14px system-ui,sans-serif">
-      <strong>Networking notice.</strong>
-      The ISO relay downloads VM images; it does not itself provide Internet access inside the guest. Package installation such as <code>apk add</code> works only when guest networking is explicitly configured and verified. This service is not a VPN, anonymity service, privacy boundary, or guarantee of Internet access. Do not enter passwords, tokens, private keys, or sensitive data in the VM.
-    </section></main>
-  </div>
-  <style>
-    html,body,#app{margin:0;width:100%;height:100%;background:#020617}
-    #vm-main{height:calc(100dvh - var(--vm-header-height,72px));min-height:320px;position:relative}.app-header{position:relative;z-index:10;padding:10px 12px;box-sizing:border-box;border-bottom:1px solid #1e293b}.logo-group{display:flex;gap:8px;align-items:center;color:#e2e8f0;font:600 16px system-ui,sans-serif}.badge{font-size:12px;color:#94a3b8}.header-actions{margin-top:8px}
-    #v86-terminal-container{position:absolute;inset:0;padding:12px;box-sizing:border-box;min-width:0;min-height:0;z-index:2;pointer-events:auto}.xterm{pointer-events:auto}
-    #screen_container{position:absolute;inset:12px;z-index:1;display:flex;align-items:center;justify-content:center;overflow:auto;background:#000}#screen_container canvas{max-width:100%;max-height:100%;image-rendering:auto}
-    .header-actions{display:flex;gap:6px;flex-wrap:wrap;align-items:center}.action-btn{appearance:none;border:1px solid #334155;border-radius:8px;background:#0f172a;color:#e2e8f0;padding:8px 10px;font:500 14px system-ui,sans-serif;text-decoration:none;cursor:pointer;min-height:38px}.action-btn:hover,.action-btn:focus-visible{border-color:#38bdf8;outline:none}.action-btn[aria-pressed='true']{background:#172554;border-color:#38bdf8}.vm-health{width:13px;height:13px;border-radius:50%;display:inline-block;flex:0 0 13px;background:#000;border:1px solid #334155;box-shadow:0 0 0 2px rgba(255,255,255,.05)}.vm-health[data-state='booting']{background:#f59e0b;box-shadow:0 0 12px rgba(245,158,11,.85)}.vm-health[data-state='ready']{background:#22c55e;box-shadow:0 0 12px rgba(34,197,94,.85)}.vm-health[data-state='offline']{background:#000;box-shadow:none}#v86-diagnostics{position:absolute;right:20px;bottom:20px;z-index:5;max-width:min(420px,90vw);padding:14px;border:1px solid #38bdf8;border-radius:10px;background:rgba(2,6,23,.95);color:#e2e8f0;font:12px ui-monospace,monospace;white-space:pre-wrap;box-shadow:0 12px 40px rgba(0,0,0,.45)}
-    @media(max-width:700px){.app-header{padding:8px}.action-btn{padding:7px 9px;font-size:13px;min-height:34px}#v86-terminal-container{padding:8px}#screen_container{inset:8px}#v86-diagnostics{right:10px;bottom:10px;font-size:11px}}
-    @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
-  </style>
-  <script src="/libv86.js" defer data-linuxlab-v86></script>
-  <script type="module" src="/src/v86-layout.ts"></script>
-  <script type="module" src="/src/main-v86.ts"></script>
-</body>
-</html>
+  <div id="app"><header class="app-header" id="vm-header"><div class="logo-group"><span>🖥️</span><span class="logo-title">LinuxTerminal <span class="badge">REAL • x86</span></span></div><div class="header-actions"><span id="v86-health" class="vm-health" data-state="booting" role="status" aria-label="VM booting"></span><span id="v86-status" class="action-btn" aria-live="polite">Starting…</span><span id="v86-monitor" class="action-btn" aria-live="polite">Preparing…</span><button id="btn-v86-diagnostics" class="action-btn" type="button">📈 Diagnostics</button><button id="btn-v86-terminal" class="action-btn" type="button">⌨ Terminal</button><button id="btn-v86-screen" class="action-btn" type="button">🖥 Screen</button><button id="btn-v86-alpine" class="action-btn" type="button">🐧 Developer Alpine</button><button id="btn-v86-virt" class="action-btn" type="button">⚡ Alpine Virt 3.24.1 • Lightweight x86</button><button id="btn-v86-linux4" class="action-btn" type="button">🪶 Ultra Light Linux 4 • ~7.4 MB</button><button id="btn-v86-restart" class="action-btn" type="button">↺ Reboot</button><button id="btn-v86-copydiag" class="action-btn" type="button">📋 Copy diagnostics</button><a href="/" class="action-btn">🏠 Home</a></div></header><main id="vm-main"><div id="v86-terminal-container"></div><div id="screen_container" hidden><div></div><canvas></canvas></div><div id="v86-diagnostics" hidden aria-live="polite"></div><section id="network-relay-disclaimer" role="note" aria-label="Network relay disclaimer" style="margin:12px;padding:12px;border:1px solid #7c2d12;border-radius:8px;background:#1c1917;color:#fed7aa;font:14px system-ui,sans-serif"><strong>Networking notice.</strong> The ISO relay downloads VM images; it does not itself provide Internet access inside the guest. Package installation such as <code>apk add</code> works only when guest networking is explicitly configured and verified. This service is not a VPN, anonymity service, privacy boundary, or guarantee of Internet access. Do not enter passwords, tokens, private keys, or sensitive data in the VM.</section></main></div>
+  <style>html,body,#app{margin:0;width:100%;height:100%;background:#020617}#vm-main{height:calc(100dvh - var(--vm-header-height,72px));min-height:320px;position:relative}.app-header{position:relative;z-index:10;padding:10px 12px;box-sizing:border-box;border-bottom:1px solid #1e293b}.logo-group{display:flex;gap:8px;align-items:center;color:#e2e8f0;font:600 16px system-ui,sans-serif}.badge{font-size:12px;color:#94a3b8}.header-actions{margin-top:8px;display:flex;gap:6px;flex-wrap:wrap;align-items:center}#v86-terminal-container{position:absolute;inset:0;padding:12px;box-sizing:border-box;min-width:0;min-height:0;z-index:2;pointer-events:auto}.xterm{pointer-events:auto}#screen_container{position:absolute;inset:12px;z-index:1;display:flex;align-items:center;justify-content:center;overflow:auto;background:#000}#screen_container canvas{max-width:100%;max-height:100%;image-rendering:auto}.action-btn{appearance:none;border:1px solid #334155;border-radius:8px;background:#0f172a;color:#e2e8f0;padding:8px 10px;font:500 14px system-ui,sans-serif;text-decoration:none;cursor:pointer;min-height:38px}.action-btn:hover,.action-btn:focus-visible{border-color:#38bdf8;outline:none}.vm-health{width:13px;height:13px;border-radius:50%;display:inline-block;flex:0 0 13px;background:#000;border:1px solid #334155}.vm-health[data-state='booting']{background:#f59e0b}.vm-health[data-state='ready']{background:#22c55e}.vm-health[data-state='offline']{background:#000}@media(max-width:700px){.app-header{padding:8px}.action-btn{padding:7px 9px;font-size:13px;min-height:34px}#v86-terminal-container{padding:8px}#screen_container{inset:8px}}</style>
+  <script src="/libv86.js" defer data-linuxlab-v86></script><script type="module" src="/src/v86-layout.ts"></script><script type="module" src="/src/core/verified-iso-fetch.ts"></script><script type="module" src="/src/main-v86.ts"></script>
+</body></html>
