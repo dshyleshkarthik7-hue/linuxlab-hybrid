@@ -7,10 +7,11 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "test": "npm run test:engine && npm run test:catalog && npm run test:parser && npm run test:vnext",
+    "test": "npm run test:engine && npm run test:catalog && npm run test:parser && npm run test:result && npm run test:vnext",
     "test:engine": "node --experimental-strip-types tests/linux-engine.test.ts",
     "test:catalog": "node --experimental-strip-types tests/command-catalog.test.ts",
     "test:parser": "node --experimental-strip-types tests/shell-parser.test.ts",
+    "test:result": "node --experimental-strip-types tests/command-result.test.ts",
     "test:vnext": "node --experimental-strip-types tests/vnext-correctness.test.ts",
     "test:ci": "npm run test && npm run build",
     "build:iso": "node ./iso-builder/build-iso.mjs",
@@ -29,8 +30,5 @@
     "vite": "^8.2.1",
     "playwright": "1.56.0"
   },
-  "engines": {
-    "node": ">=22.0.0",
-    "npm": ">=10.8.0"
-  }
+  "engines": { "node": ">=22.0.0", "npm": ">=10.8.0" }
 }
