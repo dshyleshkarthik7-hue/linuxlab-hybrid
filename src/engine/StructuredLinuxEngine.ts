@@ -104,12 +104,35 @@ export class StructuredLinuxEngine extends InBrowserLinuxEngine {
   }
 
   private async invokeLegacyCommand(command: string, stdin: string): Promise<{ output: string; exitCode: number }> {
+    const trimmed = command.trim();
+    const tokens = (trimmed.match(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || [])
+      .map(token => token.replace(/^(['"])([\s\S]*)\1$/, '$2'));
+    const name = tokens[0] ?? '';
+    const args = tokens.slice(1);
+
+    // These stream-oriented commands are implemented here because the legacy
+    // engine's command dispatcher does not expose stdin semantics consistently.
+    if (name === 'printf') {
+      const format = args.join(' ');
+      return { output: format.replace(/\\n/g, '\n').replace(/\\t/g, '\t'), exitCode: 0 };
+    }
+    if (name === 'wc') {
+      const mode = args.find(arg => arg.startsWith('-')) ?? '-l';
+      if (args.some(arg => !arg.startsWith('-'))) {
+        const path = args.find(arg => !arg.startsWith('-'))!;
+        const file = this.readFile(path);
+        if (file === null) return { output: `wc: ${path}: No such file or directory\n`, exitCode: 1 };
+        stdin = file;
+      }
+      if (mode.includes('c')) return { output: `${new TextEncoder().encode(stdin).byteLength}\n`, exitCode: 0 };
+      if (mode.includes('w')) return { output: `${stdin.trim() ? stdin.trim().split(/\s+/).length : 0}\n`, exitCode: 0 };
+      if (mode.includes('m')) return { output: `${stdin.length}\n`, exitCode: 0 };
+      return { output: `${stdin ? stdin.split(/\r?\n/).length - (stdin.endsWith('\n') ? 1 : 0) : 0}\n`, exitCode: 0 };
+    }
+
     const legacy = this as unknown as { executeCommand: (line: string, input?: string) => Promise<string>; exitCode: number };
     const output = await legacy.executeCommand(command, stdin);
     let exitCode = Number.isInteger(legacy.exitCode) ? legacy.exitCode : 0;
-    // The legacy simulator historically returned diagnostics as strings without
-    // consistently setting its private status field. Normalize those diagnostics
-    // here so structured execution has a reliable exit-code contract.
     if (exitCode === 0 && this.isFailureDiagnostic(output)) exitCode = 1;
     return { output, exitCode };
   }
