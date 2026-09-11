@@ -6,7 +6,7 @@ import { DEVELOPER_ALPINE_ARTIFACT } from '../core/ISOIntegrity.ts';
 
 export type LearningLevel = 'beginner' | 'intermediate' | 'expert';
 export interface ProductTelemetry { command: string; level: LearningLevel; cwd: string; exitCode: number; stdoutBytes: number; stderrBytes: number; durationMs: number; timestamp: number; }
-export interface TutorContext { level: LearningLevel; command: string; exitCode: number; cwd: string; hint: string; explanation: string; nextStep: string; telemetry: ReturnType<ProductObservatory['system']>; }
+export interface TutorContext { level: LearningLevel; command: string; exitCode: number; cwd: string; hint: string; explanation: string; nextStep: string; telemetry: ReturnType<LinuxObservatory['system']> & Partial<Pick<ReturnType<ProductObservatory['system']>, 'commandCount' | 'failedCommandCount'>>; }
 export interface LearningPath { id: LearningLevel; title: string; description: string; commands: string[]; }
 
 export const LEARNING_PATHS: LearningPath[] = [
@@ -28,10 +28,10 @@ export class ProductObservatory extends LinuxObservatory {
 }
 
 export class LinuxTutorContext {
-  private readonly observatory: ProductObservatory;
-  constructor(observatory: ProductObservatory) { this.observatory = observatory; }
+  private readonly observatory: LinuxObservatory;
+  constructor(observatory: LinuxObservatory) { this.observatory = observatory; }
   build(level: LearningLevel, command: string, result: CommandResult, cwd: string): TutorContext {
-    this.observatory.recordCommand(result, level, cwd);
+    if (this.observatory instanceof ProductObservatory) this.observatory.recordCommand(result, level, cwd);
     const telemetry = this.observatory.system();
     const name = command.trim().split(/\s+/)[0] ?? '';
     const lesson = COMMAND_LESSONS.find(item => item.name === name);
