@@ -2,12 +2,9 @@ import { InBrowserLinuxEngine } from './LinuxEngine.ts';
 
 export interface TestCase { id:number; description:string; injectedVar:{name:string;value:number}; expectedSubstring:string; forbiddenSubstring?:string; }
 export interface AssessmentCheck { label:string; passed:boolean; feedback:string; }
-export interface AssessmentResult { passed:number; total:number; logs:string[]; score:number; checks:AssessmentCheck[]; }
+export interface AssessmentResult { passed:number; total:number; logs:string[]; score:number; checks:AssessmentCheck[]; educationalOnly:true; executionVerified:false; }
 
 export class AssessmentRunner {
-  // Keep this as an ordinary property instead of a TypeScript parameter property.
-  // Node 22's strip-types test runner can erase types but intentionally does not
-  // transform parameter properties, so this form keeps the source runnable in CI.
   private engine: InBrowserLinuxEngine;
 
   constructor(engine: InBrowserLinuxEngine) {
@@ -35,9 +32,9 @@ export class AssessmentRunner {
   private evaluateSuite(code:string,lang:'c'|'java',suite:TestCase[],structural:Array<[string,RegExp]>):AssessmentResult {
     const start=performance.now(); const checks:AssessmentCheck[]=[];
     for(const [label,re] of structural){const passed=re.test(code);checks.push({label,passed,feedback:passed?'Structure detected.':'Required structure was not detected.'});}
-    for(const tc of suite){let output='';try{output=this.engine.executeGeneralCode(code,lang,{[tc.injectedVar.name]:tc.injectedVar.value});}catch(e){output=String(e)}const hasExpected=output.includes(tc.expectedSubstring); const hasForbidden=tc.forbiddenSubstring ? output.includes(tc.forbiddenSubstring) : false; const passed=hasExpected&&!hasForbidden; const feedback=passed?'Expected output produced.':hasForbidden?`Conflicting output was also produced: ${tc.forbiddenSubstring}`:`Expected output containing: ${tc.expectedSubstring}`; checks.push({label:tc.description,passed,feedback});}
+    for(const tc of suite){let output='';try{output=this.engine.executeGeneralCode(code,lang,{[tc.injectedVar.name]:tc.injectedVar.value});}catch(e){output=String(e)}const hasExpected=output.includes(tc.expectedSubstring); const hasForbidden=tc.forbiddenSubstring ? output.includes(tc.forbiddenSubstring) : false; const passed=hasExpected&&!hasForbidden; const feedback=passed?'Expected output produced by the educational evaluator.':hasForbidden?`Conflicting output was also produced: ${tc.forbiddenSubstring}`:`Expected output containing: ${tc.expectedSubstring}`; checks.push({label:tc.description,passed,feedback});}
     const passed=checks.filter(c=>c.passed).length,total=checks.length,score=Math.round(passed/total*100);
-    const logs=[`Assessment completed in ${(performance.now()-start).toFixed(2)} ms — ${score}% (${passed}/${total})`,...checks.map(c=>`${c.passed?'✓':'✗'} ${c.label}: ${c.feedback}`)];
-    return {passed,total,score,logs,checks};
+    const logs=[`Educational assessment completed in ${(performance.now()-start).toFixed(2)} ms — ${score}% (${passed}/${total})`,`NOTICE: this is an educational evaluator, not a native compiler/runtime verification.`,...checks.map(c=>`${c.passed?'✓':'✗'} ${c.label}: ${c.feedback}`)];
+    return {passed,total,score,logs,checks,educationalOnly:true,executionVerified:false};
   }
 }
