@@ -1,5 +1,5 @@
 import { strict as assert } from 'node:assert';
-import { CommandResult } from '../src/engine/CommandResult.ts';
+import type { CommandResult } from '../src/engine/CommandResult.ts';
 
 const result: CommandResult = { stdout: 'ok\n', stderr: '', exitCode: 0, durationMs: 1 };
 assert.equal(result.stdout, 'ok\n');
