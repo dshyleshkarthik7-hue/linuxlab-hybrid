@@ -2,11 +2,11 @@ import { StructuredLinuxEngine } from '../engine/StructuredLinuxEngine.ts';
 import type { CommandResult } from '../engine/CommandResult.ts';
 import { LinuxObservatory } from '../observability/LinuxObservatory.ts';
 import { COMMAND_LESSONS, type LinuxCommandLesson } from '../commands/commandCatalog.ts';
-import { DEVELOPER_ALPINE_ARTIFACT } from '../core/ISOIntegrity.ts';
+import { ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, type PinnedArtifact } from '../core/ISOIntegrity.ts';
 
 export type LearningLevel = 'beginner' | 'intermediate' | 'expert';
 export interface ProductTelemetry { command: string; level: LearningLevel; cwd: string; exitCode: number; stdoutBytes: number; stderrBytes: number; durationMs: number; timestamp: number; }
-export interface TutorContext { level: LearningLevel; command: string; exitCode: number; cwd: string; hint: string; explanation: string; nextStep: string; telemetry: ReturnType<LinuxObservatory['system']> & Partial<Pick<ReturnType<ProductObservatory['system']>, 'commandCount' | 'failedCommandCount'>>; }
+export interface TutorContext { level: LearningLevel; command: string; exitCode: number; cwd: string; hint: string; explanation: string; nextStep: string; history: string[]; repeatedFailure: boolean; telemetry: ReturnType<LinuxObservatory['system']>; }
 export interface LearningPath { id: LearningLevel; title: string; description: string; commands: string[]; }
 
 export const LEARNING_PATHS: LearningPath[] = [
@@ -34,35 +34,33 @@ export class LinuxTutorContext {
     if (this.observatory instanceof ProductObservatory) this.observatory.recordCommand(result, level, cwd);
     const telemetry = this.observatory.system();
     const name = command.trim().split(/\s+/)[0] ?? '';
+    const history = this.observatory instanceof ProductObservatory ? this.observatory.recentCommands(8).map(item => item.command) : [];
+    const failures = this.observatory instanceof ProductObservatory ? this.observatory.recentCommands(8).filter(item => item.command.trim().split(/\s+/)[0] === name && item.exitCode !== 0).length : 0;
     const lesson = COMMAND_LESSONS.find(item => item.name === name);
     const explanation = lesson?.summary ?? 'This command is outside the indexed curriculum.';
+    const repeatedFailure = result.exitCode !== 0 && failures >= 2;
     const hint = result.exitCode === 0
       ? `${name || 'Command'} succeeded. ${explanation}.`
-      : `${name || 'Command'} exited with status ${result.exitCode}. ${result.stderr.trim() || 'Inspect the arguments and command output.'}`;
+      : `${name || 'Command'} exited with status ${result.exitCode}. ${repeatedFailure ? 'You have hit this command repeatedly; compare the last attempts and change one input at a time.' : (result.stderr.trim() || 'Inspect the arguments and command output.')}`;
     const nextStep = result.exitCode === 0
-      ? level === 'beginner' ? 'Try changing one argument and observe the output.' : 'Compose this command with another command using a pipeline or conditional.'
-      : 'Read stderr, correct the smallest mistake, then run the command again.';
-    return { level, command, exitCode: result.exitCode, cwd, hint, explanation, nextStep, telemetry };
+      ? level === 'beginner' ? 'Try changing one argument and observe the output.' : history.length > 1 ? `Review your recent sequence (${history.slice(-3).join(' → ')}) and compose the next step with a pipeline or conditional.` : 'Compose this command with another command using a pipeline or conditional.'
+      : repeatedFailure ? 'Compare the last attempts, inspect stderr, and make one targeted correction before retrying.' : 'Read stderr, correct the smallest mistake, then run the command again.';
+    return { level, command, exitCode: result.exitCode, cwd, hint, explanation, nextStep, history, repeatedFailure, telemetry };
   }
-  prompt(context: TutorContext): string {
-    return [`Level: ${context.level}`, `Command: ${context.command}`, `Exit code: ${context.exitCode}`, `Working directory: ${context.cwd}`, `Hint: ${context.hint}`, `Explanation: ${context.explanation}`, `Next step: ${context.nextStep}`].join('\n');
-  }
+  prompt(context: TutorContext): string { return [`Level: ${context.level}`, `Command: ${context.command}`, `Exit code: ${context.exitCode}`, `Working directory: ${context.cwd}`, `Recent commands: ${context.history.join(' | ') || 'none'}`, `Hint: ${context.hint}`, `Explanation: ${context.explanation}`, `Next step: ${context.nextStep}`].join('\n'); }
 }
 
 export class AlpineIntegration {
   readonly distro = 'Alpine Linux';
-  readonly status = 'SIMULATED';
-  metadata(): { version: string; architecture: string; filename: string } { return { version: DEVELOPER_ALPINE_ARTIFACT.version === 'v1.0.0' ? 'v1.0.0' : DEVELOPER_ALPINE_ARTIFACT.version, architecture: DEVELOPER_ALPINE_ARTIFACT.architecture, filename: DEVELOPER_ALPINE_ARTIFACT.filename }; }
-  isIntegrityVerified(): boolean { return false; }
+  private verifiedArtifact: PinnedArtifact | null = null;
+  metadata(): { version: string; architecture: string; filename: string } { const artifact = this.verifiedArtifact ?? ALPINE_ARTIFACT; return { version: artifact.version, architecture: artifact.architecture, filename: artifact.filename }; }
+  verifyBootedArtifact(artifact: PinnedArtifact): void { if (artifact.sha256 !== ALPINE_ARTIFACT.sha256) throw new Error('guest image is not the pinned Alpine artifact'); this.verifiedArtifact = artifact; }
+  isIntegrityVerified(): boolean { return this.verifiedArtifact?.sha256 === ALPINE_ARTIFACT.sha256; }
+  get status(): 'UNVERIFIED' | 'VERIFIED' { return this.isIntegrityVerified() ? 'VERIFIED' : 'UNVERIFIED'; }
 }
 
 export class MobileTerminalController {
-  private compact = false;
-  private keyboardVisible = false;
-  private viewportWidth = 0;
-  private viewportHeight = 0;
-  private safeBottomInset = 0;
-  private fontScale = 1;
+  private compact = false; private keyboardVisible = false; private viewportWidth = 0; private viewportHeight = 0; private safeBottomInset = 0; private fontScale = 1;
   setCompactMode(value: boolean): void { this.compact = value; }
   isCompactMode(): boolean { return this.compact; }
   setKeyboardVisible(value: boolean): { keyboardVisible: boolean } { this.keyboardVisible = value; return { keyboardVisible: this.keyboardVisible }; }
@@ -76,22 +74,11 @@ export class ExecutableCommandCatalog {
   has(command: string): boolean { return EXECUTABLE_COMMANDS.has(command); }
   isExecutable(command: string): boolean { return this.has(command); }
   get size(): number { return this.commands.length; }
-  forLevel(level: LearningLevel): LinuxCommandLesson[] {
-    const path = LEARNING_PATHS.find(item => item.id === level);
-    const names = new Set(path?.commands ?? []);
-    return COMMAND_LESSONS.filter(item => names.has(item.name) && EXECUTABLE_COMMANDS.has(item.name));
-  }
+  forLevel(level: LearningLevel): LinuxCommandLesson[] { const path = LEARNING_PATHS.find(item => item.id === level); const names = new Set(path?.commands ?? []); return COMMAND_LESSONS.filter(item => names.has(item.name) && EXECUTABLE_COMMANDS.has(item.name)); }
 }
 
 export class P1Runtime {
-  readonly engine = new StructuredLinuxEngine();
-  readonly observatory: ProductObservatory;
-  readonly tutor: LinuxTutorContext;
-  readonly alpine = new AlpineIntegration();
-  readonly mobile = new MobileTerminalController();
-  readonly catalog = new ExecutableCommandCatalog();
-  readonly paths = LEARNING_PATHS;
-  private level: LearningLevel;
+  readonly engine = new StructuredLinuxEngine(); readonly observatory: ProductObservatory; readonly tutor: LinuxTutorContext; readonly alpine = new AlpineIntegration(); readonly mobile = new MobileTerminalController(); readonly catalog = new ExecutableCommandCatalog(); readonly paths = LEARNING_PATHS; private level: LearningLevel;
   constructor(level: LearningLevel = 'beginner', observatory = new ProductObservatory('SIMULATED')) { this.level = level; this.observatory = observatory; this.tutor = new LinuxTutorContext(observatory); }
   setLevel(level: LearningLevel): void { this.level = level; }
   getLevel(): LearningLevel { return this.level; }
