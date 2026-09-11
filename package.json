@@ -19,7 +19,8 @@
     "test:observatory": "node --experimental-strip-types tests/observatory-tutor.test.ts",
     "test:iso": "node --experimental-strip-types tests/iso-integrity.test.ts",
     "test:coverage": "node tests/coverage-threshold.mjs",
-    "test:ci": "npm run test && npm run test:coverage && npm run build",
+    "test:security": "npm audit --audit-level=high",
+    "test:ci": "npm run test && npm run test:coverage && npm run test:security && npm run build",
     "build:iso": "node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
     "check": "npm run test:ci",
@@ -36,7 +37,8 @@
   "devDependencies": {
     "typescript": "^5.6.3",
     "vite": "^8.2.1",
-    "playwright": "1.56.0"
+    "playwright": "1.56.0",
+    "sharp": "^0.35.4"
   },
   "engines": { "node": ">=22.0.0", "npm": ">=10.8.0" }
 }
