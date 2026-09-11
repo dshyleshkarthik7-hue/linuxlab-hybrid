@@ -16,7 +16,7 @@ export const LEARNING_PATHS: LearningPath[] = [
 export class ProductObservatory extends LinuxObservatory {
   private readonly commandTelemetry: ProductTelemetry[] = [];
   recordCommand(result: CommandResult, level: LearningLevel, cwd: string): void {
-    this.commandTelemetry.push({ command: result.command, level, cwd, exitCode: result.exitCode, stdoutBytes: new TextEncoder().encode(result.stdout).byteLength, stderrBytes: new TextEncoder().encode(result.stderr).byteLength, durationMs: result.durationMs, timestamp: Date.now() });
+    this.commandTelemetry.push({ command: result.command ?? '', level, cwd, exitCode: result.exitCode, stdoutBytes: new TextEncoder().encode(result.stdout).byteLength, stderrBytes: new TextEncoder().encode(result.stderr).byteLength, durationMs: result.durationMs, timestamp: Date.now() });
     if (this.commandTelemetry.length > 500) this.commandTelemetry.shift();
   }
   recentCommands(limit = 50): ProductTelemetry[] { return this.commandTelemetry.slice(-Math.max(0, limit)).map(item => ({ ...item })); }
@@ -41,8 +41,6 @@ export class LinuxTutorContext {
 export class AlpineIntegration { readonly distro = 'Alpine Linux'; readonly status = 'SIMULATED'; }
 export class MobileTerminalController { private compact = false; setCompactMode(value: boolean): void { this.compact = value; } isCompactMode(): boolean { return this.compact; } }
 
-// Only commands that the structured simulator can execute deterministically belong here.
-// Commands delegated to a real Alpine VM are intentionally not advertised by this catalog.
 const EXECUTABLE_COMMANDS = new Set(['pwd','ls','cd','mkdir','touch','cat','cp','mv','rm','find','echo','printf','true','false','test','history','help','env','export','head','tail','wc','sort','uniq','grep','which','chmod','whoami','ps','top','htop','free','uname','df','date','gcc','clang','javac','java','clear','ping','curl','traceroute','ifconfig','ip','nano','vi','vim']);
 export class ExecutableCommandCatalog { readonly commands = COMMAND_LESSONS.filter(item => EXECUTABLE_COMMANDS.has(item.name)).map(item => item.name); has(command: string): boolean { return EXECUTABLE_COMMANDS.has(command); } get size(): number { return this.commands.length; } }
 
