@@ -1,0 +1,10 @@
+import './linux-engine.test.ts';
+import './command-catalog.test.ts';
+import './shell-parser.test.ts';
+import './command-result.test.ts';
+import './vnext-correctness.test.ts';
+import './adversarial-resource.test.ts';
+import './session-manager-concurrency.test.ts';
+import './catalog-executable.test.ts';
+import './observatory-tutor.test.ts';
+import './iso-integrity.test.ts';
