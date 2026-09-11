@@ -6,7 +6,8 @@ export interface AssessmentCheck { label:string; state:CheckState; passed:boolea
 export interface AssessmentResult { passed:number; failed:number; unableToVerify:number; total:number; logs:string[]; score:number; checks:AssessmentCheck[]; educationalOnly:true; executionVerified:boolean; verificationMode:'simulator-runtime'|'source-only'; }
 
 export class AssessmentRunner {
-  constructor(private readonly engine: InBrowserLinuxEngine) {}
+  private readonly engine: InBrowserLinuxEngine;
+  constructor(engine: InBrowserLinuxEngine) { this.engine = engine; }
   public runCTestSuite(sourceCode:string):AssessmentResult {
     const suite:TestCase[]=[
       {id:1,description:'Table num=5 (Step 1)',injectedVar:{name:'num',value:5},expectedSubstring:'5 x 1 = 5'},
