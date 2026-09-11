@@ -203,6 +203,7 @@ export const COMMAND_LESSONS: readonly LinuxCommandLesson[] = [
   { name: 'crontab', category: 'services', summary: 'Inspect and manage services', example: 'crontab' },
   { name: 'at', category: 'services', summary: 'Inspect and manage services', example: 'at' },
   { name: 'logger', category: 'services', summary: 'Inspect and manage services', example: 'logger' },
+  { name: 'seq', category: 'shell', summary: 'Generate numeric sequences for shell practice', example: 'seq 1 5' },
 ];
 
 if (COMMAND_LESSONS.length !== 200) throw new Error(`Expected 200 commands, found ${COMMAND_LESSONS.length}`);
