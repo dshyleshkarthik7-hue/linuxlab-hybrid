@@ -55,16 +55,20 @@ export class SessionManager {
   async execute(executeFn: () => Promise<void>): Promise<void> {
     if (this.state !== 'READY' && this.state !== 'RUNNING') throw new Error(`Session is ${this.state}`);
     this.state = 'RUNNING';
-    try { await executeFn(); }
-    finally if (this.state === 'RUNNING') this.state = 'READY';
+    try {
+      await executeFn();
+    } finally {
+      if (this.state === 'RUNNING') this.state = 'READY';
+    }
   }
 
   async stop(stopFn: StopFn = this.stopFn ?? (async () => {})): Promise<void> {
     if (this.busy || !['READY', 'RUNNING'].includes(this.state)) return;
     this.busy = true;
     this.state = 'STOPPING';
-    try { await stopFn(); }
-    finally {
+    try {
+      await stopFn();
+    } finally {
       this.clearTimeout();
       this.state = 'STOPPED';
       this.busy = false;
@@ -76,11 +80,7 @@ export class SessionManager {
     await this.start(startFn);
   }
 
-  /**
-   * Stop the active adapter before marking a timed-out session stopped. This
-   * prevents the lifecycle guard from becoming truthful while the VM keeps
-   * running underneath it.
-   */
+  /** Stop the active adapter before marking a timed-out session stopped. */
   async destroy(): Promise<void> {
     this.clearTimeout();
     if (this.busy) return;
