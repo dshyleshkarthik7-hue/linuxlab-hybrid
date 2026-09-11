@@ -16,6 +16,8 @@ export const DEFAULT_SESSION_LIMITS: SessionLimits = {
   timeoutMs: 30 * 60 * 1000,
 };
 
+type StopFn = () => Promise<void>;
+
 /** Browser-side lifecycle guard. The real VM adapter must supply actual start/stop work. */
 export class SessionManager {
   private state: SessionState = 'IDLE';
@@ -23,9 +25,11 @@ export class SessionManager {
   private startedAt = 0;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private readonly limits: SessionLimits;
+  private readonly stopFn: StopFn | undefined;
 
-  constructor(limits: SessionLimits = DEFAULT_SESSION_LIMITS) {
+  constructor(limits: SessionLimits = DEFAULT_SESSION_LIMITS, stopFn?: StopFn) {
     this.limits = limits;
+    this.stopFn = stopFn;
   }
 
   getState(): SessionState { return this.state; }
@@ -55,7 +59,7 @@ export class SessionManager {
     finally if (this.state === 'RUNNING') this.state = 'READY';
   }
 
-  async stop(stopFn: () => Promise<void>): Promise<void> {
+  async stop(stopFn: StopFn = this.stopFn ?? (async () => {})): Promise<void> {
     if (this.busy || !['READY', 'RUNNING'].includes(this.state)) return;
     this.busy = true;
     this.state = 'STOPPING';
@@ -67,20 +71,37 @@ export class SessionManager {
     }
   }
 
-  async restart(startFn: () => Promise<void>, stopFn: () => Promise<void>): Promise<void> {
+  async restart(startFn: () => Promise<void>, stopFn: StopFn = this.stopFn ?? (async () => {})): Promise<void> {
     await this.stop(stopFn);
     await this.start(startFn);
   }
 
-  destroy(): void {
+  /**
+   * Stop the active adapter before marking a timed-out session stopped. This
+   * prevents the lifecycle guard from becoming truthful while the VM keeps
+   * running underneath it.
+   */
+  async destroy(): Promise<void> {
     this.clearTimeout();
-    this.state = 'STOPPED';
-    this.busy = false;
+    if (this.busy) return;
+    this.busy = true;
+    const stopFn = this.stopFn;
+    try {
+      if (stopFn && ['READY', 'RUNNING'].includes(this.state)) {
+        this.state = 'STOPPING';
+        await stopFn();
+      }
+    } finally {
+      this.state = 'STOPPED';
+      this.busy = false;
+    }
   }
 
   private armTimeout(): void {
     this.clearTimeout();
-    this.timer = setTimeout(() => this.destroy(), this.limits.timeoutMs);
+    this.timer = setTimeout(() => {
+      void this.destroy();
+    }, this.limits.timeoutMs);
   }
 
   private clearTimeout(): void {
