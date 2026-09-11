@@ -40,7 +40,7 @@ export class AssessmentRunner {
       }catch(error){checks.push({label:tc.description,passed:false,state:'unable-to-verify',feedback:`Simulator could not execute this case: ${error instanceof Error?error.message:String(error)}`});}
     }
     const passed=checks.filter(c=>c.state==='passed').length,failed=checks.filter(c=>c.state==='failed').length,unableToVerify=checks.filter(c=>c.state==='unable-to-verify').length,total=checks.length,score=total?Math.round(passed/total*100):0;
-    return {passed,failed,unableToVerify,total,score,checks,educationalOnly:true,executionVerified:passed>0&&unableToVerify===0,verificationMode:'simulator-runtime',logs:[`Assessment completed in ${(performance.now()-start).toFixed(2)} ms — ${score}% (${passed}/${total} passed)`,'NOTICE: execution evidence comes from Engine A, the educational simulator; it is not native GCC/JVM verification.',...checks.map(c=>`${c.state==='passed'?'✓':c.state==='failed'?'✗':'?'} ${c.label}: ${c.feedback}`)]};
+    return {passed,failed,unableToVerify,total,score,checks,educationalOnly:true,executionVerified:false,verificationMode:'simulator-runtime',logs:[`Assessment completed in ${(performance.now()-start).toFixed(2)} ms — ${score}% (${passed}/${total} passed)`,'NOTICE: execution evidence comes from Engine A, the educational simulator. This result is not native GCC/JVM verification.','Native executionVerified remains false until a trusted native runner provides compiler/runtime evidence.',...checks.map(c=>`${c.state==='passed'?'✓':c.state==='failed'?'✗':'?'} ${c.label}: ${c.feedback}`)]};
   }
   private detectUnsupported(code:string,lang:'c'|'java'):string|null {
     if(!code.trim()) return 'No source code was supplied.';
