@@ -5,7 +5,13 @@ export type ShellPlan =
   | { kind: 'sequence' | 'and' | 'or' | 'pipeline'; left: ShellPlan; right: ShellPlan };
 
 export class ShellPlanner {
-  constructor(private readonly maxPipelineStages = 16, private readonly maxDepth = 64) {}
+  private readonly maxPipelineStages: number;
+  private readonly maxDepth: number;
+
+  constructor(maxPipelineStages = 16, maxDepth = 64) {
+    this.maxPipelineStages = maxPipelineStages;
+    this.maxDepth = maxDepth;
+  }
 
   plan(node: ShellNode): ShellPlan {
     return this.visit(node, 0);
