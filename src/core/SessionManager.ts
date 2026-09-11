@@ -18,11 +18,9 @@ export const DEFAULT_SESSION_LIMITS: SessionLimits = {
 
 type StopFn = () => Promise<void>;
 
-/** Browser-side lifecycle guard. The real VM adapter must supply actual start/stop work. */
 export class SessionManager {
   private state: SessionState = 'IDLE';
   private busy = false;
-  private startedAt = 0;
   private timer: ReturnType<typeof setTimeout> | undefined;
   private readonly limits: SessionLimits;
   private readonly stopFn: StopFn | undefined;
@@ -42,9 +40,9 @@ export class SessionManager {
     try {
       await startFn();
       this.state = 'READY';
-      this.startedAt = Date.now();
       this.armTimeout();
     } catch (error) {
+      this.clearTimeout();
       this.state = 'STOPPED';
       throw error;
     } finally {
@@ -58,7 +56,9 @@ export class SessionManager {
     try {
       await executeFn();
     } finally {
-      if (this.state === 'RUNNING') this.state = 'READY';
+      if (this.state === 'RUNNING') {
+        this.state = 'READY';
+      }
     }
   }
 
@@ -80,7 +80,6 @@ export class SessionManager {
     await this.start(startFn);
   }
 
-  /** Stop the active adapter before marking a timed-out session stopped. */
   async destroy(): Promise<void> {
     this.clearTimeout();
     if (this.busy) return;
