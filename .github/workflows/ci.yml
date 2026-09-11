@@ -16,6 +16,7 @@ jobs:
       NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 1000
       NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 30000
       NPM_CONFIG_FETCH_TIMEOUT: 120000
+      NPM_CONFIG_CACHE: ${{ runner.temp }}/npm-cache
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -24,12 +25,13 @@ jobs:
           cache: npm
       - name: Verify committed npm lockfile
         run: |
+          set -euo pipefail
+          rm -rf "$NPM_CONFIG_CACHE"
+          mkdir -p "$NPM_CONFIG_CACHE"
+          npm config set registry "$NPM_CONFIG_REGISTRY"
+          npm config set cache "$NPM_CONFIG_CACHE"
           npm cache verify
-          if ! npm ci --ignore-scripts --prefer-online; then
-            echo "npm ci failed; clearing the local npm cache and retrying from the registry"
-            npm cache clean --force
-            npm ci --ignore-scripts --prefer-online
-          fi
+          npm ci --ignore-scripts --prefer-online
       - run: npm audit --audit-level=high
       - run: npx playwright install --with-deps chromium
       - run: npm run test:ci
