@@ -10,7 +10,6 @@ assert.equal(parser.parse('echo "a && b"').type, 'command');
 assert.equal(parser.parse("echo 'a | b'").type, 'command');
 assert.throws(() => parser.parse('echo "unterminated'), /Unterminated quote/);
 assert.throws(() => parser.parse('echo foo ||'), /Expected command/);
-// A pipe with commands on both sides is valid shell syntax.
 assert.equal(parser.parse('echo | bar').type, 'binary');
 assert.throws(() => parser.parse('echo |'), /Expected command/);
 assert.throws(() => parser.parse('echo &&'), /Expected command/);
@@ -37,6 +36,10 @@ await new Promise(resolve => setTimeout(resolve, 30));
 assert.equal(session.getState(), 'STOPPED');
 assert.equal(stopped, 1);
 
-assert.throws(() => verifyArtifact(new ArrayBuffer(0), ALPINE_ARTIFACT), /no trusted SHA-256 digest configured/);
+// verifyArtifact is async, so the rejection must be asserted asynchronously.
+await assert.rejects(
+  () => verifyArtifact(new ArrayBuffer(0), ALPINE_ARTIFACT),
+  /no trusted SHA-256 digest configured/,
+);
 
 console.log('VNext correctness checks passed');
