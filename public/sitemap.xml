@@ -1,14 +1,1 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://linuxterminal.me/</loc></url>
-  <url><loc>https://linuxterminal.me/beginner/</loc></url>
-  <url><loc>https://linuxterminal.me/intermediate/</loc></url>
-  <url><loc>https://linuxterminal.me/expert/</loc></url>
-  <url><loc>https://linuxterminal.me/simulator/</loc></url>
-  <url><loc>https://linuxterminal.me/real-linux/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/</loc></url>
-  <url><loc>https://linuxterminal.me/linux-cd-command/</loc></url>
-  <url><loc>https://linuxterminal.me/linux-ls-command/</loc></url>
-  <url><loc>https://linuxterminal.me/about/</loc></url>
-  <url><loc>https://linuxterminal.me/contact/</loc></url>
-</urlset>
+<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://linuxterminal.me/</loc></url><url><loc>https://linuxterminal.me/beginner/</loc></url><url><loc>https://linuxterminal.me/intermediate/</loc></url><url><loc>https://linuxterminal.me/expert/</loc></url><url><loc>https://linuxterminal.me/commands/</loc></url><url><loc>https://linuxterminal.me/quiz/</loc></url><url><loc>https://linuxterminal.me/challenges/</loc></url><url><loc>https://linuxterminal.me/about/</loc></url><url><loc>https://linuxterminal.me/contact/</loc></url><url><loc>https://linuxterminal.me/open-source-iso/</loc></url><url><loc>https://linuxterminal.me/real-linux/</loc></url><url><loc>https://linuxterminal.me/simulator/</loc></url></urlset>

@@ -5,11 +5,17 @@
 [[edge_functions]]
   path = "/api/iso"
   function = "iso"
+[[edge_functions]]
+  path = "/api/tutor"
+  function = "tutor"
+[[edge_functions]]
+  path = "/commands/*"
+  function = "commands"
 
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self' https://api.github.com; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'self'; form-action 'self'"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
@@ -20,7 +26,6 @@
   from = "/real-linux/"
   to = "/index-v86.html"
   status = 200
-
 [[redirects]]
   from = "/simulator/"
   to = "/simulator.html"
