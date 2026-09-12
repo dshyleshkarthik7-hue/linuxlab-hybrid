@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>LinuxTerminal — Learn Linux by Doing, Free in Your Browser</title>
-  <meta name="description" content="Learn Linux by doing. Practice Linux commands safely in your browser, understand how Linux works, and boot real Alpine Linux when you are ready.">
+  <title>LinuxTerminal.me — Learn Linux by Doing</title>
+  <meta name="description" content="Learn Linux by doing. Practice Linux commands safely in your browser, understand how Linux works, ask the AI Tutor for help, and boot real Alpine Linux when you are ready.">
   <meta name="author" content="Shylesh Karthik Dinavahi">
   <meta name="robots" content="index,follow,max-image-preview:large">
   <link rel="canonical" href="https://linuxterminal.me/beginner/">
@@ -13,13 +13,14 @@
 <body>
   <header class="site-header">
     <div class="nav-inner">
-      <a class="brand" href="../"><span class="bolt">ϟ</span><span>Linux <b>Lab</b></span></a>
+      <a class="brand" href="../"><span class="bolt">ϟ</span><span>LinuxTerminal<b>.me</b></span></a>
       <nav aria-label="Primary navigation">
         <a href="#start">Start Here</a>
         <a href="#practice">Practice Linux</a>
+        <a href="#tutor">AI Tutor</a>
         <a href="#works">How It Works</a>
-        <a href="../real-linux/">Install Linux</a>
-        <a href="../commands/">200+ Commands</a>
+        <a href="../real-linux/">Real Linux</a>
+        <a href="../commands/">200 Commands</a>
       </nav>
     </div>
   </header>
@@ -28,7 +29,7 @@
     <section class="hero wrap">
       <div class="pill"><span>ϟ</span> LEARN &nbsp;•&nbsp; PRACTICE &nbsp;•&nbsp; EXPLORE</div>
       <h1>Learn Linux by <span>Doing</span></h1>
-      <p>Start with a safe learning sandbox, understand real Linux commands, and when you are ready, boot a real Alpine Linux system directly in your browser.</p>
+      <p>Start with a safe learning sandbox, understand real Linux commands, ask the contextual AI Tutor when you are stuck, and when you are ready, boot real Alpine Linux directly in your browser.</p>
     </section>
 
     <section class="wrap dual" id="start">
@@ -36,13 +37,13 @@
         <div class="label">🧪 &nbsp;LEARNING MODE&nbsp; • &nbsp;SAFE SIMULATION</div>
         <h2>Linux Learning Simulator</h2>
         <p>Practice Linux-style commands, files, folders, editors and beginner programming in a safe environment. <strong>This is a simulator for learning — it is not a real Linux kernel.</strong></p>
-        <a class="wide-btn blue" href="#practice">🚀 &nbsp;Open Learning Simulator (New Tab) ↗</a>
+        <a class="wide-btn blue" href="#practice">🚀 &nbsp;Open Learning Simulator</a>
       </article>
       <article class="choice real">
         <div class="label green-label">♟ &nbsp;REAL&nbsp; • &nbsp;BROWSER-BASED LINUX MACHINE</div>
         <h2>Real Alpine Linux</h2>
-        <p>When you are ready, boot a real Linux environment in your browser. Use the real Alpine browser VM with 1 GB RAM for practical Linux development and experimentation.</p>
-        <a class="wide-btn green" href="../real-linux/">♟ &nbsp;Boot Real Linux (New Tab) ↗</a>
+        <p>When you are ready, boot a real Linux environment in your browser. Use the real Alpine browser VM for practical Linux development and experimentation.</p>
+        <a class="wide-btn green" href="../real-linux/">♟ &nbsp;Boot Real Linux</a>
       </article>
     </section>
 
@@ -51,14 +52,14 @@
       <h2>What is Linux, and how can you use it?</h2>
       <p class="lead">Linux is an operating system, like Windows or macOS. You can learn it without deleting Windows or changing your computer.</p>
       <div class="four-grid">
-        <article><h3>🌐 LinuxTerminal in your browser</h3><p>The easiest first step. Learn commands safely, explore the sandbox and later try real Linux without installing anything.</p></article>
+        <article><h3>🌐 LinuxTerminal.me in your browser</h3><p>The easiest first step. Learn commands safely, explore the sandbox, use the AI Tutor and later try real Linux without installing anything.</p></article>
         <article><h3>💻 VirtualBox</h3><p>Run Linux inside a window while keeping your current operating system. We recommend Oracle VM VirtualBox for beginners.</p><a class="small-btn" href="https://www.virtualbox.org/">Get Oracle VM VirtualBox ↗</a></article>
         <article><h3>🔀 Dual boot</h3><p>Keep your existing operating system and Linux on the same computer, then choose one when the computer starts. Back up important files first.</p></article>
         <article><h3>🖥️ Full Linux installation</h3><p>Use Linux as your main operating system when you are comfortable with installation, updates, backups and recovery.</p></article>
       </div>
       <div class="four-grid steps">
         <article><b>01</b><h3>Learn the basics</h3><p>Start with</p><code>pwd</code><p>,</p><code>ls</code><p>,</p><code>cd</code><p>,</p><code>mkdir</code><p>and file commands. LinuxTerminal explains and lets you practice them.</p></article>
-        <article><b>02</b><h3>Use the 200+ command guide</h3><p>Search commands by category and use the examples as a learning reference instead of trying to memorize everything at once.</p></article>
+        <article><b>02</b><h3>Use the 200-command guide</h3><p>Search the full 200-command curriculum by name and category. Use examples as a learning reference instead of trying to memorize everything at once.</p></article>
         <article><b>03</b><h3>Explore networking</h3><p>Learn what commands such as</p><code>ping</code><p>,</p><code>ip</code><p>and</p><code>ifconfig</code><p>are used for. Simulator networking is educational; real networking depends on the environment.</p></article>
         <article><b>04</b><h3>Move to real Linux</h3><p>Boot the real Alpine environment when you want genuine Linux behavior. <strong>Sessions are temporary:</strong> closing or restarting can erase files and command history.</p></article>
       </div>
@@ -67,15 +68,32 @@
     <section class="wrap practice" id="practice">
       <div class="eyebrow">INTERACTIVE SANDBOX DEMO</div>
       <h2>Practice Linux Commands Safely</h2>
-      <p class="lead">This is the LinuxTerminal learning sandbox. Try commands, edit files and experiment freely — the environment is not a real Linux kernel.</p>
+      <p class="lead">This is the LinuxTerminal learning sandbox. Try commands, edit files and experiment freely — the environment is simulated and is not a real Linux kernel.</p>
       <div class="terminal-window">
         <div class="terminal-bar"><i></i><i></i><i></i></div>
         <div id="output" class="terminal-output" role="log" aria-live="polite"></div>
         <form id="commandForm" class="terminal-form"><span>learner@linuxterminal:~$</span><input id="input" autocomplete="off" spellcheck="false" aria-label="Linux command" placeholder="Try ls -la"><button type="submit">Run</button></form>
       </div>
       <div class="sandbox-tools">
-        <a href="../commands/">Browse 50 command guides →</a>
+        <a href="../commands/">Browse all 200 commands →</a>
         <button id="reset" type="button">Reset sandbox</button>
+      </div>
+    </section>
+
+    <section class="wrap section-card tutor-card" id="tutor">
+      <div class="eyebrow">CONTEXTUAL AI LEARNING</div>
+      <h2>LinuxTerminal AI Tutor</h2>
+      <p class="lead">Ask why a command worked, what an error means, or what to try next. The Tutor receives only the learning context you submit and never needs your passwords or secrets.</p>
+      <div class="tutor-grid">
+        <div class="tutor-panel">
+          <label for="tutor-question">What are you stuck on?</label>
+          <textarea id="tutor-question" rows="4" maxlength="1200" placeholder="Example: Why did grep return no matches, and what should I try next?"></textarea>
+          <div class="tutor-actions"><button id="tutor-ask" type="button" class="tutor-btn">Ask LinuxTerminal Tutor</button><span id="tutor-status" role="status">Ready</span></div>
+        </div>
+        <article class="tutor-answer" aria-live="polite">
+          <div class="tutor-answer-label">TUTOR RESPONSE</div>
+          <div id="tutor-output">Run a command above, then ask the Tutor to explain the result.</div>
+        </article>
       </div>
     </section>
 
