@@ -2,7 +2,7 @@ import { GuestTelemetryBridge, type GuestTelemetrySnapshot } from './observabili
 
 export interface V86TelemetryTarget {
   add_listener(name: 'serial0-output-byte' | 'emulator-ready', callback: (value?: number) => void): void;
-  serial0_send(data: string): void;
+  remove_listener?: (name: 'serial0-output-byte' | 'emulator-ready', callback: (value?: number) => void) => void;
 }
 export type GuestIdentityKind = 'alpine' | 'buildroot' | 'unknown';
 export interface GuestIdentity { kind: GuestIdentityKind; isAlpine: boolean; release: string; }
@@ -10,11 +10,7 @@ export interface GuestTelemetryCallbacks { onTelemetry?: (snapshot: GuestTelemet
 
 const MAX_IDENTITY_BUFFER = 8192;
 
-/**
- * Passive telemetry bridge. It deliberately never writes commands to serial0:
- * serial0 is the interactive terminal, so polling it would paste diagnostics
- * into the user's shell and corrupt the terminal session.
- */
+/** Passive telemetry only. It observes guest output and never writes to the VM. */
 export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTelemetryCallbacks = {}): () => void {
   const bridge = new GuestTelemetryBridge();
   let identityBuffer = '';
@@ -34,9 +30,6 @@ export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTel
         identityBuffer = identityBuffer.slice(start);
         return;
       }
-      // The frame protocol places a line break immediately after the start
-      // marker. Exclude that framing delimiter, but preserve the guest payload
-      // exactly, including its trailing newline.
       const rawRelease = identityBuffer.slice(start + startMarker.length, end);
       const release = rawRelease.replace(/^\r?\n/, '').slice(0, MAX_IDENTITY_BUFFER);
       const isAlpine = /(?:^|\n)ID=alpine(?:\n|$)/i.test(release) || /(?:^|\n)ID_LIKE=.*\balpine\b/i.test(release);
@@ -56,5 +49,10 @@ export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTel
   };
 
   vm.add_listener('serial0-output-byte', onSerial);
-  return () => { disposed = true; identityBuffer = ''; };
+  return () => {
+    if (disposed) return;
+    disposed = true;
+    identityBuffer = '';
+    vm.remove_listener?.('serial0-output-byte', onSerial);
+  };
 }
