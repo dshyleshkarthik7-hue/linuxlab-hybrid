@@ -9,7 +9,11 @@ import { VM_RESOURCE_POLICIES, boundedText } from './VMResourcePolicy.ts';
 export class StructuredLinuxEngine extends InBrowserLinuxEngine {
   private readonly parser = new ShellParser();
   private readonly planner = new ShellPlanner(VM_RESOURCE_POLICIES.linux4.maxPipelineStages);
-  private readonly policy = VM_RESOURCE_POLICIES.linux4;
+
+  // Do not use a subclass field here: InBrowserLinuxEngine's constructor calls
+  // writeFile() while subclass fields are still uninitialized. Resolving the
+  // immutable policy through a getter makes the override safe during super().
+  private get policy() { return VM_RESOURCE_POLICIES.linux4; }
 
   public override writeFile(path: string, content: string): boolean {
     const current = this.readFile(path);
