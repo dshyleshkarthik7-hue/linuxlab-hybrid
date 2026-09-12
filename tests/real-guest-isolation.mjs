@@ -36,15 +36,32 @@ const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext();
 const page = await context.newPage();
 try {
-  // Vite preview does not execute Netlify Edge Functions. For local CI, rewrite
-  // only the ISO endpoint to an immutable GitHub Release artifact. The application
-  // still performs its normal SHA-256 verification before v86 receives the bytes.
+  // Vite preview does not execute Netlify Edge Functions. For local CI, fetch the
+  // immutable release artifact from Node and fulfill the same-origin request.
+  // The application still performs its normal SHA-256 verification before v86
+  // receives the bytes. Do not use route.continue() here: Playwright forbids
+  // changing the protocol of a routed request.
   if (!process.env.REAL_GUEST_BASE_URL) {
     await page.route(`${baseURL.replace(/\/$/, '')}/api/iso**`, async route => {
       const requestUrl = new URL(route.request().url());
       const image = requestUrl.searchParams.get('image') || 'developer';
       const upstream = isoSources[image] || isoSources.developer;
-      await route.continue({ url: upstream });
+      try {
+        const upstreamResponse = await fetch(upstream, { redirect: 'follow' });
+        const body = Buffer.from(await upstreamResponse.arrayBuffer());
+        const headers = Object.fromEntries(upstreamResponse.headers.entries());
+        await route.fulfill({
+          status: upstreamResponse.status,
+          headers,
+          body,
+        });
+      } catch (error) {
+        if (!route.request().isNavigationRequest()) {
+          await route.abort('failed');
+        } else {
+          throw error;
+        }
+      }
     });
   }
 
