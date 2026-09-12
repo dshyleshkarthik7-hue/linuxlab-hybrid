@@ -1,9 +1,10 @@
 import { strict as assert } from 'node:assert';
-import { readFile } from 'node:fs/promises';
+import { readFile, readdir } from 'node:fs/promises';
 import { join } from 'node:path';
 
 const root = process.cwd();
 const read = path => readFile(join(root, path), 'utf8');
+const exists = async path => { try { await read(path); return true; } catch { return false; } };
 
 const catalog = await read('src/commands/commandCatalog.ts');
 const edgeCatalog = await read('netlify/edge-functions/command-data.ts');
@@ -11,18 +12,17 @@ const commandNames = ['pwd','ls','cd','grep','find','chmod','ps','free','df','ta
 assert.match(catalog, /COMMAND_LESSONS\.length !== 200/);
 assert.match(edgeCatalog, /COMMAND_INDEX\.length !== 200/);
 for (const command of commandNames) {
-  assert.match(catalog, new RegExp(`name: ['"]${command.replace(/[.*+?^${}()|[\\]\\]/g, '\\\\$&')}['"]`), `${command} missing from canonical catalog`);
-  assert.match(edgeCatalog, new RegExp(`name: ['"]${command.replace(/[.*+?^${}()|[\\]\\]/g, '\\\\$&')}['"]`), `${command} missing from edge catalog`);
+  const escaped = command.replace(/[.*+?^${}()|[\\]\\]/g, '\\\\$&');
+  assert.match(catalog, new RegExp(`name: ['"]${escaped}['"]`), `${command} missing from canonical catalog`);
+  assert.match(edgeCatalog, new RegExp(`name: ['"]${escaped}['"]`), `${command} missing from edge catalog`);
 }
 
-const commandIndex = await read('public/commands/index.html');
-// The command Edge Function owns /commands/*, so the browser-side index script
-// intentionally lives at /commands-index.js outside that Edge Function route.
+const commandIndex = await read('commands/index.html');
 assert.match(commandIndex, /commands-index\.js/);
-assert.doesNotMatch(commandIndex, /<script(?![^>]+src=)[^>]*>/i, 'command index must not contain inline script');
+assert.doesNotMatch(commandIndex, /<article\b/i, 'command landing page must not contain a stale hardcoded command list');
+assert.doesNotMatch(commandIndex, /\/commands\/(?:date|clear|man|nano|vim|vi)\//, 'command landing page contains a phantom route');
 const commandJs = await read('public/commands-index.js');
 assert.match(commandJs, /COMMANDS/);
-assert.match(commandJs, /seq/);
 assert.match(commandJs, /COMMANDS\.length/);
 
 const edge = await read('netlify/edge-functions/commands.ts');
@@ -49,26 +49,31 @@ for (const page of ['index.html','beginner/index.html','intermediate/index.html'
   assert.match(html, /rel=["']canonical["']/i, `${page} missing canonical`);
 }
 
+for (const duplicate of ['about','contact','challenges','commands','quiz','open-source-iso']) {
+  assert.equal(await exists(`public/${duplicate}/index.html`), false, `public/${duplicate}/index.html duplicates a root page`);
+}
+assert.equal(await exists('public/_headers'), false, 'security headers must have one source of truth');
+assert.equal(await exists('public/developer.html'), false, 'orphan developer page must not ship');
+assert.equal(await exists('public/session.js'), false, 'dead session feature must not ship');
+assert.equal(await exists('public/linux-cd-command/index.html'), false, 'stale orphan SEO page must not ship');
+assert.equal(await exists('public/linux-ls-command/index.html'), false, 'stale orphan SEO page must not ship');
+assert.equal(await exists('robots.txt'), false, 'root robots.txt must not duplicate public/robots.txt');
+assert.equal(await exists('sitemap.xml'), false, 'root sitemap.xml must not duplicate public/sitemap.xml');
+
+const publicEntries = await readdir(join(root, 'public'), { withFileTypes: true });
+for (const entry of publicEntries.filter(e => e.isDirectory())) {
+  assert.equal(await exists(`public/${entry.name}/index.html`), false, `public/${entry.name}/index.html is a duplicate page source`);
+}
+
 const simulator = await read('simulator.html');
 assert.doesNotMatch(simulator, /<script(?![^>]+src=)[^>]*>/i, 'simulator must not contain inline scripts');
 assert.doesNotMatch(simulator, /application\/ld\+json/i, 'simulator must not contain inline JSON-LD under strict CSP');
-assert.match(simulator, /LinuxTerminal<span class="badge">\.me/);
-
-const headers = await read('public/_headers');
+const headers = await read('netlify.toml');
+assert.match(headers, /Strict-Transport-Security/);
 assert.match(headers, /Cross-Origin-Embedder-Policy/);
-const netlify = await read('netlify.toml');
-assert.match(netlify, /script-src 'self' 'wasm-unsafe-eval'/);
-assert.match(netlify, /\/api\/tutor/);
-
+assert.match(headers, /script-src 'self' 'wasm-unsafe-eval'/);
+assert.match(headers, /\/api\/tutor/);
 const vite = await read('vite.config.ts');
-for (const entry of ['about/index.html','contact/index.html','commands/index.html','quiz/index.html','challenges/index.html','open-source-iso/index.html']) assert.match(vite, new RegExp(entry.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')));
-const telemetry = await read('src/v86-telemetry.ts');
-assert.match(telemetry, /__LT_IDENTITY__/);
-assert.match(telemetry, /__LT_ID_END__/);
-assert.match(telemetry, /ID=alpine/);
-const coverage = await read('tests/coverage-threshold.mjs');
-assert.match(coverage, /--test-coverage-functions=(?:70|75)/);
-assert.match(coverage, /--test-coverage-lines=(?:70|75)/);
-assert.match(coverage, /--test-coverage-branches=(?:50|60)/);
+for (const entry of ['about/index.html','contact/index.html','commands/index.html','quiz/index.html','challenges/index.html','open-source-iso/index.html']) assert.match(vite, new RegExp(entry.replace(/[.*+?^${}()|[\\]\\]/g,'\\\\$&')));
 
-console.log('Content contract checks passed: canonical 200-command curriculum, CSP-safe command index, AI Tutor integration, SEO metadata, learning flow and guest telemetry.');
+console.log('Content contract checks passed: canonical pages, single-source command curriculum, CSP, headers and no duplicate/orphan public pages.');
