@@ -44,7 +44,11 @@ jobs:
             --registry=https://registry.npmmirror.com \
             --replace-registry-host=always
       - run: npm audit --audit-level=high
-      - run: npx playwright install --with-deps chromium
+      - name: Install Playwright Chromium
+        run: |
+          set -euo pipefail
+          test -f node_modules/playwright/cli.js
+          node node_modules/playwright/cli.js install --with-deps chromium
       - run: npm run test:ci
       - run: npm run test:smoke
       - run: npm run test:mobile
