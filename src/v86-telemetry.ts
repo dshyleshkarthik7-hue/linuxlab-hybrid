@@ -15,7 +15,6 @@ const POLL_INTERVAL_MS = 10000;
 export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTelemetryCallbacks = {}): () => void {
   const bridge = new GuestTelemetryBridge();
   let identityBuffer = '';
-  let identityOpen = false;
   let requestTimer: ReturnType<typeof setTimeout> | null = null;
   let pollTimer: ReturnType<typeof setInterval> | null = null;
   let disposed = false;
@@ -26,21 +25,34 @@ export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTel
     catch (error) { console.debug('[LinuxTerminal] guest telemetry request failed', error); }
   };
 
+  const parseIdentityFrames = (): void => {
+    const startMarker = '__LT_IDENTITY__';
+    const endMarker = '__LT_ID_END__';
+    for (;;) {
+      const start = identityBuffer.indexOf(startMarker);
+      if (start < 0) {
+        identityBuffer = identityBuffer.slice(-startMarker.length + 1);
+        return;
+      }
+      const end = identityBuffer.indexOf(endMarker, start + startMarker.length);
+      if (end < 0) {
+        identityBuffer = identityBuffer.slice(start);
+        return;
+      }
+      const release = identityBuffer.slice(start + startMarker.length, end).slice(0, MAX_IDENTITY_BUFFER);
+      const isAlpine = /(?:^|\n)ID=alpine(?:\n|$)/i.test(release) || /(?:^|\n)ID_LIKE=.*\balpine\b/i.test(release);
+      callbacks.onIdentity?.({ isAlpine });
+      identityBuffer = identityBuffer.slice(end + endMarker.length);
+    }
+  };
+
   const onSerial = (value?: number): void => {
     if (disposed || typeof value !== 'number') return;
     const char = String.fromCharCode(value & 0xff);
     const snapshot = bridge.feed(char);
     if (snapshot) callbacks.onTelemetry?.(snapshot);
     identityBuffer = (identityBuffer + char).slice(-MAX_IDENTITY_BUFFER);
-    const marker = identityBuffer.lastIndexOf('__LT_IDENTITY__');
-    const end = identityBuffer.lastIndexOf('__LT_ID_END__');
-    if (marker >= 0) identityOpen = end <= marker;
-    if (!identityOpen || marker < 0 || end <= marker) return;
-    const release = identityBuffer.slice(marker + '__LT_IDENTITY__'.length, end).slice(0, MAX_IDENTITY_BUFFER);
-    identityBuffer = identityBuffer.slice(end + '__LT_ID_END__'.length);
-    identityOpen = false;
-    const isAlpine = /(?:^|\n)ID=alpine(?:\n|$)/i.test(release) || /(?:^|\n)ID_LIKE=.*\balpine\b/i.test(release);
-    callbacks.onIdentity?.({ isAlpine });
+    parseIdentityFrames();
   };
 
   const onReady = (): void => {
@@ -59,6 +71,5 @@ export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTel
     requestTimer = null;
     pollTimer = null;
     identityBuffer = '';
-    identityOpen = false;
   };
 }
