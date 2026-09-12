@@ -28,14 +28,9 @@ jobs:
           set -euo pipefail
           npm config set registry "$NPM_CONFIG_REGISTRY"
           npm cache verify
-
-          # Keep the canonical npm registry as the first source. The single-socket
-          # setting avoids flaky proxy/CDN corruption observed during concurrent
-          # tarball downloads while npm's integrity checks remain authoritative.
           if npm ci --ignore-scripts --prefer-online; then
             exit 0
           fi
-
           echo "npm ci failed; retrying once through a separate read-only registry mirror"
           npm cache clean --force
           npm ci \
@@ -49,13 +44,6 @@ jobs:
           set -euo pipefail
           test -f node_modules/playwright/cli.js
           node node_modules/playwright/cli.js install --with-deps chromium
-      - name: Ensure Vite CSS compiler dependency
-        run: |
-          set -euo pipefail
-          # Vite 8 declares esbuild as a peer dependency but the committed lockfile
-          # does not materialize that peer. Install it without mutating the lockfile
-          # so the production build can resolve Vite's CSS compiler import.
-          npm install --no-save --no-package-lock --prefer-online esbuild@^0.28.0
       - run: npm run test:ci
       - run: npm run test:smoke
       - run: npm run test:mobile
