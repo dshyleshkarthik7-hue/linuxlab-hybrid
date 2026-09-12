@@ -1,12 +1,13 @@
 import { strict as assert } from 'node:assert';
 import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:http';
 import { resolve } from 'node:path';
 import { setTimeout as sleep } from 'node:timers/promises';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
-const port = process.env.REAL_GUEST_PORT || '4174';
+const port = Number(process.env.REAL_GUEST_PORT || 4174);
 const baseURL = process.env.REAL_GUEST_BASE_URL || `http://127.0.0.1:${port}`;
 const bootTimeoutMs = Number(process.env.REAL_GUEST_BOOT_TIMEOUT_MS || 120000);
 const isoSources = {
@@ -15,6 +16,8 @@ const isoSources = {
   linux4: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso',
 };
 let server;
+let proxyServer;
+let proxyPort;
 
 async function waitFor(url) {
   const deadline = Date.now() + 30000;
@@ -25,11 +28,52 @@ async function waitFor(url) {
   throw new Error(`Timed out waiting for ${url}`);
 }
 
+async function startIsoProxy() {
+  proxyServer = createServer(async (req, res) => {
+    try {
+      const requestUrl = new URL(req.url || '/', `http://127.0.0.1:${proxyPort || 0}`);
+      const image = requestUrl.searchParams.get('image') || 'developer';
+      const upstream = isoSources[image] || isoSources.developer;
+      const headers = {};
+      for (const name of ['range', 'if-range', 'if-none-match', 'if-modified-since']) {
+        const value = req.headers[name];
+        if (value) headers[name] = value;
+      }
+      const response = await fetch(upstream, { headers, redirect: 'follow' });
+      res.writeHead(response.status, {
+        'content-type': response.headers.get('content-type') || 'application/octet-stream',
+        ...(response.headers.get('content-length') ? { 'content-length': response.headers.get('content-length') } : {}),
+        ...(response.headers.get('content-range') ? { 'content-range': response.headers.get('content-range') } : {}),
+        ...(response.headers.get('accept-ranges') ? { 'accept-ranges': response.headers.get('accept-ranges') } : {}),
+        ...(response.headers.get('etag') ? { etag: response.headers.get('etag') } : {}),
+        ...(response.headers.get('last-modified') ? { 'last-modified': response.headers.get('last-modified') } : {}),
+      });
+      if (response.body) {
+        for await (const chunk of response.body) {
+          if (!res.write(chunk)) await new Promise(resolveWrite => res.once('drain', resolveWrite));
+        }
+      }
+      res.end();
+    } catch (error) {
+      res.destroy(error instanceof Error ? error : undefined);
+    }
+  });
+  await new Promise((resolveListen, reject) => {
+    proxyServer.once('error', reject);
+    proxyServer.listen(0, '127.0.0.1', () => {
+      proxyServer.removeListener('error', reject);
+      proxyPort = proxyServer.address().port;
+      resolveListen();
+    });
+  });
+}
+
 if (!process.env.REAL_GUEST_BASE_URL) {
   const vite = resolve('node_modules', '.bin', process.platform === 'win32' ? 'vite.cmd' : 'vite');
-  server = spawn(vite, ['preview', '--host', '127.0.0.1', '--port', port, '--strictPort'], { detached: process.platform !== 'win32', stdio: ['ignore','pipe','pipe'] });
+  server = spawn(vite, ['preview', '--host', '127.0.0.1', '--port', String(port), '--strictPort'], { detached: process.platform !== 'win32', stdio: ['ignore', 'pipe', 'pipe'] });
   server.stderr.on('data', d => process.stderr.write(String(d)));
   await waitFor(baseURL);
+  await startIsoProxy();
 }
 
 const browser = await chromium.launch({ headless: true });
@@ -39,39 +83,22 @@ try {
   page.on('pageerror', error => process.stderr.write(`[browser pageerror] ${error.message}\n`));
   page.on('console', message => { if (message.type() === 'error') process.stderr.write(`[browser console] ${message.text()}\n`); });
 
-  // Vite preview does not execute Netlify Edge Functions. For local CI, fetch the
-  // immutable release artifact from Node and fulfill the same-origin request.
-  // The application still performs its normal SHA-256 verification before v86
-  // receives the bytes. Do not use route.continue() here: Playwright forbids
-  // changing the protocol of a routed request. Content-Length/Content-Encoding
-  // are deliberately omitted because Node fetch may transparently decode them.
   if (!process.env.REAL_GUEST_BASE_URL) {
+    // Keep the intercepted URL HTTP→HTTP. The local proxy streams the large ISO,
+    // avoiding Playwright's in-memory Buffer/string conversion limit for >512 MiB files.
     await page.route(`${baseURL.replace(/\/$/, '')}/api/iso**`, async route => {
       const requestUrl = new URL(route.request().url());
-      const image = requestUrl.searchParams.get('image') || 'developer';
-      const upstream = isoSources[image] || isoSources.developer;
-      const upstreamResponse = await fetch(upstream, { redirect: 'follow' });
-      const body = Buffer.from(await upstreamResponse.arrayBuffer());
-      const headers = {};
-      for (const name of ['content-type', 'accept-ranges', 'content-range', 'etag', 'last-modified']) {
-        const value = upstreamResponse.headers.get(name);
-        if (value) headers[name] = value;
-      }
-      await route.fulfill({ status: upstreamResponse.status, headers, body });
+      const proxyUrl = `http://127.0.0.1:${proxyPort}/?${requestUrl.searchParams.toString()}`;
+      await route.continue({ url: proxyUrl });
     });
   }
 
   await page.goto(`${baseURL.replace(/\/$/, '')}/index-v86.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('#v86-status', { state: 'attached', timeout: 10000 });
-
-  // The developer image is retained as a separately tested production profile,
-  // but the isolation gate boots the smaller pinned Alpine Virt image to avoid
-  // making the mandatory CI gate depend on the custom developer image boot path.
   await page.locator('#btn-v86-virt').click();
 
   await page.waitForFunction(() => {
-    const health = document.querySelector('#v86-health');
-    const state = health?.getAttribute('data-state');
+    const state = document.querySelector('#v86-health')?.getAttribute('data-state');
     return state === 'ready' || state === 'offline';
   }, null, { timeout: bootTimeoutMs });
 
@@ -97,6 +124,7 @@ try {
 } finally {
   await context.close().catch(() => {});
   await browser.close().catch(() => {});
+  if (proxyServer) await new Promise(resolveClose => proxyServer.close(() => resolveClose()));
   if (server) {
     try { process.platform === 'win32' ? server.kill() : process.kill(-server.pid, 'SIGTERM'); } catch { server.kill(); }
   }
