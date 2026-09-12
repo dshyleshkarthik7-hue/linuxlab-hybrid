@@ -54,7 +54,7 @@ if (!process.env.REAL_GUEST_BASE_URL) {
   proxyServer = createServer(async (req, res) => {
     try {
       const requestUrl = new URL(req.url || '/', baseURL);
-      if (requestUrl.pathname === '/api/iso') {
+      if (requestUrl.pathname === '/api/iso' && requestUrl.searchParams.get('image') === 'linux4') {
         const range = parseRange(req.headers.range, linux4Iso.length);
         const body = range ? linux4Iso.subarray(range.start, range.end + 1) : linux4Iso;
         res.statusCode = range ? 206 : 200;
@@ -89,11 +89,11 @@ const page = await context.newPage();
 try {
   page.on('pageerror', error => process.stderr.write(`[browser pageerror] ${error.message}\n`));
   page.on('console', message => { if (message.type() === 'error') process.stderr.write(`[browser console] ${message.text()}\n`); });
-  await page.goto(`${baseURL.replace(/\/$/, '')}/index-v86.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
+  // Select Linux 4 before the application constructs its VM. This prevents
+  // the default Developer Alpine lifecycle from ever starting in this gate.
+  await page.goto(`${baseURL.replace(/\/$/, '')}/index-v86.html?profile=linux4`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('#v86-status', { state: 'attached', timeout: 10000 });
-  // The page auto-starts Developer Alpine. Reuse that boot rather than
-  // racing a second VM start for Linux 4. A real-guest gate must exercise
-  // exactly one VM lifecycle and wait for the app's verified ready state.
+  await page.waitForFunction(() => document.querySelector('#v86-status')?.textContent?.includes('Ultra Light Linux 4'), null, { timeout: 10000 });
   await page.waitForFunction(() => {
     const health = document.querySelector('#v86-health')?.getAttribute('data-state');
     const status = (document.querySelector('#v86-status')?.textContent || '').toLowerCase();
@@ -112,7 +112,7 @@ try {
   assert.doesNotMatch(policy.monitor, /host filesystem|host process/i, 'guest monitor must not advertise host resources');
   assert.ok(await page.locator('#v86-terminal-container').count());
   assert.ok(await page.locator('#v86-health').count());
-  console.log(`Real guest runtime isolation gate passed: verified guest runtime ready, network disabled, resource monitor active.`);
+  console.log(`Real guest runtime isolation gate passed: verified Linux 4 guest runtime ready, network disabled, resource monitor active.`);
 } finally {
   clearTimeout(testDeadline);
   await context.close().catch(() => {});
