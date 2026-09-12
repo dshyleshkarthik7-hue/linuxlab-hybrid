@@ -59,6 +59,9 @@ async function runSmoke() {
   page.setDefaultTimeout(STAGE_TIMEOUT_MS); page.setDefaultNavigationTimeout(STAGE_TIMEOUT_MS);
   try {
     page.on('console', message => { if (message.type() === 'error') console.error('[browser]', message.text()); });
+    // This smoke test intentionally replaces the large production ISO with a
+    // one-byte deterministic fixture. It validates page/control lifecycle,
+    // not the cryptographic artifact gate (covered by ISOIntegrity tests).
     await page.route('**/api/iso**', async route => {
       const range = route.request().headers().range;
       await route.fulfill({ status: range ? 206 : 200, headers: range ? {'content-range':'bytes 0-0/1','accept-ranges':'bytes','content-length':'1','content-type':'application/octet-stream'} : {'content-length':'1','content-type':'application/octet-stream'}, body: Buffer.from([0]) });
@@ -68,7 +71,14 @@ async function runSmoke() {
     await stage(page, 'required-controls', async () => { for (const selector of required) await page.waitForSelector(selector,{state:'attached'}); });
     const buttons={terminal:'#btn-v86-terminal',screen:'#btn-v86-screen',alpine:'#btn-v86-alpine',virt:'#btn-v86-virt',linux4:'#btn-v86-linux4',restart:'#btn-v86-restart'};
     await stage(page, 'button-availability', async () => { for (const [name,selector] of Object.entries(buttons)){await page.waitForSelector(selector,{state:'visible'});console.log('Found '+name+' control');} });
-    await stage(page, 'boot-status', async () => page.waitForFunction(() => /Starting|checking runtime|checking image|booting|running|ready|error/i.test(document.getElementById('v86-status')?.textContent||'')));
+    await stage(page, 'boot-status', async () => page.waitForFunction(() => {
+      const status = (document.getElementById('v86-status')?.textContent || '').toLowerCase();
+      const health = document.getElementById('v86-health')?.getAttribute('data-state') || '';
+      // The smoke fixture is intentionally not a valid ISO, so integrity
+      // failure is an expected terminal state for this UI-only test. A real
+      // boot is verified separately by test:real-guest.
+      return health === 'ready' || health === 'offline' || /starting|checking runtime|checking image|booting|running|ready|failed|failure|error|integrity|artifact/i.test(status);
+    }));
     await stage(page, 'screen-toggle', async () => { await page.click(buttons.screen); await page.waitForFunction(() => !document.getElementById('screen_container')?.hidden && Boolean(document.getElementById('v86-terminal-container')?.hidden)); await page.click(buttons.terminal); await page.waitForFunction(() => Boolean(document.getElementById('screen_container')?.hidden) && !document.getElementById('v86-terminal-container')?.hidden); });
     await stage(page, 'image-profile-switching', async () => { await page.click(buttons.virt); await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Alpine Virt 3.24.1')||false); await page.click(buttons.linux4); await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Ultra Light Linux 4')||false); });
     console.log('Browser VM controls smoke test passed');
