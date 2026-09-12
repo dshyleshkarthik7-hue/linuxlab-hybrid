@@ -9,6 +9,11 @@ const { chromium } = require('playwright');
 const port = process.env.REAL_GUEST_PORT || '4174';
 const baseURL = process.env.REAL_GUEST_BASE_URL || `http://127.0.0.1:${port}`;
 const bootTimeoutMs = Number(process.env.REAL_GUEST_BOOT_TIMEOUT_MS || 120000);
+const isoSources = {
+  developer: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso',
+  virt: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/V2.00/alpine-virt-3.24.1-x86.iso',
+  linux4: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso',
+};
 let server;
 
 async function waitFor(url) {
@@ -31,12 +36,26 @@ const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext();
 const page = await context.newPage();
 try {
+  // Vite preview does not execute Netlify Edge Functions. For a local CI run,
+  // proxy only the ISO endpoint to the exact immutable GitHub Release assets.
+  // The application still performs its normal SHA-256 verification before v86
+  // receives the bytes, so this does not weaken the integrity gate.
+  if (!process.env.REAL_GUEST_BASE_URL) {
+    await page.route(`${baseURL.replace(/\/$/, '')}/api/iso**`, async route => {
+      const requestUrl = new URL(route.request().url());
+      const image = requestUrl.searchParams.get('image') || 'developer';
+      const upstream = isoSources[image] || isoSources.developer;
+      try {
+        const response = await route.fetch({ url: upstream, method: route.request().method(), headers: route.request().headers() });
+        await route.fulfill({ response });
+      } catch (error) {
+        await route.abort(error instanceof Error ? error.message : 'failed');
+      }
+    });
+  }
+
   await page.goto(`${baseURL.replace(/\/$/, '')}/index-v86.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('#v86-status', { state: 'attached', timeout: 10000 });
-
-  // The guest fetch + integrity verification can legitimately take longer than a
-  // short browser assertion timeout. Wait on the VM health state, not transient
-  // status text such as "booting" or "verifying image".
   await page.waitForFunction(() => {
     const health = document.querySelector('#v86-health');
     const state = health?.getAttribute('data-state');
@@ -57,7 +76,6 @@ try {
   }));
   assert.equal(policy.hasNetDevice, true, 'guest runtime must be created with network disabled');
   assert.doesNotMatch(policy.monitor, /host filesystem|host process/i, 'guest monitor must not advertise host resources');
-
   assert.ok(await page.locator('#v86-terminal-container').count());
   assert.ok(await page.locator('#v86-health').count());
   console.log(`Real guest runtime isolation gate passed: x86 guest reached ready state within ${bootTimeoutMs}ms, network disabled, resource monitor active.`);
