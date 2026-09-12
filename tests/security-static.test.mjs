@@ -16,4 +16,7 @@ assert.equal(/(?:\:\s*any\b|\bas\s+any\b|<\s*any\s*>)/.test(tutor), false, 'Tuto
 assert.match(tutor, /AbortController/);
 assert.match(tutor, /MAX_QUESTION_CHARS/);
 assert.match(tutor, /MAX_CONTEXT_CHARS/);
+assert.match(tutor, /rateLimit/);
+assert.match(tutor, /aggregateBy:\s*\[['"]ip['"],\s*['"]domain['"]\]/);
+assert.equal(/new Map<.*buckets|buckets\s*=\s*new Map/.test(tutor), false, 'Tutor rate limiting must not depend on per-runtime memory');
 console.log('Static security guardrails passed');
