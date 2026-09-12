@@ -1,0 +1,20 @@
+import { strict as assert } from 'node:assert';
+import { VM_RESOURCE_POLICIES, VMRuntimeResourceEnforcer, boundedText } from '../src/engine/VMResourcePolicy.ts';
+
+const policy = VM_RESOURCE_POLICIES.linux4;
+const enforcer = new VMRuntimeResourceEnforcer(policy, 1_000);
+assert.equal(enforcer.memoryBytes, 256 * 1024 * 1024);
+assert.equal(enforcer.vgaMemoryBytes, 4 * 1024 * 1024);
+assert.equal(enforcer.sessionExpired(1_000 + policy.maxSessionMs - 1), false);
+assert.equal(enforcer.sessionExpired(1_000 + policy.maxSessionMs), true);
+assert.equal(enforcer.acceptSerialByte(policy.maxSerialBytes), true);
+assert.equal(enforcer.acceptSerialByte(1), false);
+const bounded = enforcer.acceptOutput('x'.repeat(policy.maxOutputBytes));
+assert.equal(bounded.truncated, false);
+assert.equal(enforcer.state.outputBytes, policy.maxOutputBytes);
+assert.equal(enforcer.acceptOutput('x'), { value: '', truncated: true });
+enforcer.stop();
+assert.equal(enforcer.isStopped(), true);
+assert.equal(boundedText('🙂'.repeat(100), 7).value, '🙂🙂🙂');
+assert.equal(policy.networkAllowed, false);
+console.log('VM resource policy enforcement checks passed');
