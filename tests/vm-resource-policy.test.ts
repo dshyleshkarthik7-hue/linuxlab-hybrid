@@ -22,5 +22,9 @@ for (const [name, policy] of Object.entries(VM_RESOURCE_POLICIES)) {
   assert.equal(enforcer.isStopped(), true, `${name}: stop`);
 }
 
-assert.equal(boundedText('🙂'.repeat(100), 7).value, '🙂🙂🙂');
+// 🙂 is four bytes in UTF-8. A seven-byte quota therefore permits exactly one
+// complete emoji; the truncator must never split a multi-byte code point.
+assert.equal(boundedText('🙂'.repeat(100), 7).value, '🙂');
+assert.equal(new TextEncoder().encode(boundedText('🙂'.repeat(100), 7).value).byteLength, 4);
+assert.equal(boundedText('🙂'.repeat(100), 7).truncated, true);
 console.log('VM resource policy enforcement checks passed');
