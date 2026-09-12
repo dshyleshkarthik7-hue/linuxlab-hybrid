@@ -49,6 +49,13 @@ jobs:
           set -euo pipefail
           test -f node_modules/playwright/cli.js
           node node_modules/playwright/cli.js install --with-deps chromium
+      - name: Ensure Vite CSS compiler dependency
+        run: |
+          set -euo pipefail
+          # Vite 8 declares esbuild as a peer dependency but the committed lockfile
+          # does not materialize that peer. Install it without mutating the lockfile
+          # so the production build can resolve Vite's CSS compiler import.
+          npm install --no-save --no-package-lock --prefer-online esbuild@^0.28.0
       - run: npm run test:ci
       - run: npm run test:smoke
       - run: npm run test:mobile
