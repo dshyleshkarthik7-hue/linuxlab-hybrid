@@ -36,7 +36,7 @@ export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTel
       }
       // The frame protocol places a line break immediately after the start
       // marker. Exclude that framing delimiter, but preserve the guest payload
-      // exactly (including any meaningful trailing newline).
+      // exactly, including its trailing newline.
       const rawRelease = identityBuffer.slice(start + startMarker.length, end);
       const release = rawRelease.replace(/^\r?\n/, '').slice(0, MAX_IDENTITY_BUFFER);
       const isAlpine = /(?:^|\n)ID=alpine(?:\n|$)/i.test(release) || /(?:^|\n)ID_LIKE=.*\balpine\b/i.test(release);
