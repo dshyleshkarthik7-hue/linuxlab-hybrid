@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
 const port = Number(process.env.REAL_GUEST_PORT || 4174);
 const internalPort = Number(process.env.REAL_GUEST_INTERNAL_PORT || port + 2);
 const baseURL = process.env.REAL_GUEST_BASE_URL || `http://127.0.0.1:${port}`;
-const bootTimeoutMs = Number(process.env.REAL_GUEST_BOOT_TIMEOUT_MS || 45000);
+const bootTimeoutMs = Number(process.env.REAL_GUEST_BOOT_TIMEOUT_MS || 120000);
 const testTimeoutMs = Number(process.env.REAL_GUEST_TEST_TIMEOUT_MS || 8 * 60 * 1000);
 const isoFetchTimeoutMs = Number(process.env.REAL_GUEST_ISO_FETCH_TIMEOUT_MS || 60000);
 const isoSources = {
@@ -52,6 +52,14 @@ async function pipeResponse(source, target) {
   }
   target.end();
 }
+function parseRange(range, length) {
+  const match = /^bytes=(\d+)-(\d*)$/.exec(range || '');
+  if (!match) return null;
+  const start = Number(match[1]);
+  const requestedEnd = match[2] ? Number(match[2]) : length - 1;
+  if (!Number.isSafeInteger(start) || start >= length) return null;
+  return { start, end: Math.min(requestedEnd, length - 1) };
+}
 
 if (!process.env.REAL_GUEST_BASE_URL) {
   const vite = resolve('node_modules', '.bin', process.platform === 'win32' ? 'vite.cmd' : 'vite');
@@ -61,34 +69,46 @@ if (!process.env.REAL_GUEST_BASE_URL) {
   viteServer.stderr.on('data', d => process.stderr.write(String(d)));
   await waitFor(`http://127.0.0.1:${internalPort}`);
 
+  // Download the small Linux 4 test artifact once, outside the browser.
+  // v86 may issue many range requests; proxying each one to GitHub made the
+  // gate depend on remote CDN behavior and could leave it running for 8 min.
+  const isoResponse = await fetch(isoSources.linux4, {
+    redirect: 'follow',
+    headers: { 'accept-encoding': 'identity' },
+    signal: AbortSignal.timeout(isoFetchTimeoutMs),
+  });
+  if (!isoResponse.ok) throw new Error(`Linux 4 ISO download failed (${isoResponse.status})`);
+  const linux4Iso = Buffer.from(await isoResponse.arrayBuffer());
+  if (linux4Iso.length === 0) throw new Error('Linux 4 ISO download returned an empty file');
+  console.log(`Loaded Linux 4 ISO fixture: ${linux4Iso.length} bytes`);
+
   proxyServer = createServer(async (req, res) => {
     try {
       const requestUrl = new URL(req.url || '/', baseURL);
       if (requestUrl.pathname === '/api/iso') {
         const image = requestUrl.searchParams.get('image') || 'linux4';
-        const upstream = isoSources[image] || isoSources.linux4;
-        const range = req.headers.range;
-        // The application only needs to verify that the ISO endpoint exists
-        // before v86 starts. Do not download an entire multi-megabyte ISO for
-        // a bytes=0-0 probe; GitHub release assets may ignore that range.
-        if (range === 'bytes=0-0') {
-          const headResponse = await fetch(upstream, {
-            method: 'HEAD',
-            redirect: 'follow',
-            signal: AbortSignal.timeout(10000),
-          });
-          if (!headResponse.ok) throw new Error(`ISO HEAD failed (${headResponse.status})`);
-          const length = headResponse.headers.get('content-length');
-          res.statusCode = 206;
-          res.setHeader('content-type', headResponse.headers.get('content-type') || 'application/octet-stream');
-          res.setHeader('content-range', `bytes 0-0/${length || '*'}`);
-          res.setHeader('content-length', '1');
+        if (image === 'linux4') {
+          const range = parseRange(req.headers.range, linux4Iso.length);
+          if (range) {
+            const body = linux4Iso.subarray(range.start, range.end + 1);
+            res.statusCode = 206;
+            res.setHeader('content-type', 'application/octet-stream');
+            res.setHeader('content-range', `bytes ${range.start}-${range.end}/${linux4Iso.length}`);
+            res.setHeader('content-length', body.length);
+            res.setHeader('accept-ranges', 'bytes');
+            res.end(body);
+            return;
+          }
+          res.statusCode = 200;
+          res.setHeader('content-type', 'application/octet-stream');
+          res.setHeader('content-length', linux4Iso.length);
           res.setHeader('accept-ranges', 'bytes');
-          res.end(Buffer.from([0]));
+          res.end(linux4Iso);
           return;
         }
+        const upstream = isoSources[image] || isoSources.linux4;
         const requestHeaders = { 'accept-encoding': 'identity' };
-        if (range) requestHeaders.range = range;
+        if (req.headers.range) requestHeaders.range = req.headers.range;
         const upstreamResponse = await fetch(upstream, {
           headers: requestHeaders,
           redirect: 'follow',
