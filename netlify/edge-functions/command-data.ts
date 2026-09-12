@@ -204,3 +204,15 @@ export const COMMAND_INDEX: readonly CommandIndexItem[] = [
 ];
 
 if (COMMAND_INDEX.length !== 200) throw new Error(`Expected 200 command entries, found ${COMMAND_INDEX.length}`);
+
+export default async (_request: Request) => {
+  return new Response(JSON.stringify(COMMAND_INDEX), {
+    status: 200,
+    headers: {
+      'content-type': 'application/json; charset=UTF-8',
+      'cache-control': 'public,max-age=300',
+    },
+  });
+};
+
+export const config = { path: '/command-data' };
