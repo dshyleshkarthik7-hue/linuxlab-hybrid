@@ -1,6 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { EXECUTABLE_COMMANDS, ExecutableCommandCatalog, LEARNING_PATHS, LinuxTutorContext, AlpineIntegration, MobileTerminalController, P1Runtime } from '../src/product/P1Runtime.ts';
 import { LinuxObservatory } from '../src/observability/LinuxObservatory.ts';
+import { ALPINE_ARTIFACT } from '../src/core/ISOIntegrity.ts';
 
 assert.deepEqual(LEARNING_PATHS.map(x => x.id), ['beginner', 'intermediate', 'expert']);
 const catalog = new ExecutableCommandCatalog();
@@ -15,7 +16,9 @@ assert.equal(context.telemetry.source, 'SIMULATED');
 assert.match(tutor.prompt(context), /Exit code: 0/);
 
 const alpine = new AlpineIntegration();
-assert.equal(alpine.metadata().version, 'v1.0.0');
+assert.equal(alpine.metadata().version, ALPINE_ARTIFACT.version);
+assert.equal(alpine.metadata().architecture, ALPINE_ARTIFACT.architecture);
+assert.equal(alpine.metadata().filename, ALPINE_ARTIFACT.filename);
 assert.equal(alpine.isIntegrityVerified(), false);
 
 const mobile = new MobileTerminalController();
