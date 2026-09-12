@@ -2,11 +2,11 @@ import { StructuredLinuxEngine } from '../engine/StructuredLinuxEngine.ts';
 import type { CommandResult } from '../engine/CommandResult.ts';
 import { LinuxObservatory } from '../observability/LinuxObservatory.ts';
 import { COMMAND_LESSONS, type LinuxCommandLesson } from '../commands/commandCatalog.ts';
-import { ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, type PinnedArtifact } from '../core/ISOIntegrity.ts';
+import { ALPINE_ARTIFACT, type PinnedArtifact } from '../core/ISOIntegrity.ts';
 
 export type LearningLevel = 'beginner' | 'intermediate' | 'expert';
 export interface ProductTelemetry { command: string; level: LearningLevel; cwd: string; exitCode: number; stdoutBytes: number; stderrBytes: number; durationMs: number; timestamp: number; }
-export interface TutorContext { level: LearningLevel; command: string; exitCode: number; cwd: string; hint: string; explanation: string; nextStep: string; history: string[]; repeatedFailure: boolean; telemetry: ReturnType<LinuxObservatory['system']>; }
+export interface TutorContext { level: LearningLevel; command: string; exitCode: number; cwd: string; hint: string; explanation: string; nextStep: string; history: string[]; repeatedFailure: boolean; telemetry: ReturnType<LinuxObservatory['system']>; filesystem: string[]; curriculumObjective: string; }
 export interface LearningPath { id: LearningLevel; title: string; description: string; commands: string[]; }
 
 export const LEARNING_PATHS: LearningPath[] = [
@@ -30,24 +30,27 @@ export class ProductObservatory extends LinuxObservatory {
 export class LinuxTutorContext {
   private readonly observatory: LinuxObservatory;
   constructor(observatory: LinuxObservatory) { this.observatory = observatory; }
-  build(level: LearningLevel, command: string, result: CommandResult, cwd: string): TutorContext {
+  build(level: LearningLevel, command: string, result: CommandResult, cwd: string, filesystem: string[] = []): TutorContext {
     if (this.observatory instanceof ProductObservatory) this.observatory.recordCommand(result, level, cwd);
     const telemetry = this.observatory.system();
     const name = command.trim().split(/\s+/)[0] ?? '';
     const history = this.observatory instanceof ProductObservatory ? this.observatory.recentCommands(8).map(item => item.command) : [];
     const failures = this.observatory instanceof ProductObservatory ? this.observatory.recentCommands(8).filter(item => item.command.trim().split(/\s+/)[0] === name && item.exitCode !== 0).length : 0;
     const lesson = COMMAND_LESSONS.find(item => item.name === name);
+    const path = LEARNING_PATHS.find(item => item.id === level);
     const explanation = lesson?.summary ?? 'This command is outside the indexed curriculum.';
+    const curriculumObjective = path?.description ?? 'Explore Linux command semantics safely.';
     const repeatedFailure = result.exitCode !== 0 && failures >= 2;
+    const hasFileContext = filesystem.length > 0;
     const hint = result.exitCode === 0
-      ? `${name || 'Command'} succeeded. ${explanation}.`
+      ? `${name || 'Command'} succeeded. ${explanation}${hasFileContext ? ` Current filesystem snapshot: ${filesystem.slice(0, 8).join(', ')}.` : ''}`
       : `${name || 'Command'} exited with status ${result.exitCode}. ${repeatedFailure ? 'You have hit this command repeatedly; compare the last attempts and change one input at a time.' : (result.stderr.trim() || 'Inspect the arguments and command output.')}`;
     const nextStep = result.exitCode === 0
       ? level === 'beginner' ? 'Try changing one argument and observe the output.' : history.length > 1 ? `Review your recent sequence (${history.slice(-3).join(' → ')}) and compose the next step with a pipeline or conditional.` : 'Compose this command with another command using a pipeline or conditional.'
-      : repeatedFailure ? 'Compare the last attempts, inspect stderr, and make one targeted correction before retrying.' : 'Read stderr, correct the smallest mistake, then run the command again.';
-    return { level, command, exitCode: result.exitCode, cwd, hint, explanation, nextStep, history, repeatedFailure, telemetry };
+      : repeatedFailure ? 'Compare the last attempts, inspect stderr, filesystem state and the curriculum objective, then make one targeted correction before retrying.' : 'Read stderr, inspect the relevant filesystem state, correct the smallest mistake, then run the command again.';
+    return { level, command, exitCode: result.exitCode, cwd, hint, explanation, nextStep, history, repeatedFailure, telemetry, filesystem: [...filesystem], curriculumObjective };
   }
-  prompt(context: TutorContext): string { return [`Level: ${context.level}`, `Command: ${context.command}`, `Exit code: ${context.exitCode}`, `Working directory: ${context.cwd}`, `Recent commands: ${context.history.join(' | ') || 'none'}`, `Hint: ${context.hint}`, `Explanation: ${context.explanation}`, `Next step: ${context.nextStep}`].join('\n'); }
+  prompt(context: TutorContext): string { return [`Level: ${context.level}`, `Curriculum objective: ${context.curriculumObjective}`, `Command: ${context.command}`, `Exit code: ${context.exitCode}`, `Working directory: ${context.cwd}`, `Recent commands: ${context.history.join(' | ') || 'none'}`, `Filesystem snapshot: ${context.filesystem.join(' | ') || 'none'}`, `Hint: ${context.hint}`, `Explanation: ${context.explanation}`, `Next step: ${context.nextStep}`].join('\n'); }
 }
 
 export class AlpineIntegration {
@@ -82,5 +85,16 @@ export class P1Runtime {
   constructor(level: LearningLevel = 'beginner', observatory = new ProductObservatory('SIMULATED')) { this.level = level; this.observatory = observatory; this.tutor = new LinuxTutorContext(observatory); }
   setLevel(level: LearningLevel): void { this.level = level; }
   getLevel(): LearningLevel { return this.level; }
-  async execute(commandLine: string): Promise<{ result: CommandResult; tutorContext: TutorContext }> { const result = await this.engine.executeResult(commandLine); return { result, tutorContext: this.tutor.build(this.level, commandLine, result, this.engine.getCwd()) }; }
+  async execute(commandLine: string): Promise<{ result: CommandResult; tutorContext: TutorContext }> { const result = await this.engine.executeResult(commandLine); return { result, tutorContext: this.tutor.build(this.level, commandLine, result, this.engine.getCwd(), this.filesystemSnapshot()) }; }
+  private filesystemSnapshot(limit = 40): string[] {
+    const root = (this.engine as any).root as { type: string; name: string; children?: Map<string, any> };
+    const out: string[] = [];
+    const walk = (node: any, path: string): void => {
+      if (out.length >= limit) return;
+      if (path !== '/') out.push(path + (node.type === 'dir' ? '/' : ''));
+      if (node.type === 'dir' && node.children) for (const [name, child] of node.children) walk(child, path === '/' ? '/' + name : path + '/' + name);
+    };
+    walk(root, '/');
+    return out;
+  }
 }

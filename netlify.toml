@@ -11,6 +11,7 @@
 [[edge_functions]]
   path = "/commands/*"
   function = "commands"
+  preferStatic = true
 
 [[headers]]
   for = "/*"
