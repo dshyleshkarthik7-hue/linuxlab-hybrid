@@ -2,7 +2,7 @@ import { GuestTelemetryBridge, type GuestTelemetrySnapshot } from './observabili
 
 export interface V86TelemetryTarget {
   add_listener(name: 'serial0-output-byte' | 'emulator-ready', callback: (value?: number) => void): void;
-  remove_listener?: (name: 'serial0-output-byte' | 'emulator-ready', callback: (value?: number) => void) => void;
+  remove_listener(name: 'serial0-output-byte' | 'emulator-ready', callback: (value?: number) => void): void;
 }
 export type GuestIdentityKind = 'alpine' | 'buildroot' | 'unknown';
 export interface GuestIdentity { kind: GuestIdentityKind; isAlpine: boolean; release: string; }
@@ -53,6 +53,6 @@ export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTel
     if (disposed) return;
     disposed = true;
     identityBuffer = '';
-    vm.remove_listener?.('serial0-output-byte', onSerial);
+    vm.remove_listener('serial0-output-byte', onSerial);
   };
 }
