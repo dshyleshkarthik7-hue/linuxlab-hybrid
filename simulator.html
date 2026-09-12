@@ -3,30 +3,29 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Linux Simulator — Practice Commands Safely | LinuxTerminal</title>
+    <title>LinuxTerminal.me — Practice Commands Safely</title>
     <link rel="stylesheet" href="/src/style.css" />
     <meta name="description" content="Practice Linux commands, files, folders, pipes and redirection in a safe browser learning environment." />
-  <meta name="keywords" content="learn Linux, Linux commands, Linux simulator, online Linux terminal, Alpine Linux, Linux for beginners, Linux practice" />
-  <meta name="author" content="LinuxTerminal" />
-  <meta name="google-site-verification" content="2nUtwedGSNvf4DfIFELLALuh8GMCvr74mcaw-RDu4Xw" />
-  <meta name="msvalidate.01" content="282830306BEF15F98B821C6CB28EA013" />
-  <meta name="robots" content="index,follow,max-image-preview:large" />
-  <link rel="canonical" href="https://linuxterminal.me/simulator/" />
-  <meta property="og:type" content="website" />
-  <meta property="og:site_name" content="LinuxTerminal" />
-  <meta property="og:title" content="Linux Simulator — Practice Linux Commands Safely | LinuxTerminal" />
-  <meta property="og:description" content="Practice Linux commands, files, folders, pipes, redirection and programming in a safe browser-based learning simulator." />
-  <meta property="og:url" content="https://linuxterminal.me/simulator/" />
-  <meta name="twitter:card" content="summary_large_image" />
-  <meta name="theme-color" content="#020617" />
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"SoftwareApplication","name":"LinuxTerminal","applicationCategory":"DeveloperApplication","operatingSystem":"Web","url":"https://linuxterminal.me/simulator/","description":"Practice Linux-style POSIX commands and programming workflows in LinuxTerminal's educational browser-based simulator."}</script>
-</head>
+    <meta name="keywords" content="learn Linux, Linux commands, Linux simulator, online Linux terminal, Alpine Linux, Linux practice" />
+    <meta name="author" content="LinuxTerminal.me" />
+    <meta name="google-site-verification" content="2nUtwedGSNvf4DfIFELLALuh8GMCvr74mcaw-RDu4Xw" />
+    <meta name="msvalidate.01" content="282830306BEF15F98B821C6CB28EA013" />
+    <meta name="robots" content="index,follow,max-image-preview:large" />
+    <link rel="canonical" href="https://linuxterminal.me/simulator/" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="LinuxTerminal.me" />
+    <meta property="og:title" content="LinuxTerminal.me — Practice Linux Commands Safely" />
+    <meta property="og:description" content="Practice Linux commands, files, folders, pipes, redirection and programming in a safe browser-based learning simulator." />
+    <meta property="og:url" content="https://linuxterminal.me/simulator/" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#020617" />
+  </head>
   <body>
     <div id="app">
       <header class="app-header">
         <div class="logo-group">
           <span style="font-size: 1.3rem;">⚡</span>
-          <span class="logo-title">LinuxTerminal <span class="badge">Learning Sandbox • Simulated</span></span>
+          <span class="logo-title">LinuxTerminal<span class="badge">.me • Learning Sandbox • Simulated</span></span>
         </div>
         <div class="header-actions" aria-label="Sandbox actions">
           <button id="btn-run-tests" class="action-btn test-btn" title="Run learning checks (Ctrl/Cmd + Enter)">⚡ Check My Code</button>
@@ -36,7 +35,6 @@
       </header>
 
       <main class="workspace-container"><aside class="learning-sidebar" aria-label="Learning guide"><div class="learning-label">YOUR LAB</div><h2>Practice → Understand → Check</h2><p>Everything here is simulated intentionally for safe, instant practice.</p><div class="learning-steps"><button class="learning-step active" data-cmd="pwd">1 <span>Locate yourself</span><code>pwd</code></button><button class="learning-step" data-cmd="ls -la">2 <span>Inspect files</span><code>ls -la</code></button><button class="learning-step" data-cmd="cat /etc/os-release">3 <span>Read system info</span><code>cat /etc/os-release</code></button><button class="learning-step" data-cmd="help">4 <span>Explore commands</span><code>help</code></button></div><div class="sandbox-note"><strong>Simulated POSIX lab</strong><br/>Great for concepts and repetition. Use Real Linux for kernel, package and network behavior.</div></aside>
-        <!-- Left Editor Pane -->
         <section class="editor-pane">
           <div class="pane-header">
             <div class="file-tabs">
@@ -45,16 +43,13 @@
             </div>
             <button id="btn-save-fs" class="btn-save">Save Sandbox Files (Ctrl+S)</button>
           </div>
-          
           <div id="monaco-container"></div>
-
           <div id="test-feedback-panel" class="test-feedback">
             <div class="test-header">Learning Feedback</div>
             <div id="test-output-list">Click "Check My Code" to see whether the current exercise passes the learning checks.</div>
           </div>
         </section>
 
-        <!-- Right Terminal Pane -->
         <section class="terminal-pane">
           <div class="pane-header">
             <span id="active-terminal-title" class="terminal-status">Learning Sandbox: Simulated Linux-style Shell</span>
@@ -64,7 +59,6 @@
         </section>
       </main><div id="shortcut-help" class="shortcut-help" aria-live="polite">Ctrl/Cmd+S Save • Ctrl/Cmd+Enter Check • ↑/↓ History</div>
     </div>
-
     <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
