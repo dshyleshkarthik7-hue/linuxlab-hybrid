@@ -16,16 +16,21 @@ for (const command of commandNames) {
 }
 
 const commandIndex = await read('public/commands/index.html');
-assert.match(commandIndex, /commands\.js/);
+// The command Edge Function owns /commands/*, so the browser-side index script
+// intentionally lives at /commands-index.js outside that Edge Function route.
+assert.match(commandIndex, /commands-index\.js/);
 assert.doesNotMatch(commandIndex, /<script(?![^>]+src=)[^>]*>/i, 'command index must not contain inline script');
-const commandJs = await read('public/commands/commands.js');
+const commandJs = await read('public/commands-index.js');
 assert.match(commandJs, /COMMANDS/);
 assert.match(commandJs, /seq/);
+assert.match(commandJs, /COMMANDS\.length/);
 
 const edge = await read('netlify/edge-functions/commands.ts');
 assert.match(edge, /indexHtml\(\)/);
 assert.match(edge, /lessonHtml\(item/);
 assert.match(edge, /\/commands\/\*/);
+assert.match(edge, /commands-index\.js/);
+assert.doesNotMatch(edge, /<script(?![^>]+src=)[^>]*>/i, 'command Edge Function must not emit inline script');
 
 const tutor = await read('netlify/edge-functions/tutor.ts');
 assert.match(tutor, /LinuxTerminal Tutor/);
