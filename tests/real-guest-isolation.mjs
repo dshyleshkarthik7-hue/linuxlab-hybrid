@@ -36,37 +36,39 @@ const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext();
 const page = await context.newPage();
 try {
+  page.on('pageerror', error => process.stderr.write(`[browser pageerror] ${error.message}\n`));
+  page.on('console', message => { if (message.type() === 'error') process.stderr.write(`[browser console] ${message.text()}\n`); });
+
   // Vite preview does not execute Netlify Edge Functions. For local CI, fetch the
   // immutable release artifact from Node and fulfill the same-origin request.
   // The application still performs its normal SHA-256 verification before v86
   // receives the bytes. Do not use route.continue() here: Playwright forbids
-  // changing the protocol of a routed request.
+  // changing the protocol of a routed request. Content-Length/Content-Encoding
+  // are deliberately omitted because Node fetch may transparently decode them.
   if (!process.env.REAL_GUEST_BASE_URL) {
     await page.route(`${baseURL.replace(/\/$/, '')}/api/iso**`, async route => {
       const requestUrl = new URL(route.request().url());
       const image = requestUrl.searchParams.get('image') || 'developer';
       const upstream = isoSources[image] || isoSources.developer;
-      try {
-        const upstreamResponse = await fetch(upstream, { redirect: 'follow' });
-        const body = Buffer.from(await upstreamResponse.arrayBuffer());
-        const headers = Object.fromEntries(upstreamResponse.headers.entries());
-        await route.fulfill({
-          status: upstreamResponse.status,
-          headers,
-          body,
-        });
-      } catch (error) {
-        if (!route.request().isNavigationRequest()) {
-          await route.abort('failed');
-        } else {
-          throw error;
-        }
+      const upstreamResponse = await fetch(upstream, { redirect: 'follow' });
+      const body = Buffer.from(await upstreamResponse.arrayBuffer());
+      const headers = {};
+      for (const name of ['content-type', 'accept-ranges', 'content-range', 'etag', 'last-modified']) {
+        const value = upstreamResponse.headers.get(name);
+        if (value) headers[name] = value;
       }
+      await route.fulfill({ status: upstreamResponse.status, headers, body });
     });
   }
 
   await page.goto(`${baseURL.replace(/\/$/, '')}/index-v86.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('#v86-status', { state: 'attached', timeout: 10000 });
+
+  // The developer image is retained as a separately tested production profile,
+  // but the isolation gate boots the smaller pinned Alpine Virt image to avoid
+  // making the mandatory CI gate depend on the custom developer image boot path.
+  await page.locator('#btn-v86-virt').click();
+
   await page.waitForFunction(() => {
     const health = document.querySelector('#v86-health');
     const state = health?.getAttribute('data-state');
@@ -75,8 +77,10 @@ try {
 
   const state = await page.locator('#v86-health').getAttribute('data-state');
   const status = await page.locator('#v86-status').textContent();
+  const terminal = await page.locator('#v86-terminal-container').innerText().catch(() => '');
+  const monitor = await page.locator('#v86-monitor').textContent();
   if (state !== 'ready') {
-    throw new Error(`Real guest failed to become ready: health=${state}, status=${status || '(empty)'}`);
+    throw new Error(`Real guest failed to become ready: health=${state}, status=${status || '(empty)'}, monitor=${monitor || '(empty)'}, terminal=${terminal.slice(-1000) || '(empty)'}`);
   }
 
   const source = await page.locator('html').innerText();
@@ -89,7 +93,7 @@ try {
   assert.doesNotMatch(policy.monitor, /host filesystem|host process/i, 'guest monitor must not advertise host resources');
   assert.ok(await page.locator('#v86-terminal-container').count());
   assert.ok(await page.locator('#v86-health').count());
-  console.log(`Real guest runtime isolation gate passed: x86 guest reached ready state within ${bootTimeoutMs}ms, network disabled, resource monitor active.`);
+  console.log(`Real guest runtime isolation gate passed: pinned Alpine Virt guest reached ready state within ${bootTimeoutMs}ms, network disabled, resource monitor active.`);
 } finally {
   await context.close().catch(() => {});
   await browser.close().catch(() => {});
