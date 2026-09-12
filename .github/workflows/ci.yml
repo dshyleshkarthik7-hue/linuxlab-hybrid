@@ -9,7 +9,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     env:
       NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
       NPM_CONFIG_FETCH_RETRIES: 8
@@ -33,11 +33,7 @@ jobs:
           fi
           echo "npm ci failed; retrying once through a separate read-only registry mirror"
           npm cache clean --force
-          npm ci \
-            --ignore-scripts \
-            --prefer-online \
-            --registry=https://registry.npmmirror.com \
-            --replace-registry-host=always
+          npm ci --ignore-scripts --prefer-online --registry=https://registry.npmmirror.com --replace-registry-host=always
       - run: npm audit --audit-level=high
       - name: Install Playwright Chromium
         run: |
@@ -46,6 +42,8 @@ jobs:
           node node_modules/playwright/cli.js install --with-deps chromium
       - run: npm run test:ci
       - run: npm run test:smoke
+      - name: Real guest isolation gate
+        run: npm run test:real-guest
       - run: npm run test:mobile
       - run: node tests/p2-p3-contract.test.mjs
       - name: Production smoke
