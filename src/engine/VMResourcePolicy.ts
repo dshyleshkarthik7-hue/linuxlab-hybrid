@@ -73,6 +73,8 @@ function utf8Prefix(value: string, maxBytes: number): string {
   const bytes = new TextEncoder().encode(value);
   if (bytes.byteLength <= maxBytes) return value;
   let end = Math.min(maxBytes, bytes.byteLength);
+  // `end` is an exclusive slice boundary. A UTF-8 continuation byte at
+  // bytes[end] means the boundary falls inside the following code point.
   while (end > 0 && end < bytes.byteLength && (bytes[end] & 0xc0) === 0x80) end--;
   return new TextDecoder().decode(bytes.slice(0, end));
 }
