@@ -21,6 +21,7 @@ const PROFILES: Record<'developer' | 'virt' | 'linux4', Profile> = {
   linux4: { name: 'Ultra Light Linux 4', memoryMiB: 256, cdrom: ULTRA_LIGHT_ISO, supported: true, arch: 'x86', note: 'Approx. 7.4 MB Buildroot-based practice image.', policy: 'linux4', expectedGuest: 'buildroot' },
 };
 function initialProfile(): Profile { const requested = new URLSearchParams(window.location.search).get('profile'); if (requested === 'linux4') return PROFILES.linux4; if (requested === 'virt') return PROFILES.virt; return PROFILES.developer; }
+
 export class V86LinuxTerminal {
   private term: xtermModule.Terminal;
   private fitAddon: fitModule.FitAddon;
