@@ -36,21 +36,15 @@ const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext();
 const page = await context.newPage();
 try {
-  // Vite preview does not execute Netlify Edge Functions. For a local CI run,
-  // proxy only the ISO endpoint to the exact immutable GitHub Release assets.
-  // The application still performs its normal SHA-256 verification before v86
-  // receives the bytes, so this does not weaken the integrity gate.
+  // Vite preview does not execute Netlify Edge Functions. For local CI, rewrite
+  // only the ISO endpoint to an immutable GitHub Release artifact. The application
+  // still performs its normal SHA-256 verification before v86 receives the bytes.
   if (!process.env.REAL_GUEST_BASE_URL) {
     await page.route(`${baseURL.replace(/\/$/, '')}/api/iso**`, async route => {
       const requestUrl = new URL(route.request().url());
       const image = requestUrl.searchParams.get('image') || 'developer';
       const upstream = isoSources[image] || isoSources.developer;
-      try {
-        const response = await route.fetch({ url: upstream, method: route.request().method(), headers: route.request().headers() });
-        await route.fulfill({ response });
-      } catch (error) {
-        await route.abort(error instanceof Error ? error.message : 'failed');
-      }
+      await route.continue({ url: upstream });
     });
   }
 
