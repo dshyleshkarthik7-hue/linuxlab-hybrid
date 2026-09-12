@@ -7,29 +7,24 @@ import { artifactForIsoUrl, fetchVerifiedIso } from './core/verified-iso-fetch.t
 
 const TerminalCtor = xtermModule.Terminal;
 const FitAddonCtor = fitModule.FitAddon;
-declare global { interface Window { linuxLabVM?: V86LinuxTerminal; V86?: V86Constructor; } }
+declare global { interface Window { linuxLabVM?: V86LinuxTerminal; } }
 type V86Options = { wasm_path: string; memory_size: number; vga_memory_size: number; screen_container: HTMLElement; bios: { url: string }; vga_bios: { url: string }; cdrom: { buffer: ArrayBuffer }; boot_order: number; autostart: boolean; disable_speaker: boolean; net_device: { type: 'none' }; };
-type V86 = V86TelemetryTarget & { keyboard_send_text?: (data: string) => void; serial0_send: (data: string) => void; stop?: () => void; destroy?: () => void; };
-type V86Constructor = new (options: V86Options) => V86;
+type V86Runtime = V86TelemetryTarget & { keyboard_send_text?: (data: string) => void; serial0_send: (data: string) => void; stop?: () => void; destroy?: () => void; };
 type GuestKind = 'alpine' | 'buildroot';
 type Profile = { name: string; memoryMiB: number; cdrom: string; supported: boolean; note?: string; arch?: 'x86' | 'x86_64'; policy: VMResourcePolicyName; expectedGuest: GuestKind; };
-
 const ALPINE_ISO = '/api/iso';
 const ALPINE_VIRT_ISO = '/api/iso?image=virt';
 const ULTRA_LIGHT_ISO = '/api/iso?image=linux4';
-
 const PROFILES: Record<'developer' | 'virt' | 'linux4', Profile> = {
   developer: { name: 'Developer Alpine', memoryMiB: 1024, cdrom: ALPINE_ISO, supported: true, policy: 'developer', expectedGuest: 'alpine' },
   virt: { name: 'Alpine Virt 3.24.1', memoryMiB: 512, cdrom: ALPINE_VIRT_ISO, supported: true, arch: 'x86', note: 'Lightweight 32-bit Alpine Virt profile.', policy: 'virt', expectedGuest: 'alpine' },
   linux4: { name: 'Ultra Light Linux 4', memoryMiB: 256, cdrom: ULTRA_LIGHT_ISO, supported: true, arch: 'x86', note: 'Approx. 7.4 MB Buildroot-based practice image.', policy: 'linux4', expectedGuest: 'buildroot' },
 };
-
 function initialProfile(): Profile { const requested = new URLSearchParams(window.location.search).get('profile'); if (requested === 'linux4') return PROFILES.linux4; if (requested === 'virt') return PROFILES.virt; return PROFILES.developer; }
-
 export class V86LinuxTerminal {
   private term: xtermModule.Terminal;
   private fitAddon: fitModule.FitAddon;
-  private emulator: V86 | null = null;
+  private emulator: V86Runtime | null = null;
   private telemetryDispose: (() => void) | null = null;
   private static runtimePromise: Promise<void> | null = null;
   private terminalDataDisposable: { dispose(): void } | null = null;
@@ -47,44 +42,19 @@ export class V86LinuxTerminal {
   private bootStage = 'starting';
   private lastSerialAt = 0;
   private guestIdentity: GuestIdentity | null = null;
-
   constructor(containerId = 'v86-terminal-container') {
     if (!TerminalCtor || !FitAddonCtor) throw new Error('Terminal runtime failed to load');
     const container = document.getElementById(containerId); if (!container) throw new Error('Terminal container is missing');
-    this.term = new TerminalCtor({ cursorBlink: true, fontSize: 14, convertEol: true, scrollback: 10000 });
-    this.fitAddon = new FitAddonCtor(); this.term.loadAddon(this.fitAddon); this.term.open(container);
-    this.terminalDataDisposable = this.term.onData((data: string) => { if (this.canUseRuntime()) this.emulator?.serial0_send(data); });
-    window.addEventListener('resize', () => this.fit()); setTimeout(() => this.fit(), 100); this.bindControls(); void this.start(this.profile);
+    this.term = new TerminalCtor({ cursorBlink: true, fontSize: 14, convertEol: true, scrollback: 10000 }); this.fitAddon = new FitAddonCtor(); this.term.loadAddon(this.fitAddon); this.term.open(container);
+    this.terminalDataDisposable = this.term.onData((data: string) => { if (this.canUseRuntime()) this.emulator?.serial0_send(data); }); window.addEventListener('resize', () => this.fit()); setTimeout(() => this.fit(), 100); this.bindControls(); void this.start(this.profile);
   }
-
-  private bindControls(): void {
-    document.getElementById('btn-v86-alpine')?.addEventListener('click', () => void this.start(PROFILES.developer));
-    document.getElementById('btn-v86-virt')?.addEventListener('click', () => void this.start(PROFILES.virt));
-    document.getElementById('btn-v86-linux4')?.addEventListener('click', () => void this.start(PROFILES.linux4));
-    document.getElementById('btn-v86-restart')?.addEventListener('click', () => void this.start(this.profile));
-    document.getElementById('btn-v86-terminal')?.addEventListener('click', () => this.showTerminal());
-    document.getElementById('btn-v86-screen')?.addEventListener('click', () => this.showScreen());
-    document.getElementById('btn-v86-diagnostics')?.addEventListener('click', () => this.showDiagnostics());
-    document.getElementById('btn-v86-copydiag')?.addEventListener('click', () => void this.copyDiagnostics());
-  }
-
+  private bindControls(): void { document.getElementById('btn-v86-alpine')?.addEventListener('click', () => void this.start(PROFILES.developer)); document.getElementById('btn-v86-virt')?.addEventListener('click', () => void this.start(PROFILES.virt)); document.getElementById('btn-v86-linux4')?.addEventListener('click', () => void this.start(PROFILES.linux4)); document.getElementById('btn-v86-restart')?.addEventListener('click', () => void this.start(this.profile)); document.getElementById('btn-v86-terminal')?.addEventListener('click', () => this.showTerminal()); document.getElementById('btn-v86-screen')?.addEventListener('click', () => this.showScreen()); document.getElementById('btn-v86-diagnostics')?.addEventListener('click', () => this.showDiagnostics()); document.getElementById('btn-v86-copydiag')?.addEventListener('click', () => void this.copyDiagnostics()); }
   private async start(profile: Profile): Promise<void> {
-    const id = ++this.bootId; this.bootController?.abort(); this.bootController = new AbortController(); const signal = this.bootController.signal; await this.dispose();
-    this.profile = profile; this.enforcer = new VMRuntimeResourceEnforcer(VM_RESOURCE_POLICIES[profile.policy]); this.ready = false; this.guestIdentity = null; this.setHealth('booting'); this.serial = ''; this.lastSerialAt = 0; this.bootPromptSent = false; this.bootStage = 'starting'; this.showTerminal(); this.term.clear();
+    const id = ++this.bootId; this.bootController?.abort(); this.bootController = new AbortController(); const signal = this.bootController.signal; await this.dispose(); this.profile = profile; this.enforcer = new VMRuntimeResourceEnforcer(VM_RESOURCE_POLICIES[profile.policy]); this.ready = false; this.guestIdentity = null; this.setHealth('booting'); this.serial = ''; this.lastSerialAt = 0; this.bootPromptSent = false; this.bootStage = 'starting'; this.showTerminal(); this.term.clear();
     if (!profile.supported) { this.setHealth('offline'); this.status(profile.name + ' • incompatible with browser VM'); this.monitor('Not booted • ' + (profile.arch || 'unknown architecture')); this.term.writeln('LinuxTerminal — ' + profile.name); this.term.writeln('\r\n[Compatibility] ' + (profile.note || 'This image cannot run in this browser emulator.')); return; }
     this.status(profile.name + ' • checking runtime'); this.term.writeln('LinuxTerminal — ' + profile.name);
-    try {
-      await this.loadRuntime(); if (id !== this.bootId || signal.aborted) return; await this.preflightRuntimeAssets(signal); if (id !== this.bootId || signal.aborted) return;
-      this.status(profile.name + ' • verifying image'); const artifact = artifactForIsoUrl(profile.cdrom); const isoBytes = await fetchVerifiedIso(profile.cdrom, signal); if (isoBytes.byteLength === 0) throw new Error('Verified Linux image is empty'); this.status(profile.name + ' • integrity verified');
-      const screen = document.getElementById('screen_container'); if (!screen) throw new Error('VM screen container is missing'); const policy = this.enforcer; if (!policy) throw new Error('VM resource policy was not initialized'); this.bootStage = 'creating VM'; this.status(profile.name + ' • booting'); this.monitor(`${profile.memoryMiB} MiB • verified ${artifact.filename}`);
-      const Runtime = window.V86; if (typeof Runtime !== 'function') throw new Error('Local v86 runtime did not expose window.V86');
-      const vm = new Runtime({ wasm_path: '/v86.wasm', memory_size: policy.memoryBytes, vga_memory_size: policy.vgaMemoryBytes, screen_container: screen, bios: { url: '/seabios.bin' }, vga_bios: { url: '/vgabios.bin' }, cdrom: { buffer: isoBytes }, boot_order: 0x20, autostart: true, disable_speaker: true, net_device: { type: 'none' } });
-      this.emulator = vm; this.sessionTimer = window.setTimeout(() => this.enforceSessionExpiry(id), policy.remainingSessionMs());
-      this.telemetryDispose = attachGuestTelemetry(vm, { onTelemetry: snapshot => { if (id !== this.bootId) return; const monitor = document.getElementById('v86-monitor'); if (monitor) monitor.textContent = `REAL guest • ${snapshot.kernel} ${snapshot.architecture} • ${snapshot.cpuPercent.toFixed(1)}% CPU • ${Math.round(snapshot.memoryBytes / 1024 / 1024)} MiB used`; }, onIdentity: identity => { if (id !== this.bootId) return; this.acceptGuestIdentity(identity); } });
-      vm.add_listener('serial0-output-byte', (value?: number) => { if (id === this.bootId && typeof value === 'number') this.serialOutput(value); }); this.scheduleBootWatchdog(id, policy.policy.bootTimeoutMs); this.fit();
-    } catch (error) { if (id === this.bootId) this.error(error instanceof Error ? error.message : String(error)); }
+    try { await this.loadRuntime(); if (id !== this.bootId || signal.aborted) return; await this.preflightRuntimeAssets(signal); if (id !== this.bootId || signal.aborted) return; this.status(profile.name + ' • verifying image'); const artifact = artifactForIsoUrl(profile.cdrom); const isoBytes = await fetchVerifiedIso(profile.cdrom, signal); if (isoBytes.byteLength === 0) throw new Error('Verified Linux image is empty'); this.status(profile.name + ' • integrity verified'); const screen = document.getElementById('screen_container'); if (!screen) throw new Error('VM screen container is missing'); const policy = this.enforcer; if (!policy) throw new Error('VM resource policy was not initialized'); this.bootStage = 'creating VM'; this.status(profile.name + ' • booting'); this.monitor(`${profile.memoryMiB} MiB • verified ${artifact.filename}`); const Runtime = window.V86; if (typeof Runtime !== 'function') throw new Error('Local v86 runtime did not expose window.V86'); const vm = new Runtime({ wasm_path: '/v86.wasm', memory_size: policy.memoryBytes, vga_memory_size: policy.vgaMemoryBytes, screen_container: screen, bios: { url: '/seabios.bin' }, vga_bios: { url: '/vgabios.bin' }, cdrom: { buffer: isoBytes }, boot_order: 0x20, autostart: true, disable_speaker: true, net_device: { type: 'none' } }); this.emulator = vm; this.sessionTimer = window.setTimeout(() => this.enforceSessionExpiry(id), policy.remainingSessionMs()); this.telemetryDispose = attachGuestTelemetry(vm, { onTelemetry: snapshot => { if (id !== this.bootId) return; const monitor = document.getElementById('v86-monitor'); if (monitor) monitor.textContent = `REAL guest • ${snapshot.kernel} ${snapshot.architecture} • ${snapshot.cpuPercent.toFixed(1)}% CPU • ${Math.round(snapshot.memoryBytes / 1024 / 1024)} MiB used`; }, onIdentity: identity => { if (id !== this.bootId) return; this.acceptGuestIdentity(identity); } }); vm.add_listener('serial0-output-byte', (value?: number) => { if (id === this.bootId && typeof value === 'number') this.serialOutput(value); }); this.scheduleBootWatchdog(id, policy.policy.bootTimeoutMs); this.fit(); } catch (error) { if (id === this.bootId) this.error(error instanceof Error ? error.message : String(error)); }
   }
-
   private acceptGuestIdentity(identity: GuestIdentity): void { this.guestIdentity = identity; if (identity.kind === this.profile.expectedGuest) { this.status(this.profile.name + ' • ' + (identity.kind === 'alpine' ? 'Alpine identity verified' : 'Buildroot identity verified')); this.monitor(this.profile.memoryMiB + ' MiB • guest identity verified'); this.markReadyIfIdentityVerified(); } }
   private markReadyIfIdentityVerified(): void { if (this.ready || !this.guestIdentity || this.guestIdentity.kind !== this.profile.expectedGuest) return; this.ready = true; this.bootStage = 'guest identity verified'; if (this.bootTimeout !== null) clearTimeout(this.bootTimeout); this.bootTimeout = null; this.setHealth('ready'); this.status(this.profile.name + ' • running'); this.monitor(this.profile.memoryMiB + ' MiB • guest identity verified'); }
   private detectGuestIdentity(text: string): GuestIdentity | null { if (/(?:^|\n)ID=alpine(?:\n|$)/im.test(text) || /Alpine Linux/i.test(text)) return { kind: 'alpine', isAlpine: true, release: text.slice(-4096) }; if (/(?:^|\n)ID=buildroot(?:\n|$)/im.test(text) || /NAME=Buildroot/i.test(text)) return { kind: 'buildroot', isAlpine: false, release: text.slice(-4096) }; return null; }
