@@ -1,11 +1,10 @@
+import type { Config } from '@netlify/edge-functions';
+
 const MODEL = Netlify.env.get('HF_MODEL') || 'google/gemma-2-2b-it';
 const MAX_OUTPUT_TOKENS = 300;
 const MAX_CONTEXT_CHARS = 5000;
 const MAX_QUESTION_CHARS = 1200;
-const WINDOW = 60_000;
-const LIMIT = 12;
 const TIMEOUT_MS = 15_000;
-const buckets = new Map<string, { started: number; count: number }>();
 
 interface TutorContext {
   ip?: unknown;
@@ -43,36 +42,23 @@ function fallback(contextText: string, question: string): string {
   return 'Start by identifying the command, its arguments, the current directory, and the output or error. Make one small experiment and compare the result with your prediction.';
 }
 
-function clientKey(context: unknown): string {
-  if (typeof context !== 'object' || context === null) return 'anonymous';
-  const ip = (context as TutorContext).ip;
-  return typeof ip === 'string' && ip.trim() ? ip.trim() : 'anonymous';
-}
-
 function readText(value: unknown, maxChars: number): string {
   return typeof value === 'string' ? value.trim().slice(0, maxChars) : '';
 }
 
-function pruneBuckets(now: number): void {
-  if (buckets.size <= 10_000) return;
-  for (const [key, value] of buckets) {
-    if (now - value.started >= WINDOW) buckets.delete(key);
-  }
-}
+export const config: Config = {
+  path: '/api/tutor',
+  rateLimit: {
+    action: 'rate_limit',
+    windowLimit: 12,
+    windowSize: 60,
+    aggregateBy: ['ip', 'domain'],
+  },
+};
 
 export default async (request: Request, context: unknown) => {
   if (request.method === 'OPTIONS') return new Response('', { status: 204, headers: headers() });
   if (request.method !== 'POST') return json({ error: 'method not allowed' }, 405);
-
-  const ip = clientKey(context);
-  const now = Date.now();
-  const bucket = buckets.get(ip);
-  if (!bucket || now - bucket.started >= WINDOW) buckets.set(ip, { started: now, count: 1 });
-  else {
-    bucket.count++;
-    if (bucket.count > LIMIT) return json({ error: 'Tutor rate limit reached. Please wait a minute.' }, 429);
-  }
-  pruneBuckets(now);
 
   let body: TutorRequest;
   try {
