@@ -8,7 +8,7 @@ export default defineConfig({
   preview: { port: 3000, headers: { 'Cross-Origin-Opener-Policy': 'same-origin' } },
   optimizeDeps: { include: ['@xterm/xterm', '@xterm/addon-fit', 'monaco-editor'] },
   build: {
-    outDir: 'dist', target: 'esnext', cssMinify: 'esbuild', chunkSizeWarningLimit: 1000,
+    outDir: 'dist', target: 'esnext', cssMinify: false, chunkSizeWarningLimit: 1000,
     rollupOptions: {
       input: {
         main: entry('index.html'), beginner: entry('beginner/index.html'), intermediate: entry('intermediate/index.html'), expert: entry('expert/index.html'),
