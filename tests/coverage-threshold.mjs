@@ -6,9 +6,9 @@ const args = [
   '--experimental-test-coverage',
   '--test-coverage-include=src/**/*.ts',
   '--test-coverage-exclude=src/**/*.d.ts',
-  '--test-coverage-functions=70',
-  '--test-coverage-lines=70',
-  '--test-coverage-branches=50',
+  '--test-coverage-functions=75',
+  '--test-coverage-lines=75',
+  '--test-coverage-branches=60',
   'tests/coverage-runner.ts',
 ];
 
