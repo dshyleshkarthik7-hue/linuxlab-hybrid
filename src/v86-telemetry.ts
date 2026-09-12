@@ -34,7 +34,11 @@ export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTel
         identityBuffer = identityBuffer.slice(start);
         return;
       }
-      const release = identityBuffer.slice(start + startMarker.length, end).slice(0, MAX_IDENTITY_BUFFER);
+      // The frame protocol places a line break immediately after the start
+      // marker. Exclude that framing delimiter, but preserve the guest payload
+      // exactly (including any meaningful trailing newline).
+      const rawRelease = identityBuffer.slice(start + startMarker.length, end);
+      const release = rawRelease.replace(/^\r?\n/, '').slice(0, MAX_IDENTITY_BUFFER);
       const isAlpine = /(?:^|\n)ID=alpine(?:\n|$)/i.test(release) || /(?:^|\n)ID_LIKE=.*\balpine\b/i.test(release);
       const isBuildroot = /(?:^|\n)ID=buildroot(?:\n|$)/i.test(release) || /(?:^|\n)NAME=.*buildroot/i.test(release);
       callbacks.onIdentity?.({ kind: isAlpine ? 'alpine' : isBuildroot ? 'buildroot' : 'unknown', isAlpine, release });
