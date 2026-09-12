@@ -8,6 +8,7 @@ const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
 const port = process.env.REAL_GUEST_PORT || '4174';
 const baseURL = process.env.REAL_GUEST_BASE_URL || `http://127.0.0.1:${port}`;
+const bootTimeoutMs = Number(process.env.REAL_GUEST_BOOT_TIMEOUT_MS || 120000);
 let server;
 
 async function waitFor(url) {
@@ -32,7 +33,21 @@ const page = await context.newPage();
 try {
   await page.goto(`${baseURL.replace(/\/$/, '')}/index-v86.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('#v86-status', { state: 'attached', timeout: 10000 });
-  await page.waitForFunction(() => /running|ready|booting|verifying image|integrity verified/i.test(document.querySelector('#v86-status')?.textContent || ''), null, { timeout: 15000 });
+
+  // The guest fetch + integrity verification can legitimately take longer than a
+  // short browser assertion timeout. Wait on the VM health state, not transient
+  // status text such as "booting" or "verifying image".
+  await page.waitForFunction(() => {
+    const health = document.querySelector('#v86-health');
+    const state = health?.getAttribute('data-state');
+    return state === 'ready' || state === 'offline';
+  }, null, { timeout: bootTimeoutMs });
+
+  const state = await page.locator('#v86-health').getAttribute('data-state');
+  const status = await page.locator('#v86-status').textContent();
+  if (state !== 'ready') {
+    throw new Error(`Real guest failed to become ready: health=${state}, status=${status || '(empty)'}`);
+  }
 
   const source = await page.locator('html').innerText();
   assert.match(source, /REAL|LinuxTerminal/i);
@@ -43,11 +58,9 @@ try {
   assert.equal(policy.hasNetDevice, true, 'guest runtime must be created with network disabled');
   assert.doesNotMatch(policy.monitor, /host filesystem|host process/i, 'guest monitor must not advertise host resources');
 
-  // Browser v86 is a real x86 guest emulator: verify the guest UI remains distinct
-  // from the host page and that the resource policy is active before declaring the gate passed.
   assert.ok(await page.locator('#v86-terminal-container').count());
   assert.ok(await page.locator('#v86-health').count());
-  console.log('Real guest runtime isolation gate passed: x86 guest runtime, no guest network device, resource monitor active.');
+  console.log(`Real guest runtime isolation gate passed: x86 guest reached ready state within ${bootTimeoutMs}ms, network disabled, resource monitor active.`);
 } finally {
   await context.close().catch(() => {});
   await browser.close().catch(() => {});
