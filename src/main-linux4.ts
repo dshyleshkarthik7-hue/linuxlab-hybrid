@@ -8,7 +8,6 @@ const FitAddonCtor = fitModule.FitAddon;
 type V86 = {
   serial0_send: (data: string) => void;
   add_listener: (event: string, callback: (value?: number) => void) => void;
-  run: () => void;
   keyboard_send_text?: (data: string) => void;
 };
 
@@ -49,6 +48,9 @@ async function boot(): Promise<void> {
     status.textContent = 'Linux 4 • ready';
   };
 
+  health.dataset.state = 'booting';
+  status.textContent = 'Linux 4 • booting';
+
   const vm = new Runtime({
     wasm_path: '/v86.wasm',
     memory_size: 256 * 1024 * 1024,
@@ -58,7 +60,7 @@ async function boot(): Promise<void> {
     vga_bios: { url: '/vgabios.bin' },
     cdrom: { buffer: iso },
     boot_order: 0x20,
-    autostart: false,
+    autostart: true,
     disable_speaker: true,
     net_device: { type: 'none' },
   });
@@ -70,10 +72,6 @@ async function boot(): Promise<void> {
     term.write(ch);
     if (/(?:login:|\$\s*$|#\s*$|Buildroot|Linux version)/im.test(serial)) markReady();
   });
-
-  health.dataset.state = 'booting';
-  status.textContent = 'Linux 4 • booting';
-  vm.run();
 }
 
 window.addEventListener('DOMContentLoaded', () => {
