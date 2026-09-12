@@ -28,6 +28,13 @@ async function waitFor(url) {
   throw new Error(`Timed out waiting for ${url}`);
 }
 
+function copyResponseHeaders(source, target, names) {
+  for (const name of names) {
+    const value = source.headers.get(name);
+    if (value) target.setHeader(name, value);
+  }
+}
+
 if (!process.env.REAL_GUEST_BASE_URL) {
   const vite = resolve('node_modules', '.bin', process.platform === 'win32' ? 'vite.cmd' : 'vite');
   viteServer = spawn(vite, ['preview', '--host', '127.0.0.1', '--port', String(internalPort), '--strictPort'], {
@@ -37,11 +44,10 @@ if (!process.env.REAL_GUEST_BASE_URL) {
   viteServer.stderr.on('data', d => process.stderr.write(String(d)));
   await waitFor(`http://127.0.0.1:${internalPort}`);
 
-  // Serve the application and the ISO endpoint from ONE browser origin. This is
-  // deliberately a test-only HTTP front end: Vite remains the static origin on
-  // internalPort, while this server handles /api/iso and reverse-proxies every
-  // other request. There is no Playwright route rewrite and therefore no
-  // ERR_BLOCKED_BY_CLIENT or cross-protocol URL mutation.
+  // Test-only same-origin front end. Node fetch transparently decodes compressed
+  // upstream responses, so the proxy MUST NOT forward content-encoding or the
+  // upstream content-length. Otherwise Chromium attempts to decode already
+  // decoded bytes and reports ERR_CONTENT_DECODING_FAILED.
   proxyServer = createServer(async (req, res) => {
     try {
       const requestUrl = new URL(req.url || '/', baseURL);
@@ -55,14 +61,10 @@ if (!process.env.REAL_GUEST_BASE_URL) {
           redirect: 'follow',
         });
         res.statusCode = upstreamResponse.status;
-        for (const name of ['content-type', 'content-length', 'content-range', 'accept-ranges', 'etag', 'last-modified']) {
-          const value = upstreamResponse.headers.get(name);
-          if (value) res.setHeader(name, value);
-        }
-        if (!upstreamResponse.body) {
-          res.end();
-          return;
-        }
+        copyResponseHeaders(upstreamResponse, res, ['content-type', 'content-range', 'accept-ranges', 'etag', 'last-modified']);
+        // Deliberately omit content-encoding/content-length: fetch() has already
+        // decoded transfer/content encoding and Node will use chunked framing.
+        if (!upstreamResponse.body) { res.end(); return; }
         const reader = upstreamResponse.body.getReader();
         req.on('close', () => reader.cancel().catch(() => {}));
         for (;;) {
@@ -82,7 +84,10 @@ if (!process.env.REAL_GUEST_BASE_URL) {
         redirect: 'manual',
       });
       res.statusCode = upstreamRequest.status;
-      upstreamRequest.headers.forEach((value, name) => res.setHeader(name, value));
+      // Strip hop-by-hop and entity encoding headers because fetch may decode the
+      // Vite response before this proxy writes it to Chromium.
+      const skip = new Set(['content-encoding', 'content-length', 'transfer-encoding', 'connection', 'keep-alive']);
+      upstreamRequest.headers.forEach((value, name) => { if (!skip.has(name)) res.setHeader(name, value); });
       if (!upstreamRequest.body) { res.end(); return; }
       const reader = upstreamRequest.body.getReader();
       for (;;) {
