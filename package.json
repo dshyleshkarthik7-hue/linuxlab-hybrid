@@ -23,6 +23,7 @@
     "test:telemetry": "node --experimental-strip-types tests/guest-telemetry.test.ts",
     "test:static-security": "node tests/security-static.test.mjs",
     "test:vm-policy": "node --experimental-strip-types tests/vm-resource-policy.test.ts",
+    "test:real-guest": "node tests/real-guest-isolation.mjs",
     "test:coverage": "node tests/coverage-threshold.mjs",
     "test:security": "npm audit --audit-level=high",
     "test:ci": "npm run test && npm run test:coverage && npm run test:security && npm run build",
@@ -33,7 +34,7 @@
     "test:smoke": "node tests/browser-vm-smoke.mjs",
     "test:mobile": "node tests/mobile-e2e.mjs",
     "test:production": "node tests/production-smoke.mjs",
-    "test:all": "npm run test:ci && npm run test:smoke && npm run test:mobile"
+    "test:all": "npm run test:ci && npm run test:smoke && npm run test:real-guest && npm run test:mobile"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",
