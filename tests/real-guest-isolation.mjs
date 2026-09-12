@@ -65,13 +65,30 @@ if (!process.env.REAL_GUEST_BASE_URL) {
     try {
       const requestUrl = new URL(req.url || '/', baseURL);
       if (requestUrl.pathname === '/api/iso') {
-        // The production VM starts Developer Alpine immediately on page load.
-        // For CI, transparently map that initial request to the small Linux 4
-        // image instead of returning 409 and generating a browser-console error.
         const image = requestUrl.searchParams.get('image') || 'linux4';
         const upstream = isoSources[image] || isoSources.linux4;
+        const range = req.headers.range;
+        // The application only needs to verify that the ISO endpoint exists
+        // before v86 starts. Do not download an entire multi-megabyte ISO for
+        // a bytes=0-0 probe; GitHub release assets may ignore that range.
+        if (range === 'bytes=0-0') {
+          const headResponse = await fetch(upstream, {
+            method: 'HEAD',
+            redirect: 'follow',
+            signal: AbortSignal.timeout(10000),
+          });
+          if (!headResponse.ok) throw new Error(`ISO HEAD failed (${headResponse.status})`);
+          const length = headResponse.headers.get('content-length');
+          res.statusCode = 206;
+          res.setHeader('content-type', headResponse.headers.get('content-type') || 'application/octet-stream');
+          res.setHeader('content-range', `bytes 0-0/${length || '*'}`);
+          res.setHeader('content-length', '1');
+          res.setHeader('accept-ranges', 'bytes');
+          res.end(Buffer.from([0]));
+          return;
+        }
         const requestHeaders = { 'accept-encoding': 'identity' };
-        if (req.headers.range) requestHeaders.range = req.headers.range;
+        if (range) requestHeaders.range = range;
         const upstreamResponse = await fetch(upstream, {
           headers: requestHeaders,
           redirect: 'follow',
