@@ -1,10 +1,10 @@
 import { strict as assert } from 'node:assert';
 import { GuestTelemetryBridge } from '../src/observability/GuestTelemetryBridge.ts';
+import { attachGuestTelemetry, type V86TelemetryTarget } from '../src/v86-telemetry.ts';
 
 const bridge = new GuestTelemetryBridge();
 const frame = (cpu: string) => `__LT_TELEMETRY__\n${cpu}\nLinux 6.6.1 x86_64\n120.5 20.5\n0.42 0.31 0.20 1/50 1234\nMemTotal:       262144 kB\nMemAvailable:   131072 kB\n/dev/vda 8256000 1420000 6416000 18% /\n__LT_END__\n`;
 assert(bridge.feed(frame('cpu 100 10 20 70 0 0 0 0 0 0')));
-// 30 total ticks elapsed, with 15 idle ticks: 50% guest CPU utilization.
 const snapshot = bridge.feed(frame('cpu 120 10 15 85 0 0 0 0 0 0'));
 assert(snapshot);
 assert.equal(snapshot.kernel, '6.6.1');
@@ -12,11 +12,31 @@ assert.equal(snapshot.architecture, 'x86_64');
 assert.equal(snapshot.uptimeSeconds, 120.5);
 assert.equal(snapshot.loadAverage, 0.42);
 assert.equal(snapshot.memoryBytes, 134217728);
-// df reports filesystem blocks in KiB; 8,256,000 * 1024 = 8,454,144,000 bytes.
 assert.equal(snapshot.diskBytes, 8256000 * 1024);
 assert.equal(snapshot.cpuPercent, 50);
 
+// Malformed/truncated frames must not throw or produce a snapshot.
+for (const malformed of ['', '__LT_TELEMETRY__\n', '__LT_TELEMETRY__\nnot cpu\n__LT_END__\n', '__LT_TELEMETRY__\n' + 'x'.repeat(100_000)]) {
+  assert.doesNotThrow(() => bridge.feed(malformed));
+}
+
+const listeners = new Map<string, (value?: number) => void>();
+let requests = 0;
+const vm: V86TelemetryTarget = {
+  add_listener(name, callback) { listeners.set(name, callback); },
+  serial0_send() { requests++; },
+};
+let identity: { isAlpine: boolean } | undefined;
+const dispose = attachGuestTelemetry(vm, { onIdentity: value => { identity = value; } });
+listeners.get('emulator-ready')?.();
+listeners.get('emulator-ready')?.();
+await new Promise(resolve => setTimeout(resolve, 2050));
+assert.equal(requests, 1);
+const malicious = '__LT_IDENTITY__\nID=alpine\nEVIL=ignored\n__LT_ID_END__\n';
+for (const char of malicious) listeners.get('serial0-output-byte')?.(char.charCodeAt(0));
+assert.deepEqual(identity, { isAlpine: true });
+dispose();
+
 const alpineRelease = 'NAME="Alpine Linux"\nID=alpine\nVERSION_ID=3.24.1\n';
-assert.match(alpineRelease, /^ID=alpine$/m);
 assert.equal(/^ID=alpine$/m.test(alpineRelease), true);
 console.log('Guest telemetry and Alpine identity checks passed');
