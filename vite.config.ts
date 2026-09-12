@@ -54,7 +54,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: entry('index.html'), beginner: entry('beginner/index.html'), intermediate: entry('intermediate/index.html'), expert: entry('expert/index.html'),
-        simulator: entry('simulator.html'), v86: entry('index-v86.html'), about: entry('about/index.html'), contact: entry('contact/index.html'),
+        simulator: entry('simulator.html'), v86: entry('index-v86.html'), linux4: entry('linux4.html'), about: entry('about/index.html'), contact: entry('contact/index.html'),
         curriculum: entry('curriculum/index.html'), commands: entry('commands/index.html'), quiz: entry('quiz/index.html'), challenges: entry('challenges/index.html'),
         iso: entry('open-source-iso/index.html'),
       },
