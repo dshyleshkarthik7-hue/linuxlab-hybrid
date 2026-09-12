@@ -11,6 +11,8 @@ const port = Number(process.env.REAL_GUEST_PORT || 4174);
 const internalPort = Number(process.env.REAL_GUEST_INTERNAL_PORT || port + 2);
 const baseURL = process.env.REAL_GUEST_BASE_URL || `http://127.0.0.1:${port}`;
 const bootTimeoutMs = Number(process.env.REAL_GUEST_BOOT_TIMEOUT_MS || 45000);
+const testTimeoutMs = Number(process.env.REAL_GUEST_TEST_TIMEOUT_MS || 8 * 60 * 1000);
+const isoFetchTimeoutMs = Number(process.env.REAL_GUEST_ISO_FETCH_TIMEOUT_MS || 60000);
 const isoSources = {
   developer: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso',
   virt: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/V2.00/alpine-virt-3.24.1-x86.iso',
@@ -18,11 +20,19 @@ const isoSources = {
 };
 let viteServer;
 let proxyServer;
+const testDeadline = setTimeout(() => {
+  console.error(`Real guest isolation gate timed out after ${testTimeoutMs}ms`);
+  try { viteServer?.kill('SIGTERM'); } catch {}
+  try { proxyServer?.close(); } catch {}
+  process.exit(124);
+}, testTimeoutMs);
+
+testDeadline.unref();
 
 async function waitFor(url) {
   const deadline = Date.now() + 30000;
   while (Date.now() < deadline) {
-    try { const r = await fetch(url); if (r.ok) return; } catch {}
+    try { const r = await fetch(url, { signal: AbortSignal.timeout(5000) }); if (r.ok) return; } catch {}
     await sleep(250);
   }
   throw new Error(`Timed out waiting for ${url}`);
@@ -75,7 +85,11 @@ if (!process.env.REAL_GUEST_BASE_URL) {
         const upstream = isoSources[image] || isoSources.linux4;
         const requestHeaders = { 'accept-encoding': 'identity' };
         if (req.headers.range) requestHeaders.range = req.headers.range;
-        const upstreamResponse = await fetch(upstream, { headers: requestHeaders, redirect: 'follow' });
+        const upstreamResponse = await fetch(upstream, {
+          headers: requestHeaders,
+          redirect: 'follow',
+          signal: AbortSignal.timeout(isoFetchTimeoutMs),
+        });
         res.statusCode = upstreamResponse.status;
         copyHeaders(upstreamResponse, res, [
           'content-type', 'content-length', 'content-range', 'accept-ranges', 'etag', 'last-modified',
@@ -92,6 +106,7 @@ if (!process.env.REAL_GUEST_BASE_URL) {
         headers: requestHeaders,
         body: req.method === 'GET' || req.method === 'HEAD' ? undefined : req,
         redirect: 'manual',
+        signal: AbortSignal.timeout(30000),
       });
       res.statusCode = upstreamResponse.status;
       copyHeaders(upstreamResponse, res, [
@@ -150,6 +165,7 @@ try {
   assert.ok(await page.locator('#v86-health').count());
   console.log(`Real guest runtime isolation gate passed: Linux 4 / Buildroot guest reached ready state within ${bootTimeoutMs}ms, network disabled, resource monitor active.`);
 } finally {
+  clearTimeout(testDeadline);
   await context.close().catch(() => {});
   await browser.close().catch(() => {});
   if (proxyServer) await new Promise(resolveClose => proxyServer.close(() => resolveClose())).catch(() => {});
