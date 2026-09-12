@@ -10,7 +10,7 @@ const { chromium } = require('playwright');
 const port = Number(process.env.REAL_GUEST_PORT || 4174);
 const internalPort = Number(process.env.REAL_GUEST_INTERNAL_PORT || port + 2);
 const baseURL = process.env.REAL_GUEST_BASE_URL || `http://127.0.0.1:${port}`;
-const bootTimeoutMs = Number(process.env.REAL_GUEST_BOOT_TIMEOUT_MS || 120000);
+const bootTimeoutMs = Number(process.env.REAL_GUEST_BOOT_TIMEOUT_MS || 45000);
 const isoSources = {
   developer: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso',
   virt: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/V2.00/alpine-virt-3.24.1-x86.iso',
@@ -57,16 +57,17 @@ if (!process.env.REAL_GUEST_BASE_URL) {
   viteServer.stderr.on('data', d => process.stderr.write(String(d)));
   await waitFor(`http://127.0.0.1:${internalPort}`);
 
-  // Test-only same-origin front end. Always request identity encoding from
-  // upstream so Node fetch cannot transparently decode bytes while the proxy
-  // forwards the upstream Content-Length. v86 requires exact Content-Length for
-  // boot assets such as /seabios.bin.
+  // Test-only same-origin front end. The real guest gate uses the smallest
+  // supported real guest image (Linux 4 / Buildroot, ~7.4 MB) so CI verifies
+  // the actual v86 boundary without making every PR download a 300+ MB ISO.
+  // Upstream is requested with identity encoding so v86-required Content-Length
+  // values remain valid after the proxy streams the response.
   proxyServer = createServer(async (req, res) => {
     try {
       const requestUrl = new URL(req.url || '/', baseURL);
       if (requestUrl.pathname === '/api/iso') {
-        const image = requestUrl.searchParams.get('image') || 'developer';
-        const upstream = isoSources[image] || isoSources.developer;
+        const image = requestUrl.searchParams.get('image') || 'linux4';
+        const upstream = isoSources[image] || isoSources.linux4;
         const requestHeaders = { 'accept-encoding': 'identity' };
         if (req.headers.range) requestHeaders.range = req.headers.range;
         const upstreamResponse = await fetch(upstream, {
@@ -117,7 +118,11 @@ try {
 
   await page.goto(`${baseURL.replace(/\/$/, '')}/index-v86.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('#v86-status', { state: 'attached', timeout: 10000 });
-  await page.locator('#btn-v86-virt').click();
+
+  // Exercise a real guest, but deliberately use the repository's ~7.4 MB
+  // Linux 4 / Buildroot image. This keeps the mandatory isolation gate fast
+  // while still booting through the production v86 runtime and its policies.
+  await page.locator('#btn-v86-linux4').click();
 
   await page.waitForFunction(() => {
     const state = document.querySelector('#v86-health')?.getAttribute('data-state');
@@ -142,7 +147,7 @@ try {
   assert.doesNotMatch(policy.monitor, /host filesystem|host process/i, 'guest monitor must not advertise host resources');
   assert.ok(await page.locator('#v86-terminal-container').count());
   assert.ok(await page.locator('#v86-health').count());
-  console.log(`Real guest runtime isolation gate passed: pinned Alpine Virt guest reached ready state within ${bootTimeoutMs}ms, network disabled, resource monitor active.`);
+  console.log(`Real guest runtime isolation gate passed: Linux 4 / Buildroot guest reached ready state within ${bootTimeoutMs}ms, network disabled, resource monitor active.`);
 } finally {
   await context.close().catch(() => {});
   await browser.close().catch(() => {});
