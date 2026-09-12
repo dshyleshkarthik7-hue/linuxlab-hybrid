@@ -28,11 +28,24 @@ async function waitFor(url) {
   throw new Error(`Timed out waiting for ${url}`);
 }
 
-function copyResponseHeaders(source, target, names) {
+function copyHeaders(source, target, names) {
   for (const name of names) {
     const value = source.headers.get(name);
     if (value) target.setHeader(name, value);
   }
+}
+
+async function pipeResponse(source, target) {
+  if (!source.body) { target.end(); return; }
+  const reader = source.body.getReader();
+  for (;;) {
+    const { done, value } = await reader.read();
+    if (done) break;
+    if (!target.write(Buffer.from(value))) {
+      await new Promise(resolveDrain => target.once('drain', resolveDrain));
+    }
+  }
+  target.end();
 }
 
 if (!process.env.REAL_GUEST_BASE_URL) {
@@ -44,58 +57,46 @@ if (!process.env.REAL_GUEST_BASE_URL) {
   viteServer.stderr.on('data', d => process.stderr.write(String(d)));
   await waitFor(`http://127.0.0.1:${internalPort}`);
 
-  // Test-only same-origin front end. Node fetch transparently decodes compressed
-  // upstream responses, so the proxy MUST NOT forward content-encoding or the
-  // upstream content-length. Otherwise Chromium attempts to decode already
-  // decoded bytes and reports ERR_CONTENT_DECODING_FAILED.
+  // Test-only same-origin front end. Always request identity encoding from
+  // upstream so Node fetch cannot transparently decode bytes while the proxy
+  // forwards the upstream Content-Length. v86 requires exact Content-Length for
+  // boot assets such as /seabios.bin.
   proxyServer = createServer(async (req, res) => {
     try {
       const requestUrl = new URL(req.url || '/', baseURL);
       if (requestUrl.pathname === '/api/iso') {
         const image = requestUrl.searchParams.get('image') || 'developer';
         const upstream = isoSources[image] || isoSources.developer;
-        const requestHeaders = {};
+        const requestHeaders = { 'accept-encoding': 'identity' };
         if (req.headers.range) requestHeaders.range = req.headers.range;
         const upstreamResponse = await fetch(upstream, {
           headers: requestHeaders,
           redirect: 'follow',
         });
         res.statusCode = upstreamResponse.status;
-        copyResponseHeaders(upstreamResponse, res, ['content-type', 'content-range', 'accept-ranges', 'etag', 'last-modified']);
-        // Deliberately omit content-encoding/content-length: fetch() has already
-        // decoded transfer/content encoding and Node will use chunked framing.
-        if (!upstreamResponse.body) { res.end(); return; }
-        const reader = upstreamResponse.body.getReader();
-        req.on('close', () => reader.cancel().catch(() => {}));
-        for (;;) {
-          const { done, value } = await reader.read();
-          if (done) break;
-          if (!res.write(Buffer.from(value))) await new Promise(resolveDrain => res.once('drain', resolveDrain));
-        }
-        res.end();
+        copyHeaders(upstreamResponse, res, [
+          'content-type', 'content-length', 'content-range',
+          'accept-ranges', 'etag', 'last-modified',
+        ]);
+        await pipeResponse(upstreamResponse, res);
         return;
       }
 
       const upstreamUrl = `http://127.0.0.1:${internalPort}${requestUrl.pathname}${requestUrl.search}`;
-      const upstreamRequest = await fetch(upstreamUrl, {
+      const requestHeaders = { ...req.headers, 'accept-encoding': 'identity' };
+      delete requestHeaders.host;
+      const upstreamResponse = await fetch(upstreamUrl, {
         method: req.method,
-        headers: req.headers,
+        headers: requestHeaders,
         body: req.method === 'GET' || req.method === 'HEAD' ? undefined : req,
         redirect: 'manual',
       });
-      res.statusCode = upstreamRequest.status;
-      // Strip hop-by-hop and entity encoding headers because fetch may decode the
-      // Vite response before this proxy writes it to Chromium.
-      const skip = new Set(['content-encoding', 'content-length', 'transfer-encoding', 'connection', 'keep-alive']);
-      upstreamRequest.headers.forEach((value, name) => { if (!skip.has(name)) res.setHeader(name, value); });
-      if (!upstreamRequest.body) { res.end(); return; }
-      const reader = upstreamRequest.body.getReader();
-      for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        if (!res.write(Buffer.from(value))) await new Promise(resolveDrain => res.once('drain', resolveDrain));
-      }
-      res.end();
+      res.statusCode = upstreamResponse.status;
+      copyHeaders(upstreamResponse, res, [
+        'content-type', 'content-length', 'content-range', 'accept-ranges',
+        'cache-control', 'etag', 'last-modified', 'location',
+      ]);
+      await pipeResponse(upstreamResponse, res);
     } catch (error) {
       if (!res.headersSent) res.writeHead(502, { 'content-type': 'text/plain' });
       res.end(`CI proxy failed: ${error instanceof Error ? error.message : String(error)}`);
