@@ -1,7 +1,5 @@
 import { GuestTelemetryBridge } from './observability/GuestTelemetryBridge.ts';
 
-declare global { interface Window { V86?: any; } }
-
 const attach = () => {
   const Runtime = window.V86;
   if (typeof Runtime !== 'function' || (Runtime as any).__linuxTerminalTelemetryWrapped) return;
