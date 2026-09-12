@@ -57,27 +57,28 @@ if (!process.env.REAL_GUEST_BASE_URL) {
   viteServer.stderr.on('data', d => process.stderr.write(String(d)));
   await waitFor(`http://127.0.0.1:${internalPort}`);
 
-  // Test-only same-origin front end. The real guest gate uses the smallest
-  // supported real guest image (Linux 4 / Buildroot, ~7.4 MB) so CI verifies
-  // the actual v86 boundary without making every PR download a 300+ MB ISO.
-  // Upstream is requested with identity encoding so v86-required Content-Length
-  // values remain valid after the proxy streams the response.
+  // The production page intentionally starts Developer Alpine on construction.
+  // Do not let the mandatory isolation gate download that large image before
+  // switching to the small real guest used by this CI test. A request for the
+  // default image is rejected locally; the selected Linux 4 image is streamed
+  // normally and still goes through the application's real verification path.
   proxyServer = createServer(async (req, res) => {
     try {
       const requestUrl = new URL(req.url || '/', baseURL);
       if (requestUrl.pathname === '/api/iso') {
-        const image = requestUrl.searchParams.get('image') || 'linux4';
+        const image = requestUrl.searchParams.get('image');
+        if (!image) {
+          res.writeHead(409, { 'content-type': 'text/plain', 'cache-control': 'no-store' });
+          res.end('CI real-guest gate: default profile download suppressed; test selects linux4.');
+          return;
+        }
         const upstream = isoSources[image] || isoSources.linux4;
         const requestHeaders = { 'accept-encoding': 'identity' };
         if (req.headers.range) requestHeaders.range = req.headers.range;
-        const upstreamResponse = await fetch(upstream, {
-          headers: requestHeaders,
-          redirect: 'follow',
-        });
+        const upstreamResponse = await fetch(upstream, { headers: requestHeaders, redirect: 'follow' });
         res.statusCode = upstreamResponse.status;
         copyHeaders(upstreamResponse, res, [
-          'content-type', 'content-length', 'content-range',
-          'accept-ranges', 'etag', 'last-modified',
+          'content-type', 'content-length', 'content-range', 'accept-ranges', 'etag', 'last-modified',
         ]);
         await pipeResponse(upstreamResponse, res);
         return;
@@ -119,9 +120,9 @@ try {
   await page.goto(`${baseURL.replace(/\/$/, '')}/index-v86.html`, { waitUntil: 'domcontentloaded', timeout: 30000 });
   await page.waitForSelector('#v86-status', { state: 'attached', timeout: 10000 });
 
-  // Exercise a real guest, but deliberately use the repository's ~7.4 MB
-  // Linux 4 / Buildroot image. This keeps the mandatory isolation gate fast
-  // while still booting through the production v86 runtime and its policies.
+  // Exercise a real guest through the production v86 runtime using the
+  // repository's small Linux 4 / Buildroot image. The default Developer
+  // Alpine startup has already been suppressed by the CI-only proxy above.
   await page.locator('#btn-v86-linux4').click();
 
   await page.waitForFunction(() => {
