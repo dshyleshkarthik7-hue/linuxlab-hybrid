@@ -4,26 +4,21 @@ export interface V86TelemetryTarget {
   add_listener(name: 'serial0-output-byte' | 'emulator-ready', callback: (value?: number) => void): void;
   serial0_send(data: string): void;
 }
-export interface GuestIdentity { isAlpine: boolean; }
+export type GuestIdentityKind = 'alpine' | 'buildroot' | 'unknown';
+export interface GuestIdentity { kind: GuestIdentityKind; isAlpine: boolean; release: string; }
 export interface GuestTelemetryCallbacks { onTelemetry?: (snapshot: GuestTelemetrySnapshot) => void; onIdentity?: (identity: GuestIdentity) => void; }
 
-const TELEMETRY_REQUEST = "printf '__LT_TELEMETRY__\\n'; head -1 /proc/stat; uname -srm; cat /proc/uptime; cat /proc/loadavg; grep -E '^(MemTotal|MemAvailable):' /proc/meminfo; df -k / | tail -1; printf '__LT_END__\\n'; printf '__LT_IDENTITY__\\n'; cat /etc/os-release 2>/dev/null; printf '__LT_ID_END__\\n'";
-const MAX_IDENTITY_BUFFER = 4096;
-const REQUEST_DELAY_MS = 2000;
-const POLL_INTERVAL_MS = 10000;
+const MAX_IDENTITY_BUFFER = 8192;
 
+/**
+ * Passive telemetry bridge. It deliberately never writes commands to serial0:
+ * serial0 is the interactive terminal, so polling it would paste diagnostics
+ * into the user's shell and corrupt the terminal session.
+ */
 export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTelemetryCallbacks = {}): () => void {
   const bridge = new GuestTelemetryBridge();
   let identityBuffer = '';
-  let requestTimer: ReturnType<typeof setTimeout> | null = null;
-  let pollTimer: ReturnType<typeof setInterval> | null = null;
   let disposed = false;
-
-  const collect = (): void => {
-    if (disposed) return;
-    try { vm.serial0_send(TELEMETRY_REQUEST); }
-    catch (error) { console.debug('[LinuxTerminal] guest telemetry request failed', error); }
-  };
 
   const parseIdentityFrames = (): void => {
     const startMarker = '__LT_IDENTITY__';
@@ -41,7 +36,8 @@ export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTel
       }
       const release = identityBuffer.slice(start + startMarker.length, end).slice(0, MAX_IDENTITY_BUFFER);
       const isAlpine = /(?:^|\n)ID=alpine(?:\n|$)/i.test(release) || /(?:^|\n)ID_LIKE=.*\balpine\b/i.test(release);
-      callbacks.onIdentity?.({ isAlpine });
+      const isBuildroot = /(?:^|\n)ID=buildroot(?:\n|$)/i.test(release) || /(?:^|\n)NAME=.*buildroot/i.test(release);
+      callbacks.onIdentity?.({ kind: isAlpine ? 'alpine' : isBuildroot ? 'buildroot' : 'unknown', isAlpine, release });
       identityBuffer = identityBuffer.slice(end + endMarker.length);
     }
   };
@@ -55,21 +51,6 @@ export function attachGuestTelemetry(vm: V86TelemetryTarget, callbacks: GuestTel
     parseIdentityFrames();
   };
 
-  const onReady = (): void => {
-    if (disposed || requestTimer !== null) return;
-    requestTimer = setTimeout(() => { requestTimer = null; collect(); }, REQUEST_DELAY_MS);
-    if (pollTimer === null) pollTimer = setInterval(collect, POLL_INTERVAL_MS);
-  };
-
   vm.add_listener('serial0-output-byte', onSerial);
-  vm.add_listener('emulator-ready', onReady);
-
-  return () => {
-    disposed = true;
-    if (requestTimer !== null) clearTimeout(requestTimer);
-    if (pollTimer !== null) clearInterval(pollTimer);
-    requestTimer = null;
-    pollTimer = null;
-    identityBuffer = '';
-  };
+  return () => { disposed = true; identityBuffer = ''; };
 }

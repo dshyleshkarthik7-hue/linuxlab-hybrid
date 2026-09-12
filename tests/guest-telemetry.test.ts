@@ -14,29 +14,19 @@ assert.equal(snapshot.loadAverage, 0.42);
 assert.equal(snapshot.memoryBytes, 134217728);
 assert.equal(snapshot.diskBytes, 8256000 * 1024);
 assert.equal(snapshot.cpuPercent, 50);
-
-// Malformed/truncated frames must not throw or produce a snapshot.
-for (const malformed of ['', '__LT_TELEMETRY__\n', '__LT_TELEMETRY__\nnot cpu\n__LT_END__\n', '__LT_TELEMETRY__\n' + 'x'.repeat(100_000)]) {
-  assert.doesNotThrow(() => bridge.feed(malformed));
-}
+for (const malformed of ['', '__LT_TELEMETRY__\n', '__LT_TELEMETRY__\nnot cpu\n__LT_END__\n', '__LT_TELEMETRY__\n' + 'x'.repeat(100_000)]) assert.doesNotThrow(() => bridge.feed(malformed));
 
 const listeners = new Map<string, (value?: number) => void>();
 let requests = 0;
-const vm: V86TelemetryTarget = {
-  add_listener(name, callback) { listeners.set(name, callback); },
-  serial0_send() { requests++; },
-};
-let identity: { isAlpine: boolean } | undefined;
+const vm: V86TelemetryTarget = { add_listener(name, callback) { listeners.set(name, callback); }, serial0_send() { requests++; } };
+let identity: { kind: string; isAlpine: boolean; release: string } | undefined;
 const dispose = attachGuestTelemetry(vm, { onIdentity: value => { identity = value; } });
 listeners.get('emulator-ready')?.();
-listeners.get('emulator-ready')?.();
-await new Promise(resolve => setTimeout(resolve, 2050));
-assert.equal(requests, 1);
-const malicious = '__LT_IDENTITY__\nID=alpine\nEVIL=ignored\n__LT_ID_END__\n';
-for (const char of malicious) listeners.get('serial0-output-byte')?.(char.charCodeAt(0));
-assert.deepEqual(identity, { isAlpine: true });
+await new Promise(resolve => setTimeout(resolve, 50));
+assert.equal(requests, 0);
+const alpine = '__LT_IDENTITY__\nID=alpine\nEVIL=ignored\n__LT_ID_END__\n';
+for (const char of alpine) listeners.get('serial0-output-byte')?.(char.charCodeAt(0));
+assert.deepEqual(identity, { kind: 'alpine', isAlpine: true, release: 'ID=alpine\nEVIL=ignored\n' });
 dispose();
 
-const alpineRelease = 'NAME="Alpine Linux"\nID=alpine\nVERSION_ID=3.24.1\n';
-assert.equal(/^ID=alpine$/m.test(alpineRelease), true);
-console.log('Guest telemetry and Alpine identity checks passed');
+console.log('Passive guest telemetry checks passed');
