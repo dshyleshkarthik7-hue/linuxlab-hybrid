@@ -9,13 +9,14 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 15
     env:
       NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
-      NPM_CONFIG_FETCH_RETRIES: 5
+      NPM_CONFIG_FETCH_RETRIES: 8
       NPM_CONFIG_FETCH_RETRY_MINTIMEOUT: 1000
       NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 30000
       NPM_CONFIG_FETCH_TIMEOUT: 120000
+      NPM_CONFIG_MAXSOCKETS: 1
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -27,7 +28,21 @@ jobs:
           set -euo pipefail
           npm config set registry "$NPM_CONFIG_REGISTRY"
           npm cache verify
-          npm ci --ignore-scripts --prefer-online
+
+          # Keep the canonical npm registry as the first source. The single-socket
+          # setting avoids flaky proxy/CDN corruption observed during concurrent
+          # tarball downloads while npm's integrity checks remain authoritative.
+          if npm ci --ignore-scripts --prefer-online; then
+            exit 0
+          fi
+
+          echo "npm ci failed; retrying once through a separate read-only registry mirror"
+          npm cache clean --force
+          npm ci \
+            --ignore-scripts \
+            --prefer-online \
+            --registry=https://registry.npmmirror.com \
+            --replace-registry-host=always
       - run: npm audit --audit-level=high
       - run: npx playwright install --with-deps chromium
       - run: npm run test:ci
