@@ -114,7 +114,7 @@ export class V86LinuxTerminal {
       this.monitor(`${profile.memoryMiB} MiB • verified ${artifact.filename}`);
       const Runtime = getRuntimeConstructor();
       if (!Runtime) throw new Error('Local v86 runtime did not expose V86 or V86Starter');
-      const vm = new Runtime({ wasm_path: '/v86.wasm', memory_size: policy.memoryBytes, vga_memory_size: policy.vgaMemoryBytes, screen_container: screen, bios: { url: '/seabios.bin' }, vga_bios: { url: '/vgabios.bin' }, cdrom: { buffer: isoBytes }, boot_order: 0x20, autostart: true, disable_speaker: true, net_device: { type: 'none' } });
+      const vm = new Runtime({ wasm_path: '/v86.wasm', memory_size: policy.memoryBytes, vga_memory_size: policy.vgaMemoryBytes, screen_container: screen, bios: { url: '/seabios.bin' }, vga_bios: { url: '/vgabios.bin' }, cdrom: { buffer: isoBytes }, boot_order: 0x20, autostart: false, disable_speaker: true, net_device: { type: 'none' } });
       this.emulator = vm;
       this.sessionTimer = window.setTimeout(() => this.enforceSessionExpiry(id), policy.remainingSessionMs());
       this.telemetryDispose = attachGuestTelemetry(vm, {
@@ -126,7 +126,9 @@ export class V86LinuxTerminal {
       vm.add_listener('serial0-output-byte', (value?: number) => { if (id === this.bootId && typeof value === 'number') this.serialOutput(value); });
       this.scheduleBootWatchdog(id, policy.policy.bootTimeoutMs);
       this.fit();
-      markRuntimeReady();
+      if (typeof vm.run !== 'function') throw new Error('Local v86 runtime does not expose run(); VM cannot be started safely');
+      this.bootStage = 'starting v86 runtime';
+      vm.run();
     } catch (error) { if (id === this.bootId) this.error(error instanceof Error ? error.message : String(error)); }
   }
 
