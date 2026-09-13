@@ -7,7 +7,7 @@ import { artifactForIsoUrl, fetchVerifiedIso } from './core/verified-iso-fetch.t
 
 const TerminalCtor = xtermModule.Terminal;
 const FitAddonCtor = fitModule.FitAddon;
-declare global { interface Window { linuxLabVM?: V86LinuxTerminal; V86Starter?: new (options: Record<string, unknown>) => unknown; V86?: new (options: Record<string, unknown>) => unknown; } }
+declare global { interface Window { linuxLabVM?: V86LinuxTerminal; V86Starter?: new (options: Record<string, unknown>) => unknown; } }
 type V86Runtime = V86TelemetryTarget & {
   keyboard_send_text?: (data: string) => void;
   serial0_send: (data: string) => void;
