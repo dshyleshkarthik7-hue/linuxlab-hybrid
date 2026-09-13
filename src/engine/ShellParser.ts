@@ -4,6 +4,13 @@ export interface ShellCommandNode { type: 'command'; text: string; }
 export interface ShellBinaryNode { type: 'binary'; operator: ShellOperator; left: ShellNode; right: ShellNode; }
 export type ShellNode = ShellCommandNode | ShellBinaryNode;
 
+export const SHELL_COMPATIBILITY = {
+  '&&': 'supported', '||': 'supported', ';': 'supported', '|': 'supported',
+  quoting: 'partial', escaping: 'partial',
+  redirects: 'unsupported', subshells: 'unsupported', commandSubstitution: 'unsupported',
+  backgroundJobs: 'unsupported', heredocs: 'unsupported', shellExpansion: 'implementation-dependent',
+} as const;
+
 export class ShellParser {
   private source = '';
   private index = 0;
@@ -44,7 +51,6 @@ export class ShellParser {
     let left: ShellNode = this.parseCommand();
     while (true) {
       this.skipWhitespace();
-      // A single | is a pipeline; || belongs to the conditional grammar.
       if (!this.source.startsWith('|', this.index) || this.source.startsWith('||', this.index)) return left;
       this.index++;
       const right = this.parseCommand();
@@ -63,13 +69,18 @@ export class ShellParser {
       if (ch === '\\') { escaped = true; this.index++; continue; }
       if (quote) { if (ch === quote) quote = null; this.index++; continue; }
       if (ch === '"' || ch === "'") { quote = ch; this.index++; continue; }
+      if (ch === '>' || ch === '<' || ch === '`' || ch === '(' || ch === ')') throw new Error('Unsupported shell feature: redirects, substitution or subshells are not implemented');
+      if (ch === '&') {
+        if (this.source.startsWith('&&', this.index)) break;
+        throw new Error('Unsupported shell feature: background jobs are not implemented');
+      }
       if (ch === ';' || ch === '|') break;
-      if (ch === '&' && this.source.startsWith('&&', this.index)) break;
       this.index++;
     }
     if (quote) throw new Error('Unterminated quote');
     const text = this.source.slice(start, this.index).trim();
     if (!text) throw new Error('Expected command');
+    if (text.includes('$(') || text.includes('${') || text.includes('<<')) throw new Error('Unsupported shell feature: command substitution and heredocs are not implemented');
     return { type: 'command', text };
   }
 
@@ -79,7 +90,5 @@ export class ShellParser {
     return operator;
   }
 
-  private skipWhitespace(): void {
-    while (/\s/.test(this.source[this.index] || '')) this.index++;
-  }
+  private skipWhitespace(): void { while (/\s/.test(this.source[this.index] || '')) this.index++; }
 }
