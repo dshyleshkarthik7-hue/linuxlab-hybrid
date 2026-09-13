@@ -8,7 +8,7 @@ const trusted = {
   filename: 'fixture.iso',
   url: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/test/fixture.iso',
   releaseManifestUrl: 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/test',
-  sha256: 'f4e1fce0a4a4e3aee9c5f5c3dce6c6c8d3a2d3e4b1a1a7b0e7f3c1b9d6a6a7f5',
+  sha256: '0'.repeat(64),
   size: bytes.byteLength,
 };
 
