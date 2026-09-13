@@ -14,9 +14,11 @@ assert.equal(/window\.(?:guest|alpine|release|identity)/i.test(telemetry), false
 assert.equal(/serial0_send/.test(telemetry), false, 'telemetry must not write to the guest serial port');
 assert.match(runtime, /attachGuestTelemetry\s*\(\s*vm/);
 assert.match(runtime, /telemetryDispose\?\.\(\)/);
-assert.match(runtime, /emulator-ready/);
-assert.match(runtime, /autostart:\s*false/);
-assert.match(runtime, /vm\.run\(\)/);
+assert.match(runtime, /acceptGuestIdentity\s*\(/);
+assert.match(runtime, /markReadyIfIdentityVerified\s*\(/);
+assert.match(runtime, /autostart:\s*true/);
+assert.equal(/vm\.run\(\)/.test(runtime), false, 'v86 runtime must use autostart rather than a manual vm.run() call');
+assert.equal(/emulator-ready/.test(runtime), false, 'runtime must not depend on the obsolete emulator-ready marker');
 assert.equal(/request\.headers\.get\(['"]x-forwarded-for['"]\)/.test(tutor), false, 'Tutor must not trust client-supplied forwarding headers');
 assert.equal(/(?:\:\s*any\b|\bas\s+any\b|<\s*any\s*>)/.test(tutor), false, 'Tutor must not use any type');
 assert.match(tutor, /AbortController/);
