@@ -9,16 +9,18 @@ declare global {
 }
 
 /**
- * v86's type declarations already define Window.V86 and Window.V86Starter.
- * Do not redeclare either property here: a different constructor return type
- * causes TS2717/TS2322 during the production build.
- *
- * Some v86 builds expose the constructor as V86Starter while the real-guest
- * test contract checks V86, so normalize the runtime aliases instead.
+ * Normalize v86's constructor globals without redeclaring its existing
+ * TypeScript declarations. The bundled v86 typings define V86 and V86Starter
+ * with different constructor result types, so direct assignment produces
+ * TS2322 even though the runtime constructors are interchangeable here.
  */
 function exposeV86Constructor(): void {
   if (typeof window.V86 !== 'function' && typeof window.V86Starter === 'function') {
-    window.V86 = window.V86Starter;
+    Object.defineProperty(window, 'V86', {
+      configurable: true,
+      writable: true,
+      value: window.V86Starter,
+    });
   }
 }
 
