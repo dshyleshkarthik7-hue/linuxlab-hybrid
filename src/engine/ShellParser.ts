@@ -7,7 +7,8 @@ export type ShellNode = ShellCommandNode | ShellBinaryNode;
 export const SHELL_COMPATIBILITY = {
   '&&': 'supported', '||': 'supported', ';': 'supported', '|': 'supported',
   quoting: 'partial', escaping: 'partial',
-  redirects: 'unsupported', subshells: 'unsupported', commandSubstitution: 'unsupported',
+  redirects: 'supported', inputRedirects: 'unsupported', appendRedirects: 'supported',
+  subshells: 'unsupported', commandSubstitution: 'unsupported',
   backgroundJobs: 'unsupported', heredocs: 'unsupported', shellExpansion: 'implementation-dependent',
 } as const;
 
@@ -69,7 +70,8 @@ export class ShellParser {
       if (ch === '\\') { escaped = true; this.index++; continue; }
       if (quote) { if (ch === quote) quote = null; this.index++; continue; }
       if (ch === '"' || ch === "'") { quote = ch; this.index++; continue; }
-      if (ch === '>' || ch === '<' || ch === '`' || ch === '(' || ch === ')') throw new Error('Unsupported shell feature: redirects, substitution or subshells are not implemented');
+      if (ch === '`' || ch === '(' || ch === ')') throw new Error('Unsupported shell feature: substitution or subshells are not implemented');
+      if (ch === '<') throw new Error('Unsupported shell feature: input redirects are not implemented');
       if (ch === '&') {
         if (this.source.startsWith('&&', this.index)) break;
         throw new Error('Unsupported shell feature: background jobs are not implemented');
@@ -77,6 +79,7 @@ export class ShellParser {
       if (ch === ';' || ch === '|') break;
       this.index++;
     }
+    if (escaped) throw new Error('Trailing escape');
     if (quote) throw new Error('Unterminated quote');
     const text = this.source.slice(start, this.index).trim();
     if (!text) throw new Error('Expected command');

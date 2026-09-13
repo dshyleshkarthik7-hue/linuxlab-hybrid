@@ -1,5 +1,7 @@
 # Contributing
 
+This repository is source-available but proprietary. Opening an issue or proposing a change does not grant permission to copy, redistribute, modify, publish, or commercially use the Software. Changes may be accepted by the copyright owner at their discretion and remain subject to `LICENSE`.
+
 ## Development setup
 
 ```bash
@@ -9,7 +11,7 @@ npm run dev
 
 ## Quality gate
 
-Before opening a change, run:
+Before proposing a change, run:
 
 ```bash
 npm run test
