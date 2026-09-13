@@ -9,35 +9,27 @@ declare global {
 }
 
 /**
- * Normalize v86's constructor globals without redeclaring its existing
- * TypeScript declarations. The bundled v86 typings define V86 and V86Starter
- * with different constructor result types, so direct assignment produces
- * TS2322 even though the runtime constructors are interchangeable here.
+ * There is exactly one VM initialization path: main-v86.ts owns creation
+ * from its DOMContentLoaded handler. This entry module only normalizes the
+ * runtime constructor name before that handler runs; it must never construct
+ * another V86LinuxTerminal instance.
  */
 function exposeV86Constructor(): void {
-  if (typeof window.V86 !== 'function' && typeof window.V86Starter === 'function') {
-    Object.defineProperty(window, 'V86', {
+  const win = window as Window & {
+    V86Starter?: new (options: Record<string, unknown>) => unknown;
+    V86?: new (options: Record<string, unknown>) => unknown;
+  };
+
+  if (typeof win.V86Starter === 'function' && typeof win.V86 !== 'function') {
+    Object.defineProperty(win, 'V86', {
       configurable: true,
       writable: true,
-      value: window.V86Starter,
+      value: win.V86Starter,
     });
   }
 }
 
-/**
- * Initialize after DOMContentLoaded when necessary, but also handle the case
- * where this module executes after DOMContentLoaded has already fired.
- */
-function ensureLinuxLabVM(): void {
-  exposeV86Constructor();
+exposeV86Constructor();
 
-  if (!window.linuxLabVM) {
-    window.linuxLabVM = new V86LinuxTerminal();
-  }
-}
-
-if (document.readyState === 'loading') {
-  window.addEventListener('DOMContentLoaded', ensureLinuxLabVM, { once: true });
-} else {
-  ensureLinuxLabVM();
-}
+// main-v86.ts owns VM construction. Do not instantiate V86LinuxTerminal here.
+void V86LinuxTerminal;
