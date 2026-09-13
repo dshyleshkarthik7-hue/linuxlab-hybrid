@@ -12,6 +12,7 @@ declare global { interface Window { V86?: new (options: Record<string, unknown>)
 
 const POLICY = VM_RESOURCE_POLICIES.linux4;
 const ISO_URL = '/api/iso?image=linux4';
+const log = (message: string) => console.info(`[linux4] ${message}`);
 
 async function boot(): Promise<void> {
   const container = document.getElementById('linux4-terminal');
@@ -36,17 +37,21 @@ async function boot(): Promise<void> {
   const cleanup = () => { enforcer.stop(); if (bootTimer !== null) window.clearTimeout(bootTimer); if (sessionTimer !== null) window.clearTimeout(sessionTimer); window.clearTimeout(fetchTimeout); window.removeEventListener('resize', resize); try { vm?.stop?.(); vm?.destroy?.(); } catch {} };
   try {
     const artifact = artifactForIsoUrl(ISO_URL);
+    log(`ISO fetch start (deadline 90000ms, artifact=${artifact.version})`);
     const iso = await fetchVerifiedIso(ISO_URL, controller.signal);
     if (!iso.byteLength) throw new Error('Linux 4 image is empty');
     config.integrityVerified = true;
     status.textContent = `Linux 4 • integrity verified (${artifact.version})`;
+    log(`ISO fetch complete: ${iso.byteLength} bytes; integrity verified`);
     const Runtime = window.V86;
     if (typeof Runtime !== 'function') throw new Error('Local v86 runtime did not load');
     const V86Runtime = Runtime;
     let serial = ''; let guestReady = false;
-    const markGuestReady = () => { if (guestReady || !config.integrityVerified) return; guestReady = true; config.guestReady = true; if (bootTimer !== null) window.clearTimeout(bootTimer); health.dataset.state = 'ready'; health.setAttribute('aria-label', 'Linux 4 ready'); status.textContent = 'Linux 4 • ready'; };
+    const markGuestReady = () => { if (guestReady || !config.integrityVerified) return; guestReady = true; config.guestReady = true; if (bootTimer !== null) window.clearTimeout(bootTimer); health.dataset.state = 'ready'; health.setAttribute('aria-label', 'Linux 4 ready'); status.textContent = 'Linux 4 • ready'; log('guest readiness confirmed'); };
+    log(`VM creation start (boot deadline ${POLICY.bootTimeoutMs}ms)`);
     vm = new V86Runtime({ wasm_path: '/v86.wasm', memory_size: enforcer.memoryBytes, vga_memory_size: enforcer.vgaMemoryBytes, screen_container: screen, bios: { url: '/seabios.bin' }, vga_bios: { url: '/vgabios.bin' }, cdrom: { buffer: iso }, boot_order: 0x20, autostart: true, disable_speaker: true, net_device: { type: 'none' } });
-    bootTimer = window.setTimeout(() => { if (!guestReady) { cleanup(); health.dataset.state = 'offline'; status.textContent = 'Linux 4 • boot timeout'; } }, POLICY.bootTimeoutMs);
+    log('VM creation complete; waiting for guest readiness');
+    bootTimer = window.setTimeout(() => { if (!guestReady) { log(`guest boot timeout after ${POLICY.bootTimeoutMs}ms`); cleanup(); health.dataset.state = 'offline'; status.textContent = 'Linux 4 • boot timeout'; } }, POLICY.bootTimeoutMs);
     sessionTimer = window.setTimeout(() => { cleanup(); health.dataset.state = 'offline'; status.textContent = 'Linux 4 • session limit reached'; }, enforcer.remainingSessionMs());
     vm.add_listener('serial0-output-byte', (value?: number) => {
       if (typeof value !== 'number' || enforcer.isStopped()) return;
