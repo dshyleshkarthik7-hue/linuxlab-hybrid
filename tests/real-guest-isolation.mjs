@@ -34,7 +34,17 @@ try {
   await page.waitForFunction(() => { const health = document.querySelector('#linux4-health')?.getAttribute('data-state'); return health === 'ready' || health === 'offline'; }, null, { timeout: bootTimeoutMs });
   const state = await page.locator('#linux4-health').getAttribute('data-state'); const status = await page.locator('#linux4-status').textContent(); const terminal = await page.locator('#linux4-terminal').innerText().catch(() => '');
   if (state !== 'ready') throw new Error(`Linux 4 guest failed to become ready: status=${status || '(empty)'}, terminal=${terminal.slice(-1000) || '(empty)'}`);
-  const policy = await page.evaluate(() => ({ page: location.pathname, body: document.body.innerHTML }));
-  assert.equal(policy.page, '/linux4.html'); assert.match(policy.body, /net_device/); assert.doesNotMatch(policy.body, /sha-256|sha256|fetchVerifiedIso|attachGuestTelemetry|Developer Alpine/i);
-  console.log('Real guest isolation gate passed: dedicated Linux 4 emulator ready with network disabled.');
+  const runtime = await page.evaluate(() => ({ page: location.pathname, config: window.__linux4VmConfig, v86Present: typeof window.V86 === 'function' }));
+  assert.equal(runtime.page, '/linux4.html');
+  assert.equal(runtime.v86Present, true);
+  assert.ok(runtime.config, 'Linux 4 runtime configuration is missing');
+  assert.equal(runtime.config.profile, 'linux4');
+  assert.equal(runtime.config.networkEnabled, false, 'Linux 4 network must be disabled');
+  assert.equal(runtime.config.integrityVerified, true, 'Linux 4 ISO must be integrity verified before readiness');
+  assert.equal(runtime.config.guestReady, true, 'Linux 4 readiness must be guest readiness');
+  assert.ok(Number.isInteger(runtime.config.memoryBytes) && runtime.config.memoryBytes > 0, 'memory policy must be applied');
+  assert.ok(Number.isInteger(runtime.config.vgaMemoryBytes) && runtime.config.vgaMemoryBytes > 0, 'VGA memory policy must be applied');
+  const html = await page.locator('#linux4-terminal').innerHTML().catch(() => '');
+  assert.doesNotMatch(html, /Developer Alpine/i);
+  console.log('Real guest isolation gate passed: verified Linux 4 guest, runtime network isolation, integrity, readiness, and resource configuration.');
 } finally { clearTimeout(testDeadline); await context.close().catch(() => {}); await browser.close().catch(() => {}); if (proxyServer) await new Promise(r => proxyServer.close(() => r())).catch(() => {}); if (viteServer) { try { process.platform === 'win32' ? viteServer.kill() : process.kill(-viteServer.pid, 'SIGTERM'); } catch { viteServer.kill(); } } }
