@@ -1,8 +1,8 @@
 import { GuestTelemetryBridge, type GuestTelemetrySnapshot } from './observability/GuestTelemetryBridge.ts';
 
 export interface V86TelemetryTarget {
-  add_listener(name: 'serial0-output-byte' | 'emulator-ready', callback: (value?: number) => void): void;
-  remove_listener?: (name: 'serial0-output-byte' | 'emulator-ready', callback: (value?: number) => void) => void;
+  add_listener(name: 'serial0-output-byte' | 'emulator-loaded', callback: (value?: number) => void): void;
+  remove_listener?: (name: 'serial0-output-byte' | 'emulator-loaded', callback: (value?: number) => void) => void;
 }
 export type GuestIdentityKind = 'alpine' | 'buildroot' | 'unknown';
 export interface GuestIdentity { kind: GuestIdentityKind; isAlpine: boolean; release: string; }
