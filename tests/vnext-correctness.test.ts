@@ -64,9 +64,9 @@ assert.equal(stopped, 1);
 
 assert.match(ALPINE_ARTIFACT.sha256, /^[a-f0-9]{64}$/i);
 await assert.rejects(() => verifyArtifact(new ArrayBuffer(0), ALPINE_ARTIFACT), /unexpected size/);
-const wrongDigestArtifact = { ...ALPINE_ARTIFACT, sha256: '0'.repeat(64) };
-const exactSizeBytes = new ArrayBuffer(ALPINE_ARTIFACT.size);
-await assert.rejects(() => verifyArtifact(exactSizeBytes, wrongDigestArtifact), /failed SHA-256 integrity verification/);
+const wrongDigestBytes = new TextEncoder().encode('linuxlab-vnext-integrity-fixture').buffer;
+const wrongDigestArtifact = { ...ALPINE_ARTIFACT, sha256: '0'.repeat(64), size: wrongDigestBytes.byteLength };
+await assert.rejects(() => verifyArtifact(wrongDigestBytes, wrongDigestArtifact), /failed SHA-256 integrity verification/);
 assert.match(ALPINE_ARTIFACT.filename, /^alpine-virt-3\.24\.1-x86\.iso$/);
 assert.equal(ALPINE_ARTIFACT.version, '3.24.1');
 
