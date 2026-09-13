@@ -6,48 +6,36 @@ const ISO_FETCH_TIMEOUT_MS = 90_000;
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin);
-  if (url.searchParams.get('image') === 'virt') return ALPINE_ARTIFACT;
-  if (url.searchParams.get('image') === 'linux4') return LINUX4_ARTIFACT;
-  return DEVELOPER_ALPINE_ARTIFACT;
+  const path = url.pathname;
+  const image = url.searchParams.get('image');
+  if (path !== '/api/iso') throw new Error(`Untrusted ISO endpoint: ${url.origin}${path}`);
+  if (image === 'virt') return ALPINE_ARTIFACT;
+  if (image === 'linux4') return LINUX4_ARTIFACT;
+  if (image === null) return DEVELOPER_ALPINE_ARTIFACT;
+  throw new Error(`Unknown ISO profile: ${image}`);
 }
 
-/**
- * Fetches the complete ISO, verifies its pinned SHA-256, then returns bytes
- * that can be supplied directly to v86. This is intentionally fail-closed:
- * no VM is created until the exact artifact has been verified.
- *
- * The fetch has its own bounded deadline so a stalled release/proxy cannot
- * leave the VM boot lifecycle pending forever. The caller's signal still
- * cancels the request immediately when the VM is restarted or destroyed.
- */
 export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Promise<ArrayBuffer> {
-  const key = new URL(rawUrl, window.location.origin).toString();
+  const url = new URL(rawUrl, window.location.origin);
+  if (url.origin !== window.location.origin) throw new Error('ISO endpoint must be same-origin');
+  const key = url.toString();
+  const artifact = artifactForIsoUrl(key);
   const cached = cache.get(key);
   if (cached) return cached.slice(0);
   const pending = inFlight.get(key);
   if (pending) return pending.then(bytes => bytes.slice(0));
 
-  const artifact = artifactForIsoUrl(key);
   const promise = (async () => {
     const timeout = AbortSignal.timeout(ISO_FETCH_TIMEOUT_MS);
     const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
     const response = await fetch(key, { method: 'GET', cache: 'no-store', signal: requestSignal });
-    if (!response.ok) throw new Error(`Linux image request failed (${response.status})`);
     const bytes = await verifyResponse(response, artifact);
     cache.clear();
-    cache.set(key, bytes);
+    cache.set(key, bytes.slice(0));
     return bytes;
   })();
-
   inFlight.set(key, promise);
-  try {
-    return (await promise).slice(0);
-  } finally {
-    inFlight.delete(key);
-  }
+  try { return (await promise).slice(0); } finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
 }
 
-export function clearVerifiedIsoCache(): void {
-  cache.clear();
-  inFlight.clear();
-}
+export function clearVerifiedIsoCache(): void { cache.clear(); inFlight.clear(); }
