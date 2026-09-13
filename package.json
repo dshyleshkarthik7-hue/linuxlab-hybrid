@@ -34,7 +34,7 @@
     "test:smoke": "node tests/browser-vm-smoke.mjs",
     "test:mobile": "node tests/mobile-e2e.mjs",
     "test:production": "node tests/production-smoke.mjs",
-    "test:all": "npm run test:ci && npm run test:smoke && npm run test:real-guest && npm run test:mobile"
+    "test:all": "npm run test:ci && npm run test:smoke && npm run test:real-guest && npm run test:mobile && npm run test:production"
   },
   "dependencies": {
     "@xterm/addon-fit": "^0.10.0",
