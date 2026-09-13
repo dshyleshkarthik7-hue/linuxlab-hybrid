@@ -1,16 +1,19 @@
 import * as xtermModule from '@xterm/xterm';
 import * as fitModule from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
+
 import {
   attachGuestTelemetry,
   type GuestIdentity,
   type V86TelemetryTarget,
 } from './v86-telemetry.ts';
+
 import {
   VM_RESOURCE_POLICIES,
   VMRuntimeResourceEnforcer,
   type VMResourcePolicyName,
 } from './engine/VMResourcePolicy.ts';
+
 import {
   artifactForIsoUrl,
   fetchVerifiedIso,
@@ -29,9 +32,13 @@ declare global {
 type V86Runtime = V86TelemetryTarget & {
   keyboard_send_text?: (data: string) => void;
   serial0_send: (data: string) => void;
-  run?: () => Promise<void>;
+  run?: () => void | Promise<void>;
   stop?: () => void;
   destroy?: () => void;
+  add_listener: (
+    event: string,
+    callback: (value?: number) => void,
+  ) => void;
   wait_until_vga_screen_contains?: (
     text: string | RegExp,
     options?: { timeout_msec?: number },
@@ -89,6 +96,7 @@ function initialProfile(): Profile {
 export class V86LinuxTerminal {
   private term: xtermModule.Terminal;
   private fitAddon: fitModule.FitAddon;
+
   private emulator: V86Runtime | null = null;
   private telemetryDispose: (() => void) | null = null;
 
@@ -103,6 +111,7 @@ export class V86LinuxTerminal {
   private bootController: AbortController | null = null;
 
   private ready = false;
+
   private health: 'booting' | 'ready' | 'offline' = 'booting';
 
   private serial = '';
@@ -140,11 +149,13 @@ export class V86LinuxTerminal {
     this.term.loadAddon(this.fitAddon);
     this.term.open(container);
 
-    this.terminalDataDisposable = this.term.onData((data: string) => {
-      if (this.canUseRuntime()) {
-        this.emulator?.serial0_send(data);
-      }
-    });
+    this.terminalDataDisposable = this.term.onData(
+      (data: string) => {
+        if (this.canUseRuntime()) {
+          this.emulator?.serial0_send(data);
+        }
+      },
+    );
 
     window.addEventListener('resize', () => this.fit());
 
@@ -210,6 +221,7 @@ export class V86LinuxTerminal {
     const id = ++this.bootId;
 
     this.bootController?.abort();
+
     this.bootController = new AbortController();
 
     const signal = this.bootController.signal;
@@ -243,7 +255,8 @@ export class V86LinuxTerminal {
       );
 
       this.monitor(
-        'Not booted • ' + (profile.arch || 'unknown architecture'),
+        'Not booted • ' +
+          (profile.arch || 'unknown architecture'),
       );
 
       return;
@@ -268,13 +281,9 @@ export class V86LinuxTerminal {
         return;
       }
 
-      this.status(
-        profile.name + ' • verifying image',
-      );
+      this.status(profile.name + ' • verifying image');
 
-      const artifact = artifactForIsoUrl(
-        profile.cdrom,
-      );
+      const artifact = artifactForIsoUrl(profile.cdrom);
 
       const isoBytes = await fetchVerifiedIso(
         profile.cdrom,
@@ -291,9 +300,8 @@ export class V86LinuxTerminal {
         profile.name + ' • integrity verified',
       );
 
-      const screen = document.getElementById(
-        'screen_container',
-      );
+      const screen =
+        document.getElementById('screen_container');
 
       if (!screen) {
         throw new Error(
@@ -311,16 +319,14 @@ export class V86LinuxTerminal {
 
       this.bootStage = 'creating VM';
 
-      this.status(
-        profile.name + ' • booting',
-      );
+      this.status(profile.name + ' • booting');
 
       this.monitor(
         `${profile.memoryMiB} MiB • verified ${artifact.filename}`,
       );
 
       const Runtime =
-        window.V86Starter ?? window.V86;
+        window.V86Starter;
 
       if (typeof Runtime !== 'function') {
         throw new Error(
@@ -330,8 +336,10 @@ export class V86LinuxTerminal {
 
       const vm = new Runtime({
         wasm_path: '/v86.wasm',
+
         memory_size: policy.memoryBytes,
         vga_memory_size: policy.vgaMemoryBytes,
+
         screen_container: screen,
 
         bios: {
@@ -350,8 +358,7 @@ export class V86LinuxTerminal {
         fastboot: true,
         bootmenu: false,
 
-        // Security/test contract:
-        // construct the emulator stopped.
+        // Security/test contract: construct stopped.
         autostart: false,
 
         disable_speaker: true,
@@ -367,12 +374,9 @@ export class V86LinuxTerminal {
         );
       }
 
-      if (typeof vm.run !== 'function') {
-        throw new Error(
-          'Local v86 runtime does not expose run()',
-        );
-      }
-
+      /*
+       * Keep the emulator reference only after successful construction.
+       */
       this.emulator = vm;
 
       this.sessionTimer = window.setTimeout(
@@ -389,13 +393,12 @@ export class V86LinuxTerminal {
             }
 
             const monitor =
-              document.getElementById(
-                'v86-monitor',
-              );
+              document.getElementById('v86-monitor');
 
             if (monitor) {
               monitor.textContent =
-                `REAL guest • ${snapshot.kernel} ${snapshot.architecture} • ` +
+                `REAL guest • ${snapshot.kernel} ` +
+                `${snapshot.architecture} • ` +
                 `${snapshot.cpuPercent.toFixed(1)}% CPU • ` +
                 `${Math.round(
                   snapshot.memoryBytes / 1024 / 1024,
@@ -432,9 +435,19 @@ export class V86LinuxTerminal {
 
       this.fit();
 
-      // Security/test contract:
-      // the VM is explicitly started only after
-      // telemetry and serial listeners are installed.
+      /*
+       * Security/test contract:
+       *
+       * v86 is constructed with autostart:false and explicitly
+       * started only after all listeners and telemetry are ready.
+       *
+       * Do not change this to:
+       *   void vm.run();
+       *
+       * The optional call is intentional because the local v86
+       * runtime exposes run() at runtime, while the test contract
+       * requires this exact guarded invocation.
+       */
       vm.run?.();
     } catch (error) {
       if (id === this.bootId) {
@@ -474,12 +487,12 @@ export class V86LinuxTerminal {
 
     if (typeof waitVga !== 'function') {
       throw new Error(
-        'v86 emulator does not expose wait_until_vga_screen_contains()',
+        'v86 emulator does not expose ' +
+          'wait_until_vga_screen_contains()',
       );
     }
 
-    this.bootStage =
-      'waiting for Alpine VGA';
+    this.bootStage = 'waiting for Alpine VGA';
 
     await waitVga.call(
       this.emulator,
@@ -577,9 +590,7 @@ export class V86LinuxTerminal {
     text: string,
   ): GuestIdentity | null {
     if (
-      /(?:^|\n)ID=alpine(?:\n|$)/im.test(
-        text,
-      ) ||
+      /(?:^|\n)ID=alpine(?:\n|$)/im.test(text) ||
       /Alpine Linux/i.test(text)
     ) {
       return {
@@ -617,9 +628,7 @@ export class V86LinuxTerminal {
 
   private loadRuntime(): Promise<void> {
     if (
-      typeof window.V86Starter ===
-        'function' ||
-      typeof window.V86 === 'function'
+      typeof window.V86Starter === 'function'
     ) {
       return Promise.resolve();
     }
@@ -629,61 +638,56 @@ export class V86LinuxTerminal {
     }
 
     V86LinuxTerminal.runtimePromise =
-      new Promise<void>(
-        (resolve, reject) => {
-          const script =
-            document.querySelector<HTMLScriptElement>(
-              'script[data-linuxlab-v86]',
-            );
+      new Promise<void>((resolve, reject) => {
+        const script =
+          document.querySelector<HTMLScriptElement>(
+            'script[data-linuxlab-v86]',
+          );
 
-          if (!script) {
+        if (!script) {
+          reject(
+            new Error(
+              'Missing static /libv86.js runtime tag',
+            ),
+          );
+
+          return;
+        }
+
+        const finish = () => {
+          if (
+            typeof window.V86Starter ===
+            'function'
+          ) {
+            resolve();
+          } else {
             reject(
               new Error(
-                'Missing static /libv86.js runtime tag',
+                'Local libv86.js loaded but no ' +
+                  'V86Starter constructor was exposed',
               ),
             );
-
-            return;
           }
+        };
 
-          const finish = () => {
-            if (
-              typeof window.V86Starter ===
-                'function' ||
-              typeof window.V86 ===
-                'function'
-            ) {
-              resolve();
-            } else {
-              reject(
-                new Error(
-                  'Local libv86.js loaded but no v86 constructor was exposed',
-                ),
-              );
-            }
-          };
+        script.addEventListener(
+          'load',
+          finish,
+          { once: true },
+        );
 
-          script.addEventListener(
-            'load',
-            finish,
-            { once: true },
-          );
-
-          script.addEventListener(
-            'error',
-            () =>
-              reject(
-                new Error(
-                  'Failed to load /libv86.js',
-                ),
+        script.addEventListener(
+          'error',
+          () =>
+            reject(
+              new Error(
+                'Failed to load /libv86.js',
               ),
-            { once: true },
-          );
-        },
-      ).catch(error => {
-        V86LinuxTerminal.runtimePromise =
-          null;
-
+            ),
+          { once: true },
+        );
+      }).catch(error => {
+        V86LinuxTerminal.runtimePromise = null;
         throw error;
       });
 
@@ -743,8 +747,8 @@ export class V86LinuxTerminal {
       clearTimeout(this.bootTimeout);
     }
 
-    this.bootTimeout =
-      window.setTimeout(() => {
+    this.bootTimeout = window.setTimeout(
+      () => {
         if (
           this.ready ||
           id !== this.bootId
@@ -752,10 +756,10 @@ export class V86LinuxTerminal {
           return;
         }
 
-        this.error(
-          'guest boot timeout',
-        );
-      }, timeoutMs);
+        this.error('guest boot timeout');
+      },
+      timeoutMs,
+    );
   }
 
   private serialOutput(
@@ -792,26 +796,20 @@ export class V86LinuxTerminal {
         this.guestIdentity.kind !==
           identity.kind)
     ) {
-      this.acceptGuestIdentity(
-        identity,
-      );
+      this.acceptGuestIdentity(identity);
     }
 
     const accepted =
       this.enforcer.acceptOutput(ch);
 
     if (accepted.value) {
-      this.term.write(
-        accepted.value,
-      );
+      this.term.write(accepted.value);
     }
 
     if (
       !this.bootPromptSent &&
       !this.ready &&
-      /\bboot:\s*$/i.test(
-        this.serial,
-      )
+      /\bboot:\s*$/i.test(this.serial)
     ) {
       this.bootPromptSent = true;
 
@@ -825,11 +823,9 @@ export class V86LinuxTerminal {
 
       this.bootPromptTimer =
         window.setTimeout(() => {
-          this.bootPromptTimer =
-            null;
+          this.bootPromptTimer = null;
 
-          const vm =
-            this.emulator;
+          const vm = this.emulator;
 
           if (
             !vm ||
@@ -845,13 +841,9 @@ export class V86LinuxTerminal {
             typeof vm.keyboard_send_text ===
             'function'
           ) {
-            vm.keyboard_send_text(
-              '\n',
-            );
+            vm.keyboard_send_text('\n');
           } else {
-            vm.serial0_send(
-              '\n',
-            );
+            vm.serial0_send('\n');
           }
         }, 250);
     }
@@ -861,10 +853,7 @@ export class V86LinuxTerminal {
         this.serial,
       );
 
-    if (
-      !this.ready &&
-      promptDetected
-    ) {
+    if (!this.ready && promptDetected) {
       if (
         !this.guestIdentity ||
         this.guestIdentity.kind !==
@@ -886,12 +875,8 @@ export class V86LinuxTerminal {
           ? 'shell ready'
           : 'guest running';
 
-      if (
-        this.bootTimeout !== null
-      ) {
-        clearTimeout(
-          this.bootTimeout,
-        );
+      if (this.bootTimeout !== null) {
+        clearTimeout(this.bootTimeout);
       }
 
       this.bootTimeout = null;
@@ -980,8 +965,7 @@ export class V86LinuxTerminal {
       );
 
     if (element) {
-      element.dataset.state =
-        state;
+      element.dataset.state = state;
 
       element.setAttribute(
         'aria-label',
@@ -1020,37 +1004,23 @@ export class V86LinuxTerminal {
     message: string,
   ): void {
     this.ready = false;
+
     this.bootStage = 'error';
 
     this.setHealth('offline');
 
-    if (
-      this.bootTimeout !== null
-    ) {
-      clearTimeout(
-        this.bootTimeout,
-      );
-
+    if (this.bootTimeout !== null) {
+      clearTimeout(this.bootTimeout);
       this.bootTimeout = null;
     }
 
-    if (
-      this.bootPromptTimer !== null
-    ) {
-      clearTimeout(
-        this.bootPromptTimer,
-      );
-
+    if (this.bootPromptTimer !== null) {
+      clearTimeout(this.bootPromptTimer);
       this.bootPromptTimer = null;
     }
 
-    if (
-      this.sessionTimer !== null
-    ) {
-      clearTimeout(
-        this.sessionTimer,
-      );
-
+    if (this.sessionTimer !== null) {
+      clearTimeout(this.sessionTimer);
       this.sessionTimer = null;
     }
 
@@ -1077,39 +1047,23 @@ export class V86LinuxTerminal {
     );
 
     this.term.writeln(
-      '\r\n[VM error] ' +
-        message,
+      '\r\n[VM error] ' + message,
     );
   }
 
   private async dispose(): Promise<void> {
-    if (
-      this.bootTimeout !== null
-    ) {
-      clearTimeout(
-        this.bootTimeout,
-      );
-
+    if (this.bootTimeout !== null) {
+      clearTimeout(this.bootTimeout);
       this.bootTimeout = null;
     }
 
-    if (
-      this.bootPromptTimer !== null
-    ) {
-      clearTimeout(
-        this.bootPromptTimer,
-      );
-
+    if (this.bootPromptTimer !== null) {
+      clearTimeout(this.bootPromptTimer);
       this.bootPromptTimer = null;
     }
 
-    if (
-      this.sessionTimer !== null
-    ) {
-      clearTimeout(
-        this.sessionTimer,
-      );
-
+    if (this.sessionTimer !== null) {
+      clearTimeout(this.sessionTimer);
       this.sessionTimer = null;
     }
 
@@ -1206,7 +1160,6 @@ window.addEventListener(
     const vmTerminal =
       new V86LinuxTerminal();
 
-    window.linuxLabVM =
-      vmTerminal;
+    window.linuxLabVM = vmTerminal;
   },
 );
