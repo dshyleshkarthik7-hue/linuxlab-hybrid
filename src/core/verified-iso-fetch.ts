@@ -24,7 +24,6 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   if (cached) return cached.slice(0);
   const pending = inFlight.get(key);
   if (pending) return pending.then(bytes => bytes.slice(0));
-
   const promise = (async () => {
     const timeout = AbortSignal.timeout(ISO_FETCH_TIMEOUT_MS);
     const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
@@ -37,5 +36,4 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   inFlight.set(key, promise);
   try { return (await promise).slice(0); } finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
 }
-
 export function clearVerifiedIsoCache(): void { cache.clear(); inFlight.clear(); }
