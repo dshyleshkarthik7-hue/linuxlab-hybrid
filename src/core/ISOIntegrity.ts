@@ -8,6 +8,8 @@ export type PinnedArtifact = {
 };
 
 const SHA256_RE = /^[a-f0-9]{64}$/i;
+const TRUSTED_RELEASE_PREFIX = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/';
+const TRUSTED_MANIFEST_PREFIX = 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/';
 
 export async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', bytes);
@@ -16,14 +18,17 @@ export async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
 
 export function assertTrustedArtifact(artifact: PinnedArtifact): void {
   if (!SHA256_RE.test(artifact.sha256)) throw new Error(`Artifact ${artifact.filename} has no trusted SHA-256 digest configured`);
-  if (!artifact.url.startsWith('https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/')) throw new Error(`Artifact ${artifact.filename} is not from the trusted release host`);
-  if (!artifact.releaseManifestUrl.startsWith('https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/')) throw new Error(`Artifact ${artifact.filename} has an untrusted release manifest URL`);
+  if (!artifact.url.startsWith(TRUSTED_RELEASE_PREFIX)) throw new Error(`Artifact ${artifact.filename} is not from the trusted release host`);
+  if (!artifact.releaseManifestUrl.startsWith(TRUSTED_MANIFEST_PREFIX)) throw new Error(`Artifact ${artifact.filename} has an untrusted release manifest URL`);
 }
 
 export async function verifyArtifact(bytes: ArrayBuffer, artifact: PinnedArtifact): Promise<boolean> {
-  assertTrustedArtifact(artifact);
+  // Preserve integrity-first diagnostics: a bad fixture/digest must report the
+  // cryptographic failure even when its test URL is intentionally synthetic.
+  if (!SHA256_RE.test(artifact.sha256)) throw new Error(`Artifact ${artifact.filename} has no trusted SHA-256 digest configured`);
   const actual = await sha256Hex(bytes);
   if (actual.toLowerCase() !== artifact.sha256.toLowerCase()) throw new Error(`Artifact ${artifact.filename} failed SHA-256 integrity verification`);
+  assertTrustedArtifact(artifact);
   return true;
 }
 
