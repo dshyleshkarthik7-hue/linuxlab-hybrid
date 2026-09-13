@@ -4,30 +4,27 @@ import { V86LinuxTerminal } from './main-v86.ts';
 
 declare global {
   interface Window {
-    V86?: typeof V86LinuxTerminal extends never ? unknown : Window['V86Starter'];
-    V86Starter?: new (options: Record<string, unknown>) => unknown;
     linuxLabVM?: V86LinuxTerminal;
   }
 }
 
 /**
- * v86 must be available as a stable global for the real-guest test contract.
- * Some v86 builds expose the constructor as V86Starter while the test suite
- * checks V86. Keep both names pointing at the same constructor.
+ * v86's type declarations already define Window.V86 and Window.V86Starter.
+ * Do not redeclare either property here: a different constructor return type
+ * causes TS2717/TS2322 during the production build.
+ *
+ * Some v86 builds expose the constructor as V86Starter while the real-guest
+ * test contract checks V86, so normalize the runtime aliases instead.
  */
 function exposeV86Constructor(): void {
-  if (
-    typeof window.V86Starter === 'function' &&
-    typeof window.V86 !== 'function'
-  ) {
+  if (typeof window.V86 !== 'function' && typeof window.V86Starter === 'function') {
     window.V86 = window.V86Starter;
   }
 }
 
 /**
- * main-v86 normally creates the terminal from its DOMContentLoaded handler.
- * This fallback makes initialization race-proof when a bundler/runtime loads
- * the module after DOMContentLoaded has already fired.
+ * Initialize after DOMContentLoaded when necessary, but also handle the case
+ * where this module executes after DOMContentLoaded has already fired.
  */
 function ensureLinuxLabVM(): void {
   exposeV86Constructor();
@@ -38,11 +35,7 @@ function ensureLinuxLabVM(): void {
 }
 
 if (document.readyState === 'loading') {
-  window.addEventListener(
-    'DOMContentLoaded',
-    ensureLinuxLabVM,
-    { once: true },
-  );
+  window.addEventListener('DOMContentLoaded', ensureLinuxLabVM, { once: true });
 } else {
   ensureLinuxLabVM();
 }
