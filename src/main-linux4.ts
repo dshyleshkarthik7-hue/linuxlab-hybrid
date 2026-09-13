@@ -42,9 +42,10 @@ async function boot(): Promise<void> {
     status.textContent = `Linux 4 • integrity verified (${artifact.version})`;
     const Runtime = window.V86;
     if (typeof Runtime !== 'function') throw new Error('Local v86 runtime did not load');
+    const V86Runtime = Runtime;
     let serial = ''; let guestReady = false;
     const markGuestReady = () => { if (guestReady || !config.integrityVerified) return; guestReady = true; config.guestReady = true; if (bootTimer !== null) window.clearTimeout(bootTimer); health.dataset.state = 'ready'; health.setAttribute('aria-label', 'Linux 4 ready'); status.textContent = 'Linux 4 • ready'; };
-    vm = new Runtime({ wasm_path: '/v86.wasm', memory_size: enforcer.memoryBytes, vga_memory_size: enforcer.vgaMemoryBytes, screen_container: screen, bios: { url: '/seabios.bin' }, vga_bios: { url: '/vgabios.bin' }, cdrom: { buffer: iso }, boot_order: 0x20, autostart: true, disable_speaker: true, net_device: { type: 'none' } });
+    vm = new V86Runtime({ wasm_path: '/v86.wasm', memory_size: enforcer.memoryBytes, vga_memory_size: enforcer.vgaMemoryBytes, screen_container: screen, bios: { url: '/seabios.bin' }, vga_bios: { url: '/vgabios.bin' }, cdrom: { buffer: iso }, boot_order: 0x20, autostart: true, disable_speaker: true, net_device: { type: 'none' } });
     bootTimer = window.setTimeout(() => { if (!guestReady) { cleanup(); health.dataset.state = 'offline'; status.textContent = 'Linux 4 • boot timeout'; } }, POLICY.bootTimeoutMs);
     sessionTimer = window.setTimeout(() => { cleanup(); health.dataset.state = 'offline'; status.textContent = 'Linux 4 • session limit reached'; }, enforcer.remainingSessionMs());
     vm.add_listener('serial0-output-byte', (value?: number) => {
