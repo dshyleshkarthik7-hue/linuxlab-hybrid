@@ -23,8 +23,6 @@ export function assertTrustedArtifact(artifact: PinnedArtifact): void {
 }
 
 export async function verifyArtifact(bytes: ArrayBuffer, artifact: PinnedArtifact): Promise<boolean> {
-  // Preserve integrity-first diagnostics: a bad fixture/digest must report the
-  // cryptographic failure even when its test URL is intentionally synthetic.
   if (!SHA256_RE.test(artifact.sha256)) throw new Error(`Artifact ${artifact.filename} has no trusted SHA-256 digest configured`);
   const actual = await sha256Hex(bytes);
   if (actual.toLowerCase() !== artifact.sha256.toLowerCase()) throw new Error(`Artifact ${artifact.filename} failed SHA-256 integrity verification`);
@@ -33,6 +31,7 @@ export async function verifyArtifact(bytes: ArrayBuffer, artifact: PinnedArtifac
 }
 
 export async function verifyResponse(response: Response, artifact: PinnedArtifact): Promise<ArrayBuffer> {
+  assertTrustedArtifact(artifact);
   if (!response.ok) throw new Error(`Artifact ${artifact.filename} download failed (${response.status})`);
   const bytes = await response.arrayBuffer();
   await verifyArtifact(bytes, artifact);
