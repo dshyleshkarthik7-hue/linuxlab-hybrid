@@ -9,6 +9,9 @@
   path = "/api/tutor"
   function = "tutor"
 [[edge_functions]]
+  path = "/api/v86-firmware/*"
+  function = "v86-firmware"
+[[edge_functions]]
   path = "/commands/*"
   function = "commands"
 
@@ -23,6 +26,14 @@
     Cross-Origin-Embedder-Policy = "credentialless"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains"
 
+[[redirects]]
+  from = "/seabios.bin"
+  to = "/api/v86-firmware/seabios.bin"
+  status = 200
+[[redirects]]
+  from = "/vgabios.bin"
+  to = "/api/v86-firmware/vgabios.bin"
+  status = 200
 [[redirects]]
   from = "/real-linux/"
   to = "/index-v86.html"
