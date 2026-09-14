@@ -31,7 +31,6 @@ yarn-error.log*
 *.sln
 *.sw?
 .DS_Store
-iso-builder/
 linuxlab-hybrid-ready/
 linuxlab-ai-builder/
 *.tmp
