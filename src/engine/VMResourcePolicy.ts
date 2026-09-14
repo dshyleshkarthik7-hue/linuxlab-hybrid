@@ -12,15 +12,28 @@ export interface VMResourcePolicy {
   maxProcesses: number;
   cpuSeconds: number;
   networkAllowed: boolean;
+  telemetryMaxAgeMs: number;
 }
 
 export const VM_RESOURCE_POLICIES = {
-  developer: { memoryMiB: 1024, vgaMemoryMiB: 8, bootTimeoutMs: 5 * 60_000, maxSessionMs: 60 * 60_000, maxSerialBytes: 256_000, maxCommandMs: 30_000, maxOutputBytes: 1_000_000, maxFileBytes: 8_000_000, maxFilesystemBytes: 128_000_000, maxPipelineStages: 16, maxProcesses: 128, cpuSeconds: 30, networkAllowed: false },
-  virt: { memoryMiB: 512, vgaMemoryMiB: 8, bootTimeoutMs: 4 * 60_000, maxSessionMs: 45 * 60_000, maxSerialBytes: 256_000, maxCommandMs: 30_000, maxOutputBytes: 1_000_000, maxFileBytes: 8_000_000, maxFilesystemBytes: 96_000_000, maxPipelineStages: 16, maxProcesses: 64, cpuSeconds: 30, networkAllowed: false },
-  linux4: { memoryMiB: 256, vgaMemoryMiB: 4, bootTimeoutMs: 90_000, maxSessionMs: 30 * 60_000, maxSerialBytes: 256_000, maxCommandMs: 15_000, maxOutputBytes: 512_000, maxFileBytes: 4_000_000, maxFilesystemBytes: 32_000_000, maxPipelineStages: 8, maxProcesses: 32, cpuSeconds: 15, networkAllowed: false },
+  developer: { memoryMiB: 1024, vgaMemoryMiB: 8, bootTimeoutMs: 5 * 60_000, maxSessionMs: 60 * 60_000, maxSerialBytes: 256_000, maxCommandMs: 30_000, maxOutputBytes: 1_000_000, maxFileBytes: 8_000_000, maxFilesystemBytes: 128_000_000, maxPipelineStages: 16, maxProcesses: 128, cpuSeconds: 30, networkAllowed: false, telemetryMaxAgeMs: 5_000 },
+  virt: { memoryMiB: 512, vgaMemoryMiB: 8, bootTimeoutMs: 4 * 60_000, maxSessionMs: 45 * 60_000, maxSerialBytes: 256_000, maxCommandMs: 30_000, maxOutputBytes: 1_000_000, maxFileBytes: 8_000_000, maxFilesystemBytes: 96_000_000, maxPipelineStages: 16, maxProcesses: 64, cpuSeconds: 30, networkAllowed: false, telemetryMaxAgeMs: 5_000 },
+  linux4: { memoryMiB: 256, vgaMemoryMiB: 4, bootTimeoutMs: 90_000, maxSessionMs: 30 * 60_000, maxSerialBytes: 256_000, maxCommandMs: 15_000, maxOutputBytes: 512_000, maxFileBytes: 4_000_000, maxFilesystemBytes: 32_000_000, maxPipelineStages: 8, maxProcesses: 32, cpuSeconds: 15, networkAllowed: false, telemetryMaxAgeMs: 5_000 },
 } as const satisfies Record<string, VMResourcePolicy>;
 
 export type VMResourcePolicyName = keyof typeof VM_RESOURCE_POLICIES;
+
+/** Limits derived from guest output. These are observations, not a security boundary. */
+export const guestObservedLimits = [
+  'cpuSeconds', 'processCount', 'filesystemBytes', 'memoryBytes',
+] as const;
+
+/** Controls applied by the browser/runtime lifecycle itself. They are not host-kernel sandboxing. */
+export const hostEnforcedLimits = [
+  'vmMemoryAllocation', 'vgaMemoryAllocation', 'sessionDuration', 'serialOutputBytes',
+  'commandTimeout', 'outputBytes', 'pipelineStages', 'networkDisabled',
+] as const;
+
 export interface VMRuntimeBoundaryState {
   startedAt: number;
   serialBytes: number;
@@ -75,11 +88,16 @@ export class VMRuntimeResourceEnforcer {
     this.state.outputBytes += new TextEncoder().encode(bounded.value).byteLength;
     return bounded;
   }
-  observeGuest(sample: GuestResourceSample): boolean {
+  observeGuest(sample: GuestResourceSample, now = Date.now()): boolean {
+    const sampledAt = sample.sampledAt ?? now;
+    if (!Number.isFinite(sampledAt) || sampledAt <= 0 || sampledAt > now + 1_000) return false;
+    if (this.state.lastGuestSampleAt !== null && sampledAt <= this.state.lastGuestSampleAt) return false;
+    if (now - sampledAt > this.policy.telemetryMaxAgeMs) return false;
     if (sample.cpuSeconds !== undefined) {
       if (!Number.isFinite(sample.cpuSeconds) || sample.cpuSeconds < 0) return false;
-      this.state.guestCpuSeconds = Math.max(this.state.guestCpuSeconds, sample.cpuSeconds);
-      if (this.state.guestCpuSeconds > this.policy.cpuSeconds) return false;
+      if (sample.cpuSeconds < this.state.guestCpuSeconds) return false;
+      this.state.guestCpuSeconds = sample.cpuSeconds;
+      if (sample.cpuSeconds > this.policy.cpuSeconds) return false;
     }
     if (sample.processCount !== undefined) {
       if (!Number.isInteger(sample.processCount) || sample.processCount < 0) return false;
@@ -96,8 +114,11 @@ export class VMRuntimeResourceEnforcer {
       this.state.guestMemoryBytes = sample.memoryBytes;
       if (sample.memoryBytes > this.memoryBytes) return false;
     }
-    this.state.lastGuestSampleAt = sample.sampledAt ?? Date.now();
+    this.state.lastGuestSampleAt = sampledAt;
     return true;
+  }
+  hasFreshTelemetry(now = Date.now()): boolean {
+    return this.state.lastGuestSampleAt !== null && now - this.state.lastGuestSampleAt <= this.policy.telemetryMaxAgeMs;
   }
   acceptPipeline(command: string): boolean {
     let quote: '"' | "'" | null = null;
