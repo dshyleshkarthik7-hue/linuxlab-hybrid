@@ -42,7 +42,7 @@ The ISO download endpoint is a server-side **ISO relay only**. It does not by it
 
 Developer Alpine package installation (for example, `apk add`) works only when a guest-network backend is explicitly available and configured. The current browser VM must not claim arbitrary Internet access unless that path has been verified end-to-end. This service is not a VPN, anonymity service, privacy boundary, or guarantee of Internet access. Never enter passwords, tokens, private keys, or other sensitive information in the VM.
 
-The real-Linux page reports three health states: orange while booting, green when the guest is running or a shell is ready, and black when booting fails. Slow devices are not marked offline merely because Alpine takes longer to initialize.
+The real-Linux page reports boot/runtime state separately from guest activity. Guest-reported CPU, memory, disk and other usage statistics are **UX indicators only**. They are not system-health proof, security status, or host resource enforcement signals.
 
 The 256 MiB figures shown by some Engine A `top`/`free` demonstrations are illustrative simulator data, not the RAM allocated to Engine B.
 
@@ -115,13 +115,15 @@ Only use an ISO when its SHA-256 matches the checksum published by the release o
 
 ### Resource-policy boundary
 
-Engine A resource limits are enforced by the simulator itself. Real-Linux browser controls are defense-in-depth lifecycle controls; they are **not a host-kernel security boundary**. The browser allocates a bounded v86 memory configuration, disables guest networking, limits session duration, serial traffic, command/output handling, and pipeline depth, and fails closed when guest telemetry is missing, stale, non-monotonic, future-dated, malformed, or over a configured observed limit.
+Engine A resource limits are enforced by the simulator itself. Real-Linux browser controls are defense-in-depth lifecycle controls; they are **not a host-kernel security boundary**. The browser allocates a bounded v86 memory configuration, disables guest networking, limits session duration, serial traffic, command/output handling, and pipeline depth.
 
-Guest CPU, process-count, filesystem, and guest-memory telemetry remain **untrusted observations**. A guest can potentially stop reporting or falsify them. These observations must never be described as host-enforced CPU/process/filesystem isolation. A modified client can bypass browser-side policy, and browser-emulated guests must not be treated as equivalent to a dedicated VM, container, or server-side sandbox.
+Guest CPU, process-count, filesystem, and guest-memory telemetry are **untrusted, UX-only observations**. They may be displayed as guest-reported activity so learners can see whether a VM appears busy, idle, or laggy. They must not be used to establish that the VM is safe, healthy in a security sense, isolated, or within a host resource budget. The guest can stop reporting or falsify them. A modified client can bypass browser-side policy, and browser-emulated guests must not be treated as equivalent to a dedicated VM, container, or server-side sandbox.
+
+The application therefore does **not** use guest telemetry to gate VM health or security decisions. Runtime health means the browser emulator reached its expected boot/identity state; guest activity remains informational. Browser-enforced lifecycle controls such as bounded VM allocation, session duration, serial/output handling, pipeline depth, and disabled guest networking are separate from guest observations.
 
 Guest identity is **detected**, not cryptographically proven, from guest output. ISO integrity is established separately by pinned artifact metadata plus complete browser-side SHA-256 verification.
 
-Production security status remains **BLOCKED** until a real server-side or otherwise independently enforced guest CPU/process/filesystem isolation mechanism is introduced and validated with adversarial host-impact tests. Tightening browser telemetry policy improves fail-closed monitoring but does not create that missing isolation boundary.
+Production security status remains **BLOCKED** until a real server-side or otherwise independently enforced guest CPU/process/filesystem isolation mechanism is introduced and validated with adversarial host-impact tests. Demoting telemetry to UX-only improves the trust model, but it does not create a missing isolation boundary.
 
 ### Reset and saved data
 
