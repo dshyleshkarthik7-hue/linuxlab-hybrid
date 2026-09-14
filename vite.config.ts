@@ -51,6 +51,14 @@ export default defineConfig({
   optimizeDeps: { include: ['@xterm/xterm', '@xterm/addon-fit', 'monaco-editor'] },
   build: {
     outDir: 'dist', target: 'esnext', cssMinify: false, chunkSizeWarningLimit: 1000,
+    modulePreload: {
+      resolveDependencies(filename, deps) {
+        if (filename.includes('simulator')) {
+          return deps.filter((dep) => !/(^|\/)monaco(?:-[^/]+)?\.js(?:\?.*)?$/.test(dep));
+        }
+        return deps;
+      },
+    },
     rollupOptions: {
       input: {
         main: entry('index.html'), beginner: entry('beginner/index.html'), intermediate: entry('intermediate/index.html'), expert: entry('expert/index.html'),
