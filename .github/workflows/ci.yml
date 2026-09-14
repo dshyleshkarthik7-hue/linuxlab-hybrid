@@ -28,12 +28,7 @@ jobs:
           set -euo pipefail
           npm config set registry "$NPM_CONFIG_REGISTRY"
           npm cache verify
-          if npm ci --ignore-scripts --prefer-online; then
-            exit 0
-          fi
-          echo "npm ci failed; retrying once through a separate read-only registry mirror"
-          npm cache clean --force
-          npm ci --ignore-scripts --prefer-online --registry=https://registry.npmmirror.com --replace-registry-host=always
+          npm ci --ignore-scripts --prefer-online
       - run: npm audit --audit-level=high
       - name: Install Playwright Chromium
         run: |
@@ -42,7 +37,7 @@ jobs:
           node node_modules/playwright/cli.js install --with-deps chromium
       - run: npm run test:ci
       - run: npm run test:smoke
-      - name: Real guest isolation gate
+      - name: Real guest runtime gate
         run: npm run test:real-guest
       - run: npm run test:mobile
       - run: node tests/p2-p3-contract.test.mjs
