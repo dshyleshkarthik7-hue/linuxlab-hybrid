@@ -12,7 +12,7 @@ export class InBrowserLinuxEngine {
   public cwdPath: string[] = ['root'];
   public env: Map<string, string>;
   public history: string[] = [];
-  private exitCode = 0;
+  protected exitCode = 0;
   private onEditorOpen?: (filename: string, content: string) => void;
 
   constructor() {
@@ -49,21 +49,10 @@ export class InBrowserLinuxEngine {
       });
     }
 
-    this.writeFile(
-      '/root/main.c',
-      `#include <stdio.h>\n\nint main() {\n    int num = 5;\n    printf("Multiplication Table of %d:\\n", num);\n    for (int i = 1; i <= 10; i++) {\n        printf("%d x %d = %d\\n", num, i, num * i);\n    }\n    return 0;\n}\n`
-    );
-
-    this.writeFile(
-      '/root/Main.java',
-      `public class Main {\n    public static void main(String[] args) {\n        int num = 7;\n        boolean isPrime = true;\n        for (int i = 2; i <= num / 2; i++) {\n            if (num % i == 0) {\n                isPrime = false;\n                break;\n            }\n        }\n        if (isPrime) {\n            System.out.println(num + " is a Prime Number");\n        } else {\n            System.out.println(num + " is not a Prime Number");\n        }\n    }\n}\n`
-    );
-
+    this.writeFile('/root/main.c', `#include <stdio.h>\n\nint main() {\n    int num = 5;\n    printf("Multiplication Table of %d:\\n", num);\n    for (int i = 1; i <= 10; i++) {\n        printf("%d x %d = %d\\n", num, i, num * i);\n    }\n    return 0;\n}\n`);
+    this.writeFile('/root/Main.java', `public class Main {\n    public static void main(String[] args) {\n        int num = 7;\n        boolean isPrime = true;\n        for (int i = 2; i <= num / 2; i++) {\n            if (num % i == 0) {\n                isPrime = false;\n                break;\n            }\n        }\n        if (isPrime) {\n            System.out.println(num + " is a Prime Number");\n        } else {\n            System.out.println(num + " is not a Prime Number");\n        }\n    }\n}\n`);
     this.writeFile('/etc/hostname', 'linuxlab-node\n');
-    this.writeFile(
-      '/etc/os-release',
-      'NAME="LinuxLab POSIX Engine"\nVERSION="2.0-Transpiler"\nID=linuxlab\nPRETTY_NAME="LinuxLab Hypervisor v2.0"\n'
-    );
+    this.writeFile('/etc/os-release', 'NAME="LinuxLab POSIX Engine"\nVERSION="2.0-Transpiler"\nID=linuxlab\nPRETTY_NAME="LinuxLab Hypervisor v2.0"\n');
   }
 
   public getPrompt(): string {
@@ -72,1101 +61,183 @@ export class InBrowserLinuxEngine {
     return `\x1b[1;32m${user}@linuxlab\x1b[0m:\x1b[1;34m${path}\x1b[0m# `;
   }
 
-  public getCwd(): string {
-    return '/' + this.cwdPath.join('/');
-  }
+  public getCwd(): string { return '/' + this.cwdPath.join('/'); }
 
   public resolvePath(target: string): { node: VirtualNode | null; parent: VirtualNode | null; name: string } {
     const isAbs = target.startsWith('/');
     const tokens = target.split('/').filter(Boolean);
     const parts = isAbs ? tokens : [...this.cwdPath, ...tokens];
-
     const clean: string[] = [];
-    for (const p of parts) {
-      if (p === '.') continue;
-      if (p === '..') clean.pop();
-      else clean.push(p);
-    }
-
+    for (const p of parts) { if (p === '.') continue; if (p === '..') clean.pop(); else clean.push(p); }
     if (clean.length === 0) return { node: this.root, parent: null, name: '/' };
-
-    let curr: VirtualNode = this.root;
-    let parent: VirtualNode | null = null;
-
+    let curr: VirtualNode = this.root; let parent: VirtualNode | null = null;
     for (let i = 0; i < clean.length; i++) {
       const part = clean[i];
-      if (curr.type !== 'dir' || !curr.children) {
-        return { node: null, parent: null, name: part };
-      }
+      if (curr.type !== 'dir' || !curr.children) return { node: null, parent: null, name: part };
       parent = curr;
       const next = curr.children.get(part);
-      if (!next) {
-        if (i === clean.length - 1) return { node: null, parent: curr, name: part };
-        return { node: null, parent: null, name: part };
-      }
+      if (!next) return i === clean.length - 1 ? { node: null, parent: curr, name: part } : { node: null, parent: null, name: part };
       curr = next;
     }
-
     return { node: curr, parent, name: clean[clean.length - 1] };
   }
 
   public writeFile(pathStr: string, content: string): boolean {
     const { node, parent, name } = this.resolvePath(pathStr);
     if (node && node.type === 'dir') return false;
-    if (node && node.type === 'file') {
-      node.content = content;
-      return true;
-    }
-    if (parent && parent.children) {
-      parent.children.set(name, {
-        name,
-        type: 'file',
-        permissions: '-rw-r--r--',
-        content,
-        parent,
-      });
-      return true;
-    }
+    if (node && node.type === 'file') { node.content = content; return true; }
+    if (parent?.children) { parent.children.set(name, { name, type: 'file', permissions: '-rw-r--r--', content, parent }); return true; }
     return false;
   }
 
   public readFile(pathStr: string): string | null {
     const { node } = this.resolvePath(pathStr);
-    if (node && node.type === 'file') return node.content ?? '';
-    return null;
+    return node?.type === 'file' ? node.content ?? '' : null;
   }
 
   private deletePath(pathStr: string): boolean {
     const { node, parent, name } = this.resolvePath(pathStr);
-    if (!node || !parent || !parent.children) return false;
-    return parent.children.delete(name);
+    return !!node && !!parent?.children && parent.children.delete(name);
   }
 
   public async execute(raw: string): Promise<string> {
-    const line = raw.trim();
-    if (!line) return '';
-    this.history.push(line);
-
-    const splitOperator = (input: string, operators: string[]): { parts: string[]; operators: string[] } => {
-      const parts: string[] = []; const found: string[] = [];
-      let current = ''; let quote = ''; let escaped = false;
-      for (let i = 0; i < input.length; i++) {
-        const ch = input[i];
-        if (escaped) { current += ch; escaped = false; continue; }
-        if (ch === '\\') { current += ch; escaped = true; continue; }
-        if (ch === '"' || ch === "'") { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; }
-        if (!quote) {
-          const op = operators.find(candidate => input.startsWith(candidate, i));
-          if (op) { parts.push(current.trim()); found.push(op); current = ''; i += op.length - 1; continue; }
-        }
-        current += ch;
-      }
-      parts.push(current.trim());
-      return { parts, operators: found };
+    const line = raw.trim(); if (!line) return ''; this.history.push(line);
+    const splitOperator = (input: string, operators: string[]) => {
+      const parts: string[] = []; const found: string[] = []; let current = ''; let quote = ''; let escaped = false;
+      for (let i = 0; i < input.length; i++) { const ch = input[i]; if (escaped) { current += ch; escaped = false; continue; } if (ch === '\\') { current += ch; escaped = true; continue; } if (ch === '"' || ch === "'") { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; } if (!quote) { const op = operators.find(candidate => input.startsWith(candidate, i)); if (op) { parts.push(current.trim()); found.push(op); current = ''; i += op.length - 1; continue; } } current += ch; }
+      parts.push(current.trim()); return { parts, operators: found };
     };
-
     const runChain = async (input: string): Promise<{ output: string; failed: boolean }> => {
       const { parts, operators } = splitOperator(input, ['&&', '||']);
-      if (!operators.length) {
-        const output = await this.executePipeline(parts[0]);
-        return { output, failed: this.exitCode !== 0 };
-      }
-      let result = await runChain(parts[0]);
-      let output = result.output;
-      for (let i = 0; i < operators.length; i++) {
-        const op = operators[i];
-        const shouldRun = (op === '&&' && !result.failed) || (op === '||' && result.failed);
-        if (!shouldRun) continue;
-
-        const previousFailed = result.failed;
-        const next = await runChain(parts[i + 1]);
-
-        // Shell diagnostics are written to stderr, so a successful fallback after
-        // `||` should return stdout from the fallback rather than concatenating
-        // the previous command's diagnostic into the captured stdout result.
-        if (op === '||' && previousFailed) {
-          // If earlier successful commands in this chain produced stdout, retain it.
-          // Only discard the immediately preceding failed command's diagnostic.
-          output = output === result.output ? next.output : (next.output ? output + '\n' + next.output : output);
-        } else if (next.output) {
-          output = output ? output + '\n' + next.output : next.output;
-        }
-        result = next;
-      }
+      if (!operators.length) { const output = await this.executePipeline(parts[0]); return { output, failed: this.exitCode !== 0 }; }
+      let result = await runChain(parts[0]); let output = result.output;
+      for (let i = 0; i < operators.length; i++) { const op = operators[i]; const shouldRun = (op === '&&' && !result.failed) || (op === '||' && result.failed); if (!shouldRun) continue; const previousFailed = result.failed; const next = await runChain(parts[i + 1]); if (op === '||' && previousFailed) output = output === result.output ? next.output : (next.output ? output + '\n' + next.output : output); else if (next.output) output = output ? output + '\n' + next.output : next.output; result = next; }
       return { output, failed: result.failed };
     };
-
     const sequence = splitOperator(line, [';']);
-    if (sequence.operators.length) {
-      const outputs: string[] = [];
-      let failed = false;
-      for (const part of sequence.parts) {
-        if (!part) continue;
-        const result = await runChain(part);
-        if (result.output) outputs.push(result.output);
-        failed = result.failed;
-      }
-      this.exitCode = failed ? 1 : 0;
-      return outputs.join('\n');
-    }
-
-    const result = await runChain(line);
-    this.exitCode = result.failed ? 1 : 0;
-    return result.output;
+    if (sequence.operators.length) { const outputs: string[] = []; let failed = false; for (const part of sequence.parts) { if (!part) continue; const result = await runChain(part); if (result.output) outputs.push(result.output); failed = result.failed; } this.exitCode = failed ? 1 : 0; return outputs.join('\n'); }
+    const result = await runChain(line); this.exitCode = result.failed ? 1 : 0; return result.output;
   }
 
   private async executePipeline(line: string): Promise<string> {
-    const split = (input: string): string[] => {
-      const parts: string[] = []; let current = ''; let quote = ''; let escaped = false;
-      for (let i = 0; i < input.length; i++) {
-        const ch = input[i];
-        if (escaped) { current += ch; escaped = false; continue; }
-        if (ch === '\\') { current += ch; escaped = true; continue; }
-        if (ch === '"' || ch === "'") { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; }
-        if (!quote && ch === '|') { parts.push(current.trim()); current = ''; continue; }
-        current += ch;
-      }
-      parts.push(current.trim());
-      return parts;
-    };
-
+    const split = (input: string): string[] => { const parts: string[] = []; let current = ''; let quote = ''; let escaped = false; for (let i = 0; i < input.length; i++) { const ch = input[i]; if (escaped) { current += ch; escaped = false; continue; } if (ch === '\\') { current += ch; escaped = true; continue; } if (ch === '"' || ch === "'") { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; } if (!quote && ch === '|') { parts.push(current.trim()); current = ''; continue; } current += ch; } parts.push(current.trim()); return parts; };
     const pipeParts = split(line);
-    if (pipeParts.length > 1) {
-      let pipeOut = '';
-      for (const stage of pipeParts) pipeOut = await this.executeSingle(stage, pipeOut);
-      return pipeOut;
-    }
-
-    const redirect = (operator: '>>' | '>'): { command: string; target: string } | null => {
-      const index = line.lastIndexOf(operator);
-      if (index < 0) return null;
-      const command = line.slice(0, index).trim();
-      const target = line.slice(index + operator.length).trim().replace(/^['"]|['"]$/g, '');
-      return command && target ? { command, target } : null;
-    };
-
-    const append = redirect('>>');
-    if (append) {
-      const res = await this.executeSingle(append.command);
-      if (this.exitCode !== 0) return res;
-      const prev = this.readFile(append.target) || '';
-      if (!this.writeFile(append.target, prev + res)) { this.exitCode = 1; return `bash: ${append.target}: No such file or directory`; }
-      return '';
-    }
-    const overwrite = redirect('>');
-    if (overwrite) {
-      const res = await this.executeSingle(overwrite.command);
-      if (this.exitCode !== 0) return res;
-      if (!this.writeFile(overwrite.target, res)) { this.exitCode = 1; return `bash: ${overwrite.target}: No such file or directory`; }
-      return '';
-    }
-
+    if (pipeParts.length > 1) { let pipeOut = ''; for (const stage of pipeParts) pipeOut = await this.executeSingle(stage, pipeOut); return pipeOut; }
+    const redirect = (operator: '>>' | '>') => { const index = line.lastIndexOf(operator); if (index < 0) return null; const command = line.slice(0, index).trim(); const target = line.slice(index + operator.length).trim().replace(/^['"]|['"]$/g, ''); return command && target ? { command, target } : null; };
+    const append = redirect('>>'); if (append) { const res = await this.executeSingle(append.command); if (this.exitCode !== 0) return res; const prev = this.readFile(append.target) || ''; if (!this.writeFile(append.target, prev + res)) { this.exitCode = 1; return `bash: ${append.target}: No such file or directory`; } return ''; }
+    const overwrite = redirect('>'); if (overwrite) { const res = await this.executeSingle(overwrite.command); if (this.exitCode !== 0) return res; if (!this.writeFile(overwrite.target, res)) { this.exitCode = 1; return `bash: ${overwrite.target}: No such file or directory`; } return ''; }
     return this.executeSingle(line);
   }
 
-  private simulated(label: string, output: string): string {
-    return `[SIMULATED — Engine A, no real kernel/network]\n${label}\n${output}`;
-  }
-
-  private normalizeDemoArgs(args: string[]): string[] {
-    return args.filter((arg) => !arg.startsWith('-') && !arg.startsWith('--'));
-  }
-
+  private simulated(label: string, output: string): string { return `[SIMULATED — Engine A, no real kernel/network]\n${label}\n${output}`; }
+  private normalizeDemoArgs(args: string[]): string[] { return args.filter(arg => !arg.startsWith('-') && !arg.startsWith('--')); }
   private async executeSingle(cmdLine: string, stdin = ''): Promise<string> {
     const output = await this.executeCommand(cmdLine, stdin);
-    // Most simulator commands return GNU-style diagnostics as text. Keep shell
-    // control operators correct by translating diagnostics into a non-zero status
-    // without inspecting arbitrary successful command output.
-    if (this.exitCode === 0) {
-      const diagnostic = /^(?:bash: |(?:cat|grep|head|tail|wc|sort|uniq|ls|cd|mkdir|touch|rm|cp|mv|find|chmod|stat|gcc|clang|javac|java|export|which): )/i.test(output);
-      const failure = /(?:No such file or directory|missing (?:operand|file operand|destination|search pattern|argument)|cannot (?:access|create|remove|stat|touch|move|read)|invalid (?:mode|option)|usage:|file not found|File exists|Is a directory|Not a directory|not specified|omitting directory)/i.test(output);
-      if (diagnostic && failure) this.exitCode = 1;
-    }
+    if (this.exitCode === 0) { const diagnostic = /^(?:bash: |(?:cat|grep|head|tail|wc|sort|uniq|ls|cd|mkdir|touch|rm|cp|mv|find|chmod|stat|gcc|clang|javac|java|export|which): )/i.test(output); const failure = /(?:No such file or directory|missing (?:operand|file operand|destination|search pattern|argument)|cannot (?:access|create|remove|stat|touch|move|read)|invalid (?:mode|option)|usage:|file not found|File exists|Is a directory|Not a directory|not specified|omitting directory)/i.test(output); if (diagnostic && failure) this.exitCode = 1; }
     return output;
   }
 
-  private async executeCommand(cmdLine: string, stdin = ''): Promise<string> {
-    // Tokenize simple shell arguments while preserving quoted strings.
-    const tokens = (cmdLine.match(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || [])
-      .map((token) => token.replace(/^(['"])([\s\S]*)\1$/, '$2'));
-    const cmd = tokens[0];
-    const args = tokens.slice(1);
-
-    this.exitCode = 0;
-    if (cmd?.startsWith('./')) {
-      const binName = cmd.slice(2);
-      const bin = this.readFile(binName);
-      if (!bin) { this.exitCode = 127; return `bash: ${cmd}: No such file or directory`; }
-      if (bin.startsWith('__TRANSPILED_C__:')) {
-        const srcFile = bin.slice('__TRANSPILED_C__:'.length);
-        const src = this.readFile(srcFile);
-        if (src === null) { this.exitCode = 1; return `bash: ${cmd}: compiled source is unavailable`; }
-        return this.executeGeneralCode(src, 'c', undefined, args);
-      }
-      this.exitCode = 126;
-      return `bash: ${cmd}: cannot execute binary file`;
-    }
+  protected async executeCommand(cmdLine: string, stdin = ''): Promise<string> {
+    const tokens = (cmdLine.match(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || []).map(token => token.replace(/^(['"])([\s\S]*)\1$/, '$2'));
+    const cmd = tokens[0]; const args = tokens.slice(1); this.exitCode = 0;
+    if (cmd?.startsWith('./')) { const binName = cmd.slice(2); const bin = this.readFile(binName); if (!bin) { this.exitCode = 127; return `bash: ${cmd}: No such file or directory`; } if (bin.startsWith('__TRANSPILED_C__:')) { const srcFile = bin.slice('__TRANSPILED_C__:'.length); const src = this.readFile(srcFile); if (src === null) { this.exitCode = 1; return `bash: ${cmd}: compiled source is unavailable`; } return this.executeGeneralCode(src, 'c', undefined, args); } this.exitCode = 126; return `bash: ${cmd}: cannot execute binary file`; }
     switch (cmd) {
-      case 'clear':
-        return '\x1b[2J\x1b[H';
-      case 'pwd':
-        return this.getCwd();
-      case 'whoami':
-        return this.env.get('USER') || 'root';
-      case 'date':
-        return new Date().toUTCString();
-      case 'echo':
-        return args.join(' ').replace(/^["']|["']$/g, '');
-
-      case 'uname':
-        return args.includes('-a')
-          ? 'Linux linuxlab 6.6.0-wasm-hypervisor #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux'
-          : 'Linux';
-
-      case 'ping': {
-        const host = this.normalizeDemoArgs(args)[0] || '8.8.8.8';
-        return this.simulated('Network demonstration only', `PING ${host} (${host}) 56(84) bytes of data.\n64 bytes from ${host}: icmp_seq=1 ttl=118 time=12.4 ms\n64 bytes from ${host}: icmp_seq=2 ttl=118 time=11.8 ms\n64 bytes from ${host}: icmp_seq=3 ttl=118 time=12.1 ms\n--- ${host} ping statistics ---\n3 packets transmitted, 3 received, 0% packet loss, time 2003ms`);
-      }
-
-      case 'curl': {
-        const target = this.normalizeDemoArgs(args)[0] || 'https://api.linuxlab.internal';
-        return this.simulated('HTTP demonstration only', `\x1b[32mHTTP/1.1 200 OK\x1b[0m\nContent-Type: application/json\n\n{"status":"connected","engine":"Engine A (Simulator)","target":"${target}"}`);
-      }
-
-      case 'traceroute': {
-        const host = this.normalizeDemoArgs(args)[0] || 'google.com';
-        return this.simulated('Route demonstration only', `traceroute to ${host} (142.250.190.46), 30 hops max, 60 byte packets\n 1  _gateway (192.168.1.1)  0.312 ms  0.289 ms  0.267 ms\n 2  10.0.0.1 (10.0.0.1)  4.120 ms  4.090 ms  4.050 ms\n 3  ${host} (142.250.190.46)  11.450 ms  11.410 ms  11.380 ms`);
-      }
-
-      case 'ifconfig':
-      case 'ip':
-        return this.simulated('Interface demonstration only', `eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500\n        inet 192.168.122.45  netmask 255.255.255.0  broadcast 192.168.122.255\n        inet6 fe80::5054:ff:fe12:3456  prefixlen 64  scopeid 0x20<link>\n        ether 52:54:00:12:34:56  txqueuelen 1000  (Ethernet)\n\nlo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536\n        inet 127.0.0.1  netmask 255.0.0.0\n        loop  txqueuelen 1000  (Local Loopback)`);
-
-      case 'htop':
-      case 'top':
-        return this.simulated('Process monitor demonstration only — illustrative 256 MiB model, not Engine B VM RAM', '\x1b[1;36mTasks: 3 total, 1 running, 2 sleeping\n%Cpu(s):  1.2 us,  0.4 sy,  0.0 ni, 98.4 id\nMiB Mem :   256.0 total,   198.4 free,    32.6 used\n\n  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n    1 root      20   0    4120   1240   1100 S   0.0   0.5   0:01.02 init\n   45 root      20   0    6580   2410   1980 S   0.0   0.9   0:00.15 bash\x1b[0m');
-
-      case 'ps':
-        return this.simulated('Process list demonstration only', '  PID TTY          TIME CMD\n    1 ?        00:00:01 init\n   45 pts/0    00:00:00 bash\n  102 pts/0    00:00:00 ps');
-
-      case 'free':
-        return this.simulated('Memory report demonstration only — illustrative 256 MiB model, not Engine B VM RAM', '               total        used        free      shared  buff/cache   available\nMem:          256000       58240      197760           0       12000      185760\nSwap:              0           0           0');
-
-      case 'df':
-        return this.simulated('Disk report demonstration only', 'Filesystem     1K-blocks      Used Available Use% Mounted on\n/dev/root        8256000   1420000   6416000  18% /\ntmpfs             128000         0    128000   0% /dev/shm');
-
-      case 'ls': {
-        const target = args.find((a) => !a.startsWith('-')) || '.';
-        const long = args.some((a) => a.includes('l'));
-        const all = args.some((a) => a.includes('a'));
-        const { node } = this.resolvePath(target);
-        if (!node) return `ls: cannot access '${target}': No such file or directory`;
-        if (node.type === 'file') return long ? `${node.permissions || '-rw-r--r--'} 1 root root ${(node.content || '').length} ${node.name}` : node.name;
-        const entries = Array.from(node.children?.values() || []).filter((child) => all || !child.name.startsWith('.')).sort((a, b) => a.name.localeCompare(b.name));
-        if (!long) return entries.map((child) => child.type === 'dir' ? `\x1b[1;34m${child.name}\x1b[0m` : child.name).join('  ');
-        return entries.map((child) => `${child.permissions || (child.type === 'dir' ? 'drwxr-xr-x' : '-rw-r--r--')} 1 root root ${(child.content || '').length} ${child.name}`).join('\n');
-      }
-
-      case 'cd': {
-        const dest = args[0] || '/root';
-        if (dest === '~') {
-          this.cwdPath = ['root'];
-          return '';
-        }
-        const { node } = this.resolvePath(dest);
-        if (!node) return `bash: cd: ${dest}: No such file or directory`;
-        if (node.type !== 'dir') return `bash: cd: ${dest}: Not a directory`;
-
-        const isAbs = dest.startsWith('/');
-        const parts = isAbs ? dest.split('/').filter(Boolean) : [...this.cwdPath, ...dest.split('/').filter(Boolean)];
-        const clean: string[] = [];
-        for (const p of parts) {
-          if (p === '..') clean.pop();
-          else if (p !== '.') clean.push(p);
-        }
-        this.cwdPath = clean;
-        return '';
-      }
-
-      case 'mkdir': {
-        if (!args[0]) return 'mkdir: missing operand';
-        const { node, parent, name } = this.resolvePath(args[0]);
-        if (node) return `mkdir: cannot create directory '${args[0]}': File exists`;
-        if (parent && parent.children) {
-          parent.children.set(name, { name, type: 'dir', children: new Map(), parent });
-          return '';
-        }
-        return `mkdir: cannot create directory '${args[0]}': No such file or directory`;
-      }
-
-      case 'touch': {
-        const files = args.filter((a) => !a.startsWith('-'));
-        if (!files.length) return 'touch: missing file operand';
-        for (const file of files) {
-          const existing = this.resolvePath(file).node;
-          if (!existing && !this.writeFile(file, '')) return `touch: cannot touch '${file}': No such file or directory`;
-          if (existing?.type === 'dir') return `touch: cannot touch '${file}': Is a directory`;
-        }
-        return '';
-      }
-      case 'rm': {
-        const recursive = args.some((a) => a === '-r' || a === '-R' || a === '--recursive' || /^-[a-zA-Z]*[rR][a-zA-Z]*$/.test(a));
-        const targets = args.filter((a) => !a.startsWith('-'));
-        if (!targets.length) return 'rm: missing operand';
-        for (const target of targets) {
-          const { node, parent, name } = this.resolvePath(target);
-          if (!node || !parent?.children) return `rm: cannot remove '${target}': No such file or directory`;
-          if (node.type === 'dir' && !recursive) return `rm: cannot remove '${target}': Is a directory`;
-          parent.children.delete(name);
-        }
-        return '';
-      }
-      case 'cp': {
-        const operands = args.filter((a) => !a.startsWith('-'));
-        if (operands.length < 2) return 'cp: missing destination file operand';
-        const [source, destination] = operands;
-        const sourceNode = this.resolvePath(source).node;
-        if (!sourceNode) return `cp: cannot stat '${source}': No such file or directory`;
-        if (sourceNode.type !== 'file') return `cp: -r not specified; omitting directory '${source}'`;
-        const destinationNode = this.resolvePath(destination).node;
-        const target = destinationNode?.type === 'dir' ? destination.replace(/\/$/, '') + '/' + sourceNode.name : destination;
-        if (!this.writeFile(target, sourceNode.content || '')) return `cp: cannot create regular file '${target}': No such file or directory`;
-        return '';
-      }
-
-      case 'mv': {
-        const operands = args.filter((a) => !a.startsWith('-'));
-        if (operands.length < 2) return 'mv: missing destination file operand';
-        const [source, destination] = operands;
-        const sourceNode = this.resolvePath(source).node;
-        if (!sourceNode) return `mv: cannot stat '${source}': No such file or directory`;
-        const destinationNode = this.resolvePath(destination).node;
-        const target = destinationNode?.type === 'dir' ? destination.replace(/\/$/, '') + '/' + sourceNode.name : destination;
-        if (sourceNode.type !== 'file') return `mv: cannot move '${source}': directory moves are not supported in the simulator`;
-        if (!this.writeFile(target, sourceNode.content || '')) return `mv: cannot move '${source}' to '${target}': No such file or directory`;
-        this.deletePath(source);
-        return '';
-      }
-
-      case 'find': {
-        const startPath = args[0] && !args[0].startsWith('-') ? args[0] : '.';
-        const nameIndex = args.indexOf('-name');
-        const typeIndex = args.indexOf('-type');
-        const namePattern = nameIndex >= 0 ? args[nameIndex + 1]?.replace(/^['"]|['"]$/g, '') : undefined;
-        const typeFilter = typeIndex >= 0 ? args[typeIndex + 1] : undefined;
-        const resolved = this.resolvePath(startPath);
-        if (!resolved.node) return "find: '" + startPath + "': No such file or directory";
-        const results: string[] = [];
-        const matches = (name: string) => {
-          if (!namePattern) return true;
-          if (!namePattern.includes('*')) return name === namePattern;
-          const parts = namePattern.split('*');
-          return name.startsWith(parts[0]) && name.endsWith(parts[parts.length - 1]);
-        };
-        const walk = (current: VirtualNode, currentPath: string, isRoot = false) => {
-          const typeOk = !typeFilter || (typeFilter === 'f' && current.type === 'file') || (typeFilter === 'd' && current.type === 'dir');
-          if (!isRoot && typeOk && matches(current.name)) results.push(currentPath);
-          if (current.type === 'dir' && current.children) {
-            for (const child of current.children.values()) {
-              walk(child, currentPath === '/' ? '/' + child.name : currentPath + '/' + child.name);
-            }
-          }
-        };
-        const base = startPath === '.' ? this.getCwd() : startPath.replace(/\/$/, '') || '/';
-        walk(resolved.node, base, true);
-        return results.join('\n');
-      }
-
-      case 'false': this.exitCode = 1; return '';
-      case 'true': return '';
-      case 'test':
-      case '[': {
-        const testArgs = cmd === '[' && args[args.length - 1] === ']' ? args.slice(0, -1) : args;
-        let ok = false;
-        if (testArgs.length === 1) ok = Boolean(testArgs[0]);
-        else if (testArgs[0] === '-d') ok = this.resolvePath(testArgs[1]).node?.type === 'dir';
-        else if (testArgs[0] === '-f') ok = this.resolvePath(testArgs[1]).node?.type === 'file';
-        else if (testArgs[0] === '-e') ok = Boolean(this.resolvePath(testArgs[1]).node);
-        else if (testArgs[0] === '-z') ok = (testArgs[1] || '').length === 0;
-        else if (testArgs[0] === '-n') ok = (testArgs[1] || '').length > 0;
-        else if (testArgs.length >= 3 && testArgs[1] === '=') ok = testArgs[0] === testArgs[2];
-        else if (testArgs.length >= 3 && testArgs[1] === '!=') ok = testArgs[0] !== testArgs[2];
-        this.exitCode = ok ? 0 : 1;
-        return '';
-      }
-      case 'cat': {
-        if (!args.length) return stdin;
-        const output: string[] = [];
-        for (const file of args) {
-          const data = this.readFile(file);
-          if (data === null) return `cat: ${file}: No such file or directory`;
-          output.push(data);
-        }
-        return output.join('');
-      }
-
-      case 'grep': {
-        if (!args[0]) return 'grep: missing search pattern';
-        const pat = args[0];
-        const file = args[1];
-        const data = file ? this.readFile(file) : stdin;
-        if (data === null) return `grep: ${file}: No such file or directory`;
-        return data.split('\n').filter((l) => l.includes(pat)).join('\n');
-      }
-
-      case 'nano':
-      case 'vi':
-      case 'vim': {
-        const file = args[0] || 'main.c';
-        let current = this.readFile(file);
-        if (current === null) {
-          this.writeFile(file, '');
-          current = '';
-        }
-        if (this.onEditorOpen) {
-          this.onEditorOpen(file, current);
-        }
-        return `\x1b[33m[Opened '${file}' in Code Editor]\x1b[0m`;
-      }
-
-      case 'which': {
-        const target = args[0];
-        if (!target) return 'which: missing argument';
-        const known = new Set(['bash', 'sh', 'ls', 'cd', 'mkdir', 'touch', 'rm', 'cp', 'mv', 'cat', 'grep', 'head', 'tail', 'gcc', 'clang', 'javac', 'java', 'nano', 'vi', 'vim', 'ps', 'top', 'htop', 'free', 'df', 'ping', 'curl', 'ip', 'ifconfig', 'chmod', 'pwd', 'whoami']);
-        return known.has(target) ? `/usr/bin/${target}` : '';
-      }
-
-      case 'help':
-        return 'LinuxLab simulator commands: ls cd pwd mkdir touch rm cp mv cat grep head tail wc sort uniq echo printf export env history which gcc clang javac java chmod stat ps top free df ping curl ip ifconfig. C runtime: int/float/char/string, arrays, functions, if/else, for/while, break/continue, printf/puts/scanf/getchar, common string/math helpers. Use ./a.out INPUT... for simulated stdin; use Engine B + real GCC for full C/Linux.';
-
-      case 'history':
-        return this.history.map((entry, index) => `${String(index + 1).padStart(4, ' ')}  ${entry}`).join('\n');
-
-      case 'env':
-        return Array.from(this.env.entries()).map(([k, v]) => `${k}=${v}`).join('\n');
-
-      case 'export': {
-        const assignment = args.join(' ');
-        const match = assignment.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);
-        if (!match) return 'export: usage: export NAME=value';
-        this.env.set(match[1], match[2].replace(/^['"]|['"]$/g, ''));
-        return '';
-      }
-
-      case 'head':
-      case 'tail': {
-        const file = args.find((a) => !a.startsWith('-'));
-        const data = file ? this.readFile(file) : stdin;
-        if (data === null) return `${cmd}: ${file}: No such file or directory`;
-        const lines = data.split('\n');
-        const countArg = args.find((a) => /^-\d+$/.test(a));
-        const count = countArg ? Math.max(1, Number(countArg.slice(1))) : 10;
-        return (cmd === 'head' ? lines.slice(0, count) : lines.slice(-count)).join('\n');
-      }
-
-      case 'wc': {
-        const file = args.find((a) => !a.startsWith('-'));
-        const data = file ? this.readFile(file) : stdin;
-        if (data === null) return `wc: ${file}: No such file or directory`;
-        const lines = data ? data.split('\n').length - (data.endsWith('\n') ? 1 : 0) : 0;
-        const words = data.trim() ? data.trim().split(/\s+/).length : 0;
-        const bytes = new TextEncoder().encode(data).length;
-        if (args.includes('-l')) return String(lines);
-        if (args.includes('-w')) return String(words);
-        if (args.includes('-c')) return String(bytes);
-        return `${lines} ${words} ${bytes}${file ? ' ' + file : ''}`;
-      }
-      case 'sort': {
-        const file = args.find((a) => !a.startsWith('-'));
-        const data = file ? this.readFile(file) : stdin;
-        if (data === null) return `sort: cannot read: ${file}: No such file or directory`;
-        return data.split('\n').filter((line) => line.length > 0).sort().join('\n');
-      }
-
-      case 'uniq': {
-        const file = args.find((a) => !a.startsWith('-'));
-        const data = file ? this.readFile(file) : stdin;
-        if (data === null) return `uniq: ${file}: No such file or directory`;
-        const lines = data.split('\n').filter((line) => line.length > 0);
-        return lines.filter((line, index) => index === 0 || line !== lines[index - 1]).join('\n');
-      }
-
-      case 'chmod': {
-        if (args.length < 2) return 'chmod: usage: chmod MODE FILE';
-        const { node } = this.resolvePath(args[1]);
-        if (!node) return `chmod: cannot access '${args[1]}': No such file or directory`;
-        const mode = args[0];
-        if (/^[0-7]{3,4}$/.test(mode)) {
-          const digits = mode.slice(-3);
-          const perms = (n: string) => {
-            const x = Number(n);
-            return `${x & 4 ? 'r' : '-'}${x & 2 ? 'w' : '-'}${x & 1 ? 'x' : '-'}`;
-          };
-          node.permissions = `${node.type === 'dir' ? 'd' : '-'}${perms(digits[0])}${perms(digits[1])}${perms(digits[2])}`;
-          return '';
-        }
-        return `chmod: invalid mode: '${mode}'`;
-      }
-
-      case 'stat': {
-        const target = args[0];
-        if (!target) return 'stat: missing operand';
-        const { node } = this.resolvePath(target);
-        if (!node) return `stat: cannot stat '${target}': No such file or directory`;
-        return `File: ${target}\nType: ${node.type}\nPermissions: ${node.permissions || '----------'}\nSize: ${(node.content || '').length}`;
-      }
-
-      case 'gcc':
-      case 'clang': {
-        if (args.includes('--version') || args.includes('-v')) {
-          return cmd === 'gcc'
-            ? 'LinuxLab Educational C Runtime (source transpilation)\nNOTE: this simulator does not contain the native GCC compiler. Use Engine B Alpine + apk add gcc for real GCC.'
-            : 'LinuxLab Educational C Runtime (clang-compatible command alias)';
-        }
-        if (!args[0]) return `${cmd}: fatal error: no input files\ncompilation terminated.`;
-        const src = this.readFile(args[0]);
-        if (src === null) return `${cmd}: error: ${args[0]}: No such file or directory`;
-        let bin = 'a.out';
-        const outIdx = args.indexOf('-o');
-        if (outIdx !== -1 && args[outIdx + 1]) bin = args[outIdx + 1];
-        this.writeFile(bin, `__TRANSPILED_C__:${args[0]}`);
-        return `LinuxLab simulator: transpiled ${args[0]} -> ${bin}`;
-      }
-
-
-      case 'javac': {
-        if (!args[0]) return 'javac: no source files specified';
-        const src = this.readFile(args[0]);
-        if (src === null) return `javac: file not found: ${args[0]}`;
-
-        const classMatch = src.match(/public\s+class\s+([A-Za-z0-9_]+)/) || src.match(/class\s+([A-Za-z0-9_]+)/);
-        const className = classMatch ? classMatch[1] : args[0].replace('.java', '');
-
-        this.writeFile(`${className}.class`, `__TRANSPILED_JAVA__:${args[0]}`);
-        return '';
-      }
-
-      case 'java': {
-        if (!args[0]) return 'Usage: java [options] <mainclass> [args...]';
-        const className = args[0].replace('.class', '');
-        const classHeader = this.readFile(`${className}.class`);
-
-        let srcCode = '';
-        if (classHeader && classHeader.startsWith('__TRANSPILED_JAVA__:')) {
-          const srcFile = classHeader.split(':')[1];
-          srcCode = this.readFile(srcFile) || '';
-        } else {
-          const fallback = this.readFile(args[0].endsWith('.java') ? args[0] : `${args[0]}.java`);
-          if (fallback) srcCode = fallback;
-        }
-
-        if (!srcCode) return `Error: Could not find or load main class ${args[0]}`;
-        return this.executeGeneralCode(srcCode, 'java');
-      }
-
-      default:
-        this.exitCode = 127;
-        return `bash: ${cmd}: command not found`;
+      case 'clear': return '\x1b[2J\x1b[H'; case 'pwd': return this.getCwd(); case 'whoami': return this.env.get('USER') || 'root'; case 'date': return new Date().toUTCString(); case 'echo': return args.join(' ').replace(/^["']|["']$/g, '');
+      case 'uname': return args.includes('-a') ? 'Linux linuxlab 6.6.0-wasm-hypervisor #1 SMP PREEMPT_DYNAMIC x86_64 GNU/Linux' : 'Linux';
+      case 'ping': { const host = this.normalizeDemoArgs(args)[0] || '8.8.8.8'; return this.simulated('Network demonstration only', `PING ${host} (${host}) 56(84) bytes of data.\n64 bytes from ${host}: icmp_seq=1 ttl=118 time=12.4 ms\n64 bytes from ${host}: icmp_seq=2 ttl=118 time=11.8 ms\n64 bytes from ${host}: icmp_seq=3 ttl=118 time=12.1 ms\n--- ${host} ping statistics ---\n3 packets transmitted, 3 received, 0% packet loss, time 2003ms`); }
+      case 'curl': { const target = this.normalizeDemoArgs(args)[0] || 'https://api.linuxlab.internal'; return this.simulated('HTTP demonstration only', `\x1b[32mHTTP/1.1 200 OK\x1b[0m\nContent-Type: application/json\n\n{"status":"connected","engine":"Engine A (Simulator)","target":"${target}"}`); }
+      case 'traceroute': { const host = this.normalizeDemoArgs(args)[0] || 'google.com'; return this.simulated('Route demonstration only', `traceroute to ${host} (142.250.190.46), 30 hops max, 60 byte packets\n 1  _gateway (192.168.1.1)  0.312 ms  0.289 ms  0.267 ms\n 2  10.0.0.1 (10.0.0.1)  4.120 ms  4.090 ms  4.050 ms\n 3  ${host} (142.250.190.46)  11.450 ms  11.410 ms  11.380 ms`); }
+      case 'ifconfig': case 'ip': return this.simulated('Interface demonstration only', 'eth0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500\n        inet 192.168.122.45  netmask 255.255.255.0  broadcast 192.168.122.255\n        inet6 fe80::5054:ff:fe12:3456  prefixlen 64  scopeid 0x20<link>\n        ether 52:54:00:12:34:56  txqueuelen 1000  (Ethernet)\n\nlo: flags=73<UP,LOOPBACK,RUNNING>  mtu 65536\n        inet 127.0.0.1  netmask 255.0.0.0');
+      case 'htop': case 'top': return this.simulated('Process monitor demonstration only — illustrative 256 MiB model, not Engine B VM RAM', '\x1b[1;36mTasks: 3 total, 1 running, 2 sleeping\n%Cpu(s):  1.2 us,  0.4 sy,  0.0 ni, 98.4 id\nMiB Mem :   256.0 total,   198.4 free,    32.6 used\n\n  PID USER      PR  NI    VIRT    RES    SHR S  %CPU  %MEM     TIME+ COMMAND\n    1 root      20   0    4120   1240   1100 S   0.0   0.5   0:01.02 init\n   45 root      20   0    6580   2410   1980 S   0.0   0.9   0:00.15 bash\x1b[0m');
+      case 'ps': return this.simulated('Process list demonstration only', '  PID TTY          TIME CMD\n    1 ?        00:00:01 init\n   45 pts/0    00:00:00 bash\n  102 pts/0    00:00:00 ps');
+      case 'free': return this.simulated('Memory report demonstration only — illustrative 256 MiB model, not Engine B VM RAM', '               total        used        free      shared  buff/cache   available\nMem:          256000       58240      197760           0       12000      185760\nSwap:              0           0           0');
+      case 'df': return this.simulated('Disk report demonstration only', 'Filesystem     1K-blocks      Used Available Use% Mounted on\n/dev/root        8256000   1420000   6416000  18% /\ntmpfs             128000         0    128000   0% /dev/shm');
+      case 'ls': { const target=args.find(a=>!a.startsWith('-'))||'.'; const long=args.some(a=>a.includes('l')); const all=args.some(a=>a.includes('a')); const {node}=this.resolvePath(target); if(!node)return `ls: cannot access '${target}': No such file or directory`; if(node.type==='file')return long?`${node.permissions||'-rw-r--r--'} 1 root root ${(node.content||'').length} ${node.name}`:node.name; const entries=Array.from(node.children?.values()||[]).filter(child=>all||!child.name.startsWith('.')).sort((a,b)=>a.name.localeCompare(b.name)); if(!long)return entries.map(child=>child.type==='dir'?`\x1b[1;34m${child.name}\x1b[0m`:child.name).join('  '); return entries.map(child=>`${child.permissions||(child.type==='dir'?'drwxr-xr-x':'-rw-r--r--')} 1 root root ${(child.content||'').length} ${child.name}`).join('\n'); }
+      case 'cd': { const dest=args[0]||'/root'; if(dest==='~'){this.cwdPath=['root'];return '';} const {node}=this.resolvePath(dest); if(!node)return `bash: cd: ${dest}: No such file or directory`; if(node.type!=='dir')return `bash: cd: ${dest}: Not a directory`; const isAbs=dest.startsWith('/'); const parts=isAbs?dest.split('/').filter(Boolean):[...this.cwdPath,...dest.split('/').filter(Boolean)]; const clean:string[]=[]; for(const p of parts){if(p==='..')clean.pop();else if(p!=='.')clean.push(p);} this.cwdPath=clean; return ''; }
+      case 'mkdir': { if(!args[0])return 'mkdir: missing operand'; const {node,parent,name}=this.resolvePath(args[0]); if(node)return `mkdir: cannot create directory '${args[0]}': File exists`; if(parent?.children){parent.children.set(name,{name,type:'dir',children:new Map(),parent});return '';} return `mkdir: cannot create directory '${args[0]}': No such file or directory`; }
+      case 'touch': { const files=args.filter(a=>!a.startsWith('-')); if(!files.length)return 'touch: missing file operand'; for(const file of files){const existing=this.resolvePath(file).node;if(!existing&&!this.writeFile(file,''))return `touch: cannot touch '${file}': No such file or directory`;if(existing?.type==='dir')return `touch: cannot touch '${file}': Is a directory`;}return ''; }
+      case 'rm': { const recursive=args.some(a=>a==='-r'||a==='-R'||a==='--recursive'||/^-[a-zA-Z]*[rR][a-zA-Z]*$/.test(a)); const targets=args.filter(a=>!a.startsWith('-')); if(!targets.length)return 'rm: missing operand'; for(const target of targets){const {node,parent,name}=this.resolvePath(target);if(!node||!parent?.children)return `rm: cannot remove '${target}': No such file or directory`;if(node.type==='dir'&&!recursive)return `rm: cannot remove '${target}': Is a directory`;parent.children.delete(name);}return ''; }
+      case 'cp': { const operands=args.filter(a=>!a.startsWith('-')); if(operands.length<2)return 'cp: missing destination file operand'; const [source,destination]=operands; const sourceNode=this.resolvePath(source).node;if(!sourceNode)return `cp: cannot stat '${source}': No such file or directory`;if(sourceNode.type!=='file')return `cp: -r not specified; omitting directory '${source}'`;const destinationNode=this.resolvePath(destination).node;const target=destinationNode?.type==='dir'?destination.replace(/\/$/,'')+'/'+sourceNode.name:destination;if(!this.writeFile(target,sourceNode.content||''))return `cp: cannot create regular file '${target}': No such file or directory`;return ''; }
+      case 'mv': { const operands=args.filter(a=>!a.startsWith('-')); if(operands.length<2)return 'mv: missing destination file operand'; const [source,destination]=operands; const sourceNode=this.resolvePath(source).node;if(!sourceNode)return `mv: cannot stat '${source}': No such file or directory`;const destinationNode=this.resolvePath(destination).node;const target=destinationNode?.type==='dir'?destination.replace(/\/$/,'')+'/'+sourceNode.name:destination;if(sourceNode.type!=='file')return `mv: cannot move '${source}': directory moves are not supported in the simulator`;if(!this.writeFile(target,sourceNode.content||''))return `mv: cannot move '${source}' to '${target}': No such file or directory`;this.deletePath(source);return ''; }
+      case 'find': { const startPath=args[0]&&!args[0].startsWith('-')?args[0]:'.';const nameIndex=args.indexOf('-name');const typeIndex=args.indexOf('-type');const namePattern=nameIndex>=0?args[nameIndex+1]?.replace(/^['"]|['"]$/g,''):undefined;const typeFilter=typeIndex>=0?args[typeIndex+1]:undefined;const resolved=this.resolvePath(startPath);if(!resolved.node)return `find: '${startPath}': No such file or directory`;const results:string[]=[];const matches=(name:string)=>{if(!namePattern)return true;if(!namePattern.includes('*'))return name===namePattern;const parts=namePattern.split('*');return name.startsWith(parts[0])&&name.endsWith(parts[parts.length-1]);};const walk=(current:VirtualNode,currentPath:string,isRoot=false)=>{const typeOk=!typeFilter||(typeFilter==='f'&&current.type==='file')||(typeFilter==='d'&&current.type==='dir');if(!isRoot&&typeOk&&matches(current.name))results.push(currentPath);if(current.type==='dir'&&current.children)for(const child of current.children.values())walk(child,currentPath==='/'?'/'+child.name:currentPath+'/'+child.name);};const base=startPath==='.'?this.getCwd():startPath.replace(/\/$/,'')||'/';walk(resolved.node,base,true);return results.join('\n'); }
+      case 'false': this.exitCode=1; return ''; case 'true': return '';
+      case 'test': case '[': { const testArgs=cmd==='['&&args[args.length-1]===']'?args.slice(0,-1):args;let ok=false;if(testArgs.length===1)ok=Boolean(testArgs[0]);else if(testArgs[0]==='-d')ok=this.resolvePath(testArgs[1]).node?.type==='dir';else if(testArgs[0]==='-f')ok=this.resolvePath(testArgs[1]).node?.type==='file';else if(testArgs[0]==='-e')ok=Boolean(this.resolvePath(testArgs[1]).node);else if(testArgs[0]==='-z')ok=(testArgs[1]||'').length===0;else if(testArgs[0]==='-n')ok=(testArgs[1]||'').length>0;else if(testArgs.length>=3&&testArgs[1]==='=')ok=testArgs[0]===testArgs[2];else if(testArgs.length>=3&&testArgs[1]==='!=')ok=testArgs[0]!==testArgs[2];this.exitCode=ok?0:1;return ''; }
+      case 'cat': { if(!args.length)return stdin;const output:string[]=[];for(const file of args){const data=this.readFile(file);if(data===null)return `cat: ${file}: No such file or directory`;output.push(data);}return output.join(''); }
+      case 'grep': { if(!args[0])return 'grep: missing search pattern';const pat=args[0];const file=args[1];const data=file?this.readFile(file):stdin;if(data===null)return `grep: ${file}: No such file or directory`;return data.split('\n').filter(l=>l.includes(pat)).join('\n'); }
+      case 'nano': case 'vi': case 'vim': { const file=args[0]||'main.c';let current=this.readFile(file);if(current===null){this.writeFile(file,'');current='';}if(this.onEditorOpen)this.onEditorOpen(file,current);return `\x1b[33m[Opened '${file}' in Code Editor]\x1b[0m`; }
+      case 'which': { const target=args[0];if(!target)return 'which: missing argument';const known=new Set(['bash','sh','ls','cd','mkdir','touch','rm','cp','mv','cat','grep','head','tail','gcc','clang','javac','java','nano','vi','vim','ps','top','htop','free','df','ping','curl','ip','ifconfig','chmod','pwd','whoami']);return known.has(target)?`/usr/bin/${target}`:''; }
+      case 'help': return 'LinuxLab simulator commands: ls cd pwd mkdir touch rm cp mv cat grep head tail wc sort uniq echo printf export env history which gcc clang javac java chmod stat ps top free df ping curl ip ifconfig. C runtime: int/float/char/string, arrays, functions, if/else, for/while, break/continue, printf/puts/scanf/getchar, common string/math helpers. Use ./a.out INPUT... for simulated stdin; use Engine B + real GCC for full C/Linux.';
+      case 'history': return this.history.map((entry,index)=>`${String(index+1).padStart(4,' ')}  ${entry}`).join('\n');
+      case 'env': return Array.from(this.env.entries()).map(([k,v])=>`${k}=${v}`).join('\n');
+      case 'export': { const assignment=args.join(' ');const match=assignment.match(/^([A-Za-z_][A-Za-z0-9_]*)=(.*)$/);if(!match)return 'export: usage: export NAME=value';this.env.set(match[1],match[2].replace(/^['"]|['"]$/g,''));return ''; }
+      case 'head': case 'tail': { const file=args.find(a=>!a.startsWith('-'));const data=file?this.readFile(file):stdin;if(data===null)return `${cmd}: ${file}: No such file or directory`;const lines=data.split('\n');const countArg=args.find(a=>/^-\d+$/.test(a));const count=countArg?Math.max(1,Number(countArg.slice(1))):10;return (cmd==='head'?lines.slice(0,count):lines.slice(-count)).join('\n'); }
+      case 'wc': { const file=args.find(a=>!a.startsWith('-'));const data=file?this.readFile(file):stdin;if(data===null)return `wc: ${file}: No such file or directory`;const lines=data?data.split('\n').length-(data.endsWith('\n')?1:0):0;const words=data.trim()?data.trim().split(/\s+/).length:0;const bytes=new TextEncoder().encode(data).length;if(args.includes('-l'))return String(lines);if(args.includes('-w'))return String(words);if(args.includes('-c'))return String(bytes);return `${lines} ${words} ${bytes}${file?' '+file:''}`; }
+      case 'sort': { const file=args.find(a=>!a.startsWith('-'));const data=file?this.readFile(file):stdin;if(data===null)return `sort: cannot read: ${file}: No such file or directory`;return data.split('\n').filter(line=>line.length>0).sort().join('\n'); }
+      case 'uniq': { const file=args.find(a=>!a.startsWith('-'));const data=file?this.readFile(file):stdin;if(data===null)return `uniq: ${file}: No such file or directory`;const lines=data.split('\n').filter(line=>line.length>0);return lines.filter((line,index)=>index===0||line!==lines[index-1]).join('\n'); }
+      case 'chmod': { if(args.length<2)return 'chmod: usage: chmod MODE FILE';const {node}=this.resolvePath(args[1]);if(!node)return `chmod: cannot access '${args[1]}': No such file or directory`;const mode=args[0];if(/^[0-7]{3,4}$/.test(mode)){const digits=mode.slice(-3);const perms=(n:string)=>{const x=Number(n);return `${x&4?'r':'-'}${x&2?'w':'-'}${x&1?'x':'-'}`};node.permissions=`${node.type==='dir'?'d':'-'}${perms(digits[0])}${perms(digits[1])}${perms(digits[2])}`;return '';}return `chmod: invalid mode: '${mode}'`; }
+      case 'stat': { const target=args[0];if(!target)return 'stat: missing operand';const {node}=this.resolvePath(target);if(!node)return `stat: cannot stat '${target}': No such file or directory`;return `File: ${target}\nType: ${node.type}\nPermissions: ${node.permissions||'----------'}\nSize: ${(node.content||'').length}`; }
+      case 'gcc': case 'clang': { if(args.includes('--version')||args.includes('-v'))return cmd==='gcc'?'LinuxLab Educational C Runtime (source transpilation)\nNOTE: this simulator does not contain the native GCC compiler. Use Engine B Alpine + apk add gcc for real GCC.':'LinuxLab Educational C Runtime (clang-compatible command alias)';if(!args[0])return `${cmd}: fatal error: no input files\ncompilation terminated.`;const src=this.readFile(args[0]);if(src===null)return `${cmd}: error: ${args[0]}: No such file or directory`;let bin='a.out';const outIdx=args.indexOf('-o');if(outIdx!==-1&&args[outIdx+1])bin=args[outIdx+1];this.writeFile(bin,`__TRANSPILED_C__:${args[0]}`);return `LinuxLab simulator: transpiled ${args[0]} -> ${bin}`; }
+      case 'javac': { if(!args[0])return 'javac: no source files specified';const src=this.readFile(args[0]);if(src===null)return `javac: file not found: ${args[0]}`;const classMatch=src.match(/public\s+class\s+([A-Za-z0-9_]+)/)||src.match(/class\s+([A-Za-z0-9_]+)/);const className=classMatch?classMatch[1]:args[0].replace('.java','');this.writeFile(`${className}.class`,`__TRANSPILED_JAVA__:${args[0]}`);return ''; }
+      case 'java': { if(!args[0])return 'Usage: java [options] <mainclass> [args...]';const className=args[0].replace('.class','');const classHeader=this.readFile(`${className}.class`);let srcCode='';if(classHeader&&classHeader.startsWith('__TRANSPILED_JAVA__:')){const srcFile=classHeader.split(':')[1];srcCode=this.readFile(srcFile)||'';}else{const fallback=this.readFile(args[0].endsWith('.java')?args[0]:`${args[0]}.java`);if(fallback)srcCode=fallback;}if(!srcCode)return `Error: Could not find or load main class ${args[0]}`;return this.executeGeneralCode(srcCode,'java'); }
+      default: this.exitCode=127; return `bash: ${cmd}: command not found`;
     }
   }
 
   public executeGeneralCode(code: string, language: 'c' | 'java', injectedVars?: Record<string, number>, input: string[] = []): string {
-    if (code.length > 200_000) return '\x1b[31m[Execution Refused]:\x1b[0m Source exceeds the 200 KB educational runtime limit.';
-
-    if (language === 'c') {
-      try {
-        const interpreter = new EducationalCInterpreter(code, input, injectedVars);
-        const result = interpreter.run();
-        return result || 'Program exited with code 0.';
-      } catch (err: any) {
-        return `\x1b[31m[C Runtime Error]:\x1b[0m ${err?.message || String(err)}`;
-      }
-    }
-
-    // Java remains a lightweight educational transpiler. Real Java should be run in Engine B.
-    return this.executeJavaEducational(code, injectedVars);
+    if(code.length>200_000)return '\x1b[31m[Execution Refused]:\x1b[0m Source exceeds the 200 KB educational runtime limit.';
+    if(language==='c'){try{const interpreter=new EducationalCInterpreter(code,input,injectedVars);const result=interpreter.run();return result||'Program exited with code 0.';}catch(err:any){return `\x1b[31m[C Runtime Error]:\x1b[0m ${err?.message||String(err)}`;}}
+    return this.executeJavaEducational(code,injectedVars);
   }
 
   private executeJavaEducational(code: string, injectedVars: Record<string, number> = {}): string {
-    // Safe educational subset: parse data and evaluate simple control flow; never
-    // execute generated JavaScript or arbitrary user code.
-    const text = code.replace(/\/\/.*$/gm, '').replace(/\/\*[\s\S]*?\*\//g, '');
-    if (!/\bclass\s+\w+/.test(text) || !/static\s+void\s+main\s*\(/.test(text)) {
-      return '[Java Educational Parser] Add a class and static void main(...) method.';
-    }
-    if (/\b(Runtime|ProcessBuilder|Class\.forName|reflect|Thread|synchronized)\b/.test(text)) {
-      return '[Java Educational Parser] This construct is outside the safe simulator subset.';
-    }
-
-    const vars = new Map<string, string | number | boolean>();
-    for (const [name, value] of Object.entries(injectedVars)) vars.set(name, value);
-
-    for (const match of text.matchAll(/\b(?:int|long|short|float|double|boolean|char|String)\s+(\w+)\s*=\s*([^;]+);/g)) {
-      if (Object.prototype.hasOwnProperty.call(injectedVars, match[1])) continue;
-      const raw = match[2].trim();
-      if (/^-?\d+(?:\.\d+)?$/.test(raw)) vars.set(match[1], Number(raw));
-      else if (/^(true|false)$/.test(raw)) vars.set(match[1], raw === 'true');
-      else if (/^"(?:[^"\\]|\\.)*"$/.test(raw)) vars.set(match[1], raw.slice(1, -1));
-    }
-
-    // Recognize the common prime-check lesson deterministically.
-    if (/\bisPrime\b/.test(text) && /num\s*%\s*i\s*==\s*0/.test(text) && typeof vars.get('num') === 'number') {
-      const n = Number(vars.get('num'));
-      let prime = n >= 2;
-      for (let i = 2; i <= Math.floor(n / 2) && prime; i++) {
-        if (n % i === 0) prime = false;
-      }
-      vars.set('isPrime', prime);
-    }
-
-    const valueOf = (token: string): string | number | boolean | undefined => {
-      const value = token.trim();
-      if (vars.has(value)) return vars.get(value);
-      if (/^(true|false)$/.test(value)) return value === 'true';
-      if (/^-?\d+(?:\.\d+)?$/.test(value)) return Number(value);
-      if (/^"(?:[^"\\]|\\.)*"$/.test(value)) return value.slice(1, -1);
-      return undefined;
-    };
-
-    const evalCondition = (expr: string): boolean | null => {
-      const trimmed = expr.trim();
-      const bare = trimmed.match(/^(!?)(\w+)$/);
-      if (bare) {
-        const value = vars.get(bare[2]);
-        if (value === undefined) return null;
-        return bare[1] === '!' ? !Boolean(value) : Boolean(value);
-      }
-
-      const comparison = trimmed.match(/^(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);
-      if (!comparison) return null;
-      const left = valueOf(comparison[1]);
-      const right = valueOf(comparison[3]);
-      if (left === undefined || right === undefined) return null;
-
-      switch (comparison[2]) {
-        case '==': return left === right;
-        case '!=': return left !== right;
-        case '>': return Number(left) > Number(right);
-        case '>=': return Number(left) >= Number(right);
-        case '<': return Number(left) < Number(right);
-        case '<=': return Number(left) <= Number(right);
-        default: return null;
-      }
-    };
-
-    const findClosingBrace = (openIndex: number): number => {
-      let depth = 0;
-      for (let i = openIndex; i < text.length; i++) {
-        if (text[i] === '{') depth++;
-        else if (text[i] === '}') {
-          depth--;
-          if (depth === 0) return i;
-        }
-      }
-      return -1;
-    };
-
-    const output: string[] = [];
-    const emitPrints = (segment: string): void => {
-      for (const p of segment.matchAll(/System\.out\.(println|print)\s*\(([^;]*)\)\s*;/g)) {
-        output.push(this.renderJavaPrint(p[2], vars) + (p[1] === 'println' ? '\n' : ''));
-      }
-    };
-
-    // Recursively walk regions. Unlike the previous suppression approach, this
-    // handles nested if blocks and if blocks without else without leaking prints
-    // from unselected branches into the generic scan.
-    const processRegion = (startIndex: number, endIndex: number): void => {
-      const ifPattern = /\bif\s*\(([^)]*)\)\s*\{/g;
-      let cursor = startIndex;
-
-      while (cursor < endIndex) {
-        ifPattern.lastIndex = cursor;
-        const match = ifPattern.exec(text);
-        if (!match || match.index >= endIndex) {
-          emitPrints(text.slice(cursor, endIndex));
-          return;
-        }
-
-        emitPrints(text.slice(cursor, match.index));
-
-        const thenOpen = match.index + match[0].length - 1;
-        const thenClose = findClosingBrace(thenOpen);
-        if (thenClose < 0 || thenClose >= endIndex) {
-          // Malformed control flow: keep parsing conservatively rather than
-          // pretending both branches executed.
-          cursor = match.index + match[0].length;
-          continue;
-        }
-
-        let next = thenClose + 1;
-        while (next < endIndex && /\s/.test(text[next])) next++;
-
-        let elseOpen = -1;
-        let elseClose = -1;
-        if (text.startsWith('else', next)) {
-          let brace = next + 4;
-          while (brace < endIndex && /\s/.test(text[brace])) brace++;
-          if (text[brace] === '{') {
-            elseOpen = brace;
-            elseClose = findClosingBrace(elseOpen);
-          }
-        }
-
-        const decision = evalCondition(match[1]);
-        if (decision === true) {
-          processRegion(thenOpen + 1, thenClose);
-        } else if (decision === false && elseOpen >= 0 && elseClose >= 0) {
-          processRegion(elseOpen + 1, elseClose);
-        }
-        // Unknown conditions intentionally emit neither branch: the simulator
-        // must never claim that both outcomes happened.
-        cursor = elseClose >= 0 ? elseClose + 1 : thenClose + 1;
-      }
-    };
-
-    processRegion(0, text.length);
-    return output.length ? output.join('') : '[Java Educational Parser] No supported output statement found.';
+    const text=code.replace(/\/\/.*$/gm,'').replace(/\/\*[\s\S]*?\*\//g,'');if(!/\bclass\s+\w+/.test(text)||!/static\s+void\s+main\s*\(/.test(text))return '[Java Educational Parser] Add a class and static void main(...) method.';if(/\b(Runtime|ProcessBuilder|Class\.forName|reflect|Thread|synchronized)\b/.test(text))return '[Java Educational Parser] This construct is outside the safe simulator subset.';const vars=new Map<string,string|number|boolean>();for(const [name,value] of Object.entries(injectedVars))vars.set(name,value);for(const match of text.matchAll(/\b(?:int|long|short|float|double|boolean|char|String)\s+(\w+)\s*=\s*([^;]+);/g)){if(Object.prototype.hasOwnProperty.call(injectedVars,match[1]))continue;const raw=match[2].trim();if(/^-?\d+(?:\.\d+)?$/.test(raw))vars.set(match[1],Number(raw));else if(/^(true|false)$/.test(raw))vars.set(match[1],raw==='true');else if(/^"(?:[^"\\]|\\.)*"$/.test(raw))vars.set(match[1],raw.slice(1,-1));}
+    if(/\bisPrime\b/.test(text)&&/num\s*%\s*i\s*==\s*0/.test(text)&&typeof vars.get('num')==='number'){const n=Number(vars.get('num'));let prime=n>=2;for(let i=2;i<=Math.floor(n/2)&&prime;i++)if(n%i===0)prime=false;vars.set('isPrime',prime);}
+    const valueOf=(token:string)=>{const value=token.trim();if(vars.has(value))return vars.get(value);if(/^(true|false)$/.test(value))return value==='true';if(/^-?\d+(?:\.\d+)?$/.test(value))return Number(value);if(/^"(?:[^"\\]|\\.)*"$/.test(value))return value.slice(1,-1);return undefined;};
+    const evalCondition=(expr:string):boolean|null=>{const trimmed=expr.trim();const bare=trimmed.match(/^(!?)(\w+)$/);if(bare){const value=vars.get(bare[2]);if(value===undefined)return null;return bare[1]==='!'?!Boolean(value):Boolean(value);}const comparison=trimmed.match(/^(.+?)\s*(==|!=|>=|<=|>|<)\s*(.+)$/);if(!comparison)return null;const left=valueOf(comparison[1]);const right=valueOf(comparison[3]);if(left===undefined||right===undefined)return null;switch(comparison[2]){case '==':return left===right;case '!=':return left!==right;case '>':return Number(left)>Number(right);case '>=':return Number(left)>=Number(right);case '<':return Number(left)<Number(right);case '<=':return Number(left)<=Number(right);default:return null;}};
+    const findClosingBrace=(openIndex:number)=>{let depth=0;for(let i=openIndex;i<text.length;i++){if(text[i]==='{')depth++;else if(text[i]==='}'){depth--;if(depth===0)return i;}}return -1;};
+    const output:string[]=[];const emitPrints=(segment:string)=>{for(const p of segment.matchAll(/System\.out\.(println|print)\s*\(([^;]*)\)\s*;/g))output.push(this.renderJavaPrint(p[2],vars)+(p[1]==='println'?'\n':''));};
+    const processRegion=(startIndex:number,endIndex:number):void=>{const ifPattern=/\bif\s*\(([^)]*)\)\s*\{/g;let cursor=startIndex;while(cursor<endIndex){ifPattern.lastIndex=cursor;const match=ifPattern.exec(text);if(!match||match.index>=endIndex){emitPrints(text.slice(cursor,endIndex));return;}emitPrints(text.slice(cursor,match.index));const thenOpen=match.index+match[0].length-1;const thenClose=findClosingBrace(thenOpen);if(thenClose<0||thenClose>=endIndex){cursor=match.index+match[0].length;continue;}let next=thenClose+1;while(next<endIndex&&/\s/.test(text[next]))next++;let elseOpen=-1,elseClose=-1;if(text.startsWith('else',next)){let brace=next+4;while(brace<endIndex&&/\s/.test(text[brace]))brace++;if(text[brace]==='{'){elseOpen=brace;elseClose=findClosingBrace(elseOpen);}}const decision=evalCondition(match[1]);if(decision===true)processRegion(thenOpen+1,thenClose);else if(decision===false&&elseOpen>=0&&elseClose>=0)processRegion(elseOpen+1,elseClose);cursor=elseClose>=0?elseClose+1:thenClose+1;}};
+    processRegion(0,text.length);return output.length?output.join(''):'[Java Educational Parser] No supported output statement found.';
   }
 
-  private renderJavaPrint(expr: string, vars: Map<string, string | number | boolean>): string {
-    return expr.split('+').map(part => { part = part.trim(); if (/^"(?:[^"\\]|\\.)*"$/.test(part)) return part.slice(1,-1).replace(/\\n/g,'\n'); if (vars.has(part)) return String(vars.get(part)); if (/^-?\d+(?:\.\d+)?$/.test(part)) return part; return '[unsupported expression]'; }).join('');
-  }
+  private renderJavaPrint(expr: string, vars: Map<string, string | number | boolean>): string { return expr.split('+').map(part=>{part=part.trim();if(/^"(?:[^"\\]|\\.)*"$/.test(part))return part.slice(1,-1).replace(/\\n/g,'\n');if(vars.has(part))return String(vars.get(part));if(/^-?\d+(?:\.\d+)?$/.test(part))return part;return '[unsupported expression]';}).join(''); }
 }
 
-/**
- * A deliberately small, deterministic C interpreter for the browser simulator.
- * It is not GCC: it implements a useful C subset without pretending to generate
- * native ELF binaries. Engine B remains the path for real GCC/Linux execution.
- *
- * Supported: int/long/short/float/double/char, strings, arrays, functions,
- * if/else, while, for, break/continue/return, arithmetic/comparison/logical
- * operators, ++/--, assignment operators, printf/puts/putchar/getchar/scanf,
- * comments, #include/#define (common constants), argv-like input and casts.
- */
 class EducationalCInterpreter {
-  private tokens: string[] = [];
-  private pos = 0;
-  private output = '';
-  private vars = new Map<string, any>();
-  private arrays = new Map<string, any[]>();
-  private functions = new Map<string, { params: string[]; body: string[] }>();
-  private input: string[];
-  private inputPos = 0;
-  private steps = 0;
-  private readonly maxSteps = 250_000;
-  private readonly maxOutput = 100_000;
-
-  private source: string;
-
-  constructor(source: string, input: string[] = [], injectedVars: Record<string, number> = {}) {
-    this.source = source;
-    this.input = [...input];
-    for (const [k, v] of Object.entries(injectedVars)) this.vars.set(k, v);
-    this.tokenize();
-  }
-
-  public run(): string {
-    this.extractFunctions();
-    const main = this.functions.get('main');
-    if (main) {
-      this.callFunction('main', []);
-    } else {
-      // Accept small C snippets without an explicit main as an educational convenience.
-      this.pos = 0;
-      this.executeUntil(this.tokens.length);
-    }
-    return this.output;
-  }
-
-  private tick(): void {
-    this.steps++;
-    if (this.steps > this.maxSteps) throw new Error('Execution limit reached (250,000 steps). The program may contain an infinite or extremely long loop.');
-    if (this.output.length > this.maxOutput) throw new Error('Output limit exceeded (100 KB).');
-  }
-
-  private tokenize(): void {
-    let s = this.source
-      .replace(/\/\*[\s\S]*?\*\//g, '')
-      .replace(/\/\/.*$/gm, '')
-      .replace(/^\s*#include[^\n]*$/gm, '')
-      .replace(/^\s*#define\s+([A-Za-z_]\w*)\s+([^\n]+)$/gm, 'const $1 = $2;');
-    const re = /("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|(?:\d+\.\d+|\d+)|(?:==|!=|<=|>=|&&|\|\||\+\+|--|\+=|-=|\*=|\/=|%=|<<|>>|->)|(?:[A-Za-z_]\w*)|[^\s])/g;
-    this.tokens = s.match(re) || [];
-  }
-
-  private extractFunctions(): void {
-    let i = 0;
-    while (i < this.tokens.length) {
-      const start = i;
-      // Skip return type / qualifiers until name(params) {
-      let nameIdx = -1;
-      for (let j = i; j < Math.min(i + 8, this.tokens.length); j++) {
-        if (/^[A-Za-z_]\w*$/.test(this.tokens[j]) && this.tokens[j + 1] === '(') { nameIdx = j; break; }
-        if (this.tokens[j] === ';') break;
-      }
-      if (nameIdx < 0) { i++; continue; }
-      let p = nameIdx + 2, depth = 1;
-      const params: string[] = [];
-      let current = '';
-      while (p < this.tokens.length && depth) {
-        const t = this.tokens[p++];
-        if (t === '(') depth++;
-        else if (t === ')') depth--;
-        else if (depth === 1 && t === ',') { const n = current.match(/[A-Za-z_]\w*$/); if (n) params.push(n[0]); current = ''; }
-        else if (depth === 1) current += ` ${t}`;
-      }
-      const n = current.match(/[A-Za-z_]\w*$/); if (n) params.push(n[0]);
-      if (this.tokens[p] !== '{') { i = start + 1; continue; }
-      const bodyStart = p + 1;
-      let b = bodyStart, brace = 1;
-      while (b < this.tokens.length && brace) { if (this.tokens[b] === '{') brace++; else if (this.tokens[b] === '}') brace--; b++; }
-      if (brace !== 0) throw new Error(`Unmatched '{' in function ${this.tokens[nameIdx]}.`);
-      this.functions.set(this.tokens[nameIdx], { params, body: this.tokens.slice(bodyStart, b - 1) });
-      i = b;
-    }
-  }
-
-  private callFunction(name: string, args: any[]): any {
-    this.tick();
-    const fn = this.functions.get(name);
-    if (!fn) throw new Error(`function '${name}' is not defined`);
-    const oldVars = this.vars;
-    const oldArrays = this.arrays;
-    const oldPos = this.pos;
-    this.vars = new Map(oldVars);
-    this.arrays = new Map(oldArrays);
-    fn.params.forEach((p, i) => this.vars.set(p, args[i] ?? 0));
-    this.pos = 0;
-    const result = this.executeUntil(fn.body.length, fn.body);
-    this.vars = oldVars;
-    this.arrays = oldArrays;
-    this.pos = oldPos;
-    return result?.value;
-  }
-
-  private executeUntil(end: number, stream: string[] = this.tokens): { type: string; value?: any } | undefined {
-    while (this.pos < end) {
-      this.tick();
-      const t = stream[this.pos];
-      if (t === ';') { this.pos++; continue; }
-      if (t === '}') { this.pos++; return; }
-      if (t === 'return') {
-        this.pos++;
-        const value = stream[this.pos] === ';' ? 0 : this.expression(stream, end);
-        if (stream[this.pos] === ';') this.pos++;
-        return { type: 'return', value };
-      }
-      if (t === 'break' || t === 'continue') { this.pos++; if (stream[this.pos] === ';') this.pos++; return { type: t }; }
-      if (t === 'if') { const r = this.execIf(stream, end); if (r) return r; continue; }
-      if (t === 'while') { const r = this.execWhile(stream, end); if (r) return r; continue; }
-      if (t === 'for') { const r = this.execFor(stream, end); if (r) return r; continue; }
-      if (this.isDeclaration(stream[this.pos])) { this.declaration(stream, end); continue; }
-      this.expression(stream, end);
-      if (stream[this.pos] === ';') this.pos++;
-    }
-    return;
-  }
-
-  private isDeclaration(t: string): boolean {
-    return ['int','long','short','float','double','char','void','const','unsigned','signed','bool','boolean','string'].includes(t);
-  }
-
-  private declaration(s: string[], end: number): void {
-    let isConst = false;
-    if (s[this.pos] === 'const') { isConst = true; this.pos++; }
-    while (['unsigned','signed','long','short'].includes(s[this.pos])) this.pos++;
-    const type = s[this.pos++];
-    if (type === 'void') { this.pos++; return; }
-    while (this.pos < end) {
-      const name = s[this.pos++];
-      if (!name || !/^[A-Za-z_]\w*$/.test(name)) throw new Error(`expected variable name, got '${name}'`);
-      let value: any = type === 'char' ? '\0' : 0;
-      if (s[this.pos] === '[') {
-        this.pos++; const size = Number(this.expression(s, end)); if (s[this.pos] === ']') this.pos++;
-        const arr = new Array(Math.max(0, size)).fill(type === 'char' ? '\0' : 0);
-        if (s[this.pos] === '=') {
-          this.pos++; if (s[this.pos] === '{') { this.pos++; let i = 0; while (s[this.pos] !== '}' && this.pos < end) { arr[i++] = this.expression(s, end); if (s[this.pos] === ',') this.pos++; else break; } if (s[this.pos] === '}') this.pos++; }
-        }
-        this.arrays.set(name, arr);
-      } else {
-        if (s[this.pos] === '=') { this.pos++; value = this.expression(s, end); }
-        this.vars.set(name, value);
-      }
-      if (s[this.pos] !== ',') break;
-      this.pos++;
-    }
-    if (s[this.pos] === ';') this.pos++;
-    void isConst;
-  }
-
-  private execIf(s: string[], end: number): { type: string; value?: any } | undefined {
-    this.pos++; this.expect(s, '('); const cond = this.expression(s, end); this.expect(s, ')');
-    const thenBody = this.readStatement(s, end);
-    let elseBody: string[] | null = null;
-    if (s[this.pos] === 'else') { this.pos++; elseBody = this.readStatement(s, end); }
-    if (this.truthy(cond)) return this.runBlock(thenBody);
-    if (elseBody) return this.runBlock(elseBody);
-  }
-
-  private execWhile(s: string[], end: number): { type: string; value?: any } | undefined {
-    const keyword = this.pos++; this.expect(s, '('); const condStart = this.pos; this.expression(s, end); const condEnd = this.pos; this.expect(s, ')');
-    const body = this.readStatement(s, end);
-    let guard = 0;
-    while (true) {
-      const c = this.evalSlice(s, condStart, condEnd); if (!this.truthy(c)) break;
-      if (++guard > 100_000) throw new Error('while loop exceeded 100,000 iterations.');
-      const r = this.runBlock(body); if (r?.type === 'return') return r; if (r?.type === 'break') break;
-    }
-    void keyword;
-  }
-
-  private execFor(s: string[], end: number): { type: string; value?: any } | undefined {
-    this.pos++; this.expect(s, '(');
-    const initStart = this.pos; let depth = 0; while (this.pos < end) { if (s[this.pos] === '(') depth++; if (s[this.pos] === ')') { if (!depth) break; depth--; } if (s[this.pos] === ';' && !depth) break; this.pos++; } const initEnd = this.pos; this.expect(s, ';');
-    const condStart = this.pos; while (this.pos < end && s[this.pos] !== ';') this.pos++; const condEnd = this.pos; this.expect(s, ';');
-    const incStart = this.pos; while (this.pos < end && s[this.pos] !== ')') this.pos++; const incEnd = this.pos; this.expect(s, ')');
-    const body = this.readStatement(s, end);
-    this.execSlice(s, initStart, initEnd);
-    let guard = 0;
-    while (condStart === condEnd || this.truthy(this.evalSlice(s, condStart, condEnd))) {
-      if (++guard > 100_000) throw new Error('for loop exceeded 100,000 iterations.');
-      const r = this.runBlock(body); if (r?.type === 'return') return r; if (r?.type === 'break') break;
-      if (r?.type !== 'continue' || r?.type === 'continue') this.execSlice(s, incStart, incEnd);
-    }
-  }
-
-  private readStatement(s: string[], end: number): string[] {
-    if (s[this.pos] === '{') {
-      this.pos++; const start = this.pos; let d = 1; while (this.pos < end && d) { if (s[this.pos] === '{') d++; else if (s[this.pos] === '}') d--; this.pos++; }
-      if (d) throw new Error('unmatched block'); return s.slice(start, this.pos - 1);
-    }
-    const start = this.pos; while (this.pos < end && s[this.pos++] !== ';') {} return s.slice(start, this.pos);
-  }
-
-  private runBlock(block: string[]): { type: string; value?: any } | undefined { const old = this.pos; this.pos = 0; const r = this.executeUntil(block.length, block); this.pos = old; return r; }
-  private execSlice(s: string[], a: number, b: number): any { const old = this.pos; this.pos = a; const v = this.isDeclaration(s[this.pos]) ? (this.declaration(s, b), 0) : this.expression(s, b); this.pos = old; return v; }
-  private evalSlice(s: string[], a: number, b: number): any { const old = this.pos; this.pos = a; const v = this.expression(s, b); this.pos = old; return v; }
-
-  private expression(s: string[], end: number): any { return this.assignment(s, end); }
-  private assignment(s: string[], end: number): any {
-    const save = this.pos;
-    if (/^[A-Za-z_]\w*$/.test(s[this.pos] || '') && s[this.pos + 1] === '[') {
-      const name = s[this.pos++]; this.pos++; const idx = Number(this.expression(s, end)); this.expect(s, ']');
-      if (['=','+=','-=','*=','/=','%='].includes(s[this.pos])) {
-        const op = s[this.pos++]; const rhs = this.assignment(s, end); const arr = this.arrays.get(name) || [];
-        const old = arr[idx] ?? 0; arr[idx] = op === '=' ? rhs : this.apply(op[0], old, rhs); this.arrays.set(name, arr); return arr[idx];
-      }
-      this.pos = save;
-    }
-    if (/^[A-Za-z_]\w*$/.test(s[this.pos] || '') && ['=','+=','-=','*=','/=','%='].includes(s[this.pos + 1])) {
-      const name = s[this.pos++]; const op = s[this.pos++]; const rhs = this.assignment(s, end); const old = this.vars.get(name) ?? 0;
-      const value = op === '=' ? rhs : this.apply(op[0], old, rhs); this.vars.set(name, value); return value;
-    }
-    this.pos = save;
-    return this.logicalOr(s, end);
-  }
-  private logicalOr(s: string[], end: number): any { let v = this.logicalAnd(s, end); while (s[this.pos] === '||') { this.pos++; v = this.truthy(v) || this.truthy(this.logicalAnd(s, end)) ? 1 : 0; } return v; }
-  private logicalAnd(s: string[], end: number): any { let v = this.equality(s, end); while (s[this.pos] === '&&') { this.pos++; v = this.truthy(v) && this.truthy(this.equality(s, end)) ? 1 : 0; } return v; }
-  private equality(s: string[], end: number): any { let v = this.compare(s, end); while (['==','!='].includes(s[this.pos])) { const op=s[this.pos++]; const r=this.compare(s,end); v=op==='==' ? (v===r?1:0):(v!==r?1:0); } return v; }
-  private compare(s: string[], end: number): any { let v=this.term(s,end); while (['<','>','<=','>='].includes(s[this.pos])) { const op=s[this.pos++]; const r=this.term(s,end); v=op==='<'?(v<r?1:0):op==='>'?(v>r?1:0):op==='<='?(v<=r?1:0):(v>=r?1:0); } return v; }
-  private term(s: string[], end: number): any { let v=this.factor(s,end); while (['+','-'].includes(s[this.pos])) { const op=s[this.pos++]; v=this.apply(op,v,this.factor(s,end)); } return v; }
-  private factor(s: string[], end: number): any { let v=this.unary(s,end); while (['*','/','%'].includes(s[this.pos])) { const op=s[this.pos++]; v=this.apply(op,v,this.unary(s,end)); } return v; }
-
-  private unary(s: string[], end: number): any {
-    const t=s[this.pos];
-    if (t==='&') { this.pos++; const name=s[this.pos++]; return { __ref: name }; }
-    if (t==='!') { this.pos++; return this.truthy(this.unary(s,end))?0:1; }
-    if (t==='-') { this.pos++; return -Number(this.unary(s,end)); }
-    if (t==='+') { this.pos++; return Number(this.unary(s,end)); }
-    if (t==='++' || t==='--') { this.pos++; const name=s[this.pos++]; const v=(this.vars.get(name)??0)+(t==='++'?1:-1); this.vars.set(name,v); return v; }
-    const v=this.primary(s,end);
-    if (s[this.pos]==='++' || s[this.pos]==='--') { const op=s[this.pos++]; const n=(typeof v==='number'?v:0); const nv=n+(op==='++'?1:-1); if (typeof s[this.pos-2]==='string') this.vars.set(s[this.pos-2],nv); return n; }
-    return v;
-  }
-
-  private primary(s: string[], end: number): any {
-    const t=s[this.pos++];
-    if (t === undefined) return 0;
-    if (t === '(') { const v=this.expression(s,end); this.expect(s,')'); return v; }
-    if (/^\d+(\.\d+)?$/.test(t)) return Number(t);
-    if (/^'(?:\\.|[^'])'$/.test(t)) return this.unquote(t).charAt(0);
-    if (/^"(?:\\.|[^"])*"$/.test(t)) return this.unquote(t);
-    if (t === 'true') return 1; if (t === 'false') return 0; if (t === 'NULL') return 0;
-    if (/^[A-Za-z_]\w*$/.test(t)) {
-      if (s[this.pos] === '(') {
-        this.pos++; const args:any[]=[]; while (s[this.pos]!==')' && this.pos<end) { args.push(this.expression(s,end)); if(s[this.pos]===',') this.pos++; else break; } this.expect(s,')'); return this.builtinOrFunction(t,args);
-      }
-      if (s[this.pos] === '[') { this.pos++; const idx=Number(this.expression(s,end)); this.expect(s,']'); const arr=this.arrays.get(t); return arr?.[idx] ?? 0; }
-      return this.vars.get(t) ?? 0;
-    }
-    return 0;
-  }
-
-  private builtinOrFunction(name:string,args:any[]):any {
-    if(name==='printf') { const fmt=String(args.shift()??''); this.output += this.formatPrintf(fmt,args); return args.length; }
-    if(name==='puts') { this.output += String(args[0]??'')+'\n'; return 0; }
-    if(name==='putchar') { this.output += String(args[0]??'').charAt(0); return args[0]??0; }
-    if(name==='getchar') { return this.nextInput().charCodeAt(0) || -1; }
-    if(name==='scanf') { const fmt=String(args.shift()??''); return this.scanf(fmt, args); }
-    if(name==='strlen') return String(args[0]??'').length;
-    if(name==='abs') return Math.abs(Number(args[0]??0));
-    if(name==='atoi') return Number.parseInt(String(args[0]??'0'),10)||0;
-    if(name==='toupper') return String(args[0]??'').toUpperCase().charCodeAt(0);
-    if(name==='tolower') return String(args[0]??'').toLowerCase().charCodeAt(0);
-    return this.functions.has(name) ? this.callFunction(name,args) : 0;
-  }
-
-  private scanf(fmt:string, refs:any[]=[]):number {
-    const specs=[...fmt.matchAll(/%[dfsc]/g)].map(m=>m[0]); let count=0;
-    for(const spec of specs){
-      const raw=this.nextInput();
-      const value=spec==='%d'?Number.parseInt(raw,10)||0:spec==='%f'?Number.parseFloat(raw)||0:raw;
-      const ref=refs[count];
-      if(ref && ref.__ref) this.vars.set(ref.__ref, value);
-      count++;
-    }
-    return count;
-  }
-  private nextInput():string { if(this.inputPos>=this.input.length) return '0'; return String(this.input[this.inputPos++]); }
-  private formatPrintf(fmt:string,args:any[]):string { let i=0; return fmt.replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/%[-+0-9.]*[dfsxc%]/gi,(m)=>m==='%%'?'%':this.formatSpec(m,args[i++])); }
-  private formatSpec(spec: string, value: unknown): string {
-    if (spec.endsWith('f')) {
-      const precisionMatch = spec.match(/\.(\d+)/);
-      const precision = precisionMatch ? Number(precisionMatch[1]) : 6;
-      return Number(value ?? 0).toFixed(precision);
-    }
-    if (spec.endsWith('x')) return Number(value ?? 0).toString(16);
-    if (spec.endsWith('c')) {
-      return typeof value === 'string'
-        ? value.charAt(0)
-        : String.fromCharCode(Number(value ?? 0));
-    }
-    return String(value ?? 0);
-  }
-
-  private apply(operator: string, left: unknown, right: unknown): unknown {
-    switch (operator) {
-      case '+':
-        return typeof left === 'string' || typeof right === 'string'
-          ? String(left) + String(right)
-          : Number(left) + Number(right);
-      case '-':
-        return Number(left) - Number(right);
-      case '*':
-        return Number(left) * Number(right);
-      case '/':
-        return Number(right) === 0 ? 0 : Number(left) / Number(right);
-      case '%':
-        return Number(left) % Number(right);
-      default:
-        return right;
-    }
-  }
-
-  private truthy(value: unknown): boolean {
-    return typeof value === 'string' ? value.length > 0 : Number(value) !== 0;
-  }
-  private expect(s:string[],t:string):void { if(s[this.pos]!==t) throw new Error(`expected '${t}', got '${s[this.pos]??'<end>'}'`); this.pos++; }
-  private unquote(t:string):string { return t.slice(1,-1).replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/\\r/g,'\r').replace(/\\"/g,'"').replace(/\\'/g,"'").replace(/\\\\/g,'\\'); }
+  private tokens:string[]=[];private pos=0;private output='';private vars=new Map<string,any>();private arrays=new Map<string,any[]>();private functions=new Map<string,{params:string[];body:string[]}>();private input:string[];private inputPos=0;private steps=0;private readonly maxSteps=250_000;private readonly maxOutput=100_000;private source:string;
+  constructor(source:string,input:string[]=[],injectedVars:Record<string,number>={}){this.source=source;this.input=[...input];for(const[k,v]of Object.entries(injectedVars))this.vars.set(k,v);this.tokenize();}
+  public run():string{this.extractFunctions();const main=this.functions.get('main');if(main)this.callFunction('main',[]);else{this.pos=0;this.executeUntil(this.tokens.length);}return this.output;}
+  private tick():void{this.steps++;if(this.steps>this.maxSteps)throw new Error('Execution limit reached (250,000 steps). The program may contain an infinite or extremely long loop.');if(this.output.length>this.maxOutput)throw new Error('Output limit exceeded (100 KB).');}
+  private tokenize():void{const s=this.source.replace(/\/\*[\s\S]*?\*\//g,'').replace(/\/\/.*$/gm,'').replace(/^\s*#include[^\n]*$/gm,'').replace(/^\s*#define\s+([A-Za-z_]\w*)\s+([^\n]+)$/gm,'const $1 = $2;');const re=/("(?:\\.|[^"\\])*"|'(?:\\.|[^'\\])*'|(?:\d+\.\d+|\d+)|(?:==|!=|<=|>=|&&|\|\||\+\+|--|\+=|-=|\*=|\/=|%=|<<|>>|->)|(?:[A-Za-z_]\w*)|[^\s])/g;this.tokens=s.match(re)||[];}
+  private extractFunctions():void{let i=0;while(i<this.tokens.length){const start=i;let nameIdx=-1;for(let j=i;j<Math.min(i+8,this.tokens.length);j++){if(/^[A-Za-z_]\w*$/.test(this.tokens[j])&&this.tokens[j+1]==='('){nameIdx=j;break;}if(this.tokens[j]===';')break;}if(nameIdx<0){i++;continue;}let p=nameIdx+2,depth=1;const params:string[]=[];let current='';while(p<this.tokens.length&&depth){const t=this.tokens[p++];if(t==='(')depth++;else if(t===')')depth--;else if(depth===1&&t===','){const n=current.match(/[A-Za-z_]\w*$/);if(n)params.push(n[0]);current='';}else if(depth===1)current+=` ${t}`;}const n=current.match(/[A-Za-z_]\w*$/);if(n)params.push(n[0]);if(this.tokens[p]!=='{'){i=start+1;continue;}const bodyStart=p+1;let b=bodyStart,brace=1;while(b<this.tokens.length&&brace){if(this.tokens[b]==='{')brace++;else if(this.tokens[b]==='}')brace--;b++;}if(brace!==0)throw new Error(`Unmatched '{' in function ${this.tokens[nameIdx]}.`);this.functions.set(this.tokens[nameIdx],{params,body:this.tokens.slice(bodyStart,b-1)});i=b;}}
+  private callFunction(name:string,args:any[]):any{this.tick();const fn=this.functions.get(name);if(!fn)throw new Error(`function '${name}' is not defined`);const oldVars=this.vars,oldArrays=this.arrays,oldPos=this.pos;this.vars=new Map(oldVars);this.arrays=new Map(oldArrays);fn.params.forEach((p,i)=>this.vars.set(p,args[i]??0));this.pos=0;const result=this.executeUntil(fn.body.length,fn.body);this.vars=oldVars;this.arrays=oldArrays;this.pos=oldPos;return result?.value;}
+  private executeUntil(end:number,stream:string[]=this.tokens):{type:string;value?:any}|undefined{while(this.pos<end){this.tick();const t=stream[this.pos];if(t===';'){this.pos++;continue;}if(t==='}'){this.pos++;return;}if(t==='return'){this.pos++;const value=stream[this.pos]===';'?0:this.expression(stream,end);if(stream[this.pos]===';')this.pos++;return{type:'return',value};}if(t==='break'||t==='continue'){this.pos++;if(stream[this.pos]===';')this.pos++;return{type:t};}if(t==='if'){const r=this.execIf(stream,end);if(r)return r;continue;}if(t==='while'){const r=this.execWhile(stream,end);if(r)return r;continue;}if(t==='for'){const r=this.execFor(stream,end);if(r)return r;continue;}if(this.isDeclaration(stream[this.pos])){this.declaration(stream,end);continue;}this.expression(stream,end);if(stream[this.pos]===';')this.pos++;}return;}
+  private isDeclaration(t:string):boolean{return['int','long','short','float','double','char','void','const','unsigned','signed','bool','boolean','string'].includes(t);}
+  private declaration(s:string[],end:number):void{let isConst=false;if(s[this.pos]==='const'){isConst=true;this.pos++;}while(['unsigned','signed','long','short'].includes(s[this.pos]))this.pos++;const type=s[this.pos++];if(type==='void'){this.pos++;return;}while(this.pos<end){const name=s[this.pos++];if(!name||!/^[A-Za-z_]\w*$/.test(name))throw new Error(`expected variable name, got '${name}'`);let value:any=type==='char'?'\0':0;if(s[this.pos]==='['){this.pos++;const size=Number(this.expression(s,end));if(s[this.pos]===']')this.pos++;const arr=new Array(Math.max(0,size)).fill(type==='char'?'\0':0);if(s[this.pos]==='='){this.pos++;if(s[this.pos]==='{'){this.pos++;let i=0;while(s[this.pos]!=='}'&&this.pos<end){arr[i++]=this.expression(s,end);if(s[this.pos]===',')this.pos++;else break;}if(s[this.pos]==='}')this.pos++;}}this.arrays.set(name,arr);}else{if(s[this.pos]==='='){this.pos++;value=this.expression(s,end);}this.vars.set(name,value);}if(s[this.pos]!==',')break;this.pos++;}if(s[this.pos]===';')this.pos++;void isConst;}
+  private execIf(s:string[],end:number):{type:string;value?:any}|undefined{this.pos++;this.expect(s,'(');const cond=this.expression(s,end);this.expect(s,')');const thenBody=this.readStatement(s,end);let elseBody:string[]|null=null;if(s[this.pos]==='else'){this.pos++;elseBody=this.readStatement(s,end);}if(this.truthy(cond))return this.runBlock(thenBody);if(elseBody)return this.runBlock(elseBody);}
+  private execWhile(s:string[],end:number):{type:string;value?:any}|undefined{this.pos++;this.expect(s,'(');const condStart=this.pos;this.expression(s,end);const condEnd=this.pos;this.expect(s,')');const body=this.readStatement(s,end);let guard=0;while(true){const c=this.evalSlice(s,condStart,condEnd);if(!this.truthy(c))break;if(++guard>100_000)throw new Error('while loop exceeded 100,000 iterations.');const r=this.runBlock(body);if(r?.type==='return')return r;if(r?.type==='break')break;}}
+  private execFor(s:string[],end:number):{type:string;value?:any}|undefined{this.pos++;this.expect(s,'(');const initStart=this.pos;let depth=0;while(this.pos<end){if(s[this.pos]==='(')depth++;if(s[this.pos]===')'){if(!depth)break;depth--;}if(s[this.pos]===';'&&!depth)break;this.pos++;}const initEnd=this.pos;this.expect(s,';');const condStart=this.pos;while(this.pos<end&&s[this.pos]!==';')this.pos++;const condEnd=this.pos;this.expect(s,';');const incStart=this.pos;while(this.pos<end&&s[this.pos]!==')')this.pos++;const incEnd=this.pos;this.expect(s,')');const body=this.readStatement(s,end);this.execSlice(s,initStart,initEnd);let guard=0;while(condStart===condEnd||this.truthy(this.evalSlice(s,condStart,condEnd))){if(++guard>100_000)throw new Error('for loop exceeded 100,000 iterations.');const r=this.runBlock(body);if(r?.type==='return')return r;if(r?.type==='break')break;this.execSlice(s,incStart,incEnd);}}
+  private readStatement(s:string[],end:number):string[]{if(s[this.pos]==='{'){this.pos++;const start=this.pos;let d=1;while(this.pos<end&&d){if(s[this.pos]==='{')d++;else if(s[this.pos]==='}')d--;this.pos++;}if(d)throw new Error('unmatched block');return s.slice(start,this.pos-1);}const start=this.pos;while(this.pos<end&&s[this.pos++]!==';'){}return s.slice(start,this.pos);}
+  private runBlock(block:string[]):{type:string;value?:any}|undefined{const old=this.pos;this.pos=0;const r=this.executeUntil(block.length,block);this.pos=old;return r;}
+  private execSlice(s:string[],a:number,b:number):any{const old=this.pos;this.pos=a;const v=this.isDeclaration(s[this.pos])?(this.declaration(s,b),0):this.expression(s,b);this.pos=old;return v;}
+  private evalSlice(s:string[],a:number,b:number):any{const old=this.pos;this.pos=a;const v=this.expression(s,b);this.pos=old;return v;}
+  private expression(s:string[],end:number):any{return this.assignment(s,end);}
+  private assignment(s:string[],end:number):any{const save=this.pos;if(/^[A-Za-z_]\w*$/.test(s[this.pos]||'')&&s[this.pos+1]==='['){const name=s[this.pos++];this.pos++;const idx=Number(this.expression(s,end));this.expect(s,']');if(['=','+=','-=','*=','/=','%='].includes(s[this.pos])){const op=s[this.pos++];const rhs=this.assignment(s,end);const arr=this.arrays.get(name)||[];const old=arr[idx]??0;arr[idx]=op==='='?rhs:this.apply(op[0],old,rhs);this.arrays.set(name,arr);return arr[idx];}this.pos=save;}if(/^[A-Za-z_]\w*$/.test(s[this.pos]||'')&&['=','+=','-=','*=','/=','%='].includes(s[this.pos+1])){const name=s[this.pos++];const op=s[this.pos++];const rhs=this.assignment(s,end);const old=this.vars.get(name)??0;const value=op==='='?rhs:this.apply(op[0],old,rhs);this.vars.set(name,value);return value;}this.pos=save;return this.logicalOr(s,end);}
+  private logicalOr(s:string[],end:number):any{let v=this.logicalAnd(s,end);while(s[this.pos]==='||'){this.pos++;v=this.truthy(v)||this.truthy(this.logicalAnd(s,end))?1:0;}return v;}
+  private logicalAnd(s:string[],end:number):any{let v=this.equality(s,end);while(s[this.pos]==='&&'){this.pos++;v=this.truthy(v)&&this.truthy(this.equality(s,end))?1:0;}return v;}
+  private equality(s:string[],end:number):any{let v=this.compare(s,end);while(['==','!='].includes(s[this.pos])){const op=s[this.pos++];const r=this.compare(s,end);v=op==='=='?(v===r?1:0):(v!==r?1:0);}return v;}
+  private compare(s:string[],end:number):any{let v=this.term(s,end);while(['<','>','<=','>='].includes(s[this.pos])){const op=s[this.pos++];const r=this.term(s,end);v=op==='<'?(v<r?1:0):op==='>'?(v>r?1:0):op==='<='?(v<=r?1:0):(v>=r?1:0);}return v;}
+  private term(s:string[],end:number):any{let v=this.factor(s,end);while(['+','-'].includes(s[this.pos])){const op=s[this.pos++];v=this.apply(op,v,this.factor(s,end));}return v;}
+  private factor(s:string[],end:number):any{let v=this.unary(s,end);while(['*','/','%'].includes(s[this.pos])){const op=s[this.pos++];v=this.apply(op,v,this.unary(s,end));}return v;}
+  private unary(s:string[],end:number):any{const t=s[this.pos];if(t==='&'){this.pos++;const name=s[this.pos++];return{__ref:name};}if(t==='!'){this.pos++;return this.truthy(this.unary(s,end))?0:1;}if(t==='-'){this.pos++;return-Number(this.unary(s,end));}if(t==='+'){this.pos++;return Number(this.unary(s,end));}if(t==='++'||t==='--'){this.pos++;const name=s[this.pos++];const v=(this.vars.get(name)??0)+(t==='++'?1:-1);this.vars.set(name,v);return v;}const v=this.primary(s,end);if(s[this.pos]==='++'||s[this.pos]==='--'){const op=s[this.pos++];const n=typeof v==='number'?v:0;const nv=n+(op==='++'?1:-1);if(typeof s[this.pos-2]==='string')this.vars.set(s[this.pos-2],nv);return n;}return v;}
+  private primary(s:string[],end:number):any{const t=s[this.pos++];if(t===undefined)return 0;if(t==='('){const v=this.expression(s,end);this.expect(s,')');return v;}if(/^\d+(\.\d+)?$/.test(t))return Number(t);if(/^'(?:\\.|[^'])'$/.test(t))return this.unquote(t).charAt(0);if(/^"(?:\\.|[^"])*"$/.test(t))return this.unquote(t);if(t==='true')return 1;if(t==='false')return 0;if(t==='NULL')return 0;if(/^[A-Za-z_]\w*$/.test(t)){if(s[this.pos]==='('){this.pos++;const args:any[]=[];while(s[this.pos]!==')'&&this.pos<end){args.push(this.expression(s,end));if(s[this.pos]===',')this.pos++;else break;}this.expect(s,')');return this.builtinOrFunction(t,args);}if(s[this.pos]==='['){this.pos++;const idx=Number(this.expression(s,end));this.expect(s,']');const arr=this.arrays.get(t);return arr?.[idx]??0;}return this.vars.get(t)??0;}return 0;}
+  private builtinOrFunction(name:string,args:any[]):any{if(name==='printf'){const fmt=String(args.shift()??'');this.output+=this.formatPrintf(fmt,args);return args.length;}if(name==='puts'){this.output+=String(args[0]??'')+'\n';return 0;}if(name==='putchar'){this.output+=String(args[0]??'').charAt(0);return args[0]??0;}if(name==='getchar')return this.nextInput().charCodeAt(0)||-1;if(name==='scanf'){const fmt=String(args.shift()??'');return this.scanf(fmt,args);}if(name==='strlen')return String(args[0]??'').length;if(name==='abs')return Math.abs(Number(args[0]??0));if(name==='atoi')return Number.parseInt(String(args[0]??'0'),10)||0;if(name==='toupper')return String(args[0]??'').toUpperCase().charCodeAt(0);if(name==='tolower')return String(args[0]??'').toLowerCase().charCodeAt(0);return this.functions.has(name)?this.callFunction(name,args):0;}
+  private scanf(fmt:string,refs:any[]=[]):number{const specs=[...fmt.matchAll(/%[dfsc]/g)].map(m=>m[0]);let count=0;for(const spec of specs){const raw=this.nextInput();const value=spec==='%d'?Number.parseInt(raw,10)||0:spec==='%f'?Number.parseFloat(raw)||0:raw;const ref=refs[count];if(ref&&ref.__ref)this.vars.set(ref.__ref,value);count++;}return count;}
+  private nextInput():string{if(this.inputPos>=this.input.length)return '0';return String(this.input[this.inputPos++]);}
+  private formatPrintf(fmt:string,args:any[]):string{let i=0;return fmt.replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/%[-+0-9.]*[dfsxc%]/gi,m=>m==='%%'?'%':this.formatSpec(m,args[i++]));}
+  private formatSpec(spec:string,value:unknown):string{if(spec.endsWith('f')){const precisionMatch=spec.match(/\.(\d+)/);const precision=precisionMatch?Number(precisionMatch[1]):6;return Number(value??0).toFixed(precision);}if(spec.endsWith('x'))return Number(value??0).toString(16);if(spec.endsWith('c'))return typeof value==='string'?value.charAt(0):String.fromCharCode(Number(value??0));return String(value??0);}
+  private apply(operator:string,left:unknown,right:unknown):unknown{switch(operator){case '+':return typeof left==='string'||typeof right==='string'?String(left)+String(right):Number(left)+Number(right);case '-':return Number(left)-Number(right);case '*':return Number(left)*Number(right);case '/':return Number(right)===0?0:Number(left)/Number(right);case '%':return Number(left)%Number(right);default:return right;}}
+  private truthy(value:unknown):boolean{return typeof value==='string'?value.length>0:Number(value)!==0;}
+  private expect(s:string[],t:string):void{if(s[this.pos]!==t)throw new Error(`expected '${t}', got '${s[this.pos]??'<end>'}'`);this.pos++;}
+  private unquote(t:string):string{return t.slice(1,-1).replace(/\\n/g,'\n').replace(/\\t/g,'\t').replace(/\\r/g,'\r').replace(/\\"/g,'"').replace(/\\'/g,"'").replace(/\\\\/g,'\\');}
 }
