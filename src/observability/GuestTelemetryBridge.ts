@@ -6,9 +6,10 @@ export interface GuestTelemetrySnapshot {
   diskBytes: number;
   uptimeSeconds: number;
   loadAverage: number;
+  sampledAt: number;
 }
 
-/** Parses a marked /proc + uname snapshot emitted by the real guest. */
+/** Parses a marked /proc + uname snapshot emitted by the real guest. Telemetry is untrusted guest input. */
 export class GuestTelemetryBridge {
   private buffer = '';
   private snapshot: GuestTelemetrySnapshot | null = null;
@@ -38,6 +39,7 @@ export class GuestTelemetryBridge {
       const idleDelta = idle - this.previousCpu.idle;
       cpuPercent = totalDelta > 0 ? Math.max(0, Math.min(100, 100 * (1 - idleDelta / totalDelta))) : 0;
     }
+    if (!Number.isFinite(totalTicks) || !Number.isFinite(idle) || totalTicks < 0 || idle < 0) return null;
     this.previousCpu = { total: totalTicks, idle };
     const totalBytes = Number(total.match(/\d+/)?.[0] ?? 0) * 1024;
     const availableBytes = Number(available.match(/\d+/)?.[0] ?? 0) * 1024;
@@ -50,6 +52,7 @@ export class GuestTelemetryBridge {
       diskBytes: Math.max(0, diskBytes),
       uptimeSeconds: Number(uptime.split(/\s+/)[0] || 0),
       loadAverage: Number(load.split(/\s+/)[0] || 0),
+      sampledAt: Date.now(),
     };
     this.snapshot = snapshot;
     this.buffer = this.buffer.slice(end + '__LT_END__'.length);
