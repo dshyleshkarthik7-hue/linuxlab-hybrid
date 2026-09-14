@@ -29,6 +29,11 @@
     Cross-Origin-Embedder-Policy = "credentialless"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains"
 
+[[headers]]
+  for = "/login/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://identity.netlify.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://identity.netlify.com; img-src 'self' data: https://identity.netlify.com; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
+
 [[redirects]]
   from = "/seabios.bin"
   to = "/api/v86-firmware/seabios.bin"
