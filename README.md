@@ -32,7 +32,7 @@ This environment is an educational simulator, not a full Linux kernel. Its shell
 Run compatible 32-bit x86 Linux guests in the browser using a deployment-local, version-matched v86 browser bundle, WebAssembly and xterm.js. The emulator runtime is preflight-checked before a VM is created, and unsupported architectures are rejected instead of failing silently.
 
 Current browser VM profiles:
-- **Developer Alpine**: primary learning image, 1 GiB RAM
+- **Developer Alpine**: primary learning image and default profile, 1 GiB RAM
 - **Alpine Virt 3.24.1 Lightweight x86**: compatibility profile, 512 MiB RAM
 - **Ultra Light Linux 4**: approximately 7.4 MB release image, 256 MiB RAM
 
