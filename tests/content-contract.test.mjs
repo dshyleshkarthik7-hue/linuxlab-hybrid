@@ -59,7 +59,16 @@ for (const page of ['index.html','beginner/index.html','intermediate/index.html'
   assert.match(html, /<head>/i, `${page} missing head`);
   assert.match(html, /<title>[^<]+<\/title>/i, `${page} missing title`);
   assert.match(html, /rel=["']canonical["']/i, `${page} missing canonical`);
+  // Catch unresolved generator placeholders that otherwise produce valid HTML
+  // while failing at runtime (for example, `const commands=" + cmd_json + ";`).
+  assert.doesNotMatch(html, /(?:cmd_json|json_data|commands_json)\b|\+\s*(?:cmd_json|json_data|commands_json)\s*\+/i, `${page} contains an unresolved template artifact`);
 }
+
+const challenges = await read('challenges/index.html');
+const challengeCommandEntries = [...challenges.matchAll(/\{name:'([^']+)',category:'([^']+)',example:'([^']+)'\}/g)].map(m => `${m[1]}|${m[2]}|${m[3]}`);
+assert.equal(challengeCommandEntries.length, 50, 'challenge catalog must contain exactly 50 commands (100 challenges)');
+assert.match(challenges, /const commands=\[/, 'challenge catalog must be embedded as valid JavaScript data');
+assert.doesNotMatch(challenges, /cmd_json|json_data|commands_json/, 'challenge page must not contain unresolved generator placeholders');
 
 for (const duplicate of ['about','contact','challenges','commands','quiz','open-source-iso']) {
   assert.equal(await exists(`public/${duplicate}/index.html`), false, `public/${duplicate}/index.html duplicates a root page`);
@@ -88,4 +97,4 @@ assert.match(headers, /\/api\/tutor/);
 const vite = await read('vite.config.ts');
 for (const entry of ['about/index.html','contact/index.html','commands/index.html','quiz/index.html','challenges/index.html','open-source-iso/index.html']) assert.match(vite, new RegExp(entry.replace(/[.*+?^${}()|[\\]\\]/g,'\\\\$&')));
 
-console.log('Content contract checks passed: canonical pages, exact command-index synchronization, CSP, headers and required production metadata.');
+console.log('Content contract checks passed: canonical pages, exact command-index synchronization, challenge catalog, unresolved-template detection, CSP, headers and required production metadata.');
