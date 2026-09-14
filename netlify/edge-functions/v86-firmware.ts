@@ -11,6 +11,8 @@ const ASSETS: Record<string, { url: string; size: number; sha256: string }> = {
   },
 };
 
+const UPSTREAM_TIMEOUT_MS = 30_000;
+
 async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
@@ -24,8 +26,15 @@ export default async function handler(request: Request): Promise<Response> {
     return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
   }
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+
   try {
-    const upstream = await fetch(asset.url, { redirect: 'follow', cache: 'no-store' });
+    const upstream = await fetch(asset.url, {
+      redirect: 'follow',
+      cache: 'no-store',
+      signal: controller.signal,
+    });
     if (!upstream.ok) return new Response(`Firmware upstream returned ${upstream.status}`, { status: 502 });
     const bytes = await upstream.arrayBuffer();
     if (bytes.byteLength !== asset.size) throw new Error(`size ${bytes.byteLength} != ${asset.size}`);
@@ -44,5 +53,7 @@ export default async function handler(request: Request): Promise<Response> {
   } catch (error) {
     console.error(`v86 firmware verification failed for ${pathname}: ${error instanceof Error ? error.message : String(error)}`);
     return new Response('Verified firmware asset unavailable', { status: 502 });
+  } finally {
+    clearTimeout(timer);
   }
 }
