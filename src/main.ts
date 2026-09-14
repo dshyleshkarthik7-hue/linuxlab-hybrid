@@ -1,42 +1,20 @@
 import * as xtermModule from '@xterm/xterm';
 import * as fitModule from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
-import * as monaco from 'monaco-editor';
-
-// Vite worker imports for Monaco Editor
-import editorWorker from 'monaco-editor/esm/vs/editor/editor.worker?worker';
-import jsonWorker from 'monaco-editor/esm/vs/language/json/json.worker?worker';
-import cssWorker from 'monaco-editor/esm/vs/language/css/css.worker?worker';
-import htmlWorker from 'monaco-editor/esm/vs/language/html/html.worker?worker';
-import tsWorker from 'monaco-editor/esm/vs/language/typescript/ts.worker?worker';
 
 import { InBrowserLinuxEngine } from './engine/LinuxEngine';
 import { AssessmentRunner } from './engine/AssessmentRunner';
 import { StorageService } from './core/StorageService';
+import { loadMonaco, type MonacoEditor, type MonacoEditorModule } from './monaco-lazy';
 
 const TerminalConstructor = xtermModule.Terminal;
 const FitAddonConstructor = fitModule.FitAddon;
 
-type MonacoEnvironmentWithWorkers = {
-  getWorker(_: string, label: string): Worker;
-};
-
-Object.assign(self, {
-  MonacoEnvironment: {
-    getWorker(_: string, label: string): Worker {
-      if (label === 'json') return new jsonWorker();
-      if (label === 'css' || label === 'scss' || label === 'less') return new cssWorker();
-      if (label === 'html' || label === 'handlebars' || label === 'razor') return new htmlWorker();
-      if (label === 'typescript' || label === 'javascript') return new tsWorker();
-      return new editorWorker();
-    },
-  } satisfies MonacoEnvironmentWithWorkers,
-});
-
 class LinuxLabApp {
   private engine: InBrowserLinuxEngine;
   private assessment: AssessmentRunner;
-  private editor: monaco.editor.IStandaloneCodeEditor | null = null;
+  private editor: MonacoEditor | null = null;
+  private monaco: MonacoEditorModule | null = null;
   private simTerm!: xtermModule.Terminal;
   private simFitAddon!: fitModule.FitAddon;
 
@@ -55,20 +33,25 @@ class LinuxLabApp {
     this.assessment = new AssessmentRunner(this.engine);
 
     requestAnimationFrame(() => {
-      this.initSimulatorTerminal();
-      this.initMonaco();
-      this.bindEvents();
-      void this.restoreWorkspace();
+      void this.startApp();
     });
   }
 
-  private initMonaco(): void {
+  private async startApp(): Promise<void> {
+    this.initSimulatorTerminal();
+    await this.initMonaco();
+    this.bindEvents();
+    void this.restoreWorkspace();
+  }
+
+  private async initMonaco(): Promise<void> {
     const container = document.getElementById('monaco-container');
     if (!container) throw new Error('Monaco editor container is missing');
 
+    this.monaco = await loadMonaco();
     const initialCode = this.engine.readFile('/root/main.c') || '';
 
-    this.editor = monaco.editor.create(container, {
+    this.editor = this.monaco.editor.create(container, {
       value: initialCode,
       language: 'c',
       theme: 'vs-dark',
@@ -157,7 +140,6 @@ class LinuxLabApp {
     }
   }
 
-
   private fitSimulatorTerminal(context: string): void {
     try {
       this.simFitAddon.fit();
@@ -167,8 +149,6 @@ class LinuxLabApp {
   }
 
   private async executeTerminalCommand(cmd: string): Promise<void> {
-    // The learning runtime normally receives stdin as arguments. Make scanf feel
-    // interactive by pausing the terminal and collecting those values first.
     if (this.waitingForProgramInput) {
       this.waitingForProgramInput = false;
       const pending = this.pendingProgramCommand;
@@ -226,8 +206,8 @@ class LinuxLabApp {
 
     if (this.editor) {
       const model = this.editor.getModel();
-      if (model) {
-        monaco.editor.setModelLanguage(model, lang);
+      if (model && this.monaco) {
+        this.monaco.editor.setModelLanguage(model, lang);
       }
       this.editor.setValue(content);
     }
@@ -236,7 +216,6 @@ class LinuxLabApp {
     if (filename === 'main.c') document.getElementById('tab-main-c')?.classList.add('active');
     if (filename === 'Main.java') document.getElementById('tab-main-java')?.classList.add('active');
   }
-
 
   private async restoreWorkspace(): Promise<void> {
     try {
