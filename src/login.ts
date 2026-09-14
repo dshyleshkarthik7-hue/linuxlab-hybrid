@@ -11,14 +11,10 @@ type NetlifyIdentity = {
   open(mode?: string): void;
 };
 
-declare global {
-  interface Window {
-    netlifyIdentity?: NetlifyIdentity;
-  }
-}
+type IdentityWindow = Window & { netlifyIdentity?: NetlifyIdentity };
 
 window.addEventListener('DOMContentLoaded', () => {
-  const identity = window.netlifyIdentity;
+  const identity = (window as IdentityWindow).netlifyIdentity;
   const button = document.querySelector<HTMLButtonElement>('#login');
   const status = document.querySelector<HTMLElement>('#status');
   if (!button || !status) return;
