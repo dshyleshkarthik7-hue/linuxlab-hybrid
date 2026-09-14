@@ -17,13 +17,25 @@ for (const command of commandNames) {
   assert.match(edgeCatalog, new RegExp(`name: ['"]${escaped}['"]`), `${command} missing from edge catalog`);
 }
 
+// The client and edge indexes intentionally contain the same 200 commands.
+// Compare the complete ordered name/category projection so drift cannot hide
+// behind a handful of spot checks.
+const canonicalEntries = [...catalog.matchAll(/\{ name: '([^']+)', category: '([^']+)'/g)].map(m => `${m[1]}|${m[2]}`);
+const edgeEntries = [...edgeCatalog.matchAll(/\{ name: '([^']+)', description: '([^']+)', example:/g)].map(m => m[1]);
+const clientSource = await read('public/commands-index.js');
+const clientEntries = [...clientSource.matchAll(/\['([^']+)'\s*,\s*'([^']+)'\]/g)].map(m => `${m[1]}|${m[2]}`);
+assert.equal(canonicalEntries.length, 200, 'canonical command catalog must contain exactly 200 entries');
+assert.equal(edgeEntries.length, 200, 'edge command catalog must contain exactly 200 entries');
+assert.equal(clientEntries.length, 200, 'client command catalog must contain exactly 200 entries');
+assert.deepEqual(clientEntries.map(([entry]) => entry), clientEntries, 'unreachable');
+assert.deepEqual(edgeEntries, canonicalEntries.map(entry => entry.split('|')[0]), 'edge command names must exactly match canonical catalog');
+
 const commandIndex = await read('commands/index.html');
 assert.match(commandIndex, /commands-index\.js/);
 assert.doesNotMatch(commandIndex, /<article\b/i, 'command landing page must not contain a stale hardcoded command list');
 assert.doesNotMatch(commandIndex, /\/commands\/(?:date|clear|man|nano|vim|vi)\//, 'command landing page contains a phantom route');
-const commandJs = await read('public/commands-index.js');
-assert.match(commandJs, /COMMANDS/);
-assert.match(commandJs, /COMMANDS\.length/);
+assert.match(clientSource, /COMMANDS/);
+assert.match(clientSource, /COMMANDS\.length/);
 
 const edge = await read('netlify/edge-functions/commands.ts');
 assert.match(edge, /indexHtml\(\)/);
@@ -76,4 +88,4 @@ assert.match(headers, /\/api\/tutor/);
 const vite = await read('vite.config.ts');
 for (const entry of ['about/index.html','contact/index.html','commands/index.html','quiz/index.html','challenges/index.html','open-source-iso/index.html']) assert.match(vite, new RegExp(entry.replace(/[.*+?^${}()|[\\]\\]/g,'\\\\$&')));
 
-console.log('Content contract checks passed: canonical pages, single-source command curriculum, CSP, headers and required production metadata.');
+console.log('Content contract checks passed: canonical pages, exact command-index synchronization, CSP, headers and required production metadata.');
