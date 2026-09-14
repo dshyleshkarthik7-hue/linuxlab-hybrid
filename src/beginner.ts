@@ -32,6 +32,20 @@ async function run(value: string) {
   }
 }
 
+function showLoginPrompt() {
+  if (tutorStatus) tutorStatus.textContent = 'Sign in required';
+  if (tutorOutput) {
+    tutorOutput.textContent = '';
+    const message = document.createElement('span');
+    message.textContent = 'Tutor access requires a Netlify Identity account. ';
+    const link = document.createElement('a');
+    link.href = '../login/';
+    link.textContent = 'Sign in or create an account';
+    link.className = 'tutor-login-link';
+    tutorOutput.append(message, link);
+  }
+}
+
 async function askTutor() {
   const question = tutorQuestion?.value.trim() || '';
   if (!question || !tutorOutput || !tutorAsk) return;
@@ -52,9 +66,14 @@ async function askTutor() {
     const response = await fetch('/api/tutor', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
+      credentials: 'same-origin',
       body: JSON.stringify({ question, context }),
     });
     const data: unknown = await response.json();
+    if (response.status === 401) {
+      showLoginPrompt();
+      return;
+    }
     if (!response.ok || !data || typeof data !== 'object' || !('answer' in data)) {
       throw new Error('Tutor request failed.');
     }
