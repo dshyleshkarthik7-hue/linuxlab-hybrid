@@ -3,7 +3,7 @@ const commands=['pwd','ls','cd','mkdir','touch','cat','cp','mv','rm','find','ech
 const questions=[];
 const forms=[
  c=>({q:`What is a primary learning goal for \\`${c}\\`?`,a:'understand its syntax, output and exit status'}),
- c=>({q:`Which command should you practice for this question?`,a:c}),
+ (c,i)=>({q:'Which command should you practice for this question?',a:c,d:[commands[(i+1)%commands.length],commands[(i+7)%commands.length],commands[(i+13)%commands.length]]}),
  c=>({q:`What should you inspect after running \\`${c}\\`?`,a:'stdout, stderr and the exit status'}),
  c=>({q:`Where should a beginner safely practice \\`${c}\\` in LinuxTerminal?`,a:'the browser simulator'}),
  c=>({q:`Which option is a good learning method for \\`${c}\\`?`,a:'predict, run, inspect, then explain the result'}),
@@ -13,11 +13,11 @@ const forms=[
  c=>({q:`What should you avoid assuming about simulator results for \\`${c}\\`?`,a:'that simulated kernel or network behavior is identical to a host Linux system'}),
  c=>({q:`After mastering \\`${c}\\`, what is a useful next step?`,a:'combine it with another command and verify the pipeline or conditional'})
 ];
-for(const c of commands)for(const make of forms){const x=make(c);questions.push({...x,command:c});}
+for(let i=0;i<commands.length;i++)for(const make of forms){const x=make(commands[i],i);questions.push({...x,command:commands[i]});}
 let index=0,score=0,answered=false;
 const qEl=document.getElementById('question'),oEl=document.getElementById('options'),fEl=document.getElementById('feedback'),nEl=document.getElementById('next'),pEl=document.getElementById('progress'),sEl=document.getElementById('score'),cEl=document.getElementById('context');
 function shuffle(a){return a.sort(()=>Math.random()-.5)}
-function render(){answered=false;const x=questions[index];pEl.textContent=`Question ${index+1} / ${questions.length}`;sEl.textContent=`Score: ${score}`;qEl.textContent=x.q;cEl.textContent=`Focus command: ${x.command}`;oEl.replaceChildren();fEl.textContent='';nEl.hidden=true;const pool=[x.a,'stdout, stderr and the exit status','the browser simulator','predict, run, inspect, then explain the result','the command reported a failure','start with a small example and change one input at a time','the command, output, error, history and current context','that simulated kernel or network behavior is identical to a host Linux system','combine it with another command and verify the pipeline or conditional'];const opts=shuffle([x.a,...shuffle([...new Set(pool.filter(v=>v!==x.a))]).slice(0,3)]);for(const opt of opts){const b=document.createElement('button');b.className='option';b.textContent=opt;b.onclick=()=>answer(b,opt,x.a);oEl.appendChild(b)}}
+function render(){answered=false;const x=questions[index];pEl.textContent=`Question ${index+1} / ${questions.length}`;sEl.textContent=`Score: ${score}`;qEl.textContent=x.q;cEl.textContent=`Focus command: ${x.command}`;oEl.replaceChildren();fEl.textContent='';nEl.hidden=true;const pool=x.d||[x.a,'stdout, stderr and the exit status','the browser simulator','predict, run, inspect, then explain the result','the command reported a failure','start with a small example and change one input at a time','the command, output, error, history and current context','that simulated kernel or network behavior is identical to a host Linux system','combine it with another command and verify the pipeline or conditional'];const opts=shuffle([x.a,...shuffle([...new Set(pool.filter(v=>v!==x.a))]).slice(0,3)]);for(const opt of opts){const b=document.createElement('button');b.className='option';b.type='button';b.textContent=opt;b.onclick=()=>answer(b,opt,x.a);oEl.appendChild(b)}}
 function answer(button,opt,correct){if(answered)return;answered=true;for(const b of oEl.children)b.disabled=true;if(opt===correct){button.classList.add('correct');score++;fEl.textContent='✓ Correct.'}else{button.classList.add('wrong');fEl.textContent=`Not quite. Correct answer: ${correct}`}sEl.textContent=`Score: ${score}`;nEl.hidden=false}
 nEl.onclick=()=>{if(index<questions.length-1){index++;render()}else{qEl.textContent='Quiz complete';cEl.textContent='';oEl.replaceChildren();fEl.textContent=`Final score: ${score} / ${questions.length}.`;nEl.hidden=true}};
 document.getElementById('reset').onclick=()=>{index=0;score=0;render()};render();
