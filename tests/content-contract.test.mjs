@@ -18,8 +18,8 @@ for (const command of commandNames) {
 }
 
 // The client and edge indexes intentionally contain the same 200 commands.
-// Compare the complete ordered name/category projection so drift cannot hide
-// behind a handful of spot checks.
+// Compare the complete ordered projection so drift cannot hide behind a
+// handful of spot checks.
 const canonicalEntries = [...catalog.matchAll(/\{ name: '([^']+)', category: '([^']+)'/g)].map(m => `${m[1]}|${m[2]}`);
 const edgeEntries = [...edgeCatalog.matchAll(/\{ name: '([^']+)', description: '([^']+)', example:/g)].map(m => m[1]);
 const clientSource = await read('public/commands-index.js');
@@ -27,7 +27,7 @@ const clientEntries = [...clientSource.matchAll(/\['([^']+)'\s*,\s*'([^']+)'\]/g
 assert.equal(canonicalEntries.length, 200, 'canonical command catalog must contain exactly 200 entries');
 assert.equal(edgeEntries.length, 200, 'edge command catalog must contain exactly 200 entries');
 assert.equal(clientEntries.length, 200, 'client command catalog must contain exactly 200 entries');
-assert.deepEqual(clientEntries.map(([entry]) => entry), clientEntries, 'unreachable');
+assert.deepEqual(clientEntries, canonicalEntries, 'client command index must exactly match canonical catalog');
 assert.deepEqual(edgeEntries, canonicalEntries.map(entry => entry.split('|')[0]), 'edge command names must exactly match canonical catalog');
 
 const commandIndex = await read('commands/index.html');
