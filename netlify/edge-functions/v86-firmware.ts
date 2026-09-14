@@ -17,7 +17,8 @@ async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
 }
 
 export default async function handler(request: Request): Promise<Response> {
-  const asset = ASSETS[new URL(request.url).pathname];
+  const pathname = new URL(request.url).pathname;
+  const asset = ASSETS[pathname.replace(/^\/api\/v86-firmware/, '')];
   if (!asset) return new Response('Not found', { status: 404 });
   if (request.method !== 'GET' && request.method !== 'HEAD') {
     return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
@@ -41,7 +42,7 @@ export default async function handler(request: Request): Promise<Response> {
     });
     return request.method === 'HEAD' ? new Response(null, { status: 200, headers }) : new Response(bytes, { status: 200, headers });
   } catch (error) {
-    console.error(`v86 firmware verification failed for ${new URL(request.url).pathname}: ${error instanceof Error ? error.message : String(error)}`);
+    console.error(`v86 firmware verification failed for ${pathname}: ${error instanceof Error ? error.message : String(error)}`);
     return new Response('Verified firmware asset unavailable', { status: 502 });
   }
 }
