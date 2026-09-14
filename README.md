@@ -96,7 +96,7 @@ Browser smoke testing uses the pinned `playwright@1.56.0` development dependency
 
 ### ISO integrity
 
-Each VM profile has a pinned SHA-256 digest and exact expected byte size. The browser verifies the complete response before accepting an ISO. The server-side relay also validates the requested artifact against the corresponding GitHub release manifest, including asset name, release digest, and size, before streaming it. The relay does not calculate a second streaming SHA-256 over the response body, so the browser's complete-artifact verification remains the final acceptance check.
+Each VM profile has a pinned SHA-256 digest and exact expected byte size. The browser verifies the complete response before accepting an ISO. The server-side relay validates the requested artifact against the corresponding GitHub release manifest, including asset name, release digest, and size, before streaming it. The relay deliberately does not claim that it has independently hashed the streamed body; the browser's complete-artifact SHA-256 verification is the final acceptance check.
 
 Verified artifacts are cached in memory for the active page and in IndexedDB across browser sessions. Persistent cache entries are re-verified against the pinned digest and size before reuse; failed or unavailable cache operations fall back to a fresh verified download.
 
@@ -115,11 +115,17 @@ Only use an ISO when its SHA-256 matches the checksum published by the release o
 
 ### Resource-policy boundary
 
-Engine A resource limits are enforced by the simulator itself. Real-Linux browser limits are defense-in-depth controls around the v86 lifecycle and guest-visible configuration; they are **not** a host-kernel security boundary. A modified client can bypass browser-side policy, and browser-emulated guests must not be treated as equivalent to a dedicated VM or container isolation boundary. Production claims must therefore remain contingent on the runtime isolation tests and deployment controls passing.
+Engine A resource limits are enforced by the simulator itself. Real-Linux browser controls are defense-in-depth lifecycle controls; they are **not a host-kernel security boundary**. The browser allocates a bounded v86 memory configuration, disables guest networking, limits session duration, serial traffic, command/output handling, and pipeline depth, and fails closed when guest telemetry is missing, stale, non-monotonic, future-dated, malformed, or over a configured observed limit.
+
+Guest CPU, process-count, filesystem, and guest-memory telemetry remain **untrusted observations**. A guest can potentially stop reporting or falsify them. These observations must never be described as host-enforced CPU/process/filesystem isolation. A modified client can bypass browser-side policy, and browser-emulated guests must not be treated as equivalent to a dedicated VM, container, or server-side sandbox.
+
+Guest identity is **detected**, not cryptographically proven, from guest output. ISO integrity is established separately by pinned artifact metadata plus complete browser-side SHA-256 verification.
+
+Production security status remains **BLOCKED** until a real server-side or otherwise independently enforced guest CPU/process/filesystem isolation mechanism is introduced and validated with adversarial host-impact tests. Tightening browser telemetry policy improves fail-closed monitoring but does not create that missing isolation boundary.
 
 ### Reset and saved data
 
-A sandbox reset starts a fresh in-memory learning environment. Saved learning records are browser-local and are separate from a sandbox reset. Use the site's saved-data controls when you want to remove persistent learning records.
+A sandbox reset starts a fresh in-memory learning environment. Saved learning records are browser-local and are separate from a sandbox reset. The storage layer bounds workspace content, command history, session records, and quiz answers to prevent unbounded browser-local growth. Use the site's saved-data controls when you want to remove persistent learning records.
 
 ## SEO
 
