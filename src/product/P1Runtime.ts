@@ -1,5 +1,6 @@
 import { StructuredLinuxEngine } from '../engine/StructuredLinuxEngine.ts';
 import type { CommandResult } from '../engine/CommandResult.ts';
+import type { VirtualNode } from '../engine/LinuxEngine.ts';
 import { LinuxObservatory } from '../observability/LinuxObservatory.ts';
 import { COMMAND_LESSONS, type LinuxCommandLesson } from '../commands/commandCatalog.ts';
 import { ALPINE_ARTIFACT, type PinnedArtifact } from '../core/ISOIntegrity.ts';
@@ -87,9 +88,9 @@ export class P1Runtime {
   getLevel(): LearningLevel { return this.level; }
   async execute(commandLine: string): Promise<{ result: CommandResult; tutorContext: TutorContext }> { const result = await this.engine.executeResult(commandLine); return { result, tutorContext: this.tutor.build(this.level, commandLine, result, this.engine.getCwd(), this.filesystemSnapshot()) }; }
   private filesystemSnapshot(limit = 40): string[] {
-    const root = (this.engine as any).root as { type: string; name: string; children?: Map<string, any> };
+    const root = this.engine.root;
     const out: string[] = [];
-    const walk = (node: any, path: string): void => {
+    const walk = (node: VirtualNode, path: string): void => {
       if (out.length >= limit) return;
       if (path !== '/') out.push(path + (node.type === 'dir' ? '/' : ''));
       if (node.type === 'dir' && node.children) for (const [name, child] of node.children) walk(child, path === '/' ? '/' + name : path + '/' + name);
