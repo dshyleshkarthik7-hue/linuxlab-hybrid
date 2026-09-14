@@ -38,6 +38,8 @@ jobs:
       - run: npm run test:ci
       - run: npm run test:smoke
       - name: Real guest isolation gate
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
         run: npm run test:real-guest
       - run: npm run test:mobile
       - run: node tests/p2-p3-contract.test.mjs
