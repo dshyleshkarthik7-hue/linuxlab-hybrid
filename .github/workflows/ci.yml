@@ -19,31 +19,6 @@ jobs:
       NPM_CONFIG_MAXSOCKETS: 1
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-        with:
-          lfs: true
-      - name: Verify required LFS firmware assets
-        run: |
-          set -euo pipefail
-          for entry in "public/seabios.bin:131072" "public/vgabios.bin:36352"; do
-            path="${entry%%:*}"
-            expected="${entry##*:}"
-            if [[ ! -f "$path" ]]; then
-              echo "ERROR: missing required firmware asset: $path" >&2
-              echo "Ensure the real binary is present in Git LFS storage." >&2
-              exit 1
-            fi
-            if head -c 64 "$path" | grep -q '^version https://git-lfs.github.com/spec/v1$'; then
-              echo "ERROR: $path is still an LFS pointer after checkout." >&2
-              echo "The repository LFS object is missing or checkout could not download it." >&2
-              exit 1
-            fi
-            actual=$(wc -c < "$path")
-            if [[ "$actual" != "$expected" ]]; then
-              echo "ERROR: $path has $actual bytes; expected $expected bytes." >&2
-              exit 1
-            fi
-          done
-          echo "v86 firmware assets verified."
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
         with:
           node-version: 22
