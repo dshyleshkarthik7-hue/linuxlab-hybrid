@@ -12,32 +12,19 @@ const tutorHistory: string[] = [];
 
 type IdentityUser = { email?: string; jwt?: () => Promise<string> };
 type NetlifyIdentity = { currentUser: () => IdentityUser | null; on: (event: string, callback: (user?: IdentityUser) => void) => void; open: (mode?: string) => void };
-declare global { interface Window { netlifyIdentity?: NetlifyIdentity } }
+type IdentityWindow = Window & { netlifyIdentity?: NetlifyIdentity };
 
 function write(text: string, cls = '') { if (!output) return; const line = document.createElement('div'); line.className = cls; line.textContent = text; output.appendChild(line); output.scrollTop = output.scrollHeight; }
 function showLoginPrompt() { if (tutorStatus) tutorStatus.textContent = 'Sign in required'; if (tutorOutput) { tutorOutput.textContent = ''; const message = document.createElement('span'); message.textContent = 'Tutor access requires a Netlify Identity account. '; const link = document.createElement('a'); link.href = '../login/'; link.textContent = 'Sign in or create an account'; link.className = 'tutor-login-link'; tutorOutput.append(message, link); } }
 async function run(value: string) { const command = value.trim(); if (!command) return; write(`learner@linuxterminal:~$ ${command}`, 'cmd'); if (input) input.value = ''; try { const result = await engine.execute(command); if (result) write(result); } catch (error) { write(error instanceof Error ? error.message : 'Command failed.', 'err'); } }
-async function tutorToken(): Promise<string | null> { const user = window.netlifyIdentity?.currentUser(); if (!user || typeof user.jwt !== 'function') return null; try { return await user.jwt(); } catch { return null; } }
-async function askTutor() {
-  const question = tutorQuestion?.value.trim() || ''; if (!question || !tutorOutput || !tutorAsk) return;
-  const token = await tutorToken(); if (!token) { showLoginPrompt(); return; }
-  tutorAsk.disabled = true; if (tutorStatus) tutorStatus.textContent = 'Thinking…'; tutorOutput.textContent = 'The LinuxTerminal Tutor is reading your learning context…';
-  const recentOutput = output?.innerText.slice(-4500) || '';
-  const context = ['Product: LinuxTerminal.me','Mode: browser learning simulator (not a real Linux kernel)',`Current command input: ${input?.value || '(empty)'}`,`Recent terminal output:\n${recentOutput || '(none)'}`,`Recent Tutor questions:\n${tutorHistory.slice(-3).join('\n') || '(none)'}`].join('\n\n');
-  try {
-    const response = await fetch('/api/tutor', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` }, credentials: 'same-origin', body: JSON.stringify({ question, context }) });
-    const data: unknown = await response.json(); if (response.status === 401) { showLoginPrompt(); return; }
-    if (!response.ok || !data || typeof data !== 'object' || !('answer' in data)) throw new Error('Tutor request failed.');
-    const answer = String((data as { answer: unknown }).answer || 'No Tutor response was returned.'); tutorOutput.textContent = answer; tutorHistory.push(`Q: ${question}\nA: ${answer}`); if (tutorStatus) tutorStatus.textContent = 'Ready';
-  } catch (error) { tutorOutput.textContent = error instanceof Error ? error.message : 'Tutor is temporarily unavailable. Try the built-in command hints below.'; if (tutorStatus) tutorStatus.textContent = 'Fallback available'; }
-  finally { tutorAsk.disabled = false; }
-}
+async function tutorToken(): Promise<string | null> { const user = (window as IdentityWindow).netlifyIdentity?.currentUser(); if (!user || typeof user.jwt !== 'function') return null; try { return await user.jwt(); } catch { return null; } }
+async function askTutor() { const question = tutorQuestion?.value.trim() || ''; if (!question || !tutorOutput || !tutorAsk) return; const token = await tutorToken(); if (!token) { showLoginPrompt(); return; } tutorAsk.disabled = true; if (tutorStatus) tutorStatus.textContent = 'Thinking…'; tutorOutput.textContent = 'The LinuxTerminal Tutor is reading your learning context…'; const recentOutput = output?.innerText.slice(-4500) || ''; const context = ['Product: LinuxTerminal.me','Mode: browser learning simulator (not a real Linux kernel)',`Current command input: ${input?.value || '(empty)'}`,`Recent terminal output:\n${recentOutput || '(none)'}`,`Recent Tutor questions:\n${tutorHistory.slice(-3).join('\n') || '(none)'}`].join('\n\n'); try { const response = await fetch('/api/tutor', { method: 'POST', headers: { 'content-type': 'application/json', authorization: `Bearer ${token}` }, credentials: 'same-origin', body: JSON.stringify({ question, context }) }); const data: unknown = await response.json(); if (response.status === 401) { showLoginPrompt(); return; } if (!response.ok || !data || typeof data !== 'object' || !('answer' in data)) throw new Error('Tutor request failed.'); const answer = String((data as { answer: unknown }).answer || 'No Tutor response was returned.'); tutorOutput.textContent = answer; tutorHistory.push(`Q: ${question}\nA: ${answer}`); if (tutorStatus) tutorStatus.textContent = 'Ready'; } catch (error) { tutorOutput.textContent = error instanceof Error ? error.message : 'Tutor is temporarily unavailable. Try the built-in command hints below.'; if (tutorStatus) tutorStatus.textContent = 'Fallback available'; } finally { tutorAsk.disabled = false; } }
 form?.addEventListener('submit', event => { event.preventDefault(); void run(input?.value || ''); });
 tutorAsk?.addEventListener('click', () => { void askTutor(); });
 tutorQuestion?.addEventListener('keydown', event => { if ((event.ctrlKey || event.metaKey) && event.key === 'Enter') { event.preventDefault(); void askTutor(); } });
 document.querySelector('#reset')?.addEventListener('click', () => location.reload());
 document.querySelectorAll<HTMLButtonElement>('[data-command]').forEach(button => button.addEventListener('click', () => { const command = button.dataset.command || ''; if (input) { input.value = command; input.focus(); } void run(command); }));
-window.addEventListener('load', () => { const identity = window.netlifyIdentity; if (!identity) return; identity.on('logout', () => { if (tutorStatus) tutorStatus.textContent = 'Signed out'; }); identity.on('login', () => { if (tutorStatus) tutorStatus.textContent = 'Signed in'; }); });
+window.addEventListener('load', () => { const identity = (window as IdentityWindow).netlifyIdentity; if (!identity) return; identity.on('logout', () => { if (tutorStatus) tutorStatus.textContent = 'Signed out'; }); identity.on('login', () => { if (tutorStatus) tutorStatus.textContent = 'Signed in'; }); });
 write('⚡  Welcome to LinuxTerminal.me — the LinuxTerminal Learning Sandbox.');
 write('This workspace is simulated for learning. Use Real Linux above when you want genuine kernel behavior.');
 write('Try "help", "ls -la", "cd /tmp", "mkdir practice", or "pwd". Ask the AI Tutor whenever you get stuck.');
