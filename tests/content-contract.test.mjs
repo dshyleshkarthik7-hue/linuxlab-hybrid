@@ -52,13 +52,13 @@ for (const page of ['index.html','beginner/index.html','intermediate/index.html'
 for (const duplicate of ['about','contact','challenges','commands','quiz','open-source-iso']) {
   assert.equal(await exists(`public/${duplicate}/index.html`), false, `public/${duplicate}/index.html duplicates a root page`);
 }
-assert.equal(await exists('public/_headers'), false, 'security headers must have one source of truth');
 assert.equal(await exists('public/developer.html'), false, 'orphan developer page must not ship');
 assert.equal(await exists('public/session.js'), false, 'dead session feature must not ship');
 assert.equal(await exists('public/linux-cd-command/index.html'), false, 'stale orphan SEO page must not ship');
 assert.equal(await exists('public/linux-ls-command/index.html'), false, 'stale orphan SEO page must not ship');
-assert.equal(await exists('robots.txt'), false, 'root robots.txt must not duplicate public/robots.txt');
-assert.equal(await exists('sitemap.xml'), false, 'root sitemap.xml must not duplicate public/sitemap.xml');
+assert.equal(await exists('robots.txt'), true, 'root robots.txt is required by the production contract');
+assert.equal(await exists('sitemap.xml'), true, 'root sitemap.xml is required by the production contract');
+assert.equal(await exists('public/_headers'), true, 'public/_headers is required by the production contract');
 
 const publicEntries = await readdir(join(root, 'public'), { withFileTypes: true });
 for (const entry of publicEntries.filter(e => e.isDirectory())) {
@@ -76,4 +76,4 @@ assert.match(headers, /\/api\/tutor/);
 const vite = await read('vite.config.ts');
 for (const entry of ['about/index.html','contact/index.html','commands/index.html','quiz/index.html','challenges/index.html','open-source-iso/index.html']) assert.match(vite, new RegExp(entry.replace(/[.*+?^${}()|[\\]\\]/g,'\\\\$&')));
 
-console.log('Content contract checks passed: canonical pages, single-source command curriculum, CSP, headers and no duplicate/orphan public pages.');
+console.log('Content contract checks passed: canonical pages, single-source command curriculum, CSP, headers and required production metadata.');
