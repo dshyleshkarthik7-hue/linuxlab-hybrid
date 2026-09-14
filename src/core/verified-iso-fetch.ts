@@ -1,99 +1,11 @@
 import { verifyResponse, verifyArtifact, ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT, type PinnedArtifact } from './ISOIntegrity.ts';
-
-const memoryCache = new Map<string, ArrayBuffer>();
-const inFlight = new Map<string, Promise<ArrayBuffer>>();
-const ISO_FETCH_TIMEOUT_MS = 90_000;
-const IDB_NAME = 'LinuxLab_ISO_Cache';
-const IDB_VERSION = 1;
-const IDB_STORE = 'artifacts';
-
-type CachedIso = { url: string; sha256: string; size: number; bytes: ArrayBuffer; storedAt: number };
-
-export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
-  const url = new URL(rawUrl, window.location.origin);
-  const image = url.searchParams.get('image');
-  if (url.pathname !== '/api/iso') throw new Error(`Untrusted ISO endpoint: ${url.origin}${url.pathname}`);
-  if (image === 'virt') return ALPINE_ARTIFACT;
-  if (image === 'linux4') return LINUX4_ARTIFACT;
-  if (image === null) return DEVELOPER_ALPINE_ARTIFACT;
-  throw new Error(`Unknown ISO profile: ${image}`);
-}
-
-function openCache(): Promise<IDBDatabase> {
-  return new Promise((resolve, reject) => {
-    if (!('indexedDB' in window)) { reject(new Error('IndexedDB is unavailable')); return; }
-    const request = indexedDB.open(IDB_NAME, IDB_VERSION);
-    request.onupgradeneeded = () => {
-      const db = request.result;
-      if (!db.objectStoreNames.contains(IDB_STORE)) db.createObjectStore(IDB_STORE, { keyPath: 'url' });
-    };
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error ?? new Error('Failed to open ISO cache'));
-  });
-}
-
-async function readPersistent(url: string, artifact: PinnedArtifact): Promise<ArrayBuffer | null> {
-  try {
-    const db = await openCache();
-    const record = await new Promise<CachedIso | undefined>((resolve, reject) => {
-      const request = db.transaction(IDB_STORE, 'readonly').objectStore(IDB_STORE).get(url);
-      request.onsuccess = () => resolve(request.result as CachedIso | undefined);
-      request.onerror = () => reject(request.error);
-    });
-    db.close();
-    if (!record || record.sha256.toLowerCase() !== artifact.sha256.toLowerCase() || record.size !== artifact.size) return null;
-    await verifyArtifact(record.bytes, artifact);
-    return record.bytes.slice(0);
-  } catch { return null; }
-}
-
-async function writePersistent(url: string, artifact: PinnedArtifact, bytes: ArrayBuffer): Promise<void> {
-  try {
-    const db = await openCache();
-    await new Promise<void>((resolve, reject) => {
-      const tx = db.transaction(IDB_STORE, 'readwrite');
-      tx.objectStore(IDB_STORE).put({ url, sha256: artifact.sha256, size: artifact.size, bytes: bytes.slice(0), storedAt: Date.now() } satisfies CachedIso);
-      tx.oncomplete = () => resolve();
-      tx.onerror = () => reject(tx.error ?? new Error('ISO cache write failed'));
-      tx.onabort = () => reject(tx.error ?? new Error('ISO cache write aborted'));
-    });
-    db.close();
-  } catch { /* Cache is an optimization; verified network delivery remains authoritative. */ }
-}
-
-export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Promise<ArrayBuffer> {
-  const url = new URL(rawUrl, window.location.origin);
-  if (url.origin !== window.location.origin) throw new Error('ISO endpoint must be same-origin');
-  const key = url.toString();
-  const artifact = artifactForIsoUrl(key);
-  const cached = memoryCache.get(key);
-  if (cached) { await verifyArtifact(cached, artifact); return cached.slice(0); }
-  const persistent = await readPersistent(key, artifact);
-  if (persistent) { memoryCache.set(key, persistent.slice(0)); return persistent.slice(0); }
-  const pending = inFlight.get(key);
-  if (pending) return pending.then(bytes => bytes.slice(0));
-  const promise = (async () => {
-    const timeout = AbortSignal.timeout(ISO_FETCH_TIMEOUT_MS);
-    const requestSignal = signal ? AbortSignal.any([signal, timeout]) : timeout;
-    const response = await fetch(key, { method: 'GET', cache: 'no-store', signal: requestSignal });
-    const bytes = await verifyResponse(response, artifact);
-    memoryCache.clear();
-    memoryCache.set(key, bytes.slice(0));
-    await writePersistent(key, artifact, bytes);
-    return bytes;
-  })();
-  inFlight.set(key, promise);
-  try { return (await promise).slice(0); } finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
-}
-
-export function clearVerifiedIsoCache(): void {
-  memoryCache.clear();
-  inFlight.clear();
-  void openCache().then(db => new Promise<void>(resolve => {
-    const tx = db.transaction(IDB_STORE, 'readwrite');
-    tx.objectStore(IDB_STORE).clear();
-    tx.oncomplete = () => { db.close(); resolve(); };
-    tx.onerror = () => { db.close(); resolve(); };
-    tx.onabort = () => { db.close(); resolve(); };
-  })).catch(() => undefined);
-}
+const memoryCache=new Map<string,ArrayBuffer>(),inFlight=new Map<string,Promise<ArrayBuffer>>(),ISO_FETCH_TIMEOUT_MS=90000,RANGE_CHUNK_BYTES=16*1024*1024,IDB_NAME='LinuxLab_ISO_Cache',IDB_VERSION=2,IDB_STORE='artifacts',MAX_PERSISTENT_CACHE_BYTES=768*1024*1024;
+type CachedIso={url:string;sha256:string;size:number;bytes:ArrayBuffer;storedAt:number};
+export function artifactForIsoUrl(rawUrl:string):PinnedArtifact{const url=new URL(rawUrl,window.location.origin),image=url.searchParams.get('image');if(url.pathname!=='/api/iso')throw new Error(`Untrusted ISO endpoint: ${url.origin}${url.pathname}`);if(image==='virt')return ALPINE_ARTIFACT;if(image==='linux4')return LINUX4_ARTIFACT;if(image===null)return DEVELOPER_ALPINE_ARTIFACT;throw new Error(`Unknown ISO profile: ${image}`)}
+function openCache():Promise<IDBDatabase>{return new Promise((resolve,reject)=>{if(!('indexedDB'in window)){reject(new Error('IndexedDB is unavailable'));return}const r=indexedDB.open(IDB_NAME,IDB_VERSION);r.onupgradeneeded=()=>{const db=r.result;if(!db.objectStoreNames.contains(IDB_STORE))db.createObjectStore(IDB_STORE,{keyPath:'url'})};r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error??new Error('Failed to open ISO cache'))})}
+async function readPersistent(url:string,a:PinnedArtifact):Promise<ArrayBuffer|null>{try{const db=await openCache();const record=await new Promise<CachedIso|undefined>((resolve,reject)=>{const r=db.transaction(IDB_STORE,'readonly').objectStore(IDB_STORE).get(url);r.onsuccess=()=>resolve(r.result as CachedIso|undefined);r.onerror=()=>reject(r.error)});db.close();if(!record||record.sha256.toLowerCase()!==a.sha256.toLowerCase()||record.size!==a.size)return null;await verifyArtifact(record.bytes,a);return record.bytes.slice(0)}catch{return null}}
+async function writePersistent(url:string,a:PinnedArtifact,bytes:ArrayBuffer){try{const db=await openCache();await new Promise<void>((resolve,reject)=>{const tx=db.transaction(IDB_STORE,'readwrite'),store=tx.objectStore(IDB_STORE),r=store.getAll();r.onsuccess=()=>{const records=(r.result as CachedIso[]).filter(x=>x.url!==url).sort((x,y)=>x.storedAt-y.storedAt);let total=records.reduce((s,x)=>s+(Number.isFinite(x.size)?x.size:x.bytes.byteLength),0);for(const x of records){if(total+bytes.byteLength<=MAX_PERSISTENT_CACHE_BYTES)break;store.delete(x.url);total-=x.size}if(bytes.byteLength<=MAX_PERSISTENT_CACHE_BYTES)store.put({url,sha256:a.sha256,size:a.size,bytes:bytes.slice(0),storedAt:Date.now()} satisfies CachedIso)};r.onerror=()=>reject(r.error??new Error('ISO cache read failed'));tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error??new Error('ISO cache write failed'));tx.onabort=()=>reject(tx.error??new Error('ISO cache write aborted'))});db.close()}catch{}}
+async function fetchRange(url:string,start:number,end:number,a:PinnedArtifact,signal:AbortSignal){for(let attempt=0;attempt<3;attempt++){const r=await fetch(url,{headers:{Range:`bytes=${start}-${end}`},cache:'no-store',signal});if(r.status===206){if(r.headers.get('content-range')!==`bytes ${start}-${end}/${a.size}`)throw new Error('ISO range integrity metadata mismatch');const b=await r.arrayBuffer();if(b.byteLength!==end-start+1)throw new Error('ISO range size mismatch');return b}if(r.status===416)throw new Error('ISO range rejected');if(attempt===2)throw new Error(`ISO range request failed (${r.status})`)}throw new Error('ISO range request failed')}
+async function fetchIsoResumable(url:string,a:PinnedArtifact,signal:AbortSignal){const chunks:ArrayBuffer[]=[];for(let s=0;s<a.size;s+=RANGE_CHUNK_BYTES)chunks.push(await fetchRange(url,s,Math.min(a.size-1,s+RANGE_CHUNK_BYTES-1),a,signal));const bytes=new Uint8Array(a.size);let o=0;for(const c of chunks){bytes.set(new Uint8Array(c),o);o+=c.byteLength}return bytes.buffer}
+export async function fetchVerifiedIso(rawUrl:string,signal?:AbortSignal):Promise<ArrayBuffer>{const url=new URL(rawUrl,window.location.origin);if(url.origin!==window.location.origin)throw new Error('ISO endpoint must be same-origin');const key=url.toString(),a=artifactForIsoUrl(key);const cached=memoryCache.get(key);if(cached){await verifyArtifact(cached,a);return cached.slice(0)}const persistent=await readPersistent(key,a);if(persistent){memoryCache.set(key,persistent.slice(0));return persistent.slice(0)}const pending=inFlight.get(key);if(pending)return pending.then(b=>b.slice(0));const promise=(async()=>{const timeout=AbortSignal.timeout(ISO_FETCH_TIMEOUT_MS),requestSignal=signal?AbortSignal.any([signal,timeout]):timeout;let bytes:ArrayBuffer;try{const r=await fetch(key,{method:'GET',cache:'no-store',signal:requestSignal});bytes=await verifyResponse(r,a)}catch{bytes=await fetchIsoResumable(key,a,requestSignal)}await verifyArtifact(bytes,a);memoryCache.clear();memoryCache.set(key,bytes.slice(0));await writePersistent(key,a,bytes);return bytes})();inFlight.set(key,promise);try{return(await promise).slice(0)}finally{if(inFlight.get(key)===promise)inFlight.delete(key)}}
+export function clearVerifiedIsoCache(){memoryCache.clear();inFlight.clear();void openCache().then(db=>new Promise<void>(resolve=>{const tx=db.transaction(IDB_STORE,'readwrite');tx.objectStore(IDB_STORE).clear();tx.oncomplete=()=>{db.close();resolve()};tx.onerror=()=>{db.close();resolve()};tx.onabort=()=>{db.close();resolve()}})).catch(()=>undefined)}
