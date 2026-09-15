@@ -10,9 +10,14 @@ const deployRetryCount = Number(process.env.PRODUCTION_SMOKE_RETRIES || 12);
 async function fetchWithTimeout(url) {
   let lastResponse;
   let lastError;
+  // Netlify/CDN responses can outlive a deployment briefly. A cache-busting
+  // query guarantees that this check validates the newly deployed build rather
+  // than an older cached HTML document.
+  const requestURL = new URL(url);
+  requestURL.searchParams.set('_production_smoke', Date.now().toString());
   for (let attempt = 0; attempt <= deployRetryCount; attempt += 1) {
     try {
-      const response = await fetch(url, {
+      const response = await fetch(requestURL, {
         redirect: 'error',
         signal: AbortSignal.timeout(timeoutMs),
       });
