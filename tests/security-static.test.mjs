@@ -17,7 +17,7 @@ assert.equal(/serial0_send/.test(telemetry), false, 'telemetry must not write to
 assert.match(runtime, /attachGuestTelemetry\s*\(\s*vm/);
 assert.match(runtime, /telemetryDispose\?\.\(\)/);
 assert.match(runtime, /acceptGuestIdentity\s*\(/);
-assert.match(runtime, /markReadyIfGuestIdentity\s*\(/);
+assert.match(runtime, /markReadyIfIdentityVerified\s*\(/);
 assert.match(runtime, /autostart:\s*false/);
 assert.match(runtime, /waitForV86Loaded\s*\(\s*vm\s*,\s*policy\.policy\.bootTimeoutMs\s*,\s*signal\s*\)/, 'v86 must wait for its emulator-loaded lifecycle event before run()');
 assert.ok(runtime.indexOf('waitForV86Loaded') < runtime.indexOf('vm.run?.()'), 'v86 readiness wait must occur before run()');
