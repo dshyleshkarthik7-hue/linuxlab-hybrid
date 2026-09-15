@@ -3,24 +3,33 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>100 Linux Challenges — LinuxTerminal</title>
-<meta name="description" content="Complete 100 practical Linux challenges with commands, files, text processing, system concepts and safe browser practice.">
-<meta name="keywords" content="Linux challenges,Linux practice challenges,learn Linux,LinuxTerminal">
-<meta name="author" content="Shylesh Karthik Dinavahi">
+<title>100 Linux Challenges — Practice Linux Commands | LinuxTerminal.me</title>
+<meta name="description" content="Practice 100 Linux challenges covering navigation, files, text processing, search and shell fundamentals. Track completion locally and practice safely in the browser.">
+<meta name="keywords" content="Linux challenges,Linux practice,Linux command challenges,Linux exercises,Linux terminal practice,learn Linux by doing">
+<meta name="author" content="LinuxTerminal.me">
 <meta name="robots" content="index,follow,max-image-preview:large">
 <link rel="canonical" href="https://linuxterminal.me/challenges/">
-<meta property="og:title" content="100 Linux Challenges | LinuxTerminal">
-<meta property="og:description" content="Practice Linux with 100 deterministic, checkable challenges.">
+<meta property="og:title" content="100 Linux Challenges | LinuxTerminal.me">
+<meta property="og:description" content="Practice 100 practical Linux challenges with clear tasks and local progress tracking.">
 <meta property="og:type" content="website">
 <meta property="og:url" content="https://linuxterminal.me/challenges/">
 <link rel="stylesheet" href="/challenges/challenges.css">
 </head>
 <body>
 <main>
-<nav><a href="/">&gt;_ LinuxTerminal</a><a href="/commands/">Commands</a><a href="/quiz/">500 quiz</a><a href="/about/">About</a></nav>
+<nav aria-label="Primary navigation"><a href="/">&gt;_ LinuxTerminal</a><a href="/commands/">Commands</a><a href="/quiz/">500 quiz</a><a href="/beginner/">Beginner</a><a href="/real-linux/">Real Linux</a><a href="/about/">About</a></nav>
+<header class="hero">
+<span class="eyebrow">PRACTICE • VERIFY • REPEAT</span>
 <h1>100 Linux challenges</h1>
-<p>Each core command has two challenges: a direct task and a reasoning task. The challenges are safe to practice in the browser simulator; network examples are explicitly demonstrations.</p>
-<section id="list" class="card" aria-label="Linux challenges"></section>
+<p>Two focused tasks for each of 50 core commands. Predict what will happen, practice safely, and mark the skill complete when you can explain the result.</p>
+<div class="stats"><strong id="completed-count">0 / 100 complete</strong><span>Progress is stored locally in this browser.</span></div>
+</header>
+<section class="toolbar card" aria-label="Challenge filters">
+<label for="challenge-search">Search</label><input id="challenge-search" type="search" placeholder="Search grep, files, navigation…" autocomplete="off">
+<label for="challenge-category">Category</label><select id="challenge-category"><option value="">All categories</option></select>
+<button id="clear-progress" class="btn secondary" type="button">Reset progress</button>
+</section>
+<section id="list" class="challenge-grid" aria-label="Linux challenges"></section>
 </main>
 <script src="/challenges/challenges.js" defer></script>
 </body>
