@@ -30,6 +30,7 @@ const nEl = document.querySelector<HTMLButtonElement>('#next');
 const pEl = document.querySelector<HTMLElement>('#progress');
 const sEl = document.querySelector<HTMLElement>('#score');
 const cEl = document.querySelector<HTMLElement>('#context');
+const rEl = document.querySelector<HTMLElement>('#result');
 
 if (questions.length !== 500) throw new Error(`Quiz configuration must contain exactly 500 questions; found ${questions.length}`);
 
@@ -52,6 +53,7 @@ function render(): void {
   qEl.textContent = question.q;
   cEl.textContent = `Focus command: ${question.command}`;
   fEl.textContent = '';
+  if (rEl) rEl.textContent = '';
   nEl.hidden = true;
   oEl.replaceChildren();
 
@@ -94,19 +96,24 @@ function answer(button: HTMLButtonElement, option: string, correct: string): voi
   nEl.hidden = false;
 }
 
+function finish(): void {
+  const percentage = Math.round((score / questions.length) * 10000) / 100;
+  const passed = score >= 400;
+  if (qEl) qEl.textContent = 'Assessment complete';
+  if (cEl) cEl.textContent = '';
+  if (oEl) oEl.replaceChildren();
+  if (fEl) fEl.textContent = '';
+  if (rEl) rEl.textContent = `Final score: ${score} / ${questions.length} • ${percentage.toFixed(2)}% • ${passed ? 'Learning pass mark reached' : 'Below the 80% learning pass mark'}.`;
+  if (nEl) nEl.hidden = true;
+}
+
 nEl?.addEventListener('click', () => {
   if (index < questions.length - 1) {
     index += 1;
     render();
     return;
   }
-  if (qEl && cEl && oEl && fEl && nEl) {
-    qEl.textContent = 'Quiz complete';
-    cEl.textContent = '';
-    oEl.replaceChildren();
-    fEl.textContent = `Final score: ${score} / ${questions.length}.`;
-    nEl.hidden = true;
-  }
+  finish();
 });
 
 document.querySelector<HTMLButtonElement>('#reset')?.addEventListener('click', () => {
