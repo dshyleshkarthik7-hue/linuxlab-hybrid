@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { Readable } from 'node:stream';
+
 const entry = (name: string) => fileURLToPath(new URL(`./${name}`, import.meta.url));
 
 const testIsoSources: Record<string, string> = {
@@ -61,12 +62,23 @@ export default defineConfig({
     },
     rollupOptions: {
       input: {
-        main: entry('index.html'), beginner: entry('beginner/index.html'), intermediate: entry('intermediate/index.html'), expert: entry('expert/index.html'),
-        simulator: entry('simulator.html'), v86: entry('index-v86.html'), linux4: entry('linux4.html'), about: entry('about/index.html'), contact: entry('contact/index.html'),
-        curriculum: entry('curriculum/index.html'), commands: entry('commands/index.html'), quiz: entry('quiz/index.html'), challenges: entry('challenges/index.html'),
+        main: entry('index.html'),
+        beginner: entry('beginner/index.html'),
+        intermediate: entry('intermediate/index.html'),
+        expert: entry('expert/index.html'),
+        simulator: entry('simulator.html'),
+        v86: entry('index-v86.html'),
+        linux4: entry('linux4.html'),
+        about: entry('about/index.html'),
+        contact: entry('contact/index.html'),
+        curriculum: entry('curriculum/index.html'),
+        commands: entry('commands/index.html'),
+        quiz: entry('quiz/index.html'),
+        challenges: entry('challenges/index.html'),
         iso: entry('open-source-iso/index.html'),
+        login: entry('login/index.html'),
       },
-      output: { manualChunks(id) { if (id.includes('monaco-editor')) return 'monaco'; if (id.includes('@xterm')) return 'xterm'; } }
-    }
-  }
+      output: { manualChunks(id) { if (id.includes('monaco-editor')) return 'monaco'; if (id.includes('@xterm')) return 'xterm'; } },
+    },
+  },
 });
