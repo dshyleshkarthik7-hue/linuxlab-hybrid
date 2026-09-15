@@ -1,73 +1,90 @@
 # LinuxTerminal
 
-A free, beginner-focused platform for learning Linux without requiring expensive hardware or a dedicated Linux computer.
+LinuxTerminal is a free, beginner-focused platform for learning Linux through explanations, tutorials, command references, safe browser practice, challenges, quizzes and an optional real Alpine Linux lab.
 
 ## Start learning
 
 - Homepage: https://linuxterminal.me/
-- Simulator: https://linuxterminal.me/simulator/
-- Real Alpine Linux: https://linuxterminal.me/real-linux/
+- Beginner path: https://linuxterminal.me/beginner/
+- Tutorials: https://linuxterminal.me/learn/
+- 200+ command reference: https://linuxterminal.me/commands/
+- 100 challenges: https://linuxterminal.me/challenges/
+- 500-question practice quiz: https://linuxterminal.me/quiz/
+- Free verified assessment and certificate: https://linuxterminal.me/certificate/
+- Public certificate verification: https://linuxterminal.me/verify/
+- Real Linux lab: https://linuxterminal.me/real-linux/
 
-## Three ways to learn
+## Why LinuxTerminal
 
-### Quick Preview
+Linux is used across servers, development, cloud infrastructure, automation, embedded systems and cybersecurity. LinuxTerminal teaches the command line first because command-line reasoning transfers across distributions and environments.
 
-A lightweight, simulated command preview on the homepage.
+LinuxTerminal combines crawlable lessons with safe practice: learn a concept, read a command lesson, predict stdout/stderr and exit status, run it, explain the result, then test yourself.
 
-### Engine A — Learning Simulator
+The simulator is an educational model and is not a full Linux kernel. The real browser lab uses temporary x86 Linux guests and should not be treated as a host-kernel security boundary. Never enter real passwords, API tokens or private keys into the browser lab.
 
-Practice Linux concepts safely:
+## Tutorials and command reference
 
-- `pwd`, `ls`, `cd`
-- files and directories
-- `cp`, `mv`, `rm`, `find`
-- pipes and output redirection (`>`, `>>`, `2>` and `2>>`)
-- `grep`, `sort`, `uniq`, `wc`
-- programming and command practice
+The site includes crawlable tutorials for Linux basics, navigation, files and directories, permissions, processes, shell scripting and text processing.
 
-This environment is an educational simulator, not a full Linux kernel. Its shell grammar is intentionally limited: conditional operators, sequences, pipelines, quoting, escaping, and output redirection are supported; input redirection, subshells, command substitution, background jobs, and heredocs are not.
+The canonical command catalog contains 200+ command lessons. Important command URLs include `/commands/cd/`, `/commands/pwd/`, `/commands/ls/`, `/commands/grep/`, `/commands/chmod/` and `/commands/gcc/`. The reference catalog is intentionally broader than the simulator's executable subset: a lesson does not imply that every command is emulated.
 
-### Engine B — Real Linux Lab
+## Challenges and quiz
 
-Run compatible 32-bit x86 Linux guests in the browser using a deployment-local, version-matched v86 browser bundle, WebAssembly and xterm.js. The emulator runtime is preflight-checked before a VM is created, and unsupported architectures are rejected instead of failing silently.
+There are 100 challenges across 50 core commands. Each command has a prediction/verification task and a reasoning task. Challenge progress is browser-local.
 
-Current browser VM profiles:
-- **Developer Alpine**: primary learning image, 1 GiB RAM
-- **Alpine Virt 3.24.1 Lightweight x86**: compatibility profile, 512 MiB RAM
-- **Ultra Light Linux 4**: approximately 7.4 MB release image, 256 MiB RAM
+The 500-question practice assessment contains command-specific questions about purpose, syntax, options, expected results, realistic failures, stdout, stderr, exit status and safe experimentation. Question order and answer choices are randomized for every session and reset. The practice score is not a credential.
 
-### Networking and package installation
+## Free verified Linux certificate
 
-The ISO download endpoint is a server-side **ISO relay only**. It does not by itself provide Internet access to the guest VM.
+The verified assessment is free. Sign-in is required so the server can bind an attempt to an account.
 
-Developer Alpine package installation (for example, `apk add`) works only when a guest-network backend is explicitly available and configured. The current browser VM must not claim arbitrary Internet access unless that path has been verified end-to-end. This service is not a VPN, anonymity service, privacy boundary, or guarantee of Internet access. Never enter passwords, tokens, private keys, or other sensitive information in the VM.
+1. The server creates a randomized exam attempt.
+2. The browser receives questions and submits answers, not a claimed score.
+3. The server grades the attempt and calculates the exact score.
+4. 80% or higher is required to pass.
+5. A passing result receives a unique certificate ID.
+6. The server signs and stores the certificate record in Upstash Redis.
+7. Anyone can verify the certificate ID publicly.
 
-The real-Linux page reports boot/runtime state separately from guest activity. Guest-reported CPU, memory, disk and other usage statistics are **UX indicators only**. They are not system-health proof, security status, or host resource enforcement signals.
+The certificate contains the exact score, percentage, issue date and assessment version. It is a **LinuxTerminal Certificate of Completion**, not an accredited professional certification.
 
-The 256 MiB figures shown by some Engine A `top`/`free` demonstrations are illustrative simulator data, not the RAM allocated to Engine B.
+Required Netlify environment variables for the verified certificate service:
 
-Real VM sessions are temporary. Do not enter real passwords, private keys, tokens, or sensitive information.
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `CERTIFICATE_SIGNING_SECRET`
 
-Alpine uses `apk` for package management (for example, `apk add python3`). `apt` is not the Alpine package manager.
+Never commit the signing secret or Upstash token.
 
-## Learning goal
+## AI Tutor
 
-LinuxTerminal is designed for learners who should not be blocked from practicing Linux because they lack hardware, money, or easy access to resources.
+The contextual AI Tutor is protected by Netlify Identity and the `/api/tutor` edge function. The default model is `Qwen/Qwen3-8B:nscale`; override it with `HF_MODEL` if needed. `HF_TOKEN` remains server-side.
 
-## Ways to use Linux
+Tutor rate limiting uses authenticated user plus trusted client identity in Upstash Redis and fails closed if the limiter is unavailable. If the model is unavailable, the service uses a deterministic educational fallback. Learner context is treated as untrusted data and cannot override system instructions.
 
-1. LinuxTerminal in the browser
-2. Oracle VM VirtualBox
-3. Dual boot
-4. Full installation
+Required Tutor variables:
 
-For beginners, a virtual machine is usually the safest next step.
+- `HF_TOKEN`
+- `HF_MODEL` (optional; defaults to `Qwen/Qwen3-8B:nscale`)
+- `UPSTASH_REDIS_REST_URL`
+- `UPSTASH_REDIS_REST_TOKEN`
+- `TUTOR_ALLOWED_ORIGINS` (optional)
+
+## Artifact integrity
+
+Linux VM artifacts are pinned to exact SHA-256 digests and byte sizes. The edge relay validates the requested artifact against the trusted release manifest, while the browser verifies the complete artifact before accepting it. Range requests are validated and resumable downloads do not require buffering the complete ISO in the edge function.
+
+## Networking and cybersecurity roadmap
+
+Networking and cybersecurity learning are planned as later extensions. The current project does not claim to be a complete networking or cybersecurity lab. Future material will remain educational, defensive and isolated from real-world targets.
+
+## SEO and crawlability
+
+The project publishes `robots.txt`, a sitemap, crawlable tutorials, dedicated command lessons, challenge and quiz pages, canonical URLs and page-specific descriptions. The sitemap is generated from the canonical command catalog so command URLs remain aligned with the reference.
 
 ## Development
 
-Requirements:
-- Node.js 22+
-- npm 10.8+
+Requirements: Node.js 22+ and npm 10.8+.
 
 ```bash
 git clone https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid.git
@@ -76,62 +93,21 @@ npm ci
 npm run dev
 ```
 
-Build:
+Build and tests:
 
 ```bash
 npm run build
-```
-
-Tests:
-
-```bash
 npm test
 npm run check
-npm run test:smoke
+npm run test:production -- https://linuxterminal.me
 ```
 
-Browser smoke testing uses the pinned `playwright@1.56.0` development dependency. The exact dependency graph is committed in `package-lock.json`, so CI and local development use `npm ci` for reproducible installs.
+CI also runs the quiz-quality and certificate-contract regression checks.
 
-`npm run check` runs the learning-engine regression checks followed by the TypeScript and production build checks used by CI.
+## Security boundary
 
-### ISO integrity
+Engine A limits are enforced by the simulator itself. Real-Linux browser controls are defense-in-depth lifecycle controls, not a host-kernel isolation boundary. Guest CPU, memory, process and filesystem telemetry is UX-only and is not used as proof of security or host resource enforcement.
 
-Each VM profile has a pinned SHA-256 digest and exact expected byte size. The browser verifies the complete response before accepting an ISO. The server-side relay validates the requested artifact against the corresponding GitHub release manifest, including asset name, release digest, and size, before streaming it. The relay deliberately does not claim that it has independently hashed the streamed body; the browser's complete-artifact SHA-256 verification is the final acceptance check.
+## License
 
-Verified artifacts are cached in memory for the active page and in IndexedDB across browser sessions. Persistent cache entries are re-verified against the pinned digest and size before reuse; failed or unavailable cache operations fall back to a fresh verified download.
-
-For release verification, treat the pinned release checksum as the source of truth and verify a downloaded ISO locally:
-
-```bash
-sha256sum linux4.iso
-```
-
-Only use an ISO when its SHA-256 matches the checksum published by the release owner. A fallback mirror must contain the same verified artifact; availability fallback is not a substitute for cryptographic verification.
-
-## Transparency
-
-- **Simulator:** educational model for safe practice. Commands that demonstrate networking, processes, memory, or disks are explicitly labelled **SIMULATED** and do not represent the learner's real machine or network.
-- **Real Alpine:** actual Linux guest running through browser x86 emulation. The guest is temporary and should be treated as an untrusted practice environment.
-
-### Resource-policy boundary
-
-Engine A resource limits are enforced by the simulator itself. Real-Linux browser controls are defense-in-depth lifecycle controls; they are **not a host-kernel security boundary**. The browser allocates a bounded v86 memory configuration, disables guest networking, limits session duration, serial traffic, command/output handling, and pipeline depth.
-
-Guest CPU, process-count, filesystem, and guest-memory telemetry are **untrusted, UX-only observations**. They may be displayed as guest-reported activity so learners can see whether a VM appears busy, idle, or laggy. They must not be used to establish that the VM is safe, healthy in a security sense, isolated, or within a host resource budget. The guest can stop reporting or falsify them. A modified client can bypass browser-side policy, and browser-emulated guests must not be treated as equivalent to a dedicated VM, container, or server-side sandbox.
-
-The application therefore does **not** use guest telemetry to gate VM health or security decisions. Runtime health means the browser emulator reached its expected boot/identity state; guest activity remains informational. Browser-enforced lifecycle controls such as bounded VM allocation, session duration, serial/output handling, pipeline depth, and disabled guest networking are separate from guest observations.
-
-Guest identity is **detected**, not cryptographically proven, from guest output. ISO integrity is established separately by pinned artifact metadata plus complete browser-side SHA-256 verification.
-
-Production security status remains **BLOCKED** until a real server-side or otherwise independently enforced guest CPU/process/filesystem isolation mechanism is introduced and validated with adversarial host-impact tests. Demoting telemetry to UX-only improves the trust model, but it does not create a missing isolation boundary.
-
-### Reset and saved data
-
-A sandbox reset starts a fresh in-memory learning environment. Saved learning records are browser-local and are separate from a sandbox reset. The storage layer bounds workspace content, command history, session records, and quiz answers to prevent unbounded browser-local growth. Use the site's saved-data controls when you want to remove persistent learning records.
-
-## SEO
-
-- Sitemap: https://linuxterminal.me/sitemap.xml
-- Robots: https://linuxterminal.me/robots.txt
-
-## Project mission
+See `LICENSE` and `NOTICE`.
