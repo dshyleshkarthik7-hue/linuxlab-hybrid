@@ -72,7 +72,7 @@ export default defineConfig({
         about: entry('about/index.html'),
         contact: entry('contact/index.html'),
         curriculum: entry('curriculum/index.html'),
-        commands: entry('commands/index.html'),
+        commandsBuild: entry('commands-entry.html'),
         quiz: entry('quiz/index.html'),
         challenges: entry('challenges/index.html'),
         iso: entry('open-source-iso/index.html'),
