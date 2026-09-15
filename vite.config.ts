@@ -1,6 +1,6 @@
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { Readable } from 'node:stream';
 
@@ -48,11 +48,17 @@ function testIsoProxy() {
 function commandsStaticAssets() {
   return {
     name: 'commands-static-assets',
-    writeBundle(options: { dir?: string; file?: string }) {
-      const outDir = options.dir || entry('dist');
-      mkdirSync(outDir, { recursive: true });
-      writeFileSync(`${outDir}/commands.css`, readFileSync(entry('commands.css')));
-      writeFileSync(`${outDir}/commands.js`, readFileSync(entry('public/commands.js')));
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'commands.css',
+        source: readFileSync(entry('public/commands.css'), 'utf8'),
+      });
+      this.emitFile({
+        type: 'asset',
+        fileName: 'commands.js',
+        source: readFileSync(entry('public/commands.js'), 'utf8'),
+      });
     },
   };
 }
