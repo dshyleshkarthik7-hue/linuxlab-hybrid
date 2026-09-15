@@ -1,0 +1,38 @@
+type Shortcut = 'ctrl-o' | 'ctrl-x' | 'ctrl-w' | 'ctrl-k' | 'esc' | 'tab' | 'enter' | 'backspace';
+
+type MobileKeyboardRuntime = {
+  serial0_send?: (data: string) => void;
+  keyboard_send_text?: (data: string) => void;
+};
+
+declare global {
+  interface Window {
+    linuxLabVM?: { sendMobileInput?: (data: string) => void };
+  }
+}
+
+const SHORTCUTS: Record<Shortcut, string> = {
+  'ctrl-o': '\u000f',
+  'ctrl-x': '\u0018',
+  'ctrl-w': '\u0017',
+  'ctrl-k': '\u000b',
+  esc: '\u001b',
+  tab: '\t',
+  enter: '\r',
+  backspace: '\u007f',
+};
+
+function send(data: string): void {
+  window.linuxLabVM?.sendMobileInput?.(data);
+}
+
+function bind(): void {
+  document.querySelectorAll<HTMLButtonElement>('[data-v86-key]').forEach((button) => {
+    const shortcut = button.dataset.v86Key as Shortcut | undefined;
+    if (!shortcut || !(shortcut in SHORTCUTS)) return;
+    button.addEventListener('click', () => send(SHORTCUTS[shortcut]));
+  });
+}
+
+window.addEventListener('DOMContentLoaded', bind, { once: true });
+export {};
