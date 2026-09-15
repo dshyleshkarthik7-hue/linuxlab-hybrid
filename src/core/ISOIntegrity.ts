@@ -1,6 +1,8 @@
 import { ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT } from './artifacts.ts';
 import type { PinnedArtifact } from './artifacts.ts';
 
+export type { PinnedArtifact } from './artifacts.ts';
+
 const SHA256_RE = /^[a-f0-9]{64}$/i;
 const TRUSTED_RELEASE_PREFIX = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/';
 const TRUSTED_MANIFEST_PREFIX = 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/';
