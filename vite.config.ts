@@ -1,5 +1,6 @@
 import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
+import { readFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { Readable } from 'node:stream';
 
@@ -44,8 +45,26 @@ function testIsoProxy() {
   };
 }
 
+function commandsStaticAssets() {
+  return {
+    name: 'commands-static-assets',
+    generateBundle() {
+      this.emitFile({
+        type: 'asset',
+        fileName: 'commands.css',
+        source: readFileSync(entry('public/commands.css'), 'utf8'),
+      });
+      this.emitFile({
+        type: 'asset',
+        fileName: 'commands.js',
+        source: readFileSync(entry('public/commands.js'), 'utf8'),
+      });
+    },
+  };
+}
+
 export default defineConfig({
-  plugins: [testIsoProxy()],
+  plugins: [testIsoProxy(), commandsStaticAssets()],
   base: '/',
   server: { port: 3000, headers: { 'Cross-Origin-Opener-Policy': 'same-origin' } },
   preview: { port: 3000, headers: { 'Cross-Origin-Opener-Policy': 'same-origin' } },
