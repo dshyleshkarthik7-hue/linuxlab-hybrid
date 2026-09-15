@@ -1,0 +1,15 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bash Shell Scripting Tutorial for Beginners | LinuxTerminal</title><meta name="description" content="Learn Bash shell scripting from the ground up: variables, quoting, conditions, loops, functions, arguments and exit codes with practical examples."><meta name="keywords" content="Bash scripting tutorial,shell scripting for beginners,Bash variables,Bash if loop function,Shell scripting,Linux automation,Bash tutorial"><link rel="canonical" href="https://linuxterminal.me/learn/shell-scripting/"><link rel="stylesheet" href="/learn/tutorials.css"></head><body><header><nav><a class="brand" href="/">&gt;_ <span>Linux</span>Terminal</a><a href="/learn/">Learn</a><a href="/commands/">Commands</a><a href="/challenges/">Challenges</a><a href="/quiz/">Quiz</a></nav></header><main><div class="breadcrumbs"><a href="/learn/">Learn</a> / Shell scripting</div><section class="hero"><p class="meta">TUTORIAL 7 • INTERMEDIATE</p><h1>Start shell scripting with Bash</h1><p class="lead">Shell scripts turn repeatable command-line work into repeatable programs. Start with small scripts and make their inputs, outputs and failure behavior explicit.</p></section><section class="lesson"><h2>Variables and quoting</h2><pre>#!/usr/bin/env bash
+name="Linux learner"
+printf 'Hello, %s\n' "$name"</pre><p>Quote variable expansions by default. This prevents spaces and many special characters from being interpreted as separate shell words.</p><h2>Conditions and loops</h2><pre>if [ -f "notes.txt" ]; then
+  echo "notes.txt exists"
+fi
+
+for item in one two three; do
+  echo "$item"
+done</pre></section><section class="lesson"><h2>Arguments and exit status</h2><pre>#!/usr/bin/env bash
+if [ "$#" -ne 1 ]; then
+  echo "Usage: $0 NAME" >&amp;2
+  exit 2
+fi
+printf 'Hello, %s\n' "$1"
+exit 0</pre><p><code>$#</code> counts arguments, <code>$1</code> is the first argument, and the exit status communicates success or failure to the calling shell.</p><div class="tip"><strong>Good habit:</strong> Make a script do one small job first. Test expected input, quote data, and return meaningful exit codes before adding complexity.</div><div class="actions"><a class="button" href="/">Practice commands</a><a class="button secondary" href="/challenges/">Take a challenge</a></div></section><section class="next"><a href="/learn/">← Back to all tutorials</a></section></main><footer>LinuxTerminal — build practical Linux skills before moving into networking and cybersecurity.</footer></body></html>
