@@ -1,13 +1,8 @@
 type Shortcut = 'ctrl-o' | 'ctrl-x' | 'ctrl-w' | 'ctrl-k' | 'esc' | 'tab' | 'enter' | 'backspace';
 
-type MobileKeyboardRuntime = {
-  serial0_send?: (data: string) => void;
-  keyboard_send_text?: (data: string) => void;
-};
-
 declare global {
   interface Window {
-    linuxLabVM?: { sendMobileInput?: (data: string) => void };
+    linuxLabVM?: import('./main-v86.ts').V86LinuxTerminal;
   }
 }
 
@@ -23,7 +18,7 @@ const SHORTCUTS: Record<Shortcut, string> = {
 };
 
 function send(data: string): void {
-  window.linuxLabVM?.sendMobileInput?.(data);
+  window.linuxLabVM?.sendMobileInput(data);
 }
 
 function bind(): void {
