@@ -29,4 +29,4 @@ export default async (request: Request) => {
   return new Response(lessonHtml(item), { headers: { 'content-type': 'text/html; charset=UTF-8', 'cache-control': 'public,max-age=300' } });
 };
 
-export const config = { path: '/commands/*' };
+export const config = { path: ['/commands', '/commands/', '/commands/*'] };
