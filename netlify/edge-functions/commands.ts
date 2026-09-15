@@ -22,7 +22,7 @@ function lessonHtml(item: typeof COMMAND_INDEX[number]) {
 
 export default async (request: Request) => {
   const pathname = new URL(request.url).pathname.replace(/\/+$/, '');
-  const name = pathname.replace(/^\/commands\//, '');
+  const name = pathname === '/commands' ? '' : pathname.replace(/^\/commands\//, '');
   if (!name) return new Response(indexHtml(), { headers: { 'content-type': 'text/html; charset=UTF-8', 'cache-control': 'public,max-age=300' } });
   const item = byName.get(name);
   if (!item) return new Response('LinuxTerminal.me: command lesson not found.', { status: 404, headers: { 'content-type': 'text/plain; charset=utf-8' } });
