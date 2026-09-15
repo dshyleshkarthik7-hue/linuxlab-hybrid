@@ -1,125 +1,34 @@
-const commands = ['pwd','ls','cd','mkdir','touch','cat','cp','mv','rm','find','echo','printf','grep','head','tail','wc','sort','uniq','sed','awk','chmod','whoami','ps','top','df','du','free','uname','date','env','export','history','clear','man','tar','gzip','zip','ping','curl','ip','ifconfig','ssh','scp','gcc','make','nano','vim','vi','less','cut'] as const;
+import { COMMAND_LESSONS } from './commands/commandCatalog.ts';
 
-type Question = { q: string; a: string; d?: string[]; command: string };
-const questions: Question[] = [];
-const forms: Array<(command: string, index: number) => Omit<Question, 'command'>> = [
-  (c) => ({ q: `What is a primary learning goal for \`${c}\`?`, a: 'understand its syntax, output and exit status' }),
-  (c, i) => ({ q: 'Which command should you practice for this question?', a: c, d: [commands[(i + 1) % commands.length], commands[(i + 7) % commands.length], commands[(i + 13) % commands.length]] }),
-  (c) => ({ q: `What should you inspect after running \`${c}\`?`, a: 'stdout, stderr and the exit status' }),
-  (c) => ({ q: `Where should a beginner safely practice \`${c}\` in LinuxTerminal?`, a: 'the browser simulator' }),
-  (c) => ({ q: `Which option is a good learning method for \`${c}\`?`, a: 'predict, run, inspect, then explain the result' }),
-  (c) => ({ q: `What can a non-zero exit status from \`${c}\` indicate?`, a: 'the command reported a failure' }),
-  (c) => ({ q: `Which workflow is best when learning \`${c}\`?`, a: 'start with a small example and change one input at a time' }),
-  (c) => ({ q: `What should the AI Tutor use to explain a \`${c}\` mistake?`, a: 'the command, output, error, history and current context' }),
-  (c) => ({ q: `What should you avoid assuming about simulator results for \`${c}\`?`, a: 'that simulated kernel or network behavior is identical to a host Linux system' }),
-  (c) => ({ q: `After mastering \`${c}\`, what is a useful next step?`, a: 'combine it with another command and verify the pipeline or conditional' }),
-];
+type Fact={command:string;purpose:string;syntax:string;option:string;success:string;failure:string};
+type Question={id:string;command:string;category:string;difficulty:'foundation'|'practical'|'reasoning';q:string;a:string;d:string[]};
 
-for (let i = 0; i < commands.length; i += 1) {
-  for (const make of forms) questions.push({ ...make(commands[i], i), command: commands[i] });
+const FACTS:readonly Fact[] = [["pwd","prints the current working directory","pwd","basic form needs no option","an absolute path such as /home/user","it can fail if the current directory cannot be resolved"],["ls","lists directory entries","ls -la","-a includes hidden entries and -l shows long metadata","directory and file names, with metadata for long format","an inaccessible directory or invalid option can produce an error"],["cd","changes the shell's current working directory","cd /tmp","- switches to the previous directory in common shells","normally nothing on stdout when successful","a nonexistent or inaccessible directory produces an error"],["mkdir","creates directories","mkdir -p project/src","-p creates missing parent directories","normally nothing on stdout when successful","a path that cannot be created produces an error"],["touch","creates a file or updates its timestamps","touch notes.txt","-a updates access time and -m updates modification time","normally nothing on stdout when successful","an invalid path or permission problem produces an error"],["cat","writes file contents to standard output","cat notes.txt","-n numbers output lines","the file contents in input order","a missing or unreadable file produces an error"],["cp","copies files or directories","cp report.txt backup.txt","-r copies directories recursively","normally nothing on stdout when successful","a missing source or invalid destination produces an error"],["mv","moves or renames files and directories","mv draft.txt final.txt","-i asks before overwriting a destination","normally nothing on stdout when successful","a missing source or permission problem produces an error"],["rm","removes files","rm old.txt","-i asks before removing and -r removes directories recursively","normally nothing on stdout when successful","a missing path or protected target can produce an error"],["find","searches a directory tree for matching paths","find . -name '*.log'","-type f restricts results to regular files","matching paths, usually one per line","an invalid expression or inaccessible path can produce an error"],["echo","prints its arguments followed by a newline","echo hello","-n suppresses the trailing newline","the supplied arguments separated by spaces","shell syntax errors can prevent it from running"],["printf","prints formatted text","printf 'name=%s\\n' Linux","%s formats a string and \\n emits a newline","text matching the format string","a malformed format can produce an error or unexpected output"],["grep","searches input for lines matching a pattern","grep -n 'error' app.log","-n prefixes matching lines with their line numbers","matching input lines","no matches normally produce exit status 1, while invalid use can produce an error"],["head","prints the beginning of input","head -n 5 app.log","-n selects the number of lines","the first requested lines","a missing input file can produce an error"],["tail","prints the end of input","tail -n 20 app.log","-n selects the number of lines","the last requested lines","a missing input file can produce an error"],["wc","counts lines, words, bytes or characters","wc -l notes.txt","-l prints the line count","counts for the requested measurement","a missing input file can produce an error"],["sort","sorts text lines","sort -n numbers.txt","-n compares values numerically","input lines in sorted order","a missing input file can produce an error"],["uniq","filters adjacent repeated lines","uniq -c names.txt","-c prefixes each output line with its count","duplicate runs collapsed, optionally with counts","it does not globally remove duplicates that are separated by other lines"],["sed","edits or filters a text stream","sed 's/old/new/g' file.txt","-n suppresses automatic printing","transformed or selected text","a malformed expression can produce an error"],["awk","processes text records using patterns and actions","awk '{print $1}' names.txt","-F sets the input field separator","selected fields or computed records","a syntax error in the awk program can fail"],["chmod","changes file permission bits","chmod 640 report.txt","u, g and o address user, group and other permissions in symbolic mode","normally nothing on stdout when successful","a missing target or insufficient permission can produce an error"],["whoami","prints the effective username","whoami","the basic form needs no option","a username such as root or a normal account","unusual identity-service failures can prevent a result"],["ps","reports a snapshot of running processes","ps aux","a and x expose more processes and u requests user-oriented formatting on common procps versions","a process table with identifiers and resource information","unsupported options or limited process information can cause errors"],["top","displays processes and system activity interactively","top","q commonly quits the interactive display","a continuously refreshed process view","it may be unavailable or behave differently in minimal environments"],["df","reports filesystem capacity and available space","df -h","-h uses human-readable units","filesystem sizes, used space and available space","an invalid path or unsupported option can fail"],["du","estimates space used by files and directories","du -sh project","-s summarizes instead of listing every descendant","space usage for the requested path","missing paths or permission errors can produce stderr"],["free","reports memory and swap statistics","free -h","-h uses human-readable units","memory and swap statistics","some minimal systems may expose limited memory information"],["uname","prints system and kernel identification","uname -a","-a prints all available identification fields","kernel name and other system identification","unsupported options can fail"],["date","prints or formats the current date and time","date '+%Y-%m-%d'","%Y, %m and %d format common date components","the current date/time or a formatted value","invalid date syntax or format can fail"],["env","prints environment variables or runs a command with a modified environment","env | grep PATH","NAME=VALUE before a command supplies environment variables for that command","environment assignments such as PATH=...","the requested command can fail to execute"],["export","marks a shell variable for inheritance by child processes","export DEMO=value","using export without an assignment lists exported variables in many shells","normally nothing on stdout for an assignment","an invalid variable name or shell syntax can fail"],["history","shows the shell's recorded command history","history | tail","history lists previous commands and often their numbers","previous command lines with history numbers","history behavior varies by shell and configuration"],["clear","clears or redraws the terminal display","clear","the basic form needs no option","a cleared or redrawn terminal display","it can fail when terminal capabilities are unavailable"],["man","opens manual documentation for commands","man grep","-k searches manual descriptions by keyword on common implementations","formatted documentation, usually through a pager","a missing manual page produces an error"],["tar","creates, lists or extracts archive files","tar -cf archive.tar project/","-c creates, -t lists and -x extracts archives","archive listings or extracted files depending on the operation","missing paths or malformed archives can fail"],["gzip","compresses or decompresses gzip data","gzip report.txt","-d decompresses gzip data","a compressed .gz file or restored file","missing files or corrupt compressed data can fail"],["zip","creates ZIP archives","zip -r project.zip project/","-r recursively includes a directory tree","a ZIP archive and progress/status messages","missing paths or write errors can fail"],["ping","tests network reachability with ICMP echo requests","ping -c 4 example.com","-c limits the number of echo requests on common implementations","echo replies and timing statistics when replies arrive","DNS, routing, firewall rules or an unavailable host can prevent replies"],["curl","transfers data to or from URLs","curl -I https://example.com","-I requests response headers without the normal response body for HTTP","response headers or downloaded content","DNS, TLS, HTTP or network errors can produce a non-zero status"],["ip","shows or configures Linux network interfaces and routes","ip addr","addr displays interface address information","interface and address information","invalid syntax or insufficient privileges can fail"],["ifconfig","shows or configures legacy network interface information","ifconfig","the basic form lists interfaces when the command is available","interface addresses, flags and counters","the command may not be installed on modern minimal systems"],["ssh","connects to a remote system using the SSH protocol","ssh user@example.com","-p selects a non-default TCP port","remote shell or command output","DNS, authentication, network or host-key failures can prevent connection"],["scp","copies files over SSH","scp report.txt user@example.com:/tmp/","-r recursively copies directories on common implementations","transfer progress and status","authentication, path, network or permission failures can stop a transfer"],["gcc","compiles C source code","gcc -Wall -Wextra main.c -o main","-o names the output file and -Wall enables a useful warning set","compiler diagnostics and, on success, a binary","syntax, linker or missing-header errors can fail compilation"],["make","builds targets described by a Makefile","make","-j can request parallel jobs on common implementations","build commands or an up-to-date message","missing rules, files or failed commands can stop the build"],["nano","opens a beginner-friendly terminal text editor","nano notes.txt","-l displays line numbers in supported versions","an interactive editor screen","file permissions or terminal limitations can cause errors"],["vim","opens the Vim modal text editor","vim notes.txt","-R opens read-only mode in common Vim usage","an interactive editor screen","file permissions or terminal limitations can cause errors"],["vi","opens the traditional vi editor interface","vi notes.txt","-R opens read-only mode in common implementations","an interactive editor screen","file permissions or terminal limitations can cause errors"],["less","views text one screen at a time","less app.log","-N displays line numbers in common versions","paged file contents","a missing file can produce an error"],["cut","extracts selected fields, bytes or characters from each input line","cut -d: -f1 /etc/passwd","-d selects a delimiter and -f selects fields","selected fields or ranges","invalid field specifications or missing files can fail"]].map(([command,purpose,syntax,option,success,failure])=>({command,purpose,syntax,option,success,failure}));
+const category=new Map(COMMAND_LESSONS.map(x=>[x.name,x.category]));
+const QUESTIONS:Question[]=[];
+for(const f of FACTS){
+ const other=FACTS.filter(x=>x.command!==f.command);
+ const vals=(k:keyof Fact)=>other.map(x=>x[k]).filter(x=>x!==f[k]).slice(0,3);
+ const cat=category.get(f.command)||'linux';
+ QUESTIONS.push(
+  {id:`${f.command}-purpose`,command:f.command,category:cat,difficulty:'foundation',q:`What is the primary purpose of \`${f.command}\`?`,a:f.purpose,d:vals('purpose')},
+  {id:`${f.command}-syntax`,command:f.command,category:cat,difficulty:'practical',q:`Which example correctly demonstrates \`${f.command}\`?`,a:f.syntax,d:vals('syntax')},
+  {id:`${f.command}-option`,command:f.command,category:cat,difficulty:'practical',q:`Which option/detail belongs to this \`${f.command}\` example?`,a:f.option,d:vals('option')},
+  {id:`${f.command}-success`,command:f.command,category:cat,difficulty:'reasoning',q:`What result should you generally expect when \`${f.command}\` succeeds?`,a:f.success,d:vals('success')},
+  {id:`${f.command}-failure`,command:f.command,category:cat,difficulty:'reasoning',q:`Which is a common failure or limitation of \`${f.command}\`?`,a:f.failure,d:vals('failure')},
+  {id:`${f.command}-inspect`,command:f.command,category:cat,difficulty:'practical',q:`After running \`${f.syntax}\`, what should a learner inspect?`,a:`${f.success}; also check stderr and the exit status.`,d:['Only the terminal color.','Only the command name.','Only the browser URL.']},
+  {id:`${f.command}-safe`,command:f.command,category:cat,difficulty:'reasoning',q:`Which is the safest way to learn \`${f.command}\`?`,a:`Start with \`${f.syntax}\`, predict the result, run it in the appropriate lab, then explain the evidence.`,d:['Change several unrelated arguments and guess afterward.','Paste secrets into the command.','Assume errors are harmless without reading stderr.']},
+  {id:`${f.command}-command`,command:f.command,category:cat,difficulty:'foundation',q:`Which command matches this task: ${f.purpose}?`,a:f.command,d:other.slice(0,3).map(x=>x.command)},
+  {id:`${f.command}-reason`,command:f.command,category:cat,difficulty:'reasoning',q:`Why should \`${f.command}\` output not be treated as proof of host-system state?`,a:'Observed output is evidence from the current environment; a browser simulator is not the host OS.',d:['Every simulator result is kernel proof.','A command output always proves host isolation.','Exit status proves the system is secure.']},
+  {id:`${f.command}-change`,command:f.command,category:cat,difficulty:'practical',q:`What is a good next experiment after learning \`${f.command}\`?`,a:'Change one input or option, predict the difference, then compare stdout, stderr and exit status.',d:['Change every option at once.','Skip the prediction and only memorize output.','Use real credentials to make the test realistic.']}
+ );
 }
-
-let index = 0;
-let score = 0;
-let answered = false;
-
-const qEl = document.querySelector<HTMLElement>('#question');
-const oEl = document.querySelector<HTMLElement>('#options');
-const fEl = document.querySelector<HTMLElement>('#feedback');
-const nEl = document.querySelector<HTMLButtonElement>('#next');
-const pEl = document.querySelector<HTMLElement>('#progress');
-const sEl = document.querySelector<HTMLElement>('#score');
-const cEl = document.querySelector<HTMLElement>('#context');
-const rEl = document.querySelector<HTMLElement>('#result');
-
-if (questions.length !== 500) throw new Error(`Quiz configuration must contain exactly 500 questions; found ${questions.length}`);
-
-function shuffle<T>(items: T[]): T[] {
-  const result = [...items];
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [result[i], result[j]] = [result[j], result[i]];
-  }
-  return result;
-}
-
-function render(): void {
-  answered = false;
-  const question = questions[index];
-  if (!qEl || !oEl || !fEl || !nEl || !pEl || !sEl || !cEl) return;
-
-  pEl.textContent = `Question ${index + 1} / ${questions.length}`;
-  sEl.textContent = `Score: ${score}`;
-  qEl.textContent = question.q;
-  cEl.textContent = `Focus command: ${question.command}`;
-  fEl.textContent = '';
-  if (rEl) rEl.textContent = '';
-  nEl.hidden = true;
-  oEl.replaceChildren();
-
-  const defaultDistractors = [
-    'stdout, stderr and the exit status',
-    'the browser simulator',
-    'predict, run, inspect, then explain the result',
-    'the command reported a failure',
-    'start with a small example and change one input at a time',
-    'the command, output, error, history and current context',
-    'that simulated kernel or network behavior is identical to a host Linux system',
-    'combine it with another command and verify the pipeline or conditional',
-  ];
-  const pool = question.d ?? defaultDistractors;
-  const options = shuffle([question.a, ...shuffle(pool.filter((value) => value !== question.a)).slice(0, 3)]);
-
-  for (const option of options) {
-    const button = document.createElement('button');
-    button.className = 'option';
-    button.type = 'button';
-    button.textContent = option;
-    button.addEventListener('click', () => answer(button, option, question.a));
-    oEl.appendChild(button);
-  }
-}
-
-function answer(button: HTMLButtonElement, option: string, correct: string): void {
-  if (answered || !oEl || !fEl || !nEl || !sEl) return;
-  answered = true;
-  for (const child of oEl.querySelectorAll<HTMLButtonElement>('button')) child.disabled = true;
-  if (option === correct) {
-    button.classList.add('correct');
-    score += 1;
-    fEl.textContent = '✓ Correct.';
-  } else {
-    button.classList.add('wrong');
-    fEl.textContent = `Not quite. Correct answer: ${correct}`;
-  }
-  sEl.textContent = `Score: ${score}`;
-  nEl.hidden = false;
-}
-
-function finish(): void {
-  const percentage = Math.round((score / questions.length) * 10000) / 100;
-  const passed = score >= 400;
-  if (qEl) qEl.textContent = 'Assessment complete';
-  if (cEl) cEl.textContent = '';
-  if (oEl) oEl.replaceChildren();
-  if (fEl) fEl.textContent = '';
-  if (rEl) rEl.textContent = `Final score: ${score} / ${questions.length} • ${percentage.toFixed(2)}% • ${passed ? 'Learning pass mark reached' : 'Below the 80% learning pass mark'}.`;
-  if (nEl) nEl.hidden = true;
-}
-
-nEl?.addEventListener('click', () => {
-  if (index < questions.length - 1) {
-    index += 1;
-    render();
-    return;
-  }
-  finish();
-});
-
-document.querySelector<HTMLButtonElement>('#reset')?.addEventListener('click', () => {
-  index = 0;
-  score = 0;
-  render();
-});
-
+if(QUESTIONS.length!==500)throw new Error(`Quiz configuration must contain exactly 500 questions; found ${QUESTIONS.length}`);
+function shuffle<T>(items:readonly T[]):T[]{const out=[...items];for(let i=out.length-1;i>0;i--){const r=new Uint32Array(1);crypto.getRandomValues(r);const j=r[0]%(i+1);[out[i],out[j]]=[out[j],out[i]]}return out}
+let session=shuffle(QUESTIONS),index=0,score=0,answered=false;
+const q=document.querySelector<HTMLElement>('#question'),o=document.querySelector<HTMLElement>('#options'),f=document.querySelector<HTMLElement>('#feedback'),n=document.querySelector<HTMLButtonElement>('#next'),p=document.querySelector<HTMLElement>('#progress'),s=document.querySelector<HTMLElement>('#score'),c=document.querySelector<HTMLElement>('#context'),r=document.querySelector<HTMLElement>('#result');
+function render(){answered=false;const x=session[index];if(!q||!o||!f||!n||!p||!s||!c)return;p.textContent=`Question ${index+1} / ${session.length}`;s.textContent=`Score: ${score}`;q.textContent=x.q;c.textContent=`${x.command} • ${x.category} • ${x.difficulty}`;f.textContent='';n.hidden=true;o.replaceChildren();for(const answer of shuffle([x.a,...x.d])){const b=document.createElement('button');b.className='option';b.type='button';b.textContent=answer;b.onclick=()=>{if(answered)return;answered=true;for(const z of o.querySelectorAll('button'))z.disabled=true;if(answer===x.a){b.classList.add('correct');score++}else b.classList.add('wrong');s.textContent=`Score: ${score}`;f.textContent=answer===x.a?'✓ Correct.':`Not quite. Correct answer: ${x.a}`;n.hidden=false};o.appendChild(b)}}
+function finish(){const pct=(score/session.length*100).toFixed(0);if(q)q.textContent='Practice assessment complete';if(c)c.textContent='';if(o)o.replaceChildren();if(f)f.textContent='';if(r)r.textContent=`Exact score: ${score} / ${session.length} • ${pct}% • ${score>=400?'80% learning pass mark reached':'below the 80% learning pass mark'}.`;if(n)n.hidden=true}
+n?.addEventListener('click',()=>{if(index<session.length-1){index++;render()}else finish()});
+document.querySelector<HTMLButtonElement>('#reset')?.addEventListener('click',()=>{session=shuffle(QUESTIONS);index=0;score=0;render()});
 render();
