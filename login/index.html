@@ -1,1 +1,43 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>LinuxTerminal.me — Sign in</title><meta name="description" content="Sign in to LinuxTerminal.me with Netlify Identity to use the AI Tutor."><style>body{margin:0;min-height:100vh;display:grid;place-items:center;background:#061426;color:#eef6ff;font:16px/1.6 system-ui,sans-serif}.card{width:min(92vw,520px);padding:32px;border:1px solid #24486e;border-radius:20px;background:#0d2038;box-shadow:0 25px 70px #0006}.card h1{margin-top:0}.muted{color:#a6bad3}.login{display:inline-block;margin-top:12px;padding:12px 18px;border:0;border-radius:10px;background:#1677ff;color:#fff;font-weight:800;cursor:pointer}.back{color:#43d9ff}.status{margin-top:16px;min-height:1.5em}</style><script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script></head><body><main class="card"><a class="back" href="../">← LinuxTerminal.me</a><h1>Sign in to LinuxTerminal</h1><p class="muted">Use Netlify Identity to sign in or create your free account. Your password is handled by Netlify Identity.</p><button id="login" class="login" type="button">Sign in / Create account</button><p id="status" class="status" role="status">Checking session…</p><p><a class="back" href="../beginner/#tutor">Return to AI Tutor</a></p></main><script type="module" src="../src/login.ts"></script></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>LinuxTerminal.me — Sign in</title>
+  <meta name="description" content="Sign in to LinuxTerminal.me with Netlify Identity to use the AI Tutor.">
+  <style>
+    :root{color-scheme:dark;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+    *{box-sizing:border-box}
+    body{margin:0;min-height:100vh;display:grid;place-items:center;background:radial-gradient(circle at 15% 15%,#12345a 0,transparent 35%),radial-gradient(circle at 85% 80%,#123c46 0,transparent 32%),#061426;color:#eef6ff}
+    .shell{width:min(94vw,620px);padding:20px}.card{padding:40px;border:1px solid #2b5279;border-radius:28px;background:rgba(13,32,56,.94);box-shadow:0 30px 100px #0008;backdrop-filter:blur(18px)}
+    .eyebrow{display:inline-flex;gap:8px;align-items:center;padding:7px 11px;border:1px solid #2b5279;border-radius:999px;color:#72ddff;font-size:13px;font-weight:800;letter-spacing:.04em}
+    h1{margin:20px 0 10px;font-size:clamp(30px,6vw,46px);line-height:1.05;letter-spacing:-.03em}.muted{color:#aac0d8;line-height:1.7}.benefits{display:grid;gap:10px;margin:26px 0;padding:0;list-style:none}.benefits li{padding:12px 14px;border:1px solid #23476b;border-radius:14px;background:#0a1a2d;color:#dcecff}
+    .login{width:100%;margin-top:8px;padding:14px 18px;border:1px solid #2999ff;border-radius:14px;background:#1677ff;color:#fff;font:inherit;font-weight:850;cursor:pointer;transition:transform .15s,filter .15s}.login:hover{filter:brightness(1.08);transform:translateY(-1px)}.login:focus-visible,.back:focus-visible{outline:3px solid #72ddff;outline-offset:3px}
+    .status{min-height:1.5em;margin:16px 0;color:#c8d9eb;text-align:center}.links{display:flex;justify-content:space-between;gap:16px;margin-top:24px}.back{color:#72ddff;text-decoration:none;font-weight:700}.fine{margin-top:22px;color:#829bb5;font-size:13px;text-align:center;line-height:1.6}
+    @media(max-width:520px){.card{padding:28px 22px}.links{flex-direction:column;align-items:center}}
+  </style>
+  <script src="https://identity.netlify.com/v1/netlify-identity-widget.js"></script>
+</head>
+<body>
+  <main class="shell">
+    <section class="card" aria-labelledby="title">
+      <span class="eyebrow">✦ AI TUTOR ACCESS</span>
+      <h1 id="title">Keep learning with your Tutor</h1>
+      <p class="muted">Sign in with Netlify Identity to get personalized Linux explanations, hints, and next-step guidance. Your password is handled by Netlify Identity.</p>
+      <ul class="benefits" aria-label="Tutor benefits">
+        <li>🎯 Explanations based on your current practice</li>
+        <li>💡 Small, beginner-friendly hints instead of answer dumping</li>
+        <li>🔒 Your Tutor request is authenticated before it reaches the AI provider</li>
+      </ul>
+      <button id="login" class="login" type="button">Sign in / Create account</button>
+      <p id="status" class="status" role="status" aria-live="polite">Checking session…</p>
+      <nav class="links" aria-label="Account navigation">
+        <a class="back" href="../">← Back to LinuxTerminal</a>
+        <a class="back" href="../beginner/#tutor">Return to AI Tutor</a>
+      </nav>
+      <p class="fine">Use a real account you control. Never enter passwords, API keys, or other secrets into the Tutor.</p>
+    </section>
+  </main>
+  <script type="module" src="../src/login.ts"></script>
+</body>
+</html>
