@@ -1,1 +1,36 @@
-<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"><url><loc>https://linuxterminal.me/</loc></url><url><loc>https://linuxterminal.me/beginner/</loc></url><url><loc>https://linuxterminal.me/intermediate/</loc></url><url><loc>https://linuxterminal.me/expert/</loc></url><url><loc>https://linuxterminal.me/commands/</loc></url><url><loc>https://linuxterminal.me/quiz/</loc></url><url><loc>https://linuxterminal.me/challenges/</loc></url><url><loc>https://linuxterminal.me/about/</loc></url><url><loc>https://linuxterminal.me/contact/</loc></url><url><loc>https://linuxterminal.me/open-source-iso/</loc></url><url><loc>https://linuxterminal.me/real-linux/</loc></url><url><loc>https://linuxterminal.me/simulator/</loc></url></urlset>
+<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+  <url><loc>https://linuxterminal.me/</loc></url>
+  <url><loc>https://linuxterminal.me/beginner/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/</loc></url>
+  <url><loc>https://linuxterminal.me/challenges/</loc></url>
+  <url><loc>https://linuxterminal.me/quiz/</loc></url>
+  <url><loc>https://linuxterminal.me/curriculum/</loc></url>
+  <url><loc>https://linuxterminal.me/about/</loc></url>
+  <url><loc>https://linuxterminal.me/contact/</loc></url>
+  <url><loc>https://linuxterminal.me/real-linux/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/pwd/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/ls/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/cd/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/mkdir/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/cat/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/cp/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/mv/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/rm/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/grep/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/find/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/sed/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/awk/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/chmod/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/chown/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/ps/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/top/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/df/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/du/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/tar/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/curl/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/ssh/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/ip/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/ping/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/git/</loc></url>
+</urlset>
