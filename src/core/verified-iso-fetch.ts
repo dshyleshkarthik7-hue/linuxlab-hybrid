@@ -7,6 +7,7 @@ const RANGE_FETCH_TIMEOUT_MS = 90_000;
 const DIRECT_FETCH_MAX_BYTES = 64 * 1024 * 1024;
 const RANGE_CHUNK_BYTES = 48 * 1024 * 1024;
 const RANGE_CONCURRENCY = 2;
+const LARGE_ISO_CACHE_THRESHOLD = 256 * 1024 * 1024;
 const IDB_NAME = 'LinuxLab_ISO_Cache';
 const IDB_VERSION = 2;
 const IDB_STORE = 'artifacts';
@@ -46,6 +47,7 @@ function openCache(): Promise<IDBDatabase> {
 }
 
 async function readPersistent(url: string, artifact: PinnedArtifact): Promise<ArrayBuffer | null> {
+  if (artifact.size > LARGE_ISO_CACHE_THRESHOLD) return null;
   try {
     const db = await openCache();
     const record = await new Promise<CachedIso | undefined>((resolve, reject) => {
@@ -63,6 +65,7 @@ async function readPersistent(url: string, artifact: PinnedArtifact): Promise<Ar
 }
 
 async function writePersistent(url: string, artifact: PinnedArtifact, bytes: ArrayBuffer): Promise<void> {
+  if (artifact.size > LARGE_ISO_CACHE_THRESHOLD) return;
   try {
     const db = await openCache();
     await new Promise<void>((resolve, reject) => {
@@ -134,6 +137,10 @@ async function fetchIsoResumable(url: string, artifact: PinnedArtifact, signal: 
   return bytes.buffer;
 }
 
+function consumerBuffer(bytes: ArrayBuffer, artifact: PinnedArtifact): ArrayBuffer {
+  return artifact.size > LARGE_ISO_CACHE_THRESHOLD ? bytes : bytes.slice(0);
+}
+
 export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Promise<ArrayBuffer> {
   const url = new URL(rawUrl, window.location.origin);
   if (url.origin !== window.location.origin) throw new Error('ISO endpoint must be same-origin');
@@ -143,17 +150,17 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   const cached = memoryCache.get(key);
   if (cached) {
     await verifyArtifact(cached, artifact);
-    return cached.slice(0);
+    return consumerBuffer(cached, artifact);
   }
 
   const persistent = await readPersistent(key, artifact);
   if (persistent) {
-    memoryCache.set(key, persistent.slice(0));
-    return persistent.slice(0);
+    memoryCache.set(key, persistent);
+    return consumerBuffer(persistent, artifact);
   }
 
   const pending = inFlight.get(key);
-  if (pending) return pending.then((bytes) => bytes.slice(0));
+  if (pending) return pending.then((bytes) => consumerBuffer(bytes, artifact));
 
   const promise = (async () => {
     let bytes: ArrayBuffer;
@@ -175,14 +182,14 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
 
     await verifyArtifact(bytes, artifact);
     memoryCache.clear();
-    memoryCache.set(key, bytes.slice(0));
+    memoryCache.set(key, bytes);
     await writePersistent(key, artifact, bytes);
     return bytes;
   })();
 
   inFlight.set(key, promise);
   try {
-    return (await promise).slice(0);
+    return consumerBuffer(await promise, artifact);
   } finally {
     if (inFlight.get(key) === promise) inFlight.delete(key);
   }
