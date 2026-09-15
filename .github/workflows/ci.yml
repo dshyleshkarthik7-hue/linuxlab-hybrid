@@ -44,7 +44,7 @@ jobs:
       - run: npm run test:mobile
       - run: node tests/p2-p3-contract.test.mjs
       - name: Production smoke
-        if: ${{ vars.PRODUCTION_BASE_URL != '' }}
+        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
         env:
-          PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL }}
+          PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL || 'https://linuxterminal.me' }}
         run: npm run test:production

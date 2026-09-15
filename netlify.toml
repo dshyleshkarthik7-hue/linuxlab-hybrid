@@ -29,18 +29,11 @@
     Cross-Origin-Embedder-Policy = "credentialless"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains"
 
-# xterm and Monaco create runtime <style> elements. Keep the strict CSP on
-# the public learning pages, but scope the compatibility exception to the
-# interactive simulator only. No external script or connection origin is
-# added by this exception.
 [[headers]]
   for = "/simulator.html"
   [headers.values]
     Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
 
-# v86's legacy screen runtime uses an about:srcdoc document internally. The
-# exception is limited to the real-Linux route; network access remains absent
-# from the page CSP and the VM itself is configured with no network device.
 [[headers]]
   for = "/real-linux/*"
   [headers.values]
@@ -49,7 +42,12 @@
 [[headers]]
   for = "/login/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' https://identity.netlify.com; style-src 'self'; connect-src 'self' https://identity.netlify.com; img-src 'self' data: https://identity.netlify.com; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://identity.netlify.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://identity.netlify.com; img-src 'self' data: https://identity.netlify.com; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
+
+[[headers]]
+  for = "/beginner/*"
+  [headers.values]
+    Content-Security-Policy = "default-src 'self'; script-src 'self' https://identity.netlify.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://identity.netlify.com; img-src 'self' data: https://identity.netlify.com; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
 
 [[redirects]]
   from = "/seabios.bin"

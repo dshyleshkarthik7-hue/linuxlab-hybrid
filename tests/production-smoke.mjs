@@ -7,7 +7,7 @@ const timeoutMs = Number(process.env.PRODUCTION_SMOKE_TIMEOUT_MS || 60000);
 const fetchWithTimeout = (url) => fetch(url, { redirect: 'error', signal: AbortSignal.timeout(timeoutMs) });
 
 const routes = [
-  '/index.html',
+  '/',
   '/beginner/',
   '/commands/',
   '/commands/pwd/',
@@ -17,32 +17,69 @@ const routes = [
   '/contact/',
   '/login/',
   '/simulator.html',
+  '/real-linux/',
   '/index-v86.html',
   '/robots.txt',
   '/sitemap.xml',
 ];
 
-for (const path of routes) {
+async function assertHTML(path) {
   const response = await fetchWithTimeout(origin + path);
   assert.equal(response.ok, true, `${path} returned ${response.status}`);
+  assert.match(response.headers.get('content-type') || '', /html/i, `${path} must be HTML`);
+  return response.text();
 }
 
-for (const asset of ['/src/beginner.css', '/quiz/quiz.css', '/src/v86-layout.css']) {
-  const response = await fetchWithTimeout(origin + asset);
-  assert.equal(response.ok, true, `${asset} returned ${response.status}`);
-  assert.match(response.headers.get('content-type') || '', /css/i, `${asset} must be served as CSS`);
+async function assertAsset(path) {
+  const response = await fetchWithTimeout(path);
+  assert.equal(response.ok, true, `${path} returned ${response.status}`);
+  return response;
 }
 
-const homepage = await (await fetchWithTimeout(origin + '/index.html')).text();
-assert.match(homepage, /LinuxTerminal|LinuxLab/i);
-assert.doesNotMatch(homepage, /<script(?![^>]+src=)[^>]*>/i, 'production homepage must not contain inline scripts');
+const pages = new Map();
+for (const path of routes) {
+  if (/\.(txt|xml)$/.test(path)) {
+    const response = await fetchWithTimeout(origin + path);
+    assert.equal(response.ok, true, `${path} returned ${response.status}`);
+    continue;
+  }
+  pages.set(path, await assertHTML(path));
+}
 
-const quiz = await (await fetchWithTimeout(origin + '/quiz/')).text();
-assert.doesNotMatch(quiz, /<style[\s>]/i, 'production quiz must not contain inline styles');
-assert.doesNotMatch(quiz, /<script(?![^>]+src=)[^>]*>/i, 'production quiz must not contain inline scripts');
+for (const [path, html] of pages) {
+  const links = [...html.matchAll(/<link\b[^>]*\brel=["']stylesheet["'][^>]*\bhref=["']([^"']+)["']/gi)].map(match => match[1]);
+  for (const href of links) {
+    const assetURL = new URL(href, origin + path).toString();
+    assert.equal(new URL(assetURL).origin, new URL(origin).origin, `${path} references an external stylesheet: ${href}`);
+    const response = await assertAsset(assetURL);
+    assert.match(response.headers.get('content-type') || '', /css/i, `${assetURL} must be served as CSS`);
+  }
+
+  const scripts = [...html.matchAll(/<script\b([^>]*)\bsrc=["']([^"']+)["'][^>]*>/gi)].map(match => match[2]);
+  assert.doesNotMatch(html, /<script(?![^>]+\bsrc=)[^>]*>/i, `${path} must not contain inline scripts`);
+  for (const src of scripts) {
+    const assetURL = new URL(src, origin + path).toString();
+    const url = new URL(assetURL);
+    if (url.origin !== new URL(origin).origin && !url.href.startsWith('https://identity.netlify.com/')) continue;
+    const response = await assertAsset(assetURL);
+    assert.match(response.headers.get('content-type') || '', /(javascript|ecmascript|text\/plain)/i, `${assetURL} must be served as JavaScript`);
+  }
+}
+
+const homepage = pages.get('/') || '';
+assert.match(homepage, /LinuxTerminal/i);
+assert.doesNotMatch(homepage, /<style[\s>]/i, 'production homepage must not contain inline styles');
+
+const beginner = pages.get('/beginner/') || '';
+assert.match(beginner, /200 Linux Commands/i);
+assert.match(beginner, /command-catalog-body/i);
+assert.match(beginner, /identity\.netlify\.com/i);
+
+const quiz = pages.get('/quiz/') || '';
 assert.match(quiz, /500 Linux quiz questions/i);
+assert.doesNotMatch(quiz, /<style[\s>]/i, 'production quiz must not contain inline styles');
 
-const login = await (await fetchWithTimeout(origin + '/login/')).text();
+const login = pages.get('/login/') || '';
 assert.match(login, /Netlify Identity|Sign in/i);
 
 console.log('Production deployment smoke checks passed');
