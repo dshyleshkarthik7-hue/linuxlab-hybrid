@@ -5,7 +5,8 @@ const inFlight = new Map<string, Promise<ArrayBuffer>>();
 const ISO_FETCH_TIMEOUT_MS = 90_000;
 const RANGE_FETCH_TIMEOUT_MS = 90_000;
 const DIRECT_FETCH_MAX_BYTES = 64 * 1024 * 1024;
-const RANGE_CHUNK_BYTES = 32 * 1024 * 1024;
+const RANGE_CHUNK_BYTES = 48 * 1024 * 1024;
+const RANGE_CONCURRENCY = 2;
 const IDB_NAME = 'LinuxLab_ISO_Cache';
 const IDB_VERSION = 2;
 const IDB_STORE = 'artifacts';
@@ -115,17 +116,21 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
 }
 
 async function fetchIsoResumable(url: string, artifact: PinnedArtifact, signal: AbortSignal): Promise<ArrayBuffer> {
-  const chunks: ArrayBuffer[] = [];
-  for (let start = 0; start < artifact.size; start += RANGE_CHUNK_BYTES) {
-    const end = Math.min(artifact.size - 1, start + RANGE_CHUNK_BYTES - 1);
-    chunks.push(await fetchRange(url, start, end, artifact, signal));
-  }
   const bytes = new Uint8Array(artifact.size);
-  let offset = 0;
-  for (const chunk of chunks) {
-    bytes.set(new Uint8Array(chunk), offset);
-    offset += chunk.byteLength;
+  let nextStart = 0;
+
+  while (nextStart < artifact.size) {
+    const batch: Array<{ start: number; end: number }> = [];
+    for (let i = 0; i < RANGE_CONCURRENCY && nextStart < artifact.size; i += 1) {
+      const start = nextStart;
+      const end = Math.min(artifact.size - 1, start + RANGE_CHUNK_BYTES - 1);
+      batch.push({ start, end });
+      nextStart = end + 1;
+    }
+    const chunks = await Promise.all(batch.map(({ start, end }) => fetchRange(url, start, end, artifact, signal)));
+    chunks.forEach((chunk, index) => bytes.set(new Uint8Array(chunk), batch[index].start));
   }
+
   return bytes.buffer;
 }
 
