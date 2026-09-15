@@ -1,7 +1,9 @@
 import { strict as assert } from 'node:assert';
 import { StructuredLinuxEngine } from '../src/engine/StructuredLinuxEngine.ts';
+import { VM_RESOURCE_POLICIES } from '../src/engine/VMResourcePolicy.ts';
 
 const engine = new StructuredLinuxEngine();
+const policy = VM_RESOURCE_POLICIES.linux4;
 
 for (const input of [
   ':() { : | : & }; :',
@@ -40,7 +42,11 @@ const pipeline = Array.from({ length: 40 }, () => 'printf x').join(' | ');
 const pipelineResult = await engine.executeResult(pipeline);
 assert.notEqual(pipelineResult.exitCode, 0, 'pipeline fan-out must be bounded');
 
-const hugeOutput = await engine.executeResult(`printf ${'x'.repeat(20_000)}`);
-assert.ok(hugeOutput.stdout.length <= 16_384, 'command output must be bounded');
+// Exercise the configured runtime boundary instead of assuming a smaller
+// test-only limit. The input is deliberately larger than the linux4 policy.
+const hugeOutput = await engine.executeResult(`printf ${'x'.repeat(policy.maxOutputBytes + 1024)}`);
+const outputBytes = new TextEncoder().encode(hugeOutput.stdout).byteLength;
+assert.ok(outputBytes <= policy.maxOutputBytes, 'command output must be bounded');
+assert.equal(hugeOutput.truncated, true, 'oversized command output must be marked truncated');
 
 console.log('Adversarial resource checks passed');
