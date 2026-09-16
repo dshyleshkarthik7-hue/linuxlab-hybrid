@@ -7,8 +7,8 @@ const read = path => readFile(join(root, path), 'utf8');
 const exists = async path => { try { await readFile(join(root, path)); return true; } catch { return false; } };
 
 const challenges = await read('challenges/index.html');
-const challengeScript = await read('challenges/challenges.js');
-const challengeCommandEntries = [...challengeScript.matchAll(/\[['"]([^'"]+)['"],['"]([^'"]+)['"](?:,|\])/g)].map(m => `${m[1]}|${m[2]}`);
+const challengeScript = await read('public/challenges/challenges.js');
+const challengeCommandEntries = [...challengeScript.matchAll(/\[['"]([^'"]+)['"],['"]([^'"]+)['"\](?:,|\])/g)].map(m => `${m[1]}|${m[2]}`);
 assert.equal(challengeCommandEntries.length, 50, 'challenge catalog must contain exactly 50 commands (100 challenges)');
 assert.match(challengeScript, /const COMMANDS=\[/, 'challenge catalog must expose its command data in the external JavaScript asset');
 assert.match(challenges, /\/challenges\/challenges\.js/, 'challenge page must load the external challenge catalog script');
