@@ -11,6 +11,7 @@ import './iso-integrity.test.ts';
 import './p1-runtime.test.ts';
 import './vm-resource-policy.test.ts';
 import './guest-telemetry.test.ts';
+import './assessment-runner-coverage.test.ts';
 import './security-static.test.mjs';
 import './content-contract.test.mjs';
 import './p2-p3-contract.test.mjs';
