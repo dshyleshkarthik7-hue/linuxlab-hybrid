@@ -3,8 +3,13 @@ import { AssessmentRunner } from '../src/engine/AssessmentRunner.ts';
 
 const engine = {
   executeGeneralCode(code: string, language: string, vars: Record<string, number>) {
-    if (language === 'c') return `Table num=${vars.num}\n${vars.num} x 1 = ${vars.num}\n${vars.num} x 10 = ${vars.num * 10}`;
-    return `${vars.num} is a Prime Number`;
+    if (language === 'c') {
+      const n = vars.num;
+      return `Table num=${n}\n${Array.from({ length: 10 }, (_, i) => `${n} x ${i + 1} = ${n * (i + 1)}`).join('\n')}`;
+    }
+    const n = vars.num;
+    const prime = n > 1 && Array.from({ length: Math.max(0, n - 2) }, (_, i) => i + 2).every(d => n % d !== 0);
+    return `${n} is ${prime ? '' : 'not '}a Prime Number`;
   },
 } as any;
 
