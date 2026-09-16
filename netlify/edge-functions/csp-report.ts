@@ -3,6 +3,8 @@ const MAX_REPORTS_PER_WINDOW = 20;
 const RATE_WINDOW_MS = 60_000;
 const reportBuckets = new Map<string, { count: number; resetAt: number }>();
 
+type EdgeContext = { ip?: string };
+
 function cors(request: Request): Record<string, string> {
   const origin = request.headers.get('origin');
   if (origin === 'https://linuxterminal.me' || origin === 'https://www.linuxterminal.me') {
@@ -11,13 +13,12 @@ function cors(request: Request): Record<string, string> {
   return {};
 }
 
-function clientKey(request: Request): string {
-  const edgeRequest = request as Request & { context?: { ip?: string } };
-  return edgeRequest.context?.ip?.trim() || 'unknown';
+function clientKey(context: EdgeContext): string {
+  return context.ip?.trim() || 'unknown';
 }
 
-function rateLimited(request: Request): boolean {
-  const key = clientKey(request);
+function rateLimited(context: EdgeContext): boolean {
+  const key = clientKey(context);
   const now = Date.now();
   const bucket = reportBuckets.get(key);
   if (!bucket || now >= bucket.resetAt) {
@@ -28,11 +29,11 @@ function rateLimited(request: Request): boolean {
   return bucket.count > MAX_REPORTS_PER_WINDOW;
 }
 
-export default async (request: Request): Promise<Response> => {
+export default async (request: Request, context: EdgeContext): Promise<Response> => {
   const headers = cors(request);
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...headers, 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' } });
   if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST, OPTIONS', ...headers } });
-  if (rateLimited(request)) return new Response('Too Many Requests', { status: 429, headers: { ...headers, 'Retry-After': '60', 'Cache-Control': 'no-store' } });
+  if (rateLimited(context)) return new Response('Too Many Requests', { status: 429, headers: { ...headers, 'Retry-After': '60', 'Cache-Control': 'no-store' } });
 
   const length = request.headers.get('content-length');
   if (length && (!/^\d+$/.test(length) || Number(length) > MAX_REPORT_BYTES)) return new Response('Payload Too Large', { status: 413, headers });
