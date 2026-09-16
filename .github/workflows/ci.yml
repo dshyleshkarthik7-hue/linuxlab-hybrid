@@ -9,7 +9,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     env:
       NPM_CONFIG_REGISTRY: https://registry.npmjs.org/
       NPM_CONFIG_FETCH_RETRIES: 8
@@ -19,6 +19,9 @@ jobs:
       NPM_CONFIG_MAXSOCKETS: 1
       ISO_LIVE_VERIFY: 1
       ISO_LIVE_VERIFY_TIMEOUT_MS: 180000
+      PRODUCTION_SMOKE_TIMEOUT_MS: 60000
+      PRODUCTION_SMOKE_RETRY_MS: 15000
+      PRODUCTION_SMOKE_RETRIES: 24
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
