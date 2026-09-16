@@ -44,7 +44,7 @@ assert.match(iso, /content-length/);
 assert.match(iso, /source\.size/);
 assert.match(iso, /upstream\.body/);
 assert.equal(/arrayBuffer\(\)/.test(iso), false);
-assert.match(iso, /\^bytes=\(\\d\+\)-\(\d\*\)\$/);
+assert.match(iso, /const match = \/\^bytes=\\d\+\-\\d\*\$\/\.exec/);
 assert.match(artifacts, /size:\s*691011584/);
 assert.match(artifacts, /size:\s*51380224/);
 assert.match(artifacts, /size:\s*7731200/);
