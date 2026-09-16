@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "prebuild": "node scripts/fetch-v86-firmware.mjs",
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "npm run test:engine && npm run test:catalog && npm run test:parser && npm run test:result && npm run test:vnext && npm run test:adversarial && npm run test:session && npm run test:p1 && npm run test:catalog-executable && npm run test:observatory && npm run test:iso && npm run test:iso-edge && npm run test:content-contract && npm run test:telemetry && npm run test:static-security && npm run test:vm-policy && npm run test:tutorials && npm run test:quiz-quality && npm run test:certificate-contract",
