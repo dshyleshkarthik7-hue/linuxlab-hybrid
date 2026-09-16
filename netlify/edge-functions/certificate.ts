@@ -3,6 +3,7 @@ const QUESTION_COUNT = 30;
 const PASS_PERCENT = 80;
 const ATTEMPT_TTL = 3600;
 const CERT_TTL = 60 * 60 * 24 * 365 * 5;
+const MAX_BODY_BYTES = 16_384;
 const UPSTASH_URL = Netlify.env.get('UPSTASH_REDIS_REST_URL');
 const UPSTASH_TOKEN = Netlify.env.get('UPSTASH_REDIS_REST_TOKEN');
 const SIGNING_SECRET = Netlify.env.get('CERTIFICATE_SIGNING_SECRET');
@@ -178,6 +179,16 @@ async function verify(id: string) {
   return json({ certificate: publicCert(c) });
 }
 
+async function readJsonBody(r: Request): Promise<unknown> {
+  const contentType = r.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase();
+  if (contentType !== 'application/json') throw new Error('content-type must be application/json');
+  const length = r.headers.get('content-length');
+  if (length && (!/^\d+$/.test(length) || Number(length) > MAX_BODY_BYTES)) throw new Error('request body is too large');
+  const bytes = await r.arrayBuffer();
+  if (bytes.byteLength > MAX_BODY_BYTES) throw new Error('request body is too large');
+  return JSON.parse(new TextDecoder().decode(bytes));
+}
+
 export default async (r: Request) => {
   if (r.method === 'OPTIONS') return new Response('', { status: 204, headers: { 'access-control-allow-origin': ORIGIN, 'access-control-allow-methods': 'GET,POST,OPTIONS', 'access-control-allow-headers': 'content-type,authorization' } });
   try {
@@ -186,8 +197,15 @@ export default async (r: Request) => {
     if (r.method !== 'POST') return json({ error: 'method not allowed' }, 405);
     const user = await auth(r);
     if (!user) return json({ error: 'Sign in to take the free verified exam.' }, 401);
-    const body = await r.json().catch(() => ({}));
-    return u.searchParams.get('action') === 'start' ? start(user) : u.searchParams.get('action') === 'submit' ? submit(user, body) : json({ error: 'Unknown action.' }, 400);
+    const action = u.searchParams.get('action');
+    if (action !== 'start' && action !== 'submit') return json({ error: 'Unknown action.' }, 400);
+    if (action === 'start') return start(user);
+    let body: unknown;
+    try { body = await readJsonBody(r); } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      return json({ error: message }, message === 'request body is too large' ? 413 : 400);
+    }
+    return submit(user, body);
   } catch (e) {
     console.error('Certificate service failed', e instanceof Error ? e.message : String(e));
     return json({ error: 'Certificate service unavailable.' }, 503);
