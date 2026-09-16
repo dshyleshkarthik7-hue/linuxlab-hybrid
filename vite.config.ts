@@ -96,6 +96,7 @@ export default defineConfig({
         challenges: entry('challenges/index.html'),
         iso: entry('open-source-iso/index.html'),
         login: entry('login/index.html'),
+        certificate: entry('certificate/index.html'),
       },
       output: { manualChunks(id) { if (id.includes('monaco-editor')) return 'monaco'; if (id.includes('@xterm')) return 'xterm'; } },
     },
