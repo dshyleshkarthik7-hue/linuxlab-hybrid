@@ -41,12 +41,12 @@
 [[headers]]
   for = "/simulator.html"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self'; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
 
 [[headers]]
   for = "/real-linux/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; connect-src 'self'; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval'; style-src 'self'; connect-src 'self'; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
 
 [[headers]]
   for = "/login/*"
@@ -58,8 +58,6 @@
   [headers.values]
     Content-Security-Policy = "default-src 'self'; script-src 'self' https://identity.netlify.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://identity.netlify.com; img-src 'self' data: https://identity.netlify.com; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
 
-# Static fallback only applies when the edge route is not present in a deployment.
-# Edge Functions execute before redirects, so the canonical dynamic command catalog wins when deployed.
 [[redirects]]
   from = "/commands"
   to = "/commands-entry.html"
@@ -68,6 +66,18 @@
   from = "/commands/"
   to = "/commands-entry.html"
   status = 200
+[[redirects]]
+  from = "/certificate"
+  to = "/certificate/"
+  status = 301
+[[redirects]]
+  from = "/certification"
+  to = "/certificate/"
+  status = 301
+[[redirects]]
+  from = "/certification/"
+  to = "/certificate/"
+  status = 301
 [[redirects]]
   from = "/seabios.bin"
   to = "/api/v86-firmware/seabios.bin"
