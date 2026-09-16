@@ -20,7 +20,12 @@ export default () => {
     ...staticPages,
     ...COMMAND_INDEX.map((item) => `/commands/${encodeURIComponent(item.name)}/`),
   ];
-  const body = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${urls.map((url) => `<url><loc>https://linuxterminal.me${url}</loc></url>`).join('')}</urlset>`;
+  const body = [
+    '<?xml version="1.0" encoding="UTF-8"?>',
+    '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
+    ...urls.map((url) => `  <url><loc>https://linuxterminal.me${url}</loc></url>`),
+    '</urlset>',
+  ].join('\n');
 
   return new Response(body, {
     headers: {
