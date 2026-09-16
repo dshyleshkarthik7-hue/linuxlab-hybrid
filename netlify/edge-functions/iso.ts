@@ -3,6 +3,8 @@ import { ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT } from '../
 type ImageName = 'developer' | 'virt' | 'linux4';
 type ImageSource = typeof ALPINE_ARTIFACT;
 
+type NetlifyRuntime = { env?: { get?: (name: string) => string | undefined } };
+
 const IMAGES: Record<ImageName, ImageSource> = {
   developer: DEVELOPER_ALPINE_ARTIFACT,
   virt: ALPINE_ARTIFACT,
@@ -30,16 +32,21 @@ function cors(source: ImageSource): Headers {
   });
 }
 
+function githubToken(): string | undefined {
+  const runtime = (globalThis as typeof globalThis & { Netlify?: NetlifyRuntime }).Netlify;
+  return runtime?.env?.get?.('GITHUB_TOKEN');
+}
+
 async function verifyReleaseAsset(source: ImageSource): Promise<void> {
   const cached = verifiedCache.get(source.filename);
   if (cached !== undefined && Date.now() - cached < VERIFY_TTL_MS) return;
 
-  const githubToken = Netlify.env.get('GITHUB_TOKEN');
+  const token = githubToken();
   const headers = new Headers({
     Accept: 'application/vnd.github+json',
     'User-Agent': 'LinuxTerminal-ISO-Proxy/13.0',
   });
-  if (githubToken) headers.set('Authorization', `Bearer ${githubToken}`);
+  if (token) headers.set('Authorization', `Bearer ${token}`);
 
   const response = await fetch(source.releaseManifestUrl, {
     headers,
