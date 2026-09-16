@@ -34,8 +34,15 @@ async function verifyReleaseAsset(source: ImageSource): Promise<void> {
   const cached = verifiedCache.get(source.filename);
   if (cached !== undefined && Date.now() - cached < VERIFY_TTL_MS) return;
 
+  const githubToken = Netlify.env.get('GITHUB_TOKEN');
+  const headers = new Headers({
+    Accept: 'application/vnd.github+json',
+    'User-Agent': 'LinuxTerminal-ISO-Proxy/13.0',
+  });
+  if (githubToken) headers.set('Authorization', `Bearer ${githubToken}`);
+
   const response = await fetch(source.releaseManifestUrl, {
-    headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'LinuxTerminal-ISO-Proxy/13.0' },
+    headers,
     cache: 'no-store',
   });
   if (!response.ok) throw new Error(`Release manifest unavailable (${response.status})`);
