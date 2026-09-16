@@ -62,13 +62,22 @@ async function runSmoke() {
   try {
     page.on('console', message => { if (message.type() === 'error') console.error('[browser]', message.text()); });
     await page.route('**/api/iso**', async route => {
+      const url = new URL(route.request().url());
+      const image = url.searchParams.get('image');
+      if (image !== 'virt' && image !== 'developer') {
+        await route.fulfill({ status: 404, headers: {'content-type':'text/plain'}, body: 'Unknown image' });
+        return;
+      }
       const range = route.request().headers().range;
-      await route.fulfill({ status: range ? 206 : 200, headers: range ? {'content-range':'bytes 0-0/1','accept-ranges':'bytes','content-length':'1','content-type':'application/octet-stream'} : {'content-length':'1','content-type':'application/octet-stream'}, body: Buffer.from([0]) });
+      const headers = range
+        ? {'content-range':'bytes 0-0/1','accept-ranges':'bytes','content-length':'1','content-type':'application/octet-stream'}
+        : {'content-length':'1','content-type':'application/octet-stream'};
+      await route.fulfill({ status: range ? 206 : 200, headers, body: Buffer.from([0]) });
     });
     await stage(page, 'page-load', async () => { const response = await page.goto(baseURL.replace(/\/$/,'') + '/index-v86.html', { waitUntil:'domcontentloaded' }); if (!response || !response.ok()) throw new Error('Unable to load V86 page'); });
     const required=['#v86-health','#v86-status','#v86-monitor','#v86-terminal-container','#screen_container'];
     await stage(page, 'required-controls', async () => { for (const selector of required) await page.waitForSelector(selector,{state:'attached'}); });
-    const buttons={terminal:'#btn-v86-terminal',screen:'#btn-v86-screen',alpine:'#btn-v86-alpine',virt:'#btn-v86-virt',restart:'#btn-v86-restart'};
+    const buttons={terminal:'#btn-v86-terminal',screen:'#btn-v86-screen',virt:'#btn-v86-virt',restart:'#btn-v86-restart'};
     await stage(page, 'button-availability', async () => { for (const [name,selector] of Object.entries(buttons)){await page.waitForSelector(selector,{state:'visible'});console.log('Found '+name+' control');} });
     await stage(page, 'boot-status', async () => page.waitForFunction(() => {
       const status = (document.getElementById('v86-status')?.textContent || '').toLowerCase();
@@ -76,7 +85,14 @@ async function runSmoke() {
       return health === 'ready' || health === 'offline' || /starting|checking runtime|checking image|booting|running|ready|failed|failure|error|integrity|artifact/i.test(status);
     }));
     await stage(page, 'screen-toggle', async () => { await page.click(buttons.screen); await page.waitForFunction(() => !document.getElementById('screen_container')?.hidden && Boolean(document.getElementById('v86-terminal-container')?.hidden)); await page.click(buttons.terminal); await page.waitForFunction(() => Boolean(document.getElementById('screen_container')?.hidden) && !document.getElementById('v86-terminal-container')?.hidden); });
-    await stage(page, 'alpine-profile-switching', async () => { await page.click(buttons.virt); await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Alpine Virt 3.24.1') || false); await page.click(buttons.alpine); await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Developer Alpine') || false); });
+    await stage(page, 'alpine-profile-switching', async () => {
+      await page.click(buttons.virt);
+      await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Alpine Virt 3.24.1') || false);
+      const developerLink = page.locator('a[href="/developer-alpine/"]');
+      await developerLink.waitFor({ state: 'visible' });
+      const href = await developerLink.getAttribute('href');
+      if (href !== '/developer-alpine/') throw new Error('Developer Alpine navigation target changed unexpectedly');
+    });
     console.log('Browser VM controls smoke test passed');
   } finally { await context.close().catch(()=>{}); await browser.close().catch(()=>{}); }
 }
