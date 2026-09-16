@@ -12,7 +12,8 @@ function cors(request: Request): Record<string, string> {
 }
 
 function clientKey(request: Request): string {
-  return request.headers.get('x-forwarded-for')?.split(',')[0]?.trim() || 'unknown';
+  const edgeRequest = request as Request & { context?: { ip?: string } };
+  return edgeRequest.context?.ip?.trim() || 'unknown';
 }
 
 function rateLimited(request: Request): boolean {
