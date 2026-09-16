@@ -3,9 +3,8 @@ const source=await readFile(new URL('../src/quiz.ts',import.meta.url),'utf8');
 assert.match(source,/QUESTIONS\.length!==500/);
 assert.match(source,/getRandomValues/);
 assert.match(source,/session=shuffle\(QUESTIONS\)/);
-// FACTS is intentionally stored as compact tuples and mapped to objects at runtime.
-// Validate the actual source-of-truth representation instead of requiring duplicated JSON.
-for(const c of ['pwd','ls','cd','grep','find','chmod','ps','df','du','tar','curl','gcc','make'])assert.match(source,new RegExp(`\\[\\"${c}\\",`),`${c} needs command-specific facts`);
+// FACTS is stored as compact tuples and mapped to Fact objects at runtime.
+for(const c of ['pwd','ls','cd','grep','find','chmod','ps','df','du','tar','curl','gcc','make'])assert.match(source,new RegExp(`\\["${c}",`),`${c} needs command-specific facts`);
 for(const x of ['stdout','stderr','exit status','syntax','option'])assert.match(source,new RegExp(x,'i'));
 assert.doesNotMatch(source,/What is a primary learning goal for/);
 console.log('Quiz quality and randomization checks passed');
