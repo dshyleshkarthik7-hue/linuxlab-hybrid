@@ -22,8 +22,8 @@ export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   if (url.pathname !== '/api/iso') throw new Error(`Untrusted ISO endpoint: ${url.origin}${url.pathname}`);
   if (image === 'virt') return ALPINE_ARTIFACT;
   if (image === 'linux4') return LINUX4_ARTIFACT;
-  if (image === null) return DEVELOPER_ALPINE_ARTIFACT;
-  throw new Error(`Unknown ISO profile: ${image}`);
+  if (image === 'developer') return DEVELOPER_ALPINE_ARTIFACT;
+  throw new Error('ISO profile is required: use image=linux4, image=virt, or image=developer');
 }
 
 function requestSignal(parent: AbortSignal | undefined, timeoutMs: number): AbortSignal {
