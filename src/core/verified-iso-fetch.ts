@@ -1,4 +1,5 @@
 import { verifyResponse, verifyArtifact, ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT, type PinnedArtifact } from './ISOIntegrity.ts';
+import { Sha256 } from './sha256.ts';
 
 const memoryCache = new Map<string, ArrayBuffer>();
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
@@ -32,10 +33,7 @@ function requestSignal(parent: AbortSignal | undefined, timeoutMs: number): Abor
 
 function openCache(): Promise<IDBDatabase> {
   return new Promise((resolve, reject) => {
-    if (!('indexedDB' in window)) {
-      reject(new Error('IndexedDB is unavailable'));
-      return;
-    }
+    if (!('indexedDB' in window)) { reject(new Error('IndexedDB is unavailable')); return; }
     const request = indexedDB.open(IDB_NAME, IDB_VERSION);
     request.onupgradeneeded = () => {
       const db = request.result;
@@ -59,9 +57,7 @@ async function readPersistent(url: string, artifact: PinnedArtifact): Promise<Ar
     if (!record || record.sha256.toLowerCase() !== artifact.sha256.toLowerCase() || record.size !== artifact.size) return null;
     await verifyArtifact(record.bytes, artifact);
     return record.bytes.slice(0);
-  } catch {
-    return null;
-  }
+  } catch { return null; }
 }
 
 async function writePersistent(url: string, artifact: PinnedArtifact, bytes: ArrayBuffer): Promise<void> {
@@ -80,9 +76,7 @@ async function writePersistent(url: string, artifact: PinnedArtifact, bytes: Arr
           store.delete(item.url);
           total -= item.size;
         }
-        if (bytes.byteLength <= MAX_PERSISTENT_CACHE_BYTES) {
-          store.put({ url, sha256: artifact.sha256, size: artifact.size, bytes: bytes.slice(0), storedAt: Date.now() } satisfies CachedIso);
-        }
+        if (bytes.byteLength <= MAX_PERSISTENT_CACHE_BYTES) store.put({ url, sha256: artifact.sha256, size: artifact.size, bytes: bytes.slice(0), storedAt: Date.now() } satisfies CachedIso);
       };
       request.onerror = () => reject(request.error ?? new Error('ISO cache read failed'));
       tx.oncomplete = () => resolve();
@@ -90,19 +84,13 @@ async function writePersistent(url: string, artifact: PinnedArtifact, bytes: Arr
       tx.onabort = () => reject(tx.error ?? new Error('ISO cache write aborted'));
     });
     db.close();
-  } catch {
-    // Persistent caching is an optimization; verified network transport remains authoritative.
-  }
+  } catch { /* cache is an optimization; verified network transport remains authoritative */ }
 }
 
 async function fetchRange(url: string, start: number, end: number, artifact: PinnedArtifact, signal: AbortSignal): Promise<ArrayBuffer> {
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      const response = await fetch(url, {
-        headers: { Range: `bytes=${start}-${end}` },
-        cache: 'no-store',
-        signal: requestSignal(signal, RANGE_FETCH_TIMEOUT_MS),
-      });
+      const response = await fetch(url, { headers: { Range: `bytes=${start}-${end}` }, cache: 'no-store', signal: requestSignal(signal, RANGE_FETCH_TIMEOUT_MS) });
       if (response.status === 206) {
         if (response.headers.get('content-range') !== `bytes ${start}-${end}/${artifact.size}`) throw new Error('ISO range integrity metadata mismatch');
         const bytes = await response.arrayBuffer();
@@ -120,8 +108,8 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
 
 async function fetchIsoResumable(url: string, artifact: PinnedArtifact, signal: AbortSignal): Promise<ArrayBuffer> {
   const bytes = new Uint8Array(artifact.size);
+  const hash = new Sha256();
   let nextStart = 0;
-
   while (nextStart < artifact.size) {
     const batch: Array<{ start: number; end: number }> = [];
     for (let i = 0; i < RANGE_CONCURRENCY && nextStart < artifact.size; i += 1) {
@@ -131,9 +119,13 @@ async function fetchIsoResumable(url: string, artifact: PinnedArtifact, signal: 
       nextStart = end + 1;
     }
     const chunks = await Promise.all(batch.map(({ start, end }) => fetchRange(url, start, end, artifact, signal)));
-    chunks.forEach((chunk, index) => bytes.set(new Uint8Array(chunk), batch[index].start));
+    chunks.forEach((chunk, index) => {
+      bytes.set(new Uint8Array(chunk), batch[index].start);
+      hash.update(new Uint8Array(chunk));
+    });
   }
-
+  const actual = hash.digestHex();
+  if (actual.toLowerCase() !== artifact.sha256.toLowerCase()) throw new Error(`Artifact ${artifact.filename} failed SHA-256 integrity verification`);
   return bytes.buffer;
 }
 
@@ -146,19 +138,10 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   if (url.origin !== window.location.origin) throw new Error('ISO endpoint must be same-origin');
   const key = url.toString();
   const artifact = artifactForIsoUrl(key);
-
   const cached = memoryCache.get(key);
-  if (cached) {
-    await verifyArtifact(cached, artifact);
-    return consumerBuffer(cached, artifact);
-  }
-
+  if (cached) { await verifyArtifact(cached, artifact); return consumerBuffer(cached, artifact); }
   const persistent = await readPersistent(key, artifact);
-  if (persistent) {
-    memoryCache.set(key, persistent);
-    return consumerBuffer(persistent, artifact);
-  }
-
+  if (persistent) { memoryCache.set(key, persistent); return consumerBuffer(persistent, artifact); }
   const pending = inFlight.get(key);
   if (pending) return pending.then((bytes) => consumerBuffer(bytes, artifact));
 
@@ -166,11 +149,7 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
     let bytes: ArrayBuffer;
     if (artifact.size <= DIRECT_FETCH_MAX_BYTES) {
       try {
-        const response = await fetch(key, {
-          method: 'GET',
-          cache: 'no-store',
-          signal: requestSignal(signal, ISO_FETCH_TIMEOUT_MS),
-        });
+        const response = await fetch(key, { method: 'GET', cache: 'no-store', signal: requestSignal(signal, ISO_FETCH_TIMEOUT_MS) });
         bytes = await verifyResponse(response, artifact);
       } catch (error) {
         if (signal?.aborted) throw error;
@@ -179,20 +158,14 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
     } else {
       bytes = await fetchIsoResumable(key, artifact, signal ?? new AbortController().signal);
     }
-
-    await verifyArtifact(bytes, artifact);
     memoryCache.clear();
     memoryCache.set(key, bytes);
     await writePersistent(key, artifact, bytes);
     return bytes;
   })();
-
   inFlight.set(key, promise);
-  try {
-    return consumerBuffer(await promise, artifact);
-  } finally {
-    if (inFlight.get(key) === promise) inFlight.delete(key);
-  }
+  try { return consumerBuffer(await promise, artifact); }
+  finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
 }
 
 export function clearVerifiedIsoCache(): void {

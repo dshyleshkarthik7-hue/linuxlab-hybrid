@@ -48,7 +48,10 @@ assert.match(iso, /const match = \/\^bytes=\(\\d\+\)-\(\\d\*\)\$\/\.exec/);
 assert.match(artifacts, /size:\s*691011584/);
 assert.match(artifacts, /size:\s*51380224/);
 assert.match(artifacts, /size:\s*7731200/);
-assert.match(integrity, /bytes\.byteLength !== artifact\.size/);
+assert.match(integrity, /sha256StreamHex/);
+assert.match(integrity, /new Sha256\(\)/);
+assert.equal(/crypto\.subtle\.digest/.test(integrity), false);
+assert.match(integrity, /response\.body\.getReader\(\)/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
 for (const [name, html] of [['quiz', quiz], ['certificate', certificatePage], ['verify', verify]]) {
   assert.doesNotMatch(html, /<style[\s>]/i, `${name} inline styles`);

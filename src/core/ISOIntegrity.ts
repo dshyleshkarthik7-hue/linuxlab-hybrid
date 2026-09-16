@@ -1,5 +1,6 @@
 import { ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT } from './artifacts.ts';
 import type { PinnedArtifact } from './artifacts.ts';
+import { Sha256 } from './sha256.ts';
 
 export type { PinnedArtifact } from './artifacts.ts';
 
@@ -17,8 +18,13 @@ const trustedUrl = (value: string, prefix: string) => {
 };
 
 export async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
-  const digest = await crypto.subtle.digest('SHA-256', bytes);
-  return [...new Uint8Array(digest)].map(b => b.toString(16).padStart(2, '0')).join('');
+  return new Sha256().update(new Uint8Array(bytes)).digestHex();
+}
+
+export function sha256StreamHex(chunks: Iterable<Uint8Array>): string {
+  const hash = new Sha256();
+  for (const chunk of chunks) hash.update(chunk);
+  return hash.digestHex();
 }
 
 export function assertTrustedArtifact(artifact: PinnedArtifact): void {
@@ -41,9 +47,30 @@ export async function verifyResponse(response: Response, artifact: PinnedArtifac
   if (!response.ok) throw new Error(`Artifact ${artifact.filename} download failed (${response.status})`);
   const length = response.headers.get('content-length');
   if (length !== null && length !== String(artifact.size)) throw new Error(`Artifact ${artifact.filename} response has unexpected size metadata`);
-  const bytes = await response.arrayBuffer();
-  await verifyArtifact(bytes, artifact);
-  return bytes;
+  if (!response.body) throw new Error(`Artifact ${artifact.filename} response has no body`);
+
+  const reader = response.body.getReader();
+  const chunks: Uint8Array[] = [];
+  const hash = new Sha256();
+  let size = 0;
+  try {
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+      size += value.byteLength;
+      hash.update(value);
+      chunks.push(value);
+    }
+  } finally {
+    reader.releaseLock();
+  }
+  if (size !== artifact.size) throw new Error(`Artifact ${artifact.filename} has unexpected size (${size}; expected ${artifact.size})`);
+  const actual = hash.digestHex();
+  if (actual.toLowerCase() !== artifact.sha256.toLowerCase()) throw new Error(`Artifact ${artifact.filename} failed SHA-256 integrity verification`);
+  const bytes = new Uint8Array(size);
+  let offset = 0;
+  for (const chunk of chunks) { bytes.set(chunk, offset); offset += chunk.byteLength; }
+  return bytes.buffer;
 }
 
 export { ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT };

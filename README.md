@@ -2,6 +2,10 @@
 
 LinuxTerminal is a free, beginner-focused Linux learning platform: tutorials, a searchable command reference, safe browser practice, challenges, quizzes, contextual tutoring, a temporary real Linux lab, and a free verified assessment.
 
+## Security boundary
+
+Before deployment, read [`THREAT_MODEL.md`](./THREAT_MODEL.md). The browser simulator and the real v86 Linux guest are educational browser environments. The real Linux VM is **not a host-kernel security boundary** and must not be represented as a multi-tenant hostile-workload sandbox. Browser/runtime limits are defense-in-depth controls; guest telemetry is observational. A deployment that requires hostile arbitrary-code isolation needs an independently enforced server-side sandbox.
+
 ## Start learning
 
 - Homepage: https://linuxterminal.me/
@@ -70,7 +74,7 @@ Tutor variables:
 
 ## Integrity and security
 
-VM artifacts are pinned to exact SHA-256 digests and sizes. The ISO relay validates release metadata before streaming, while the browser performs complete-artifact verification before accepting an ISO. Range responses are validated against requested ranges.
+VM artifacts are pinned to exact SHA-256 digests and sizes. The ISO relay validates release metadata before streaming, while the browser validates every requested range and incrementally computes the complete-artifact SHA-256 digest while assembling large images. The final digest and exact size must match the pinned artifact before the ISO is accepted.
 
 CSP, security headers, authenticated Tutor access, server-side exam grading, signed certificates, bounded browser storage, resource limits and regression tests are part of the production design.
 
@@ -99,7 +103,7 @@ Build with `npm run build`.
 
 Run the full CI-oriented checks with `npm run check`. Production smoke testing uses `npm run test:production -- https://linuxterminal.me`.
 
-The repository uses strict TypeScript, reproducible npm installs, pinned CI action commits, and regression tests for the learning engine, command catalog, parser, assessment runtime, ISO integrity, edge behavior, storage/resource controls, tutorials, quiz quality, certificate contracts and production routes.
+The repository uses strict TypeScript, reproducible npm installs, pinned CI action commits, automated dependency-update configuration, explicit code ownership, and regression tests for the learning engine, command catalog, parser, assessment runtime, ISO integrity, edge behavior, storage/resource controls, tutorials, quiz quality, certificate contracts and production routes.
 
 ## License
 
