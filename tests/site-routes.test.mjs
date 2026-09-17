@@ -38,6 +38,8 @@ const netlify = readFileSync(join(root, 'netlify.toml'), 'utf8');
 assert.ok(!netlify.includes('function = \"commands\"'), 'Legacy dynamic command edge route must not shadow static lessons');
 assert.ok(netlify.includes('from = \"/commands\"') && netlify.includes('to = \"/commands-entry.html\"'), 'Canonical commands route missing');
 for (const command of commands) {
-  assert.ok(netlify.includes(`from = \"/commands/${command}/\"`) && netlify.includes(`to = \"/commands/${command}.html\"`), `Legacy redirect missing for ${command}`);
+  const from = `from = \"/commands/${command}/\"`;
+  const canonical = `to = \"/commands/${command}.html`;
+  assert.ok(netlify.includes(from) && netlify.includes(canonical), `Legacy redirect missing for ${command}`);
 }
 console.log(`site routes: ${required.length} core assets + 200-command catalogue + ${commands.length} static command lessons verified`);
