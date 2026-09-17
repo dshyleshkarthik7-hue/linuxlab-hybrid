@@ -42,6 +42,14 @@ Both the user and IP limits must pass. If Upstash cannot be reached, Tutor fails
 
 The application does not invent a second authentication protocol: the browser obtains the Netlify Identity session and the Tutor verifies it server-side.
 
+## Certificate service
+
+Certificate issuance is authenticated and graded server-side. Certificate records are signed with the server-only `CERTIFICATE_SIGNING_SECRET`; that secret must never be exposed to the browser or committed to Git.
+
+Certificate verification is public and read-only. Keep certificate identifiers unguessable and treat verification traffic as untrusted public traffic. The deployed certificate verifier must enforce a bounded public-request rate before querying Redis; if this control is unavailable in the current edge implementation, do not claim unlimited abuse resistance.
+
+Certificate records currently use a five-year Redis TTL. This is an explicit retention policy, not a security guarantee. Review it against the site's privacy policy and legal/data-retention requirements before launch, and shorten it if the product does not require five years of public verification.
+
 ## Production smoke test
 
 Set the GitHub Actions repository variable `PRODUCTION_BASE_URL` to the canonical deployed origin. This enables the production smoke test in CI instead of silently skipping it.
@@ -68,10 +76,33 @@ Then manually verify:
 - After the rate limit is reached, Tutor returns `429` with `Retry-After: 60`.
 - Removing the Upstash variables causes Tutor to fail closed with `503`.
 - The browser never exposes `HF_TOKEN` or the Upstash token.
+- A valid certificate verifies and a tampered certificate fails verification.
+- Certificate verification is rate-limited under sustained public traffic.
+- The five-year certificate retention policy is approved by the site's privacy/data-retention policy owner.
+
+## Browser Linux privacy boundary
+
+The Real Linux Lab runs the guest locally in the user's browser. The configured v86 network device is disabled. Guest filesystem contents, terminal input/output, and VM memory must remain local unless a feature explicitly sends data to a backend.
+
+Browser v86 is not a host-kernel security boundary. LinuxTerminal does not execute the browser guest on a shared server and does not claim to protect the host operating system from browser/emulator vulnerabilities.
+
+## Release governance and rollback
+
+Production deployments must come from `main` after the complete CI workflow passes. Keep the previous known-good production commit recorded for immediate rollback. GitHub `main` branch protection, required checks, and review rules are repository-administration controls and must be enabled manually because repository content permissions cannot configure them.
+
+For a production incident:
+
+1. stop promotion of new commits;
+2. roll back to the last known-good commit;
+3. rotate any credential suspected of exposure;
+4. confirm Tutor, certificate, ISO, firmware, and browser smoke checks;
+5. preserve the incident timeline and identify the corrective commit.
+
+Netlify and Upstash are external service dependencies. Do not claim provider redundancy unless a redundant deployment is actually configured.
 
 ## Security boundary
 
-The browser emulator remains browser-based. Its lifecycle/resource controls are defense-in-depth and are not a host-kernel security boundary. Guest telemetry is UX-only. Do not represent the browser VM as a server-side sandbox or claim host-level resource isolation.
+The browser emulator's lifecycle/resource controls are defense-in-depth and are not a host-kernel security boundary. Guest telemetry is UX-only. Do not represent the browser VM as a server-side sandbox or claim host-level resource isolation.
 
 ## UI scope
 

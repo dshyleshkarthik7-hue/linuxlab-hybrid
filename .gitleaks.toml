@@ -1,0 +1,13 @@
+title = "LinuxTerminal historical secret scan"
+
+[extend]
+useDefault = true
+
+[allowlist]
+description = "Known non-secret test fixtures and documentation examples"
+paths = [
+  '''(^|/)node_modules/''',
+  '''(^|/)dist/''',
+  '''(^|/)coverage/''',
+  '''(^|/)\.git/'''
+]

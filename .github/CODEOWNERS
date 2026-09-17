@@ -1,6 +1,8 @@
+# Default owner for future multi-maintainer review workflows.
+# GitHub branch protection must separately require CODEOWNERS review.
 * @dshyleshkarthik7-hue
-/.github/ @dshyleshkarthik7-hue
+
+/src/ @dshyleshkarthik7-hue
 /netlify/ @dshyleshkarthik7-hue
 /iso-builder/ @dshyleshkarthik7-hue
-/src/ @dshyleshkarthik7-hue
 /tests/ @dshyleshkarthik7-hue
