@@ -3,8 +3,11 @@ import { readFile } from 'node:fs/promises';
 
 const edge = await readFile(new URL('../netlify/edge-functions/certificate.ts', import.meta.url), 'utf8');
 const page = await readFile(new URL('../certificate/index.html', import.meta.url), 'utf8');
+const certJs = await readFile(new URL('../certificate/certificate.js', import.meta.url), 'utf8');
 const verify = await readFile(new URL('../verify/index.html', import.meta.url), 'utf8');
 const verifyJs = await readFile(new URL('../verify/verify.js', import.meta.url), 'utf8');
+const loginJs = await readFile(new URL('../src/login.ts', import.meta.url), 'utf8');
+const progressJs = await readFile(new URL('../progress.js', import.meta.url), 'utf8');
 
 assert.match(edge, /UPSTASH_REDIS_REST_URL/);
 assert.match(edge, /UPSTASH_REDIS_REST_TOKEN/);
@@ -23,6 +26,17 @@ for (const [name, html] of [['certificate', page], ['verify', verify]]) {
 }
 
 assert.match(page, /server-verified/);
+assert.match(page, /id="signup"/);
+assert.match(page, /id="start"/);
+assert.match(certJs, /returnTo=%2Fcertificate%2F/);
+assert.match(certJs, /post\('start'\)/);
+assert.match(certJs, /post\('submit'/);
+assert.match(loginJs, /identity\.on\('init'/);
+assert.match(loginJs, /currentUser\(\)/);
+assert.match(loginJs, /location\.replace\(returnTo\)/);
+assert.match(loginJs, /Already signed in\. Returning/);
+assert.match(progressJs, /(?:Exact score\|Final score)/);
+assert.match(progressJs, /recordQuiz\(Number\(m\[1\]\),Number\(m\[2\]\)\)/);
 assert.match(verify, /PUBLIC VERIFICATION/);
 assert.match(verifyJs, /\/api\/certificate/);
-console.log('Verified exam and certificate contract checks passed');
+console.log('Verified exam, auth-return, and progress contracts passed');
