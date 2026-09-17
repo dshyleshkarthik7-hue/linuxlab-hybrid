@@ -58,24 +58,24 @@
   status = 200
 [[redirects]]
   from = "/learn"
-  to = "/learn/"
-  status = 301
+  to = "/learn/index.html"
+  status = 200
 [[redirects]]
   from = "/learn/"
   to = "/learn/index.html"
   status = 200
 [[redirects]]
   from = "/tutorials"
-  to = "/learn/"
-  status = 301
+  to = "/learn/index.html"
+  status = 200
 [[redirects]]
   from = "/tutorials/"
-  to = "/learn/"
-  status = 301
+  to = "/learn/index.html"
+  status = 200
 [[redirects]]
   from = "/progress"
-  to = "/progress/"
-  status = 301
+  to = "/progress/index.html"
+  status = 200
 [[redirects]]
   from = "/progress/"
   to = "/progress/index.html"
