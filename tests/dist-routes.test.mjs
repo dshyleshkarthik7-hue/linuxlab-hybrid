@@ -58,7 +58,9 @@ for (const file of htmlFiles) {
   const is404 = publicPath === '/404.html';
   if (!is404) {
     assert.match(page, /<title>[^<]{3,200}<\/title>/i, `${publicPath} must have a title`);
-    assert.match(page, /<meta[^>]+name=["']description["'][^>]+content=["'][^"']{20,320}["']/i, `${publicPath} must have a useful meta description`);
+    // Accept both quoted HTML attribute styles without rejecting apostrophes inside
+    // a double-quoted description such as "the shell's current directory".
+    assert.match(page, /<meta[^>]+name=["']description["'][^>]+content=(?:"[^"]{20,320}"|'[^']{20,320}')/i, `${publicPath} must have a useful meta description`);
     const canonical = page.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1];
     assert.ok(canonical, `${publicPath} must have a canonical URL`);
     assert.equal(new URL(canonical).origin, 'https://linuxterminal.me', `${publicPath} canonical must use production HTTPS`);
