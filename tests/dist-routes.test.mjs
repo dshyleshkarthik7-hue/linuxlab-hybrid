@@ -36,7 +36,8 @@ const routeAliases = new Map([
   ['/progress', 'progress/index.html'], ['/progress/', 'progress/index.html'],
   ['/tutorials', 'learn/index.html'], ['/tutorials/', 'learn/index.html'],
   ['/real-linux/', 'index-v86.html'], ['/simulator/', 'simulator.html'],
-  ['/developer-alpine/', 'developer-alpine.html']
+  ['/developer-alpine/', 'developer-alpine.html'],
+  ['/linux-careers/', 'linux-careers.html']
 ]);
 function publicPathToFile(pathname) {
   const clean = decodeURIComponent(pathname.split(/[?#]/, 1)[0]);
