@@ -210,3 +210,7 @@
   from = "/developer-alpine/"
   to = "/developer-alpine.html"
   status = 200
+[[redirects]]
+  from = "/linux-careers/"
+  to = "/linux-careers.html"
+  status = 200

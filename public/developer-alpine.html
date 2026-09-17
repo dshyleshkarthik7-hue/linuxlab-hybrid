@@ -3,13 +3,13 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="Practice real Alpine Linux in your browser, learn practical Linux skills, and explore career paths in administration, cloud, DevOps, security and more.">
+<meta name="description" content="A clean Alpine Linux practice workspace with keyboard shortcuts and a practical guide for learning Linux in your browser.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://linuxterminal.me/developer-alpine.html">
 <link rel="icon" href="/logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/v86-layout.css">
 <link rel="stylesheet" href="/developer-alpine.css">
-<title>Developer Alpine — Learn Linux by Doing</title>
+<title>Developer Alpine — Linux Practice Workspace</title>
 </head>
 <body>
 <div id="app">
@@ -18,7 +18,7 @@
   <div class="header-actions">
     <span id="dev-status" class="action-btn" role="status" aria-live="polite">Starting…</span>
     <button id="dev-restart" class="action-btn" type="button">↺ Reboot</button>
-    <a href="/real-linux/" class="action-btn">← Main emulator</a>
+    <a href="/linux-careers/" class="action-btn">Linux careers</a>
     <a href="/learn/" class="action-btn">Learn Linux</a>
     <a href="/" class="action-btn">🏠 Home</a>
   </div>
@@ -26,50 +26,38 @@
 <main id="vm-main">
   <section class="dev-hero">
     <div class="eyebrow">HANDS-ON LINUX PRACTICE</div>
-    <h1>Build real Linux skills in your browser</h1>
-    <p>Use a ready-to-practice Alpine Linux workspace, try commands, explore files and build confidence without installing Linux on your computer.</p>
-    <div class="hero-points"><span>✓ Real Linux practice</span><span>✓ Safe browser workspace</span><span>✓ Learn at your own pace</span></div>
+    <h1>Clean Alpine Linux workspace</h1>
+    <p>Boot a real Alpine Linux environment in your browser and practice commands without installing Linux locally.</p>
+    <div class="hero-points"><span>✓ 32-bit x86 environment</span><span>✓ Real terminal practice</span><span>✓ Reboot anytime</span></div>
   </section>
 
-  <section class="dev-terminal-card" aria-label="Linux practice terminal">
-    <div class="terminal-heading"><div><strong>Your Linux workspace</strong><span>Try commands and explore</span></div><span class="live-dot">● Live</span></div>
-    <div id="developer-terminal" class="developer-terminal"><div id="screen_container"><div></div><canvas></canvas></div></div>
-  </section>
-
-  <section class="career-section">
-    <div class="eyebrow">WHY LEARN LINUX?</div>
-    <h2>Skills you can use far beyond the terminal</h2>
-    <p class="section-lead">Linux is used across servers, cloud platforms, web services, development, networking and security. Learning it gives you practical skills you can carry into many areas of technology.</p>
-    <div class="benefit-grid">
-      <article><div class="benefit-icon">🧠</div><h3>Think like a problem solver</h3><p>Learn how files, programs, users and services work together so you can troubleshoot with confidence.</p></article>
-      <article><div class="benefit-icon">☁️</div><h3>Prepare for cloud work</h3><p>Linux is a common foundation for cloud servers, containers and modern infrastructure.</p></article>
-      <article><div class="benefit-icon">⚙️</div><h3>Automate repetitive work</h3><p>Use the command line and simple scripts to turn repeated tasks into reliable workflows.</p></article>
-      <article><div class="benefit-icon">🛡️</div><h3>Understand security basics</h3><p>Practice permissions, users, processes and networking concepts that matter when protecting systems.</p></article>
+  <section class="dev-terminal-card" aria-label="Alpine Linux practice terminal">
+    <div class="terminal-heading"><div><strong>Your Linux workspace</strong><span>Click the terminal before typing</span></div><span class="live-dot">● Live</span></div>
+    <div class="shortcut-bar" aria-label="Keyboard shortcuts">
+      <button id="shortcut-ctrl-x" type="button">Ctrl+X</button>
+      <button id="shortcut-ctrl-o" type="button">Ctrl+O</button>
+      <button id="shortcut-ctrl-c" type="button">Ctrl+C</button>
+      <button id="shortcut-ctrl-l" type="button">Ctrl+L</button>
+      <button id="shortcut-tab" type="button">Tab</button>
+      <button id="shortcut-esc" type="button">Esc</button>
+      <button id="shortcut-enter" type="button">Enter</button>
     </div>
+    <p class="terminal-hint">Shortcuts are sent directly to the virtual keyboard. You can also use your physical keyboard.</p>
+    <div id="developer-terminal" class="developer-terminal"><div id="screen_container" tabindex="0"><div></div><canvas></canvas></div></div>
   </section>
 
-  <section class="career-section career-card">
-    <div class="eyebrow">CAREER OPPORTUNITIES</div>
-    <h2>Where Linux skills can take you</h2>
-    <div class="career-grid">
-      <article><h3>Linux Administrator</h3><p>Manage servers, users, software, storage, updates and day-to-day system health.</p></article>
-      <article><h3>Cloud Engineer</h3><p>Work with Linux-based cloud machines, networking, storage and reliable deployments.</p></article>
-      <article><h3>DevOps Engineer</h3><p>Connect development and operations with automation, delivery pipelines and infrastructure tools.</p></article>
-      <article><h3>Site Reliability Engineer</h3><p>Help keep important services reliable, observable and ready to scale.</p></article>
-      <article><h3>Cybersecurity</h3><p>Build foundations in system permissions, logs, networking and secure administration.</p></article>
-      <article><h3>Platform Engineer</h3><p>Create internal tools and platforms that help software teams build and run services.</p></article>
+  <section class="guide-section" aria-labelledby="guide-title">
+    <div class="eyebrow">QUICK GUIDE</div>
+    <h2 id="guide-title">Start here</h2>
+    <p>Once Alpine finishes booting, try these small exercises in order. Use <code>Tab</code> to complete commands and <code>Ctrl+L</code> to clear the terminal.</p>
+    <div class="guide-grid">
+      <article><h3>1. Inspect the system</h3><p>Run <code>uname -a</code>, <code>whoami</code>, and <code>pwd</code> to see the kernel, current user, and working directory.</p></article>
+      <article><h3>2. Explore files</h3><p>Run <code>ls</code>, <code>cd /tmp</code>, <code>mkdir lab</code>, and <code>cd lab</code> to practice navigation.</p></article>
+      <article><h3>3. Create and read</h3><p>Run <code>printf 'hello\n' &gt; note.txt</code> and <code>cat note.txt</code> to practice redirection and file reading.</p></article>
+      <article><h3>4. Practice safely</h3><p>Use <code>man</code> or the site's command lessons when you are unsure what a command does.</p></article>
+      <article><h3>5. Reset when needed</h3><p>Use <strong>↺ Reboot</strong> to return to a fresh Alpine session if an experiment gets messy.</p></article>
+      <article><h3>6. Continue learning</h3><p>Open the <a href="/learn/">Linux lessons</a> for structured practice or the <a href="/linux-careers/">career guide</a> separately.</p></article>
     </div>
-  </section>
-
-  <section class="career-section salary-card">
-    <div class="salary-copy"><div class="eyebrow">INDIA SALARY SNAPSHOT • AUG 2026</div><h2>Linux skills can become a career</h2><p>One current India-wide salary dataset reports a <strong>₹8.4 lakh median annual pay</strong> for Linux Administrators, with the middle 50% at about <strong>₹4.8 lakh–₹16.9 lakh</strong>. Pay varies by experience, location, company and role.</p><small>Salary figures are a market snapshot, not a promise. Source: Flexiple salary data, updated August 2026.</small></div>
-    <div class="salary-number"><strong>₹8.4L</strong><span>median / year</span></div>
-  </section>
-
-  <section class="career-section next-steps">
-    <div class="eyebrow">A SIMPLE PATH</div>
-    <h2>Learn → Practice → Build → Apply</h2>
-    <div class="steps-grid"><div><b>01</b><strong>Learn the basics</strong><span>Files, folders, users, permissions and processes.</span></div><div><b>02</b><strong>Practice often</strong><span>Use this workspace and the 200-command guide.</span></div><div><b>03</b><strong>Build projects</strong><span>Automate a task, host a small service or document what you learned.</span></div><div><b>04</b><strong>Explore careers</strong><span>Look at Linux administration, cloud, DevOps, security and platform roles.</span></div></div>
   </section>
 
   <div id="dev-diagnostics" hidden aria-live="polite"></div>
