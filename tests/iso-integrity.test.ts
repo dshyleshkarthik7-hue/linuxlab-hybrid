@@ -19,7 +19,7 @@ assert.throws(() => assertTrustedArtifact({ ...trusted, url: 'https://example.co
 assert.throws(() => assertTrustedArtifact({ ...trusted, releaseManifestUrl: 'https://example.com/release' }), /untrusted release manifest/);
 assert.equal(await verifyArtifact(bytes.buffer, trusted), true);
 await assert.rejects(() => verifyArtifact(new Uint8Array(bytes.length + 1).buffer, trusted), /unexpected size/);
-await assert.rejects(() => verifyArtifact(new TextEncoder().encode('wrong').buffer, trusted), /failed SHA-256/);
+await assert.rejects(() => verifyArtifact(new TextEncoder().encode('wrong').buffer, { ...trusted, size: 5 }), /failed SHA-256/);
 
 const fixture = new TextEncoder().encode('The quick brown fox jumps over the lazy dog');
 const expected = createHash('sha256').update(fixture).digest('hex');
