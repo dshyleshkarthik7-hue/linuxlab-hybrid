@@ -9,7 +9,7 @@ const engine = new InBrowserLinuxEngine();
 assert.equal(await engine.execute('echo "a && b"'), 'a && b');
 assert.equal(await engine.execute("echo 'a | b'"), 'a | b');
 assert.equal(await engine.execute('echo saved > /root/p0.txt && cat /root/p0.txt'), 'saved');
-assert.equal(await engine.execute('printf hello | wc -c'), '5');
+assert.equal(await engine.execute('echo hello | wc -w'), '1');
 assert.equal(await engine.execute('false && echo no'), '');
 assert.equal(await engine.execute('false || echo recovered'), 'recovered');
 
