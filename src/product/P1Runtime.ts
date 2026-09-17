@@ -1,4 +1,4 @@
-import { StructuredLinuxEngine } from '../engine/StructuredLinuxEngine.ts';
+import { InBrowserLinuxEngine } from '../engine/LinuxEngine.ts';
 import type { CommandResult } from '../engine/CommandResult.ts';
 import type { VirtualNode } from '../engine/LinuxEngine.ts';
 import { LinuxObservatory } from '../observability/LinuxObservatory.ts';
@@ -82,11 +82,22 @@ export class ExecutableCommandCatalog {
 }
 
 export class P1Runtime {
-  readonly engine = new StructuredLinuxEngine(); readonly observatory: ProductObservatory; readonly tutor: LinuxTutorContext; readonly alpine = new AlpineIntegration(); readonly mobile = new MobileTerminalController(); readonly catalog = new ExecutableCommandCatalog(); readonly paths = LEARNING_PATHS; private level: LearningLevel;
+  readonly engine = new InBrowserLinuxEngine(); readonly observatory: ProductObservatory; readonly tutor: LinuxTutorContext; readonly alpine = new AlpineIntegration(); readonly mobile = new MobileTerminalController(); readonly catalog = new ExecutableCommandCatalog(); readonly paths = LEARNING_PATHS; private level: LearningLevel;
   constructor(level: LearningLevel = 'beginner', observatory = new ProductObservatory('SIMULATED')) { this.level = level; this.observatory = observatory; this.tutor = new LinuxTutorContext(observatory); }
   setLevel(level: LearningLevel): void { this.level = level; }
   getLevel(): LearningLevel { return this.level; }
-  async execute(commandLine: string): Promise<{ result: CommandResult; tutorContext: TutorContext }> { const result = await this.engine.executeResult(commandLine); return { result, tutorContext: this.tutor.build(this.level, commandLine, result, this.engine.getCwd(), this.filesystemSnapshot()) }; }
+  async execute(commandLine: string): Promise<{ result: CommandResult; tutorContext: TutorContext }> {
+    const started = performance.now();
+    let stdout = '';
+    let stderr = '';
+    try {
+      stdout = await this.engine.execute(commandLine);
+    } catch (error) {
+      stderr = error instanceof Error ? error.message : String(error);
+    }
+    const result: CommandResult = { command: commandLine.trim(), stdout, stderr, exitCode: stderr ? 1 : 0, durationMs: performance.now() - started };
+    return { result, tutorContext: this.tutor.build(this.level, commandLine, result, this.engine.getCwd(), this.filesystemSnapshot()) };
+  }
   private filesystemSnapshot(limit = 40): string[] {
     const root = this.engine.root;
     const out: string[] = [];
