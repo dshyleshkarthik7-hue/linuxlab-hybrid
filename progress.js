@@ -1,18 +1,201 @@
 /* LinuxTerminal local learning ledger. No command text, VM output, or secrets are stored. */
 (function () {
-  const KEY = 'linuxterminal.learning.v2'; const MAX_SESSIONS = 30; const now=()=>new Date().toISOString(); const id=p=>`${p}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2,8)}`; const empty=()=>({version:2,name:'',points:0,tutorials:[],challenges:[],quiz:{attempts:0,bestScore:0,bestTotal:0,passed:false,lastAt:null},sessions:[],certificates:[]});
-  function read(){try{const raw=localStorage.getItem(KEY),x=raw?JSON.parse(raw):empty();return {...empty(),...x,tutorials:Array.isArray(x.tutorials)?x.tutorials:[],challenges:Array.isArray(x.challenges)?x.challenges:[],sessions:Array.isArray(x.sessions)?x.sessions:[],certificates:Array.isArray(x.certificates)?x.certificates:[],quiz:{...empty().quiz,...(x.quiz||{})}}catch{return empty()}}
-  function write(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch{}return s} function update(fn){const s=read();fn(s);return write(s)}
-  function startSession(page){const session={id:id('session'),startedAt:now(),lastSeenAt:now(),page:String(page||location.pathname)};update(s=>{s.sessions.unshift(session);s.sessions=s.sessions.slice(0,MAX_SESSIONS)});return session.id}
-  function touch(id,page){update(s=>{const x=s.sessions.find(v=>v.id===id);if(x){x.lastSeenAt=now();x.page=String(page||x.page)}})}
-  function setName(name){const value=String(name||'').trim().slice(0,80);update(s=>{s.name=value});return value}
-  function completeTutorial(id,title){update(s=>{if(!s.tutorials.some(x=>x.id===id)){s.tutorials.push({id,title:title||id,completedAt:now()});s.points+=25}})}
-  function completeChallenge(id,title){update(s=>{if(!s.challenges.some(x=>x.id===id)){s.challenges.push({id,title:title||id,completedAt:now()});s.points+=10}})}
-  function recordQuiz(score,total){score=Math.max(0,Number(score)||0);total=Math.max(1,Number(total)||1);update(s=>{const previous=Number(s.quiz.bestScore)||0;s.quiz.attempts+=1;s.quiz.lastAt=now();if(score>previous||total!==s.quiz.bestTotal){s.points+=Math.max(0,score-previous);s.quiz.bestScore=score;s.quiz.bestTotal=total}s.quiz.passed=score/total>=.8||s.quiz.passed})}
-  function eligible(){const s=read();return s.challenges.length>=100&&s.quiz.bestTotal>0&&s.quiz.bestScore/s.quiz.bestTotal>=.8}
-  function issueLocalCertificate(name){const s=read();if(!eligible())return null;const existing=s.certificates.find(x=>x.type==='learning-completion');if(existing)return existing;const c={id:`LT-LRN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2,7).toUpperCase()}`,type:'learning-completion',name:String(name||s.name||'Linux learner').trim().slice(0,80),issuedAt:now(),points:s.points,challenges:s.challenges.length,quizScore:s.quiz.bestScore,quizTotal:s.quiz.bestTotal};s.certificates.push(c);s.points+=100;write(s);return c}
-  function reset(){write(empty())} function summary(){const s=read();return {...s,challengeCount:s.challenges.length,tutorialCount:s.tutorials.length,sessionCount:s.sessions.length}}
-  const sessionId=startSession(location.pathname);addEventListener('pagehide',()=>touch(sessionId,location.pathname));setInterval(()=>touch(sessionId,location.pathname),60000);
-  function watchQuiz(){const result=document.querySelector('#result');if(!result)return;const capture=()=>{const m=(result.textContent||'').match(/(?:Exact score|Final score):\s*(\d+)\s*\/\s*(\d+)/i);if(m){const key=`${m[1]}/${m[2]}`;if(result.dataset.logged!==key){result.dataset.logged=key;recordQuiz(Number(m[1]),Number(m[2]))}}};new MutationObserver(capture).observe(result,{childList:true,subtree:true,characterData:true});capture()}
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',watchQuiz);else watchQuiz(); window.LinuxProgress={read,summary,setName,completeTutorial,completeChallenge,recordQuiz,eligible,issueLocalCertificate,reset};
+  const KEY = 'linuxterminal.learning.v2';
+  const MAX_SESSIONS = 30;
+  const now = () => new Date().toISOString();
+  const id = (prefix) => `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}`;
+  const empty = () => ({
+    version: 2,
+    name: '',
+    points: 0,
+    tutorials: [],
+    challenges: [],
+    quiz: { attempts: 0, bestScore: 0, bestTotal: 0, passed: false, lastAt: null },
+    sessions: [],
+    certificates: []
+  });
+
+  function read() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      const x = raw ? JSON.parse(raw) : empty();
+      return {
+        ...empty(),
+        ...x,
+        tutorials: Array.isArray(x.tutorials) ? x.tutorials : [],
+        challenges: Array.isArray(x.challenges) ? x.challenges : [],
+        sessions: Array.isArray(x.sessions) ? x.sessions : [],
+        certificates: Array.isArray(x.certificates) ? x.certificates : [],
+        quiz: { ...empty().quiz, ...(x.quiz || {}) }
+      };
+    } catch (error) {
+      return empty();
+    }
+  }
+
+  function write(state) {
+    try {
+      localStorage.setItem(KEY, JSON.stringify(state));
+    } catch (error) {
+      // Local storage can be unavailable in private or restricted browser contexts.
+    }
+    return state;
+  }
+
+  function update(fn) {
+    const state = read();
+    fn(state);
+    return write(state);
+  }
+
+  function startSession(page) {
+    const session = {
+      id: id('session'),
+      startedAt: now(),
+      lastSeenAt: now(),
+      page: String(page || location.pathname)
+    };
+    update((state) => {
+      state.sessions.unshift(session);
+      state.sessions = state.sessions.slice(0, MAX_SESSIONS);
+    });
+    return session.id;
+  }
+
+  function touch(sessionId, page) {
+    update((state) => {
+      const session = state.sessions.find((value) => value.id === sessionId);
+      if (session) {
+        session.lastSeenAt = now();
+        session.page = String(page || session.page);
+      }
+    });
+  }
+
+  function setName(name) {
+    const value = String(name || '').trim().slice(0, 80);
+    update((state) => {
+      state.name = value;
+    });
+    return value;
+  }
+
+  function completeTutorial(id, title) {
+    update((state) => {
+      if (!state.tutorials.some((item) => item.id === id)) {
+        state.tutorials.push({ id, title: title || id, completedAt: now() });
+        state.points += 25;
+      }
+    });
+  }
+
+  function completeChallenge(id, title) {
+    update((state) => {
+      if (!state.challenges.some((item) => item.id === id)) {
+        state.challenges.push({ id, title: title || id, completedAt: now() });
+        state.points += 10;
+      }
+    });
+  }
+
+  function recordQuiz(score, total) {
+    score = Math.max(0, Number(score) || 0);
+    total = Math.max(1, Number(total) || 1);
+    update((state) => {
+      const previous = Number(state.quiz.bestScore) || 0;
+      state.quiz.attempts += 1;
+      state.quiz.lastAt = now();
+      if (score > previous || total !== state.quiz.bestTotal) {
+        state.points += Math.max(0, score - previous);
+        state.quiz.bestScore = score;
+        state.quiz.bestTotal = total;
+      }
+      state.quiz.passed = score / total >= 0.8 || state.quiz.passed;
+    });
+  }
+
+  function eligible() {
+    const state = read();
+    return state.challenges.length >= 100 &&
+      state.quiz.bestTotal > 0 &&
+      state.quiz.bestScore / state.quiz.bestTotal >= 0.8;
+  }
+
+  function issueLocalCertificate(name) {
+    const state = read();
+    if (!eligible()) return null;
+    const existing = state.certificates.find((item) => item.type === 'learning-completion');
+    if (existing) return existing;
+    const certificate = {
+      id: `LT-LRN-${Date.now().toString(36).toUpperCase()}-${Math.random().toString(36).slice(2, 7).toUpperCase()}`,
+      type: 'learning-completion',
+      name: String(name || state.name || 'Linux learner').trim().slice(0, 80),
+      issuedAt: now(),
+      points: state.points,
+      challenges: state.challenges.length,
+      quizScore: state.quiz.bestScore,
+      quizTotal: state.quiz.bestTotal
+    };
+    state.certificates.push(certificate);
+    state.points += 100;
+    write(state);
+    return certificate;
+  }
+
+  function reset() {
+    write(empty());
+  }
+
+  function summary() {
+    const state = read();
+    return {
+      ...state,
+      challengeCount: state.challenges.length,
+      tutorialCount: state.tutorials.length,
+      sessionCount: state.sessions.length
+    };
+  }
+
+  const sessionId = startSession(location.pathname);
+  addEventListener('pagehide', () => touch(sessionId, location.pathname));
+  setInterval(() => touch(sessionId, location.pathname), 60000);
+
+  function watchQuiz() {
+    const result = document.querySelector('#result');
+    if (!result) return;
+    const capture = () => {
+      const match = (result.textContent || '').match(/(?:Exact score|Final score):\s*(\d+)\s*\/\s*(\d+)/i);
+      if (match) {
+        const key = `${match[1]}/${match[2]}`;
+        if (result.dataset.logged !== key) {
+          result.dataset.logged = key;
+          recordQuiz(Number(match[1]), Number(match[2]));
+        }
+      }
+    };
+    new MutationObserver(capture).observe(result, {
+      childList: true,
+      subtree: true,
+      characterData: true
+    });
+    capture();
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', watchQuiz);
+  } else {
+    watchQuiz();
+  }
+
+  window.LinuxProgress = {
+    read,
+    summary,
+    setName,
+    completeTutorial,
+    completeChallenge,
+    recordQuiz,
+    eligible,
+    issueLocalCertificate,
+    reset
+  };
 })();
