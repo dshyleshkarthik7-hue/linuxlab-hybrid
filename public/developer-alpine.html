@@ -3,20 +3,22 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<meta name="description" content="A clean Alpine Linux practice workspace with keyboard shortcuts and a practical guide for learning Linux in your browser.">
+<meta name="description" content="Developer Alpine Linux browser workspace with a 1 GiB x86 VM, real shell practice, GCC tooling and keyboard shortcuts.">
 <meta name="robots" content="index,follow">
 <link rel="canonical" href="https://linuxterminal.me/developer-alpine.html">
 <link rel="icon" href="/logo.svg" type="image/svg+xml">
 <link rel="stylesheet" href="/v86-layout.css">
 <link rel="stylesheet" href="/developer-alpine.css">
-<title>Developer Alpine — Linux Practice Workspace</title>
+<title>Developer Alpine — LinuxTerminal.me</title>
 </head>
 <body>
 <div id="app">
 <header class="app-header" id="vm-header">
-  <a class="dev-brand" href="/"><img src="/logo.svg" alt="LinuxTerminal.me" width="190" height="40"><span class="badge">DEVELOPER ALPINE</span></a>
+  <div class="logo-group"><a class="dev-brand" href="/"><img src="/logo.svg" alt="LinuxTerminal.me" width="190" height="40"><span class="badge">DEVELOPER ALPINE</span></a></div>
   <div class="header-actions">
+    <span id="dev-health" class="vm-health" data-state="booting" role="status" aria-label="VM booting"></span>
     <span id="dev-status" class="action-btn" role="status" aria-live="polite">Starting…</span>
+    <span id="dev-monitor" class="action-btn" aria-live="polite">1 GiB RAM • Developer Alpine</span>
     <button id="dev-restart" class="action-btn" type="button">↺ Reboot</button>
     <a href="/linux-careers/" class="action-btn">Linux careers</a>
     <a href="/learn/" class="action-btn">Learn Linux</a>
@@ -25,41 +27,33 @@
 </header>
 <main id="vm-main">
   <section class="dev-hero">
-    <div class="eyebrow">HANDS-ON LINUX PRACTICE</div>
-    <h1>Clean Alpine Linux workspace</h1>
-    <p>Boot a real Alpine Linux environment in your browser and practice commands without installing Linux locally.</p>
-    <div class="hero-points"><span>✓ 32-bit x86 environment</span><span>✓ Real terminal practice</span><span>✓ Reboot anytime</span></div>
+    <div class="eyebrow">HANDS-ON DEVELOPER LINUX</div>
+    <h1>Developer Alpine workspace</h1>
+    <p>Boot a real custom Alpine Linux x86 environment in your browser and practice shell commands, filesystems and developer workflows without installing Linux locally.</p>
+    <div class="hero-points"><span>✓ 1 GiB RAM</span><span>✓ Real Alpine x86 VM</span><span>✓ GCC developer image</span><span>✓ Reboot anytime</span></div>
   </section>
 
-  <section class="dev-terminal-card" aria-label="Alpine Linux practice terminal">
-    <div class="terminal-heading"><div><strong>Your Linux workspace</strong><span>Click the terminal before typing</span></div><span class="live-dot">● Live</span></div>
+  <section class="dev-terminal-card" aria-label="Developer Alpine Linux emulator">
+    <div class="terminal-heading"><div><strong>Developer Linux workspace</strong><span>Click the screen before typing</span></div><span class="live-dot">● Live</span></div>
     <div class="shortcut-bar" aria-label="Keyboard shortcuts">
-      <button id="shortcut-ctrl-x" type="button">Ctrl+X</button>
-      <button id="shortcut-ctrl-o" type="button">Ctrl+O</button>
-      <button id="shortcut-ctrl-c" type="button">Ctrl+C</button>
-      <button id="shortcut-ctrl-l" type="button">Ctrl+L</button>
-      <button id="shortcut-tab" type="button">Tab</button>
-      <button id="shortcut-esc" type="button">Esc</button>
-      <button id="shortcut-enter" type="button">Enter</button>
+      <button id="shortcut-ctrl-x" type="button">Ctrl+X</button><button id="shortcut-ctrl-o" type="button">Ctrl+O</button><button id="shortcut-ctrl-c" type="button">Ctrl+C</button><button id="shortcut-ctrl-l" type="button">Ctrl+L</button><button id="shortcut-tab" type="button">Tab</button><button id="shortcut-esc" type="button">Esc</button><button id="shortcut-enter" type="button">Enter</button>
     </div>
-    <p class="terminal-hint">Shortcuts are sent directly to the virtual keyboard. You can also use your physical keyboard.</p>
+    <p class="terminal-hint">Shortcuts are sent directly to the virtual keyboard. Your physical keyboard also works.</p>
     <div id="developer-terminal" class="developer-terminal"><div id="screen_container" tabindex="0"><div></div><canvas></canvas></div></div>
   </section>
 
   <section class="guide-section" aria-labelledby="guide-title">
-    <div class="eyebrow">QUICK GUIDE</div>
-    <h2 id="guide-title">Start here</h2>
-    <p>Once Alpine finishes booting, try these small exercises in order. Use <code>Tab</code> to complete commands and <code>Ctrl+L</code> to clear the terminal.</p>
+    <div class="eyebrow">QUICK GUIDE</div><h2 id="guide-title">Start here</h2>
+    <p>After Alpine reaches its login screen, try these exercises in order.</p>
     <div class="guide-grid">
-      <article><h3>1. Inspect the system</h3><p>Run <code>uname -a</code>, <code>whoami</code>, and <code>pwd</code> to see the kernel, current user, and working directory.</p></article>
-      <article><h3>2. Explore files</h3><p>Run <code>ls</code>, <code>cd /tmp</code>, <code>mkdir lab</code>, and <code>cd lab</code> to practice navigation.</p></article>
-      <article><h3>3. Create and read</h3><p>Run <code>printf 'hello\n' &gt; note.txt</code> and <code>cat note.txt</code> to practice redirection and file reading.</p></article>
-      <article><h3>4. Practice safely</h3><p>Use <code>man</code> or the site's command lessons when you are unsure what a command does.</p></article>
-      <article><h3>5. Reset when needed</h3><p>Use <strong>↺ Reboot</strong> to return to a fresh Alpine session if an experiment gets messy.</p></article>
-      <article><h3>6. Continue learning</h3><p>Open the <a href="/learn/">Linux lessons</a> for structured practice or the <a href="/linux-careers/">career guide</a> separately.</p></article>
+      <article><h3>1. Inspect the system</h3><p><code>uname -a</code>, <code>whoami</code>, <code>pwd</code></p></article>
+      <article><h3>2. Explore files</h3><p><code>ls</code>, <code>cd /tmp</code>, <code>mkdir lab</code>, <code>cd lab</code></p></article>
+      <article><h3>3. Create and read</h3><p><code>printf 'hello\n' &gt; note.txt</code>, then <code>cat note.txt</code></p></article>
+      <article><h3>4. Practice safely</h3><p>Use <code>man</code> and the site's command lessons when you are unsure.</p></article>
+      <article><h3>5. Reset when needed</h3><p>Use <strong>↺ Reboot</strong> for a fresh Developer Alpine session.</p></article>
+      <article><h3>6. Continue learning</h3><p>Open the <a href="/learn/">Linux lessons</a> or <a href="/linux-careers/">career guide</a>.</p></article>
     </div>
   </section>
-
   <div id="dev-diagnostics" hidden aria-live="polite"></div>
 </main>
 </div>
