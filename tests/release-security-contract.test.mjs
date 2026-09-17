@@ -12,7 +12,7 @@ for (const name of ['ALPINE_ARTIFACT', 'DEVELOPER_ALPINE_ARTIFACT', 'LINUX4_ARTI
   assert.match(block, /size:\s*\d+/, `${name} must have a fixed size`);
 }
 
-assert.match(vm, /net_device:\s*\{type:'none'\}/, 'v86 production profile must keep networking disabled');
+assert.match(vm, /net_device:\s*\{\s*type:\s*'none'\s*\}/, 'v86 production profile must keep networking disabled');
 assert.match(vm, /fetchVerifiedIso\(/, 'v86 must verify the complete ISO before boot');
 assert.match(boundary, /not equivalent to a server-side microVM/i, 'security boundary must not overclaim browser isolation');
 assert.equal(packageJson.scripts.lint, 'tsc --noEmit && node tests/security-static.test.mjs');
