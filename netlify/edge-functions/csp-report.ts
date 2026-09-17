@@ -1,10 +1,13 @@
 const MAX_REPORT_BYTES = 32768;
 const MAX_REPORTS_PER_WINDOW = 20;
 const RATE_WINDOW_SECONDS = 60;
+const MAX_LOG_FIELD_BYTES = 512;
 const UPSTASH_URL = Netlify.env.get('UPSTASH_REDIS_REST_URL');
 const UPSTASH_TOKEN = Netlify.env.get('UPSTASH_REDIS_REST_TOKEN');
 
 type EdgeContext = { ip?: string };
+
+type CspReport = Record<string, unknown>;
 
 function cors(request: Request): Record<string, string> {
   const origin = request.headers.get('origin');
@@ -36,7 +39,14 @@ return redis.call('INCR', KEYS[1])
         authorization: `Bearer ${UPSTASH_TOKEN}`,
         'content-type': 'application/json',
       },
-      body: JSON.stringify(['EVAL', script, '1', key, String(MAX_REPORTS_PER_WINDOW), String(RATE_WINDOW_SECONDS)]),
+      body: JSON.stringify([
+        'EVAL',
+        script,
+        '1',
+        key,
+        String(MAX_REPORTS_PER_WINDOW),
+        String(RATE_WINDOW_SECONDS),
+      ]),
     });
     if (!response.ok) return true;
     const data: unknown = await response.json();
@@ -49,22 +59,81 @@ return redis.call('INCR', KEYS[1])
   }
 }
 
+function safeField(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const normalized = value.replace(/[\u0000-\u001f\u007f]/g, ' ').trim();
+  return normalized.length > MAX_LOG_FIELD_BYTES
+    ? `${normalized.slice(0, MAX_LOG_FIELD_BYTES)}…`
+    : normalized;
+}
+
+function sanitizeReport(parsed: CspReport): Record<string, string> {
+  const source = parsed['csp-report'];
+  const report = typeof source === 'object' && source !== null && !Array.isArray(source)
+    ? source as CspReport
+    : parsed;
+  const fields = [
+    'document-uri',
+    'referrer',
+    'violated-directive',
+    'effective-directive',
+    'original-policy',
+    'blocked-uri',
+    'source-file',
+    'status-code',
+  ];
+  const safe: Record<string, string> = {};
+  for (const field of fields) {
+    const value = safeField(report[field]);
+    if (value) safe[field] = value;
+  }
+  return safe;
+}
+
 export default async (request: Request, context: EdgeContext): Promise<Response> => {
   const headers = cors(request);
-  if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...headers, 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' } });
-  if (request.method !== 'POST') return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST, OPTIONS', ...headers } });
-  if (await rateLimited(context)) return new Response('Too Many Requests', { status: 429, headers: { ...headers, 'Retry-After': '60', 'Cache-Control': 'no-store' } });
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        ...headers,
+        'access-control-allow-methods': 'POST, OPTIONS',
+        'access-control-allow-headers': 'content-type',
+      },
+    });
+  }
+  if (request.method !== 'POST') {
+    return new Response('Method Not Allowed', {
+      status: 405,
+      headers: { Allow: 'POST, OPTIONS', ...headers },
+    });
+  }
+  if (await rateLimited(context)) {
+    return new Response('Too Many Requests', {
+      status: 429,
+      headers: { ...headers, 'Retry-After': '60', 'Cache-Control': 'no-store' },
+    });
+  }
 
   const length = request.headers.get('content-length');
-  if (length && (!/^\d+$/.test(length) || Number(length) > MAX_REPORT_BYTES)) return new Response('Payload Too Large', { status: 413, headers });
+  if (length && (!/^\d+$/.test(length) || Number(length) > MAX_REPORT_BYTES)) {
+    return new Response('Payload Too Large', { status: 413, headers });
+  }
   try {
     const bytes = await request.arrayBuffer();
-    if (bytes.byteLength > MAX_REPORT_BYTES) return new Response('Payload Too Large', { status: 413, headers });
+    if (bytes.byteLength > MAX_REPORT_BYTES) {
+      return new Response('Payload Too Large', { status: 413, headers });
+    }
     const text = new TextDecoder().decode(bytes);
     const parsed: unknown = JSON.parse(text);
-    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return new Response('Invalid report', { status: 400, headers });
-    console.log('[CSP_REPORT]', JSON.stringify(parsed).slice(0, MAX_REPORT_BYTES));
-    return new Response(null, { status: 204, headers: { ...headers, 'Cache-Control': 'no-store' } });
+    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+      return new Response('Invalid report', { status: 400, headers });
+    }
+    console.log('[CSP_REPORT]', JSON.stringify(sanitizeReport(parsed as CspReport)));
+    return new Response(null, {
+      status: 204,
+      headers: { ...headers, 'Cache-Control': 'no-store' },
+    });
   } catch {
     return new Response('Invalid report', { status: 400, headers });
   }
