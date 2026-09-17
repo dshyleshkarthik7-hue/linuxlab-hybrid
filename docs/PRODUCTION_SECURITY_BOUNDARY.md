@@ -1,17 +1,43 @@
-# Production security boundary
+# Production Security Boundary
 
-LinuxTerminal is a browser-based Linux learning environment. The browser VM is defense-in-depth only and is **not** a host-kernel sandbox. Do not use it to execute untrusted workloads that require server-side isolation.
+## Browser v86 is not a host-security sandbox
 
-For production launch, describe the product as a browser Linux learning environment and keep arbitrary server-side code execution disabled until a separately isolated executor is deployed.
+The Real Linux Lab runs an x86 guest entirely in the browser with v86. It provides a real Linux userspace/kernel experience, but it is **not equivalent to a server-side microVM, container sandbox, seccomp policy, cgroup boundary, or separate host kernel**.
 
-## Artifact integrity
+The browser controls below are defense-in-depth only:
 
-The ISO path uses pinned release metadata and browser-side SHA-256 verification. This protects the learner-facing artifact but is not a claim of host-kernel isolation or end-to-end cryptographic verification of every network hop.
+- network device disabled
+- fixed guest memory policy
+- bounded session lifetime
+- boot watchdog
+- serial/output limits
+- firmware SHA-256 verification
+- fixed ISO SHA-256 verification
+- lifecycle cleanup
 
-## Launch requirements
+These controls must not be described as host isolation. The product is suitable for learning and trusted-user experimentation, not for executing hostile code as a security-sensitive multi-tenant service.
 
-- Keep Tutor secrets server-side.
-- Keep distributed rate limiting fail-closed.
-- Keep certificate signing server-side.
-- Run CI, real-guest, mobile, and production smoke tests before release.
-- Do not advertise browser VM resource telemetry as host enforcement.
+If hostile arbitrary-code execution becomes a product requirement, it must be moved to a separately enforced server-side isolation architecture. JavaScript running in the browser cannot create that missing host boundary.
+
+## Artifact trust
+
+All shipped Linux images and firmware have repository-controlled SHA-256 values in `src/core/artifacts.ts`. The ISO edge function validates the GitHub release asset's published digest and size against those fixed values, while the browser performs full-image verification before boot.
+
+Changing an artifact requires changing its pinned digest and passing the integrity tests. A release must never discover a new expected digest dynamically and then trust that value as the verification target.
+
+## Release gate
+
+Production status is blocked if any of these invariants fail:
+
+1. fixed artifact digest verification
+2. browser-side full ISO verification
+3. firmware digest verification
+4. v86 network device remains disabled
+5. real-guest boot/readiness tests pass
+6. historical secret scan passes
+7. dependency audit passes
+8. production smoke passes
+
+## Observability warning
+
+Guest-reported CPU, memory, kernel, and activity telemetry is observational. It is not host-enforced resource accounting and must not be presented as proof of host isolation.
