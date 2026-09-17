@@ -1,10 +1,12 @@
 const MAX_REPORT_BYTES = 32768;
 const MAX_REPORTS_PER_WINDOW = 20;
 const RATE_WINDOW_SECONDS = 60;
+const MAX_LOG_FIELD_LENGTH = 512;
 const UPSTASH_URL = Netlify.env.get('UPSTASH_REDIS_REST_URL');
 const UPSTASH_TOKEN = Netlify.env.get('UPSTASH_REDIS_REST_TOKEN');
 
 type EdgeContext = { ip?: string };
+type CspReport = Record<string, unknown>;
 
 function cors(request: Request): Record<string, string> {
   const origin = request.headers.get('origin');
@@ -49,6 +51,38 @@ return redis.call('INCR', KEYS[1])
   }
 }
 
+function boundedString(value: unknown): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  return value.slice(0, MAX_LOG_FIELD_LENGTH);
+}
+
+function summarizeReport(value: CspReport): Record<string, string | number> {
+  const report = value['csp-report'];
+  const source = typeof report === 'object' && report !== null && !Array.isArray(report)
+    ? report as CspReport
+    : value;
+  const summary: Record<string, string | number> = {};
+  const stringFields = [
+    'document-uri',
+    'referrer',
+    'violated-directive',
+    'effective-directive',
+    'original-policy',
+    'blocked-uri',
+    'source-file',
+    'disposition',
+  ];
+  for (const field of stringFields) {
+    const bounded = boundedString(source[field]);
+    if (bounded !== undefined) summary[field] = bounded;
+  }
+  for (const field of ['line-number', 'column-number', 'status-code']) {
+    const valueForField = source[field];
+    if (typeof valueForField === 'number' && Number.isFinite(valueForField)) summary[field] = valueForField;
+  }
+  return summary;
+}
+
 export default async (request: Request, context: EdgeContext): Promise<Response> => {
   const headers = cors(request);
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers: { ...headers, 'access-control-allow-methods': 'POST, OPTIONS', 'access-control-allow-headers': 'content-type' } });
@@ -63,7 +97,7 @@ export default async (request: Request, context: EdgeContext): Promise<Response>
     const text = new TextDecoder().decode(bytes);
     const parsed: unknown = JSON.parse(text);
     if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) return new Response('Invalid report', { status: 400, headers });
-    console.log('[CSP_REPORT]', JSON.stringify(parsed).slice(0, MAX_REPORT_BYTES));
+    console.log('[CSP_REPORT]', JSON.stringify(summarizeReport(parsed as CspReport)));
     return new Response(null, { status: 204, headers: { ...headers, 'Cache-Control': 'no-store' } });
   } catch {
     return new Response('Invalid report', { status: 400, headers });
