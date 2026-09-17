@@ -9,28 +9,30 @@
   <url><loc>https://linuxterminal.me/about/</loc></url>
   <url><loc>https://linuxterminal.me/contact/</loc></url>
   <url><loc>https://linuxterminal.me/real-linux/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/pwd/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/ls/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/cd/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/mkdir/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/cat/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/cp/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/mv/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/rm/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/grep/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/find/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/sed/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/awk/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/chmod/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/chown/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/ps/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/top/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/df/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/du/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/tar/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/curl/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/ssh/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/ip/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/ping/</loc></url>
-  <url><loc>https://linuxterminal.me/commands/git/</loc></url>
+  <url><loc>https://linuxterminal.me/commands/pwd.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/ls.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/cd.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/mkdir.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/cat.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/cp.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/mv.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/rm.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/grep.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/find.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/sed.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/awk.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/chmod.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/chown.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/ps.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/top.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/df.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/du.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/tar.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/curl.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/ssh.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/ip.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/ping.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/git.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/head.html</loc></url>
+  <url><loc>https://linuxterminal.me/commands/tail.html</loc></url>
 </urlset>

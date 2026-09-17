@@ -6,7 +6,7 @@ const byName = new Map(COMMAND_INDEX.map((item) => [item.name, item]));
 const shellDemo = (name: string, example: string) => `<svg viewBox="0 0 900 280" role="img" aria-label="LinuxTerminal.me terminal demo for ${esc(name)}" xmlns="http://www.w3.org/2000/svg"><rect width="900" height="280" rx="18" fill="#06111f"/><rect width="900" height="42" rx="18" fill="#102845"/><circle cx="24" cy="21" r="7" fill="#ff5f56"/><circle cx="48" cy="21" r="7" fill="#ffbd2e"/><circle cx="72" cy="21" r="7" fill="#27c93f"/><text x="105" y="27" fill="#9eb2cf" font-family="monospace" font-size="16">linuxterminal.me • command demo</text><text x="28" y="92" fill="#45e09a" font-family="monospace" font-size="18">$ ${esc(example)}</text><text x="28" y="132" fill="#d9e8ff" font-family="monospace" font-size="16">Predict → run → inspect stdout/stderr → check exit status</text><text x="28" y="250" fill="#43d9ff" font-family="monospace" font-size="15">Safe learning reference • use Real Linux for genuine kernel behavior</text></svg>`;
 
 function commandCards() {
-  return COMMAND_INDEX.map((item) => `<article class="card command-card" data-name="${esc(item.name.toLowerCase())}" data-category="${esc(item.description.toLowerCase())}"><span class="pill">${esc(item.description)}</span><h2><code>${esc(item.name)}</code></h2><p class="muted">${esc(item.description)}.</p><pre>${esc(item.example)}</pre><a class="cta" href="/commands/${encodeURIComponent(item.name)}/">Open lesson</a></article>`).join('');
+  return COMMAND_INDEX.map((item) => `<article class="card command-card" data-name="${esc(item.name.toLowerCase())}" data-category="${esc(item.description.toLowerCase())}"><span class="pill">${esc(item.description)}</span><h2><code>${esc(item.name)}</code></h2><p class="muted">${esc(item.description)}.</p><pre>${esc(item.example)}</pre><a class="cta" href="/commands/${encodeURIComponent(item.name)}.html">Open lesson</a></article>`).join('');
 }
 
 function indexHtml() {
@@ -15,14 +15,15 @@ function indexHtml() {
 }
 
 function lessonHtml(item: typeof COMMAND_INDEX[number]) {
-  const url = `https://linuxterminal.me/commands/${item.name}/`;
+  const url = `https://linuxterminal.me/commands/${item.name}.html`;
   return `<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(item.name)} command — Linux tutorial | LinuxTerminal.me</title><meta name="description" content="${esc(item.description)}. Learn ${esc(item.name)} syntax, concepts, examples and safe Linux practice on LinuxTerminal.me."><meta name="keywords" content="${esc(item.name)} command,Linux ${esc(item.name)},${esc(item.name)} Linux tutorial,Linux commands"><meta name="robots" content="index,follow"><link rel="canonical" href="${url}"><link rel="stylesheet" href="/commands.css"></head><body><main><nav><a href="/">&gt;_ LinuxTerminal.me</a> · <a href="/commands/">All ${COMMAND_INDEX.length} commands</a> · <a href="/beginner/">Beginner</a> · <a href="/real-linux/">Real Linux</a></nav><h1><code>${esc(item.name)}</code> command</h1><p class="muted">${esc(item.description)}. Learn what <code>${esc(item.name)}</code> does, see a starter example, and practice safely.</p><div class="demo">${shellDemo(item.name, item.example)}</div><section class="grid lesson-grid"><article class="card"><h2>What it teaches</h2><p>${esc(item.description)}. Exact options vary by distribution and implementation, so use the installed command's documentation for the full option set.</p></article><article class="card"><h2>Starter example</h2><pre>${esc(item.example)}</pre></article><article class="card"><h2>Practice</h2><p>Predict the result, run the command in the simulator, inspect stdout/stderr and check the exit status.</p><a class="cta" href="/beginner/?command=${encodeURIComponent(item.name)}">Open LinuxTerminal.me</a></article></section><section class="card section-gap"><h2>How it fits into Linux</h2><ol><li>The shell parses the command and arguments.</li><li>The command performs its operation and writes stdout/stderr.</li><li>The process returns an exit status used by scripts and conditionals.</li></ol><p>Need help? Use the contextual LinuxTerminal AI Tutor on the Beginner page.</p><a class="cta" href="/beginner/#tutor">Ask the AI Tutor</a></section></main></body></html>`;
 }
 
-export default async (request: Request) => {
+export default async (request: Request, context: { next: () => Response }) => {
   const rawPath = new URL(request.url).pathname.replace(/\/+$/, '');
+  if (rawPath.endsWith('.html')) return context.next();
   const rawName = rawPath === '/commands' ? '' : rawPath.replace(/^\/commands\//, '');
-  const name = rawName.endsWith('.html') ? rawName.slice(0, -5) : rawName;
+  const name = rawName;
   if (!name) return new Response(indexHtml(), { headers: { 'content-type': 'text/html; charset=UTF-8', 'cache-control': 'public,max-age=300' } });
   const item = byName.get(name);
   if (!item) return new Response('LinuxTerminal.me: command lesson not found.', { status: 404, headers: { 'content-type': 'text/plain; charset=utf-8' } });
