@@ -1,6 +1,6 @@
 const ISO_URL='/api/iso?image=developer';
 const FIRMWARE_BASE='/api/v86-firmware';
-const RAM_BYTES=256*1024*1024;
+const RAM_BYTES=1024*1024*1024;
 const BOOT_TIMEOUT_MS=120000;
 let emulator=null;
 let starting=false;
