@@ -81,8 +81,12 @@ export class ExecutableCommandCatalog {
   forLevel(level: LearningLevel): LinuxCommandLesson[] { const path = LEARNING_PATHS.find(item => item.id === level); const names = new Set(path?.commands ?? []); return COMMAND_LESSONS.filter(item => names.has(item.name) && EXECUTABLE_COMMANDS.has(item.name)); }
 }
 
+class ProductLinuxEngine extends InBrowserLinuxEngine {
+  public getExitCode(): number { return this.exitCode; }
+}
+
 export class P1Runtime {
-  readonly engine = new InBrowserLinuxEngine(); readonly observatory: ProductObservatory; readonly tutor: LinuxTutorContext; readonly alpine = new AlpineIntegration(); readonly mobile = new MobileTerminalController(); readonly catalog = new ExecutableCommandCatalog(); readonly paths = LEARNING_PATHS; private level: LearningLevel;
+  readonly engine = new ProductLinuxEngine(); readonly observatory: ProductObservatory; readonly tutor: LinuxTutorContext; readonly alpine = new AlpineIntegration(); readonly mobile = new MobileTerminalController(); readonly catalog = new ExecutableCommandCatalog(); readonly paths = LEARNING_PATHS; private level: LearningLevel;
   constructor(level: LearningLevel = 'beginner', observatory = new ProductObservatory('SIMULATED')) { this.level = level; this.observatory = observatory; this.tutor = new LinuxTutorContext(observatory); }
   setLevel(level: LearningLevel): void { this.level = level; }
   getLevel(): LearningLevel { return this.level; }
@@ -95,7 +99,8 @@ export class P1Runtime {
     } catch (error) {
       stderr = error instanceof Error ? error.message : String(error);
     }
-    const result: CommandResult = { command: commandLine.trim(), stdout, stderr, exitCode: stderr ? 1 : 0, durationMs: performance.now() - started };
+    const exitCode = stderr ? 1 : this.engine.getExitCode();
+    const result: CommandResult = { command: commandLine.trim(), stdout, stderr, exitCode, durationMs: performance.now() - started };
     return { result, tutorContext: this.tutor.build(this.level, commandLine, result, this.engine.getCwd(), this.filesystemSnapshot()) };
   }
   private filesystemSnapshot(limit = 40): string[] {
