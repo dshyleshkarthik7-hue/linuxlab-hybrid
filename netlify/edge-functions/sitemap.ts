@@ -1,4 +1,4 @@
-import { COMMAND_INDEX } from './command-data.ts';
+import { COMMAND_LESSONS } from '../../src/commands/commandCatalog.ts';
 
 const staticPages = [
   '/',
@@ -18,7 +18,7 @@ const staticPages = [
 export default () => {
   const urls = [
     ...staticPages,
-    ...COMMAND_INDEX.map((item) => `/commands/${encodeURIComponent(item.name)}/`),
+    ...COMMAND_LESSONS.map((item) => `/commands/${encodeURIComponent(item.name)}/`),
   ];
   const body = [
     '<?xml version="1.0" encoding="UTF-8"?>',
