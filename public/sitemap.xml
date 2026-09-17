@@ -2,13 +2,29 @@
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url><loc>https://linuxterminal.me/</loc></url>
   <url><loc>https://linuxterminal.me/beginner/</loc></url>
+  <url><loc>https://linuxterminal.me/intermediate/</loc></url>
+  <url><loc>https://linuxterminal.me/expert/</loc></url>
   <url><loc>https://linuxterminal.me/commands/</loc></url>
+  <url><loc>https://linuxterminal.me/learn/</loc></url>
+  <url><loc>https://linuxterminal.me/learn/linux-basics/</loc></url>
+  <url><loc>https://linuxterminal.me/learn/terminal-navigation/</loc></url>
+  <url><loc>https://linuxterminal.me/learn/files-and-directories/</loc></url>
+  <url><loc>https://linuxterminal.me/learn/text-processing/</loc></url>
+  <url><loc>https://linuxterminal.me/learn/permissions/</loc></url>
+  <url><loc>https://linuxterminal.me/learn/processes/</loc></url>
+  <url><loc>https://linuxterminal.me/learn/shell-scripting/</loc></url>
   <url><loc>https://linuxterminal.me/challenges/</loc></url>
   <url><loc>https://linuxterminal.me/quiz/</loc></url>
   <url><loc>https://linuxterminal.me/curriculum/</loc></url>
   <url><loc>https://linuxterminal.me/about/</loc></url>
   <url><loc>https://linuxterminal.me/contact/</loc></url>
+  <url><loc>https://linuxterminal.me/certificate/</loc></url>
+  <url><loc>https://linuxterminal.me/verify/</loc></url>
+  <url><loc>https://linuxterminal.me/progress/</loc></url>
   <url><loc>https://linuxterminal.me/real-linux/</loc></url>
+  <url><loc>https://linuxterminal.me/simulator/</loc></url>
+  <url><loc>https://linuxterminal.me/open-source-iso/</loc></url>
+  <url><loc>https://linuxterminal.me/developer-alpine.html</loc></url>
   <url><loc>https://linuxterminal.me/commands/pwd.html</loc></url>
   <url><loc>https://linuxterminal.me/commands/ls.html</loc></url>
   <url><loc>https://linuxterminal.me/commands/cd.html</loc></url>

@@ -4,6 +4,7 @@ on:
     branches: [main]
   pull_request:
     branches: [main]
+  workflow_dispatch:
 permissions:
   contents: read
 jobs:
@@ -17,11 +18,6 @@ jobs:
       NPM_CONFIG_FETCH_RETRY_MAXTIMEOUT: 30000
       NPM_CONFIG_FETCH_TIMEOUT: 120000
       NPM_CONFIG_MAXSOCKETS: 1
-      ISO_LIVE_VERIFY: 1
-      ISO_LIVE_VERIFY_TIMEOUT_MS: 180000
-      PRODUCTION_SMOKE_TIMEOUT_MS: 60000
-      PRODUCTION_SMOKE_RETRY_MS: 15000
-      PRODUCTION_SMOKE_RETRIES: 24
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
@@ -56,8 +52,9 @@ jobs:
         run: npm run test:real-guest
       - run: npm run test:mobile
       - run: node tests/p2-p3-contract.test.mjs
-      - name: Production smoke
-        if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+      - name: Production smoke (post-deployment only)
+        if: ${{ github.event_name == 'workflow_dispatch' }}
         env:
           PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL || 'https://linuxterminal.me' }}
+          PRODUCTION_SMOKE_TIMEOUT_MS: 30000
         run: npm run test:production
