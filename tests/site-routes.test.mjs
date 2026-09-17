@@ -1,0 +1,12 @@
+import { existsSync, readFileSync } from 'node:fs';
+import { join, normalize } from 'node:path';
+const root=process.cwd();
+const required=['index.html','404.html','learn/index.html','learn/learn.css','learn/learn.js','progress/index.html','progress/progress.css','progress/progress.js','progress.js','challenges/index.html','challenges/challenges.js','quiz/index.html','certificate/index.html'];
+for(const file of required) if(!existsSync(join(root,file))) throw new Error(`Missing production route asset: ${file}`);
+const html=readFileSync(join(root,'index.html'),'utf8');
+for(const route of ['/learn/','/challenges/','/quiz/','/progress/','/certificate/']) if(!html.includes(`href="${route}"`)) throw new Error(`Homepage missing route: ${route}`);
+const learn=readFileSync(join(root,'learn/index.html'),'utf8'); if(!learn.includes('/learn/learn.css')||!learn.includes('/progress.js')) throw new Error('Tutorial page must load its CSS and progress ledger');
+const challenges=readFileSync(join(root,'challenges/index.html'),'utf8'); if(!challenges.includes('/challenges/challenges.js')||!challenges.includes('/challenges/challenges.css')) throw new Error('Challenge assets missing');
+const progress=readFileSync(join(root,'progress/index.html'),'utf8'); if(!progress.includes('/progress/progress.css')||!progress.includes('/progress.js')) throw new Error('Progress assets missing');
+const netlify=readFileSync(join(root,'netlify.toml'),'utf8'); for(const path of ['/learn/','/progress/']) if(!netlify.includes(`from = "${path}"`)) throw new Error(`Netlify route missing: ${path}`);
+console.log(`site routes: ${required.length} required assets present`);

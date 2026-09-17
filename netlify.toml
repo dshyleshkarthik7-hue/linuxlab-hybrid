@@ -57,6 +57,22 @@
   to = "/commands-entry.html"
   status = 200
 [[redirects]]
+  from = "/learn"
+  to = "/learn/"
+  status = 301
+[[redirects]]
+  from = "/tutorials"
+  to = "/learn/"
+  status = 301
+[[redirects]]
+  from = "/tutorials/"
+  to = "/learn/"
+  status = 301
+[[redirects]]
+  from = "/progress"
+  to = "/progress/"
+  status = 301
+[[redirects]]
   from = "/certificate"
   to = "/certificate/"
   status = 301
