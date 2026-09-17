@@ -24,7 +24,15 @@ function exposeV86Constructor(): void {
   }
 }
 
+function startLinuxLabVM(): void {
+  if (window.linuxLabVM) return;
+  window.linuxLabVM = new V86LinuxTerminal();
+}
+
 exposeV86Constructor();
 
-// main-v86.ts owns VM construction. Do not instantiate V86LinuxTerminal here.
-void V86LinuxTerminal;
+if (document.readyState === 'loading') {
+  window.addEventListener('DOMContentLoaded', startLinuxLabVM, { once: true });
+} else {
+  startLinuxLabVM();
+}
