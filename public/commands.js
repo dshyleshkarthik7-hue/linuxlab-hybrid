@@ -21,6 +21,8 @@ const COMMANDS = [
   ['systemctl','services'],['service','services'],['journalctl','services'],['crontab','services'],['at','services'],['logger','services']
 ];
 
+const DEDICATED_LESSONS = new Set(['pwd','ls','cd','mkdir','cat','cp','mv','rm','grep','find','sed','awk','chmod','chown','ps','top','df','du','tar','curl','ssh','ip','ping','git','head','tail']);
+
 if (category) {
   for (const value of [...new Set(COMMANDS.map(([, group]) => group))]) {
     const option = document.createElement('option');
@@ -48,11 +50,13 @@ function render() {
     title.appendChild(code);
     const desc = document.createElement('p');
     desc.className = 'muted';
-    desc.textContent = `LinuxTerminal.me lesson for ${name}. Learn the concept, syntax and safe practice workflow.`;
+    desc.textContent = DEDICATED_LESSONS.has(name)
+      ? `Dedicated LinuxTerminal.me lesson for ${name}. Learn the concept, syntax, process flow and safe practice.`
+      : `LinuxTerminal.me 200-command reference entry for ${name}. Practice the command safely from the beginner page.`;
     const link = document.createElement('a');
     link.className = 'cta';
-    link.href = `/commands/${encodeURIComponent(name)}/`;
-    link.textContent = 'Open lesson →';
+    link.href = DEDICATED_LESSONS.has(name) ? `/commands/${encodeURIComponent(name)}.html` : '/beginner/#commands';
+    link.textContent = DEDICATED_LESSONS.has(name) ? 'Open dedicated lesson →' : 'Open beginner reference →';
     card.append(pill, title, desc, link);
     list.appendChild(card);
   }
