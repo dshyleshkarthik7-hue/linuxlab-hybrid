@@ -2,6 +2,8 @@ import { strict as assert } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 
 const edge = await readFile(new URL('../netlify/edge-functions/certificate.ts', import.meta.url), 'utf8');
+const limiter = await readFile(new URL('../netlify/edge-functions/certificate-rate-limit.ts', import.meta.url), 'utf8');
+const netlify = await readFile(new URL('../netlify.toml', import.meta.url), 'utf8');
 const page = await readFile(new URL('../certificate/index.html', import.meta.url), 'utf8');
 const certJs = await readFile(new URL('../certificate/certificate.js', import.meta.url), 'utf8');
 const verify = await readFile(new URL('../verify/index.html', import.meta.url), 'utf8');
@@ -19,6 +21,15 @@ assert.match(edge, /canonical\(unsigned\)/);
 assert.match(edge, /userId/);
 assert.match(edge, /DEL/);
 assert.doesNotMatch(edge, /(?:\:\s*any\b|\bas\s+any\b|<\s*any\s*>)/);
+
+assert.match(limiter, /LIMIT\s*=\s*60/);
+assert.match(limiter, /WINDOW_SECONDS\s*=\s*60/);
+assert.match(limiter, /INCR/);
+assert.match(limiter, /EXPIRE/);
+assert.match(limiter, /429/);
+assert.match(limiter, /certificate\(request\)/);
+assert.match(netlify, /function = "certificate-rate-limit"/);
+assert.doesNotMatch(netlify, /function = "certificate"\s*\n/);
 
 for (const [name, html] of [['certificate', page], ['verify', verify]]) {
   assert.doesNotMatch(html, /<style[\s>]/i, `${name} must not use inline styles`);
@@ -39,4 +50,4 @@ assert.match(progressJs, /(?:Exact score\|Final score)/);
 assert.match(progressJs, /recordQuiz\(Number\(m\[1\]\),Number\(m\[2\]\)\)/);
 assert.match(verify, /PUBLIC VERIFICATION/);
 assert.match(verifyJs, /\/api\/certificate/);
-console.log('Verified exam, auth-return, and progress contracts passed');
+console.log('Verified exam, auth-return, progress, and certificate rate-limit contracts passed');

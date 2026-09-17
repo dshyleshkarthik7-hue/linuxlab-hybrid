@@ -10,7 +10,7 @@
   function = "tutor"
 [[edge_functions]]
   path = "/api/certificate"
-  function = "certificate"
+  function = "certificate-rate-limit"
 [[edge_functions]]
   path = "/api/csp-report"
   function = "csp-report"

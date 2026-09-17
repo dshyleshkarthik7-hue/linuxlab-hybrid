@@ -16,9 +16,11 @@ TypeScript is distributed under the Apache License 2.0. Upstream project: https:
 
 Lightning CSS is distributed under the Mozilla Public License 2.0. Upstream project: https://github.com/parcel-bundler/lightningcss
 
-## v86
+## v86 — BSD-2-Clause
 
-The browser x86 emulator is vendored as `public/libv86.js`. Its upstream provenance and license must remain documented alongside the exact vendored artifact; do not replace or modify the artifact without updating that provenance.
+The browser x86 emulator is vendored as `public/libv86.js` from the `copy/v86` project. v86 is distributed under the **BSD-2-Clause (Simplified BSD)** license. Upstream provenance: https://github.com/copy/v86
+
+The vendored artifact must retain its upstream copyright and license notices. The BSD-2-Clause terms permit redistribution and modification provided the copyright notice, license conditions, and disclaimer are retained.
 
 ## Firmware
 
