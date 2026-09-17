@@ -206,3 +206,7 @@
   from = "/simulator/"
   to = "/simulator.html"
   status = 200
+[[redirects]]
+  from = "/developer-alpine/"
+  to = "/developer-alpine.html"
+  status = 200
