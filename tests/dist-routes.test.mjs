@@ -41,7 +41,15 @@ const routeAliases = new Map([
 function publicPathToFile(pathname) {
   const clean = decodeURIComponent(pathname.split(/[?#]/, 1)[0]);
   if (!clean.startsWith('/')) return null;
-  const relativePath = routeAliases.get(clean) || (clean === '/' ? 'index.html' : clean.endsWith('/') ? `${clean.slice(1)}index.html` : clean.slice(1));
+  let relativePath = routeAliases.get(clean);
+  if (!relativePath && /^\/commands\/[a-z0-9_-]+\/$/i.test(clean)) {
+    // Netlify redirects legacy /commands/name/ URLs to the generated
+    // /commands/name.html lesson pages. Mirror that deployment mapping here.
+    relativePath = `${clean.slice(1, -1)}.html`;
+  }
+  if (!relativePath) {
+    relativePath = clean === '/' ? 'index.html' : clean.endsWith('/') ? `${clean.slice(1)}index.html` : clean.slice(1);
+  }
   const file = join(root, relativePath);
   return file.startsWith(root) ? file : null;
 }
