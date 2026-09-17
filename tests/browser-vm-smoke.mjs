@@ -79,12 +79,15 @@ async function runSmoke() {
     await stage(page, 'required-controls', async () => { for (const selector of required) await page.waitForSelector(selector,{state:'attached'}); });
     const buttons={terminal:'#btn-v86-terminal',screen:'#btn-v86-screen',virt:'#btn-v86-virt',restart:'#btn-v86-restart'};
     await stage(page, 'button-availability', async () => { for (const [name,selector] of Object.entries(buttons)){await page.waitForSelector(selector,{state:'visible'});console.log('Found '+name+' control');} });
+    // Exercise the visibility controls before v86 starts executing the guest image. The smoke
+    // route intentionally supplies a one-byte ISO, which is only a fetch/integrity fixture and
+    // must not be allowed to enter the emulator's CPU loop before this UI contract is checked.
+    await stage(page, 'screen-toggle', async () => { await page.click(buttons.screen); await page.waitForFunction(() => !document.getElementById('screen_container')?.hidden && Boolean(document.getElementById('v86-terminal-container')?.hidden)); await page.click(buttons.terminal); await page.waitForFunction(() => Boolean(document.getElementById('screen_container')?.hidden) && !document.getElementById('v86-terminal-container')?.hidden); });
     await stage(page, 'boot-status', async () => page.waitForFunction(() => {
       const status = (document.getElementById('v86-status')?.textContent || '').toLowerCase();
       const health = document.getElementById('v86-health')?.getAttribute('data-state') || '';
       return health === 'ready' || health === 'offline' || /starting|checking runtime|checking image|booting|running|ready|failed|failure|error|integrity|artifact/i.test(status);
     }));
-    await stage(page, 'screen-toggle', async () => { await page.click(buttons.screen); await page.waitForFunction(() => !document.getElementById('screen_container')?.hidden && Boolean(document.getElementById('v86-terminal-container')?.hidden)); await page.click(buttons.terminal); await page.waitForFunction(() => Boolean(document.getElementById('screen_container')?.hidden) && !document.getElementById('v86-terminal-container')?.hidden); });
     await stage(page, 'alpine-profile-switching', async () => {
       await page.click(buttons.virt);
       await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Alpine Virt 3.24.1') || false);
