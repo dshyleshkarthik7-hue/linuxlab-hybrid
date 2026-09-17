@@ -9,9 +9,7 @@ import { waitForV86Loaded } from './v86-ready.ts';
 const TerminalCtor = xtermModule.Terminal;
 const FitAddonCtor = fitModule.FitAddon;
 
-declare global {
-  interface Window { linuxLabVM?: V86LinuxTerminal; }
-}
+declare global { interface Window { linuxLabVM?: V86LinuxTerminal; } }
 
 type V86Runtime = V86TelemetryTarget & {
   serial0_send: (data: string) => void;
@@ -24,7 +22,6 @@ type V86Runtime = V86TelemetryTarget & {
   add_listener: (event: string, callback: (value?: number) => void) => void;
   wait_until_vga_screen_contains?: (text: string | RegExp, options?: { timeout_msec?: number }) => Promise<boolean>;
 };
-
 type RuntimeWindow = Window & { V86Starter?: unknown; V86?: unknown };
 type Profile = { name: string; memoryMiB: number; cdrom: string; policy: VMResourcePolicyName; expectedGuest: 'alpine' };
 
@@ -34,16 +31,13 @@ const FIRMWARE_BASE = '/api/v86-firmware';
 const READY_MARKER = '__LINUXLAB_READY__';
 const PROBE_MARKER = '__LINUXLAB_INPUT_OK__';
 
-function profileFromPage(): Profile {
-  return document.documentElement.dataset.v86Profile === 'developer' ? DEVELOPER_PROFILE : VIRT_PROFILE;
-}
+function profileFromPage(): Profile { return document.documentElement.dataset.v86Profile === 'developer' ? DEVELOPER_PROFILE : VIRT_PROFILE; }
 
 export class V86LinuxTerminal {
   private term: xtermModule.Terminal;
   private fitAddon: fitModule.FitAddon;
   private emulator: V86Runtime | null = null;
   private telemetryDispose: (() => void) | null = null;
-  private terminalDataDisposable: { dispose(): void } | null = null;
   private static runtimePromise: Promise<void> | null = null;
   private profile: Profile = profileFromPage();
   private enforcer: VMRuntimeResourceEnforcer | null = null;
@@ -61,7 +55,6 @@ export class V86LinuxTerminal {
   private integrityState: 'verified' | 'unverified' = 'unverified';
   private serial = '';
   private lastSerialAt = 0;
-  private lastGuestActivityAt: number | null = null;
   private activeView: 'terminal' | 'screen' = 'terminal';
 
   constructor(containerId = 'v86-terminal-container') {
@@ -72,7 +65,8 @@ export class V86LinuxTerminal {
     this.fitAddon = new FitAddonCtor();
     this.term.loadAddon(this.fitAddon);
     this.term.open(container);
-    this.terminalDataDisposable = this.term.onData((data) => this.sendInput(data));
+    // Keep the xterm listener attached for the lifetime of the terminal so rebooting the VM cannot orphan input.
+    this.term.onData((data) => this.sendInput(data));
     window.addEventListener('resize', () => this.fit());
     window.addEventListener('orientationchange', () => setTimeout(() => this.fit(), 50));
     document.getElementById('screen_container')?.addEventListener('pointerdown', () => this.enableGuestKeyboard(), { passive: true });
@@ -90,14 +84,11 @@ export class V86LinuxTerminal {
     if (vm.keyboard_set_enabled) vm.keyboard_set_enabled(enabled);
     else vm.keyboard_set_status?.(enabled);
   }
-
   private enableGuestKeyboard(): void { this.setGuestKeyboardEnabled(true); }
 
   private sendInput(data: string): void {
     const vm = this.emulator;
     if (!vm || !this.enforcer || this.enforcer.isStopped() || this.enforcer.sessionExpired()) return;
-    // The Developer Alpine image exposes its interactive shell on the VGA console.
-    // Keep keyboard input as the primary path so the terminal works on mobile and desktop.
     if (vm.keyboard_send_text) vm.keyboard_send_text(data);
     else vm.serial0_send(data);
   }
@@ -127,7 +118,6 @@ export class V86LinuxTerminal {
     this.initializationFailure = null;
     this.serial = '';
     this.lastSerialAt = 0;
-    this.lastGuestActivityAt = null;
     this.bootStage = 'starting';
     this.setHealth('booting');
     this.setIntegrityState('unverified');
@@ -159,47 +149,32 @@ export class V86LinuxTerminal {
       this.status(`${this.profile.name} • creating VM`);
       this.monitor(`${this.profile.memoryMiB} MiB allocation • ${artifact.filename} verified`);
       const vm = new Runtime({
-        wasm_path: '/v86.wasm',
-        memory_size: policy.memoryBytes,
-        vga_memory_size: policy.vgaMemoryBytes,
-        screen_container: screen,
-        bios: { url: `${FIRMWARE_BASE}/seabios.bin` },
-        vga_bios: { url: `${FIRMWARE_BASE}/vgabios.bin` },
-        cdrom: { buffer: isoBytes },
-        boot_order: 0x213,
-        fastboot: true,
-        bootmenu: false,
-        autostart: false,
-        disable_speaker: true,
-        net_device: { type: 'none' },
+        wasm_path: '/v86.wasm', memory_size: policy.memoryBytes, vga_memory_size: policy.vgaMemoryBytes,
+        screen_container: screen, bios: { url: `${FIRMWARE_BASE}/seabios.bin` }, vga_bios: { url: `${FIRMWARE_BASE}/vgabios.bin` },
+        cdrom: { buffer: isoBytes }, boot_order: 0x213, fastboot: true, bootmenu: false, autostart: false,
+        disable_speaker: true, net_device: { type: 'none' },
       });
       this.emulator = vm;
       this.setNetworkState('disabled');
-      // Keep the virtual keyboard available in both views. keyboard_send_text()
-      // is the reliable path for the VGA shell used by the custom image.
       this.setGuestKeyboardEnabled(true);
       this.sessionTimer = window.setTimeout(() => this.fail('VM session resource limit reached'), policy.remainingSessionMs());
       this.telemetryDispose = attachGuestTelemetry(vm, {
         onTelemetry: (sample) => {
-          if (id === this.bootId) {
-            this.lastGuestActivityAt = sample.sampledAt;
-            this.monitor(`Guest activity • ${sample.kernel} ${sample.architecture} • ${sample.cpuPercent.toFixed(1)}% CPU`);
-          }
+          if (id === this.bootId) this.monitor(`Guest activity • ${sample.kernel} ${sample.architecture} • ${sample.cpuPercent.toFixed(1)}% CPU`);
         },
         onIdentity: (identity) => { if (id === this.bootId) this.acceptGuestIdentity(identity); },
       });
-      vm.add_listener('serial0-output-byte', (value) => {
-        if (id === this.bootId && typeof value === 'number') this.serialOutput(value);
-      });
+      vm.add_listener('serial0-output-byte', (value) => { if (id === this.bootId && typeof value === 'number') this.serialOutput(value); });
       this.scheduleBootWatchdog(id, policy.policy.bootTimeoutMs);
-      if (typeof vm.run !== 'function') throw new Error('Local v86 runtime does not expose run()');
+      const run = vm.run;
+      if (typeof run !== 'function') throw new Error('Local v86 runtime does not expose run()');
       this.bootStage = 'initializing v86';
       this.status(`${this.profile.name} • initializing v86`);
       await waitForV86Loaded(vm, policy.policy.bootTimeoutMs, signal);
       if (id !== this.bootId || signal.aborted) return;
       this.bootStage = 'booting Alpine';
       this.status(`${this.profile.name} • booting Alpine`);
-      await vm.run();
+      await run.call(vm);
       if (id !== this.bootId || signal.aborted) return;
       await this.waitForGuestReady(policy.policy.bootTimeoutMs);
     } catch (error) {
@@ -216,41 +191,31 @@ export class V86LinuxTerminal {
     if (this.initializationFailure) throw this.initializationFailure;
     const vm = this.emulator;
     if (!vm) throw new Error('v86 emulator was not created before readiness wait');
-
-    // The custom Developer image can legitimately take around 200 seconds to
-    // reach its shell. Do not treat SeaBIOS/ISOLINUX output as readiness.
-    if (typeof vm.wait_until_vga_screen_contains === 'function') {
+    const waitForVga = vm.wait_until_vga_screen_contains;
+    if (typeof waitForVga === 'function') {
       while (Date.now() < deadline && !this.initializationFailure) {
         try {
-          await vm.wait_until_vga_screen_contains(/Alpine Linux|Welcome to Alpine|localhost login:|LinuxLab Engine B/i, { timeout_msec: 1000 });
+          await waitForVga.call(vm, /Alpine Linux|Welcome to Alpine|localhost login:|LinuxLab Engine B/i, { timeout_msec: 1000 });
           this.vgaReady = true;
           break;
-        } catch {
-          await new Promise((resolve) => setTimeout(resolve, 100));
-        }
+        } catch { await new Promise((resolve) => setTimeout(resolve, 100)); }
       }
     }
     if (this.initializationFailure) throw this.initializationFailure;
-
     const serialPrompt = /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/m.test(this.serial);
     const serialReady = serialPrompt || this.serial.includes(READY_MARKER);
-
-    // Prefer an actual interactive VGA shell probe. A generic Alpine banner is
-    // not enough: the old working emulator was usable only after the shell came up.
-    if (this.vgaReady && vm.keyboard_send_text) {
+    if (this.vgaReady && vm.keyboard_send_text && waitForVga) {
       const remaining = Math.max(1000, deadline - Date.now());
       try {
         vm.keyboard_send_text(`echo ${PROBE_MARKER}\n`);
-        await vm.wait_until_vga_screen_contains(new RegExp(PROBE_MARKER), { timeout_msec: Math.min(5000, remaining) });
+        await waitForVga.call(vm, new RegExp(PROBE_MARKER), { timeout_msec: Math.min(5000, remaining) });
         this.shellReady = true;
       } catch {
-        // The shell may be exposed through serial instead of VGA on another image.
         this.shellReady = serialReady;
       }
     } else {
       this.shellReady = serialReady;
     }
-
     if (!this.shellReady) throw new Error('Alpine shell readiness was not observed');
     if (!this.guestIdentity) this.guestIdentity = { kind: 'alpine', isAlpine: true, release: 'verified Alpine image; interactive shell observed' };
     this.markReadyIfIdentityVerified();
@@ -293,9 +258,7 @@ export class V86LinuxTerminal {
   }
 
   private detectGuestIdentity(text: string): GuestIdentity | null {
-    if (/(?:^|\r?\n)ID=alpine(?:\r?\n|$)/im.test(text) || /Alpine Linux/i.test(text)) {
-      return { kind: 'alpine', isAlpine: true, release: text.slice(-4096) };
-    }
+    if (/(?:^|\r?\n)ID=alpine(?:\r?\n|$)/im.test(text) || /Alpine Linux/i.test(text)) return { kind: 'alpine', isAlpine: true, release: text.slice(-4096) };
     return null;
   }
 
@@ -306,9 +269,7 @@ export class V86LinuxTerminal {
     V86LinuxTerminal.runtimePromise = new Promise<void>((resolve, reject) => {
       const script = document.querySelector<HTMLScriptElement>('script[data-linuxlab-v86]');
       if (!script) { reject(new Error('Missing static /libv86.js runtime tag')); return; }
-      const finish = () => typeof runtimeWindow.V86Starter === 'function' || typeof runtimeWindow.V86 === 'function'
-        ? resolve()
-        : reject(new Error('libv86.js loaded without a V86 constructor'));
+      const finish = () => typeof runtimeWindow.V86Starter === 'function' || typeof runtimeWindow.V86 === 'function' ? resolve() : reject(new Error('libv86.js loaded without a V86 constructor'));
       script.addEventListener('load', finish, { once: true });
       script.addEventListener('error', () => reject(new Error('Failed to load /libv86.js')), { once: true });
       if (typeof runtimeWindow.V86Starter === 'function' || typeof runtimeWindow.V86 === 'function') finish();
@@ -336,9 +297,7 @@ export class V86LinuxTerminal {
 
   private scheduleBootWatchdog(id: number, timeoutMs: number): void {
     if (this.bootTimeout !== null) window.clearTimeout(this.bootTimeout);
-    this.bootTimeout = window.setTimeout(() => {
-      if (!this.ready && id === this.bootId) this.fail('guest boot timeout');
-    }, timeoutMs);
+    this.bootTimeout = window.setTimeout(() => { if (!this.ready && id === this.bootId) this.fail('guest boot timeout'); }, timeoutMs);
   }
 
   private fail(message: string, cause?: Error): void {
@@ -364,12 +323,10 @@ export class V86LinuxTerminal {
     const terminal = document.getElementById('v86-terminal-container');
     if (screen) screen.hidden = true;
     if (terminal) terminal.hidden = false;
-    // The VGA shell is still the guest input target even while xterm is visible.
     this.setGuestKeyboardEnabled(true);
     this.fit();
     this.term.focus();
   }
-
   private showScreen(): void {
     this.activeView = 'screen';
     const screen = document.getElementById('screen_container');
@@ -379,16 +336,12 @@ export class V86LinuxTerminal {
     this.setGuestKeyboardEnabled(true);
     this.fit();
   }
-
   private status(text: string): void { document.getElementById('v86-status')?.replaceChildren(document.createTextNode(text)); }
   private monitor(text: string): void { document.getElementById('v86-monitor')?.replaceChildren(document.createTextNode(text)); }
   private setHealth(state: 'booting' | 'ready' | 'offline'): void {
     this.health = state;
     const element = document.getElementById('v86-health');
-    if (element) {
-      element.dataset.state = state;
-      element.setAttribute('aria-label', state === 'ready' ? 'VM working' : state === 'booting' ? 'VM booting' : 'VM offline');
-    }
+    if (element) { element.dataset.state = state; element.setAttribute('aria-label', state === 'ready' ? 'VM working' : state === 'booting' ? 'VM booting' : 'VM offline'); }
   }
   private setNetworkState(state: 'disabled' | 'enabled'): void { const element = document.getElementById('v86-health'); if (element) element.dataset.network = state; }
   private setIntegrityState(state: 'verified' | 'unverified'): void { this.integrityState = state; const element = document.getElementById('v86-health'); if (element) element.dataset.integrity = state; }
@@ -406,20 +359,17 @@ export class V86LinuxTerminal {
       `Last serial: ${this.lastSerialAt ? new Date(this.lastSerialAt).toISOString() : 'none'}`,
     ].join('\n');
   }
-
   private async copyDiagnostics(): Promise<void> {
     const element = document.getElementById('v86-diagnostics');
     if (!element) return;
     if (element.hidden) this.showDiagnostics();
     try { await navigator.clipboard.writeText(element.textContent || ''); } catch {}
   }
-
   private async dispose(): Promise<void> {
     if (this.bootTimeout !== null) { window.clearTimeout(this.bootTimeout); this.bootTimeout = null; }
     if (this.sessionTimer !== null) { window.clearTimeout(this.sessionTimer); this.sessionTimer = null; }
     this.telemetryDispose?.();
     this.telemetryDispose = null;
-    // The xterm input listener belongs to the persistent terminal and must survive VM reboot.
     try { this.emulator?.stop?.(); this.emulator?.destroy?.(); } catch {}
     this.emulator = null;
     this.enforcer?.stop();
