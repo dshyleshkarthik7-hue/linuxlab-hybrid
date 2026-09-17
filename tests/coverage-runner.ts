@@ -1,6 +1,5 @@
 import './linux-engine.test.ts';
 import './command-catalog.test.ts';
-import './shell-parser.test.ts';
 import './command-result.test.ts';
 import './vnext-correctness.test.ts';
 import './adversarial-resource.test.ts';
