@@ -34,9 +34,11 @@ assert.equal(sha256StreamHex(chunks), nodeDigest, 'incremental SHA-256 must matc
 async function verifyDeveloperRelease(): Promise<void> {
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), Number(process.env.ISO_LIVE_VERIFY_TIMEOUT_MS || 180_000));
+  const token = process.env.GITHUB_TOKEN;
+  const auth = token ? { Authorization: `Bearer ${token}` } : {};
   try {
     const manifestResponse = await fetch(DEVELOPER_ALPINE_ARTIFACT.releaseManifestUrl, {
-      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'LinuxTerminal-CI-ISO-Verify' }, signal: controller.signal,
+      headers: { Accept: 'application/vnd.github+json', 'User-Agent': 'LinuxTerminal-CI-ISO-Verify', ...auth }, signal: controller.signal,
     });
     assert.equal(manifestResponse.ok, true, `Developer Alpine release manifest returned ${manifestResponse.status}`);
     const manifest = await manifestResponse.json() as { assets?: Array<{ name?: string; size?: number; digest?: string | null }> };
@@ -46,7 +48,7 @@ async function verifyDeveloperRelease(): Promise<void> {
     assert.equal(asset.digest?.toLowerCase().replace(/^sha256:/, ''), DEVELOPER_ALPINE_ARTIFACT.sha256.toLowerCase(), 'Developer Alpine release digest differs from the pinned artifact');
 
     const response = await fetch(DEVELOPER_ALPINE_ARTIFACT.url, {
-      headers: { Accept: 'application/octet-stream', 'User-Agent': 'LinuxTerminal-CI-ISO-Verify' }, redirect: 'follow', cache: 'no-store', signal: controller.signal,
+      headers: { Accept: 'application/octet-stream', 'User-Agent': 'LinuxTerminal-CI-ISO-Verify', ...auth }, redirect: 'follow', cache: 'no-store', signal: controller.signal,
     });
     assert.equal(response.ok, true, `Developer Alpine ISO returned ${response.status}`);
     assert.ok(response.body, 'Developer Alpine ISO response has no body');

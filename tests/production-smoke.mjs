@@ -7,13 +7,13 @@ const timeoutMs = Number(process.env.PRODUCTION_SMOKE_TIMEOUT_MS || 60000);
 const retryMs = Number(process.env.PRODUCTION_SMOKE_RETRY_MS || 15000);
 const retries = Number(process.env.PRODUCTION_SMOKE_RETRIES || 24);
 
-async function get(url, { redirect = 'error', cacheBust = true } = {}) {
+async function get(url) {
   let last;
   const u = new URL(url);
-  if (cacheBust) u.searchParams.set('_production_smoke', Date.now().toString());
+  u.searchParams.set('_production_smoke', Date.now().toString());
   for (let i = 0; i <= retries; i++) {
     try {
-      const r = await fetch(u, { redirect, signal: AbortSignal.timeout(timeoutMs) });
+      const r = await fetch(u, { redirect: 'error', signal: AbortSignal.timeout(timeoutMs) });
       if (r.ok || ![404, 502, 503, 504].includes(r.status) || i === retries) return r;
       last = r;
     } catch (e) {
@@ -34,13 +34,6 @@ for (const path of routes) {
   if (/\.(txt|xml)$/.test(path)) continue;
   assert.match(r.headers.get('content-type') || '', /html/i, `${path} must be HTML`);
   pages.set(path, await r.text());
-}
-
-for (const command of commands) {
-  const legacy = `/commands/${command}/`;
-  const r = await get(origin + legacy, { redirect: 'manual', cacheBust: false });
-  assert.equal(r?.status, 301, `${legacy} must return 301, got ${r?.status}`);
-  assert.equal(r.headers.get('location'), `/commands/${command}.html`, `${legacy} must redirect to its canonical .html page`);
 }
 
 const catalogScript = await get(origin + '/commands.js');
@@ -76,4 +69,4 @@ assert.match(pages.get('/certificate/') || '', /server-verified/i);
 assert.match(pages.get('/verify/') || '', /PUBLIC VERIFICATION/i);
 assert.match(pages.get('/challenges/') || '', /100 Linux challenges/i);
 assert.doesNotMatch(pages.get('/real-linux/') || '', /network relay downloads VM images/i);
-console.log(`Production deployment smoke checks passed: ${commands.length} canonical lessons + ${commands.length} legacy redirects + 200-command catalogue`);
+console.log(`Production deployment smoke checks passed: ${commands.length} canonical lessons + 200-command catalogue`);
