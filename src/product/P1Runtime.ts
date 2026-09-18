@@ -5,6 +5,10 @@ import { LinuxObservatory } from '../observability/LinuxObservatory.ts';
 import { COMMAND_LESSONS, type LinuxCommandLesson } from '../commands/commandCatalog.ts';
 import { ALPINE_ARTIFACT, type PinnedArtifact } from '../core/ISOIntegrity.ts';
 
+const MAX_WORKSPACE_SNAPSHOT_FILES = 40;
+const MAX_WORKSPACE_SNAPSHOT_DEPTH = 8;
+const MAX_WORKSPACE_SNAPSHOT_PATH_BYTES = 4_096;
+
 export type LearningLevel = 'beginner' | 'intermediate' | 'expert';
 export interface ProductTelemetry { command: string; level: LearningLevel; cwd: string; exitCode: number; stdoutBytes: number; stderrBytes: number; durationMs: number; timestamp: number; }
 export interface TutorContext { level: LearningLevel; command: string; exitCode: number; cwd: string; hint: string; explanation: string; nextStep: string; history: string[]; repeatedFailure: boolean; telemetry: ReturnType<LinuxObservatory['system']>; filesystem: string[]; curriculumObjective: string; }
