@@ -208,7 +208,7 @@
   status = 200
 [[redirects]]
   from = "/developer-alpine/"
-  to = "/developer-alpine.html"
+  to = "/developer-alpine/index.html"
   status = 200
 [[redirects]]
   from = "/linux-careers/"

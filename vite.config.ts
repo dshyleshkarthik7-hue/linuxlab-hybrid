@@ -68,6 +68,7 @@ export default defineConfig({
         expert: entry('expert/index.html'),
         simulator: entry('simulator.html'),
         v86: entry('index-v86.html'),
+        developerAlpine: entry('developer-alpine/index.html'),
         linux4: entry('linux4.html'),
         about: entry('about/index.html'),
         contact: entry('contact/index.html'),

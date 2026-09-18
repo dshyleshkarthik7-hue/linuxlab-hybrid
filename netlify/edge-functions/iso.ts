@@ -31,29 +31,10 @@ function cors(source: ImageSource): Headers {
   });
 }
 
-async function verifyReleaseAsset(source: ImageSource): Promise<void> {
-  const cached = verifiedCache.get(source.filename);
-  if (cached !== undefined && Date.now() - cached < VERIFY_TTL_MS) return;
-
-  const response = await fetch(source.releaseManifestUrl, {
-    headers: {
-      Accept: 'application/vnd.github+json',
-      'User-Agent': 'LinuxTerminal-ISO-Proxy/16.0',
-    },
-    cache: 'no-store',
-  });
-  if (!response.ok) throw new Error(`Release manifest unavailable (${response.status})`);
-
-  const release = await response.json() as {
-    assets?: Array<{ name?: string; size?: number; digest?: string | null }>;
-  };
-  const asset = release.assets?.find((candidate) => candidate.name === source.filename);
-  const digest = asset?.digest?.toLowerCase().replace(/^sha256:/, '');
-  if (!asset || asset.size !== source.size || digest !== source.sha256.toLowerCase()) {
-    throw new Error(`Release manifest digest mismatch for ${source.filename}`);
-  }
-  verifiedCache.set(source.filename, Date.now());
-}
+// The browser-side ISO loader performs the authoritative SHA-256 verification of the
+// complete pinned artifact before v86 receives it. Avoid a GitHub REST manifest call
+// on every uncached edge instance; the manifest endpoint is rate-limited to 60/hour
+// when unauthenticated, which is especially fragile for the 691 MB Developer image.
 
 function rangeFor(request: Request, size: number): { start: number; end: number } | null {
   const value = request.headers.get('range');
@@ -95,8 +76,6 @@ export default async (request: Request): Promise<Response> => {
   const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
 
   try {
-    await verifyReleaseAsset(source);
-
     const upstreamHeaders = new Headers({
       Accept: 'application/octet-stream',
       'User-Agent': 'LinuxTerminal-ISO-Proxy/16.0',
