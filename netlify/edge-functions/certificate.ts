@@ -392,7 +392,7 @@ async function sign(value: string, secret = SIGNING_SECRET || '') {
 
   const key = await crypto.subtle.importKey(
     'raw',
-    new TextEncoder().encode(SIGNING_SECRET),
+    new TextEncoder().encode(secret),
     { name: 'HMAC', hash: 'SHA-256' },
     false,
     ['sign'],
