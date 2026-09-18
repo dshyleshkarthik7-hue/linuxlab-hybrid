@@ -79,12 +79,13 @@ function getChunk(url: URL, size: number) {
     !Number.isSafeInteger(requestedEnd) ||
     start < 0 ||
     requestedEnd < start ||
+    requestedEnd >= size ||
     start >= size
   ) {
     throw new Error("Invalid chunk boundary");
   }
 
-  const end = Math.min(requestedEnd, size - 1);
+  const end = requestedEnd;
   const length = end - start + 1;
 
   if (length > MAX_CHUNK_BYTES) {
@@ -178,7 +179,7 @@ export default {
 
     try {
       const upstreamRequest = new Request(image.url, {
-        method: request.method,
+        method: "GET",
         headers: {
           Accept: "application/octet-stream",
           "User-Agent": "LinuxTerminal-ISO-Worker/1.0",
@@ -285,7 +286,7 @@ export default {
       }
 
       return new Response(upstream.body, {
-        status: 200,
+        status: 206,
         headers,
       });
     } finally {
