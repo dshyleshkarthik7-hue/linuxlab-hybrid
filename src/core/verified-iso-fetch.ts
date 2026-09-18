@@ -168,10 +168,10 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
 }
 
-export function clearVerifiedIsoCache(): void {
+export async function clearVerifiedIsoCache(): Promise<void> {
   memoryCache.clear();
   inFlight.clear();
-  void openCache().then((db) => new Promise<void>((resolve) => {
+  await openCache().then((db) => new Promise<void>((resolve) => {
     const tx = db.transaction(IDB_STORE, 'readwrite');
     tx.objectStore(IDB_STORE).clear();
     tx.oncomplete = () => { db.close(); resolve(); };

@@ -6,6 +6,10 @@ const MAX_BODY_BYTES = 16384;
 const WINDOW_MS = 60000;
 const WINDOW_SECONDS = 60;
 const LIMIT = 12;
+const GLOBAL_LIMIT = Number(Netlify.env.get('TUTOR_GLOBAL_LIMIT_PER_MINUTE') || 300);
+const GLOBAL_TOKEN_BUDGET = Number(Netlify.env.get('TUTOR_GLOBAL_TOKEN_BUDGET_PER_MINUTE') || 90000);
+const CIRCUIT_FAILURE_LIMIT = Number(Netlify.env.get('TUTOR_CIRCUIT_FAILURE_LIMIT') || 8);
+const CIRCUIT_OPEN_SECONDS = Number(Netlify.env.get('TUTOR_CIRCUIT_OPEN_SECONDS') || 30);
 const TIMEOUT_MS = 15000;
 const UPSTASH_URL = Netlify.env.get('UPSTASH_REDIS_REST_URL');
 const UPSTASH_TOKEN = Netlify.env.get('UPSTASH_REDIS_REST_TOKEN');
@@ -76,20 +80,19 @@ function readText(value: unknown, max: number) {
 const RATE_LIMIT_SCRIPT = `
 local limit = tonumber(ARGV[1])
 local ttl = tonumber(ARGV[2])
+local globalLimit = tonumber(ARGV[3])
 local userCount = tonumber(redis.call('GET', KEYS[1]) or '0')
 local ipCount = tonumber(redis.call('GET', KEYS[2]) or '0')
-if userCount >= limit or ipCount >= limit then
-  return -1
-end
+local globalCount = tonumber(redis.call('GET', KEYS[3]) or '0')
+if userCount >= limit or ipCount >= limit or globalCount >= globalLimit then return -1 end
 local function bump(key, count)
-  if count == 0 then
-    redis.call('SET', key, '1', 'EX', ttl)
-    return 1
-  end
+  if count == 0 then redis.call('SET', key, '1', 'EX', ttl); return 1 end
   return redis.call('INCR', key)
 end
 local nextUser = bump(KEYS[1], userCount)
 local nextIp = bump(KEYS[2], ipCount)
+local nextGlobal = bump(KEYS[3], globalCount)
+if nextGlobal >= nextUser and nextGlobal >= nextIp then return nextGlobal end
 if nextUser > nextIp then return nextUser end
 return nextIp
 `;
@@ -100,6 +103,7 @@ async function durableLimit(userId: string, ip: string): Promise<RateLimitResult
   const safeIp = ip.replace(/[^a-zA-Z0-9:._-]/g, '_');
   const userKey = `linuxterminal:tutor:user:${safeUser}`;
   const ipKey = `linuxterminal:tutor:ip:${safeIp}`;
+  const globalKey = 'linuxterminal:tutor:global';
   try {
     const response = await fetch(UPSTASH_URL, {
       method: 'POST',
@@ -107,7 +111,7 @@ async function durableLimit(userId: string, ip: string): Promise<RateLimitResult
         authorization: `Bearer ${UPSTASH_TOKEN}`,
         'content-type': 'application/json',
       },
-      body: JSON.stringify(['EVAL', RATE_LIMIT_SCRIPT, '2', userKey, ipKey, String(LIMIT), String(WINDOW_SECONDS)]),
+      body: JSON.stringify(['EVAL', RATE_LIMIT_SCRIPT, '3', userKey, ipKey, globalKey, String(LIMIT), String(WINDOW_SECONDS), String(Math.max(1, GLOBAL_LIMIT))]),
     });
     if (!response.ok) return { available: false, allowed: false };
     const data: unknown = await response.json();

@@ -7,6 +7,8 @@ const MAX_BODY_BYTES = 16384;
 const UPSTASH_URL = Netlify.env.get('UPSTASH_REDIS_REST_URL');
 const UPSTASH_TOKEN = Netlify.env.get('UPSTASH_REDIS_REST_TOKEN');
 const SIGNING_SECRET = Netlify.env.get('CERTIFICATE_SIGNING_SECRET');
+const SIGNING_KEY_ID = Netlify.env.get('CERTIFICATE_SIGNING_KEY_ID') || 'current';
+const SIGNING_KEYS = (() => { const map = new Map<string, string>(); if (SIGNING_SECRET) map.set(SIGNING_KEY_ID, SIGNING_SECRET); for (const item of (Netlify.env.get('CERTIFICATE_SIGNING_KEYS') || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
 const ORIGIN = Netlify.env.get('TUTOR_ALLOWED_ORIGINS') || 'https://linuxterminal.me';
 
 type User = {
@@ -41,6 +43,7 @@ type Cert = {
   issuedAt: string;
   version: string;
   signature: string;
+  keyId?: string;
 };
 
 const BANK: Q[] = [
@@ -384,8 +387,8 @@ async function rateLimit(key: string, limit: number, windowSeconds: number) {
   return Number(count) <= limit;
 }
 
-async function sign(value: string) {
-  if (!SIGNING_SECRET) throw new Error('Certificate signing is not configured');
+async function sign(value: string, secret = SIGNING_SECRET || '') {
+  if (!secret) throw new Error('Certificate signing is not configured');
 
   const key = await crypto.subtle.importKey(
     'raw',
@@ -398,7 +401,7 @@ async function sign(value: string) {
   return [...new Uint8Array(signature)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
 }
 
-const canonical = (value: Omit<Cert, 'signature'>) => [
+const canonical = (value: Omit<Cert, 'signature' | 'keyId'>, keyId = '') => [
   value.id,
   value.userId,
   value.name,
@@ -407,6 +410,7 @@ const canonical = (value: Omit<Cert, 'signature'>) => [
   value.percentage,
   value.issuedAt,
   value.version,
+  keyId,
 ].join('|');
 
 const publicCert = (value: Cert) => ({
@@ -530,10 +534,12 @@ async function submit(user: User, body: unknown) {
       passed: true,
       issuedAt,
       version: EXAM_VERSION,
+      keyId: SIGNING_KEY_ID,
     };
     const certificate: Cert = {
       ...unsigned,
-      signature: await sign(canonical(unsigned)),
+      signature: await sign(canonical(unsigned, SIGNING_KEY_ID)),
+      keyId: SIGNING_KEY_ID,
     };
 
     await redis(['SET', `linuxterminal:certificate:${id}`, JSON.stringify(certificate), 'EX', CERT_TTL]);
@@ -554,8 +560,12 @@ async function verify(id: string) {
   if (typeof raw !== 'string') return json({ error: 'Certificate not found.' }, 404);
 
   const certificate = JSON.parse(raw) as Cert;
-  const { signature, ...unsigned } = certificate;
-  if (await sign(canonical(unsigned)) !== signature) {
+  const { signature, keyId, ...unsigned } = certificate;
+  const kid = typeof keyId === 'string' && keyId ? keyId : SIGNING_KEY_ID;
+  const secret = SIGNING_KEYS.get(kid);
+  if (!secret) return json({ error: 'Certificate signing key is unavailable.' }, 500);
+  const valid = keyId ? await sign(canonical(unsigned, kid), secret) === signature : await sign(canonical(unsigned), secret) === signature;
+  if (!valid) {
     return json({ error: 'Certificate signature verification failed.' }, 500);
   }
   return json({ certificate: publicCert(certificate) });

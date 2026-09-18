@@ -4,6 +4,7 @@ import '@xterm/xterm/css/xterm.css';
 import { attachGuestTelemetry, type GuestIdentity, type V86TelemetryTarget } from './v86-telemetry.ts';
 import { VM_RESOURCE_POLICIES, VMRuntimeResourceEnforcer, type VMResourcePolicyName } from './engine/VMResourcePolicy.ts';
 import { artifactForIsoUrl, fetchVerifiedIso } from './core/verified-iso-fetch.ts';
+import { SEABIOS_ARTIFACT, VGABIOS_ARTIFACT } from './core/artifacts.ts';
 import { waitForV86Loaded } from './v86-ready.ts';
 
 const TerminalCtor = xtermModule.Terminal;
@@ -110,6 +111,13 @@ export class V86LinuxTerminal {
     await this.dispose();
     if (id !== this.bootId || signal.aborted) return;
     this.profile = profileFromPage();
+    if (this.profile.policy === 'developer') {
+      const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
+      if (typeof deviceMemory === 'number' && deviceMemory <= 4) {
+        this.status(`${this.profile.name} • low-memory device`);
+        this.monitor('Developer VM uses 1024 MiB guest RAM plus a large ISO; close other tabs before continuing.');
+      }
+    }
     this.enforcer = new VMRuntimeResourceEnforcer(VM_RESOURCE_POLICIES[this.profile.policy]);
     this.ready = false;
     this.vgaReady = false;
@@ -122,6 +130,7 @@ export class V86LinuxTerminal {
     this.setHealth('booting');
     this.setIntegrityState('unverified');
     this.showTerminal();
+    document.addEventListener('visibilitychange', this.handleVisibility, { passive: true });
     this.term.clear();
     this.term.writeln(`LinuxTerminal — ${this.profile.name}`);
     this.status(`${this.profile.name} • checking runtime`);
@@ -130,12 +139,12 @@ export class V86LinuxTerminal {
       if (id !== this.bootId || signal.aborted) return;
       this.bootStage = 'verifying firmware';
       this.status(`${this.profile.name} • verifying firmware`);
-      await this.preflightRuntimeAssets(signal);
+      const firmware = await this.preflightRuntimeAssets(signal);
       if (id !== this.bootId || signal.aborted) return;
       const artifact = artifactForIsoUrl(this.profile.cdrom);
       this.bootStage = 'verifying image';
       this.status(`${this.profile.name} • verifying image`);
-      const isoBytes = await fetchVerifiedIso(this.profile.cdrom, signal);
+      let isoBytes = await fetchVerifiedIso(this.profile.cdrom, signal);
       if (!isoBytes.byteLength) throw new Error('Verified Linux image is empty');
       this.setIntegrityState('verified');
       const screen = document.getElementById('screen_container');
@@ -150,11 +159,12 @@ export class V86LinuxTerminal {
       this.monitor(`${this.profile.memoryMiB} MiB allocation • ${artifact.filename} verified`);
       const vm = new Runtime({
         wasm_path: '/v86.wasm', memory_size: policy.memoryBytes, vga_memory_size: policy.vgaMemoryBytes,
-        screen_container: screen, bios: { url: `${FIRMWARE_BASE}/seabios.bin` }, vga_bios: { url: `${FIRMWARE_BASE}/vgabios.bin` },
+        screen_container: screen, bios: { buffer: firmware.seabios }, vga_bios: { buffer: firmware.vgabios },
         cdrom: { buffer: isoBytes }, boot_order: 0x213, fastboot: true, bootmenu: false, autostart: false,
         disable_speaker: true, net_device: { type: 'none' },
       });
       this.emulator = vm;
+      isoBytes = new ArrayBuffer(0);
       this.setNetworkState('disabled');
       this.setGuestKeyboardEnabled(true);
       this.sessionTimer = window.setTimeout(() => this.fail('VM session resource limit reached'), policy.remainingSessionMs());
@@ -279,21 +289,21 @@ export class V86LinuxTerminal {
     return V86LinuxTerminal.runtimePromise;
   }
 
-  private async preflightRuntimeAssets(signal: AbortSignal): Promise<void> {
-    const assets = [
-      { url: `${FIRMWARE_BASE}/seabios.bin`, size: 131072, sha256: '73e3f359102e3a9982c35fce98eb7cd08f18303ac7f1ba6ebfbe6cdc1c244d98' },
-      { url: `${FIRMWARE_BASE}/vgabios.bin`, size: 36352, sha256: 'a4bc0d80cc3ca028c73dafa8fee396b8d054ce87ebd8abfbd31b06b437607880' },
-    ];
-    for (const asset of assets) {
-      const response = await fetch(asset.url, { cache: 'no-store', signal });
-      if (!response.ok) throw new Error(`Required VM firmware failed to load: ${asset.url} (${response.status})`);
+  private async preflightRuntimeAssets(signal: AbortSignal): Promise<{ seabios: ArrayBuffer; vgabios: ArrayBuffer }> {
+    const load = async (artifact: typeof SEABIOS_ARTIFACT): Promise<ArrayBuffer> => {
+      const response = await fetch(`${FIRMWARE_BASE}/${artifact.filename}`, { cache: 'no-store', signal });
+      if (!response.ok) throw new Error(`Required VM firmware failed to load: ${artifact.filename} (${response.status})`);
       const bytes = await response.arrayBuffer();
-      if (bytes.byteLength !== asset.size) throw new Error(`Required VM firmware failed size verification: ${asset.url}`);
+      if (bytes.byteLength !== artifact.size) throw new Error(`Required VM firmware failed size verification: ${artifact.filename}`);
       const digest = await crypto.subtle.digest('SHA-256', bytes);
       const actual = [...new Uint8Array(digest)].map((byte) => byte.toString(16).padStart(2, '0')).join('');
-      if (actual !== asset.sha256) throw new Error(`Required VM firmware failed SHA-256 verification: ${asset.url}`);
-    }
+      if (actual !== artifact.sha256) throw new Error(`Required VM firmware failed SHA-256 verification: ${artifact.filename}`);
+      return bytes;
+    };
+    const [seabios, vgabios] = await Promise.all([load(SEABIOS_ARTIFACT), load(VGABIOS_ARTIFACT)]);
+    return { seabios, vgabios };
   }
+
 
   private scheduleBootWatchdog(id: number, timeoutMs: number): void {
     if (this.bootTimeout !== null) window.clearTimeout(this.bootTimeout);
@@ -365,11 +375,14 @@ export class V86LinuxTerminal {
     if (element.hidden) this.showDiagnostics();
     try { await navigator.clipboard.writeText(element.textContent || ''); } catch {}
   }
+  private handleVisibility = (): void => { if (document.visibilityState === 'visible') this.fit(); };
+
   private async dispose(): Promise<void> {
     if (this.bootTimeout !== null) { window.clearTimeout(this.bootTimeout); this.bootTimeout = null; }
     if (this.sessionTimer !== null) { window.clearTimeout(this.sessionTimer); this.sessionTimer = null; }
     this.telemetryDispose?.();
     this.telemetryDispose = null;
+    document.removeEventListener('visibilitychange', this.handleVisibility);
     try { this.emulator?.stop?.(); this.emulator?.destroy?.(); } catch {}
     this.emulator = null;
     this.enforcer?.stop();

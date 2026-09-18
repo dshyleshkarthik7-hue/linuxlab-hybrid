@@ -10,3 +10,5 @@ assert.match(headers,/Cross-Origin-Embedder-Policy\s*=\s*"credentialless"/);
 assert.match(headers,/Permissions-Policy\s*=\s*"[^"]*camera=\(\)/);
 assert.match(progress,/^import ['"]\/progress\.js['"];?$/m);
 console.log('Browser security regression contract checks passed');
+
+const v86=readFileSync('src/main-v86.ts','utf8'); assert.match(v86,/net_device:\s*\{ type: 'none' \}/); assert.match(v86,/visibilitychange/); assert.match(v86,/destroy\?\./); console.log('VM lifecycle/network regression contract passed');

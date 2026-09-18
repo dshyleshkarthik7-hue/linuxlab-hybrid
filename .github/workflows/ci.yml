@@ -41,19 +41,22 @@ jobs:
       - run: npm run lint
       - name: Verify ISO builder boot contract
         run: node tests/iso-builder-contract.test.mjs
-      - name: Install Playwright Chromium
+      - name: Install Playwright browser matrix
         run: |
           set -euo pipefail
           test -f node_modules/playwright/cli.js
-          node node_modules/playwright/cli.js install --with-deps chromium
+          node node_modules/playwright/cli.js install --with-deps chromium firefox webkit
       - run: npm run test:ci
       - run: npm run test:smoke
       - name: Real guest isolation gate
         env:
           GITHUB_TOKEN: ${{ github.token }}
+          REAL_GUEST_BROWSERS: chromium,firefox,webkit
         run: npm run test:real-guest
       - run: npm run test:mobile
       - run: node tests/p2-p3-contract.test.mjs
+      - run: node tests/artifact-manifest.test.mjs
+      - run: node tests/github-actions-pinning.test.mjs
       - name: Production smoke (post-deployment only)
         if: ${{ github.event_name == 'workflow_dispatch' }}
         env:
