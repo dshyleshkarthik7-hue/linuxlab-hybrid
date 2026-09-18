@@ -88,15 +88,45 @@ async function writePersistent(url: string, artifact: PinnedArtifact, bytes: Arr
 }
 
 async function fetchRange(url: string, start: number, end: number, artifact: PinnedArtifact, signal: AbortSignal): Promise<ArrayBuffer> {
+  const chunkUrl = new URL(url);
+  chunkUrl.searchParams.set('chunkStart', String(start));
+  chunkUrl.searchParams.set('chunkEnd', String(end));
+
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      const response = await fetch(url, { headers: { Range: `bytes=${start}-${end}` }, cache: 'no-store', signal: requestSignal(signal, RANGE_FETCH_TIMEOUT_MS) });
+      const response = await fetch(chunkUrl, {
+        headers: { Range: `bytes=${start}-${end}` },
+        cache: 'no-store',
+        signal: requestSignal(signal, RANGE_FETCH_TIMEOUT_MS),
+      });
+
+      const chunkStart = response.headers.get('x-linuxlab-chunk-start');
+      const chunkEnd = response.headers.get('x-linuxlab-chunk-end');
+      const chunkTotal = response.headers.get('x-linuxlab-chunk-total');
+      const isChunkResponse =
+        chunkStart === String(start) &&
+        chunkEnd === String(end) &&
+        chunkTotal === String(artifact.size);
+
       if (response.status === 206) {
-        if (response.headers.get('content-range') !== `bytes ${start}-${end}/${artifact.size}`) throw new Error('ISO range integrity metadata mismatch');
+        if (response.headers.get('content-range') !== `bytes ${start}-${end}/${artifact.size}`) {
+          throw new Error('ISO range integrity metadata mismatch');
+        }
         const bytes = await response.arrayBuffer();
         if (bytes.byteLength !== end - start + 1) throw new Error('ISO range size mismatch');
         return bytes;
       }
+
+      if (response.status === 200 && isChunkResponse) {
+        const contentLength = response.headers.get('content-length');
+        if (contentLength !== null && Number(contentLength) !== end - start + 1) {
+          throw new Error('ISO chunk size metadata mismatch');
+        }
+        const bytes = await response.arrayBuffer();
+        if (bytes.byteLength !== end - start + 1) throw new Error('ISO chunk size mismatch');
+        return bytes;
+      }
+
       if (response.status === 416) throw new Error('ISO range rejected');
       if (attempt === 2) throw new Error(`ISO range request failed (${response.status})`);
     } catch (error) {

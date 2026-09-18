@@ -42,6 +42,13 @@ try {
   assert.equal(response.headers.get('content-length'), '1024');
   assert.equal(calls.length, 1);
   assert.equal(calls[0].headers.get('range'), 'bytes=0-1023');
+  assert.equal(new URL(calls[0].url).searchParams.get('image'), 'virt');
+
+  const chunked = await handler(new Request('https://linuxterminal.me/api/iso?image=virt&chunkStart=0&chunkEnd=1023', {
+    headers: { Range: 'bytes=0-1023' },
+  }));
+  assert.equal(chunked.status, 206);
+  assert.equal(chunked.headers.get('content-length'), '1024');
 
   const openEnded = await handler(new Request('https://linuxterminal.me/api/iso?image=virt', {
     headers: { Range: 'bytes=1024-' },
