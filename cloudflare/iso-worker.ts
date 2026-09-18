@@ -61,18 +61,22 @@ function getImage(
 function getChunk(url: URL, size: number) {
   const rawStart = url.searchParams.get("chunkStart");
   const rawEnd = url.searchParams.get("chunkEnd");
+  let startText = rawStart;
+  let endText = rawEnd;
 
-  if (
-    rawStart === null ||
-    rawEnd === null ||
-    !/^\d+$/.test(rawStart) ||
-    !/^\d+$/.test(rawEnd)
-  ) {
-    throw new Error("chunkStart and chunkEnd are required");
+  if (startText === null || endText === null) {
+    const match = /^bytes=(\d+)-(\d+)$/.exec(rangeHeader || "");
+    if (!match) throw new Error("chunkStart/chunkEnd or a single HTTP Range header is required");
+    startText = match[1];
+    endText = match[2];
   }
 
-  const start = Number(rawStart);
-  const requestedEnd = Number(rawEnd);
+  if (!/^\d+$/.test(startText) || !/^\d+$/.test(endText)) {
+    throw new Error("Invalid chunk boundary");
+  }
+
+  const start = Number(startText);
+  const requestedEnd = Number(endText);
 
   if (
     !Number.isSafeInteger(start) ||
@@ -151,7 +155,7 @@ export default {
     let chunk;
 
     try {
-      chunk = getChunk(url, image.size);
+      chunk = getChunk(url, image.size, request.headers.get("Range"));
     } catch {
       headers.set(
         "Content-Range",
