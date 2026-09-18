@@ -12,3 +12,8 @@ assert.match(progress,/^import ['"]\/progress\.js['"];?$/m);
 console.log('Browser security regression contract checks passed');
 
 const v86=readFileSync('src/main-v86.ts','utf8'); assert.match(v86,/net_device:\s*\{ type: 'none' \}/); assert.match(v86,/visibilitychange/); assert.match(v86,/destroy\?\./); console.log('VM lifecycle/network regression contract passed');
+
+const mainV86=readFileSync('src/main-v86.ts','utf8');
+assert.match(mainV86,/verified artifact \$\{artifact\.version\}/);
+assert.match(mainV86,/Verified Alpine artifact identity was not established/);
+console.log('Verified-artifact readiness contract passed');

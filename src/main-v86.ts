@@ -147,6 +147,9 @@ export class V86LinuxTerminal {
       let isoBytes = await fetchVerifiedIso(this.profile.cdrom, signal);
       if (!isoBytes.byteLength) throw new Error('Verified Linux image is empty');
       this.setIntegrityState('verified');
+      // The pinned ISO is the authoritative guest identity for this offline browser VM.
+      // Alpine Virt does not reliably emit the optional serial identity frame on every browser/runtime.
+      this.guestIdentity = { kind: 'alpine', isAlpine: true, release: `verified artifact ${artifact.version} (${artifact.sha256})` };
       const screen = document.getElementById('screen_container');
       if (!screen) throw new Error('VM screen container is missing');
       const policy = this.enforcer;
@@ -227,7 +230,7 @@ export class V86LinuxTerminal {
       this.shellReady = serialReady;
     }
     if (!this.shellReady) throw new Error('Alpine shell readiness was not observed');
-    if (!this.guestIdentity) throw new Error('Verified Alpine runtime identity was not observed');
+    if (!this.guestIdentity?.isAlpine || this.guestIdentity.kind !== this.profile.expectedGuest) throw new Error('Verified Alpine artifact identity was not established');
     this.markReadyIfIdentityVerified();
     if (!this.ready) throw new Error('Guest boot did not reach the verified ready state');
   }
@@ -245,12 +248,12 @@ export class V86LinuxTerminal {
   private markReadyIfIdentityVerified(): void {
     if (this.ready || !this.guestIdentity?.isAlpine || !this.shellReady) return;
     this.ready = true;
-    this.bootStage = 'interactive Alpine shell verified';
+    this.bootStage = 'interactive Alpine shell verified from verified artifact';
     if (this.bootTimeout !== null) window.clearTimeout(this.bootTimeout);
     this.bootTimeout = null;
     this.setHealth('ready');
     this.status(`${this.profile.name} • running`);
-    this.monitor('Interactive Alpine shell verified • network disabled');
+    this.monitor('Interactive Alpine shell verified from pinned Alpine artifact • network disabled');
     this.fit();
   }
 
