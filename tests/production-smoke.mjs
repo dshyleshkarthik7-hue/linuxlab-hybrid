@@ -31,7 +31,7 @@ assert.ok(sitemapPaths.length >= 30, `sitemap found only ${sitemapPaths.length} 
 
 const isoUrl = `${origin}/api/iso?image=developer&chunkStart=0&chunkEnd=0`;
 const iso = await get(isoUrl, { headers: { Range: 'bytes=0-0' } });
-assert.equal(iso.status, 200, `developer ISO probe returned ${iso.status}`);
+assert.equal(iso.status, 206, `developer ISO probe returned ${iso.status}`);
 assert.equal(iso.headers.get('x-linuxlab-chunk-start'), '0');
 assert.equal(iso.headers.get('x-linuxlab-chunk-end'), '0');
 assert.equal(iso.headers.get('x-linuxlab-chunk-total'), '691011584');

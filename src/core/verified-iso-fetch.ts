@@ -82,7 +82,10 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
     let bytes: ArrayBuffer;
     if (artifact.size <= DIRECT_FETCH_MAX_BYTES) {
       try {
-        bytes = await verifyResponse(await fetch(key, { method: 'GET', cache: 'no-store', signal: requestSignal(signal, ISO_FETCH_TIMEOUT_MS) }), artifact);
+        const fullImageUrl = new URL(key);
+        fullImageUrl.searchParams.set('chunkStart', '0');
+        fullImageUrl.searchParams.set('chunkEnd', String(artifact.size - 1));
+        bytes = await verifyResponse(await fetch(fullImageUrl, { method: 'GET', cache: 'no-store', signal: requestSignal(signal, ISO_FETCH_TIMEOUT_MS) }), artifact);
       } catch (error) {
         if (signal?.aborted) throw error;
         bytes = await fetchIsoResumable(key, artifact, signal ?? new AbortController().signal);
