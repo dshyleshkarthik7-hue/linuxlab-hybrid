@@ -19,6 +19,7 @@ assert.match(edge, /QUESTION_COUNT\s*=\s*30/);
 assert.match(edge, /PASS_PERCENT\s*=\s*80/);
 assert.match(edge, /canonical\(unsigned\)/);
 assert.match(edge, /new TextEncoder\(\)\.encode\(secret\)/, 'certificate signing must use the selected key, not only the current key');
+assert.match(edge, /constantTimeEqualHex\(expected, signature\)/, 'certificate verification must compare signatures without ordinary string equality');
 assert.match(edge, /userId/);
 assert.match(edge, /DEL/);
 assert.doesNotMatch(edge, /(?:\:\s*any\b|\bas\s+any\b|<\s*any\s*>)/);
