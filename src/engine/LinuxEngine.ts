@@ -144,7 +144,7 @@ export class InBrowserLinuxEngine {
       return command && target ? { command, target } : null;
     };
     const append = findRedirect('>>');
-    const append = redirect('>>'); if (append) { const res = await this.executeSingle(append.command); if (this.exitCode !== 0) return res; const prev = this.readFile(append.target) || ''; if (!this.writeFile(append.target, prev + res)) { this.exitCode = 1; return `bash: ${append.target}: No such file or directory`; } return ''; }
+    if (append) { const res = await this.executeSingle(append.command); if (this.exitCode !== 0) return res; const prev = this.readFile(append.target) || ''; if (!this.writeFile(append.target, prev + res)) { this.exitCode = 1; return `bash: ${append.target}: No such file or directory`; } return ''; }
     const overwrite = findRedirect('>'); if (overwrite) { const res = await this.executeSingle(overwrite.command); if (this.exitCode !== 0) return res; if (!this.writeFile(overwrite.target, res)) { this.exitCode = 1; return `bash: ${overwrite.target}: No such file or directory`; } return ''; }
     return this.executeSingle(line);
   }
