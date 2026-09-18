@@ -7,7 +7,7 @@ const config = await readFile(new URL('../cloudflare/wrangler.jsonc', import.met
 assert.match(worker, /chunkStart/);
 assert.match(worker, /chunkEnd/);
 assert.match(worker, /MAX_CHUNK_BYTES\s*=\s*48\s*\*\s*1024\s*\*\s*1024/);
-assert.match(worker, /Range:\s*'bytes='/);
+assert.match(worker, /Range:\s*`bytes=\$\{chunk\.start\}-\$\{chunk\.end\}`/);
 assert.match(worker, /upstream\.status !== 206/);
 assert.match(worker, /status:\s*200/);
 assert.match(worker, /Cache-Control.*immutable/);
