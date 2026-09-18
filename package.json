@@ -43,6 +43,7 @@
     "test:smoke": "node tests/browser-vm-smoke.mjs",
     "test:mobile": "node tests/mobile-e2e.mjs",
     "test:production": "node tests/production-smoke.mjs",
+    "test:browser-security": "node tests/browser-security-contract.test.mjs",
     "test:all": "npm run test:ci && npm run test:smoke && npm run test:real-guest && npm run test:mobile && npm run test:production"
   },
   "dependencies": {

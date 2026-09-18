@@ -217,7 +217,7 @@ export class V86LinuxTerminal {
       this.shellReady = serialReady;
     }
     if (!this.shellReady) throw new Error('Alpine shell readiness was not observed');
-    if (!this.guestIdentity) this.guestIdentity = { kind: 'alpine', isAlpine: true, release: 'verified Alpine image; interactive shell observed' };
+    if (!this.guestIdentity) throw new Error('Verified Alpine runtime identity was not observed');
     this.markReadyIfIdentityVerified();
     if (!this.ready) throw new Error('Guest boot did not reach the verified ready state');
   }

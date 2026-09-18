@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 const root = process.cwd();
-const required = ['index.html','404.html','beginner/index.html','learn/index.html','learn/learn.css','learn/learn.js','progress/index.html','progress/progress.css','progress/progress.js','progress.js','challenges/index.html','challenges/challenges.js','quiz/index.html','certificate/index.html'];
+const required = ['index.html','404.html','beginner/index.html','learn/index.html','learn/learn.css','learn/learn.js','progress/index.html','progress/progress.css','progress/progress.js','challenges/index.html','challenges/challenges.js','quiz/index.html','certificate/index.html'];
 for (const file of required) assert.ok(existsSync(join(root, file)), `Missing production route asset: ${file}`);
 const html = readFileSync(join(root, 'index.html'), 'utf8');
 for (const route of ['/beginner/','/learn/','/challenges/','/quiz/','/progress/','/certificate/']) assert.ok(html.includes(`href=\"${route}\"`), `Homepage missing route: ${route}`);

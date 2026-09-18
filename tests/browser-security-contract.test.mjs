@@ -1,0 +1,12 @@
+import { strict as assert } from 'node:assert';
+import { readFileSync } from 'node:fs';
+const main=readFileSync('src/main-v86.ts','utf8');
+const headers=readFileSync('netlify.toml','utf8');
+const progress=readFileSync('progress/progress.js','utf8');
+assert.doesNotMatch(main,/innerHTML\s*=|outerHTML\s*=|insertAdjacentHTML\s*\(/);
+assert.match(main,/replaceChildren\(document\.createTextNode\(text\)\)/);
+assert.match(headers,/Cross-Origin-Opener-Policy\s*=\s*"same-origin"/);
+assert.match(headers,/Cross-Origin-Embedder-Policy\s*=\s*"credentialless"/);
+assert.match(headers,/Permissions-Policy\s*=\s*"[^"]*camera=\(\)/);
+assert.match(progress,/^import ['"]\/progress\.js['"];?$/m);
+console.log('Browser security regression contract checks passed');
