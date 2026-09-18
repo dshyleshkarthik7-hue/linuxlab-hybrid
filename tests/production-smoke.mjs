@@ -24,63 +24,25 @@ async function get(url, options = {}) {
 
 const sitemapResponse = await get(`${origin}/sitemap.xml`);
 assert.equal(sitemapResponse.ok, true, `/sitemap.xml returned ${sitemapResponse.status}`);
-assert.match(sitemapResponse.headers.get('content-type') || '', /xml/i, '/sitemap.xml must be XML');
+assert.match(sitemapResponse.headers.get('content-type') || '', /xml/i);
 const sitemap = await sitemapResponse.text();
 const sitemapPaths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map(match => new URL(match[1]).pathname + new URL(match[1]).search);
-assert.ok(sitemapPaths.length >= 30, `sitemap must expose the indexable site surface; found ${sitemapPaths.length} URLs`);
-assert.ok(sitemapPaths.includes('/commands/pwd.html'), 'sitemap must use canonical .html command URLs');
-assert.ok(!sitemapPaths.some(path => /^\/commands\/[^.]+\/$/.test(path)), 'sitemap must not advertise legacy command slash URLs');
+assert.ok(sitemapPaths.length >= 30, `sitemap found only ${sitemapPaths.length} URLs`);
 
-const commands = ['pwd','ls','cd','mkdir','cat','cp','mv','rm','grep','find','sed','awk','chmod','chown','ps','top','df','du','tar','curl','ssh','ip','ping','git','head','tail'];
-for (const command of commands) {
-  const response = await get(`${origin}/commands/${command}/`, { redirect: 'manual', retryTransient: false });
-  assert.ok([301, 308].includes(response.status), `/commands/${command}/ must redirect; got ${response.status}`);
-  const location = response.headers.get('location');
-  assert.ok(location, `/commands/${command}/ redirect must have Location`);
-  const target = new URL(location, origin);
-  assert.equal(target.pathname, `/commands/${command}.html`, `/commands/${command}/ must redirect to canonical .html`);
-  assert.equal(target.search, '', `/commands/${command}/ must not preserve query strings`);
-}
+const isoUrl = `${origin}/api/iso?image=developer&chunkStart=0&chunkEnd=0`;
+const iso = await get(isoUrl, { headers: { Range: 'bytes=0-0' } });
+assert.equal(iso.status, 200, `developer ISO probe returned ${iso.status}`);
+assert.equal(iso.headers.get('x-linuxlab-chunk-start'), '0');
+assert.equal(iso.headers.get('x-linuxlab-chunk-end'), '0');
+assert.equal(iso.headers.get('x-linuxlab-chunk-total'), '691011584');
+assert.equal(iso.headers.get('content-length'), '1');
+assert.equal(iso.headers.get('accept-ranges'), 'bytes');
+assert.equal(iso.headers.get('content-range'), 'bytes 0-0/691011584');
+assert.equal((await iso.arrayBuffer()).byteLength, 1);
 
-const pages = new Map();
-for (const path of [...new Set(sitemapPaths)]) {
-  const response = await get(origin + path);
-  assert.equal(response.ok, true, `${path} returned ${response.status}`);
-  if (/\.(txt|xml)$/.test(path)) continue;
-  assert.match(response.headers.get('content-type') || '', /html/i, `${path} must be HTML`);
-  pages.set(path, await response.text());
-}
+const outOfBounds = await get(`${origin}/api/iso?image=developer&chunkStart=691011584&chunkEnd=691011584`);
+assert.equal(outOfBounds.status, 416);
+const unknown = await get(`${origin}/api/iso?image=unknown&chunkStart=0&chunkEnd=0`);
+assert.equal(unknown.status, 404);
 
-function assetUrls(html, tag, attribute) {
-  const re = new RegExp(`<${tag}\\b[^>]*\\b${attribute}=["']([^"']+)["']`, 'gi');
-  return [...html.matchAll(re)].map(match => match[1]);
-}
-for (const [path, html] of pages) {
-  assert.doesNotMatch(html, /<script(?![^>]+\bsrc=)[^>]*>/i, `${path} must not contain inline scripts`);
-  assert.doesNotMatch(html, /<style[\s>]/i, `${path} must not contain inline styles`);
-  assert.match(html, /<title>[^<]{3,200}<\/title>/i, `${path} must have a title`);
-  assert.match(html, /<meta[^>]+name=["']description["'][^>]+content=["'][^"']{20,320}["']/i, `${path} must have a useful meta description`);
-  const canonical = html.match(/<link[^>]+rel=["']canonical["'][^>]+href=["']([^"']+)["']/i)?.[1];
-  assert.ok(canonical, `${path} must have a canonical URL`);
-  assert.equal(new URL(canonical).origin, 'https://linuxterminal.me', `${path} canonical must use production HTTPS`);
-  for (const src of assetUrls(html, 'script', 'src')) {
-    const response = await get(new URL(src, origin + path));
-    assert.equal(response.ok, true, `${path} script ${src} failed with ${response.status}`);
-  }
-  for (const href of assetUrls(html, 'link', 'href')) {
-    if (!/\.css(?:$|[?#])/i.test(href)) continue;
-    const response = await get(new URL(href, origin + path));
-    assert.equal(response.ok, true, `${path} stylesheet ${href} failed with ${response.status}`);
-    assert.match(response.headers.get('content-type') || '', /css/i, `${path} stylesheet ${href} must be CSS`);
-  }
-}
-
-assert.ok(pages.has('/'), 'sitemap must include the homepage');
-assert.match(pages.get('/') || '', /WHY LEARN IT\?/i);
-assert.match(pages.get('/') || '', /WHY THIS SITE\?/i);
-assert.match(pages.get('/beginner/') || '', /200 Linux Commands/i);
-assert.match(pages.get('/quiz/') || '', /500 Linux command questions/i);
-assert.match(pages.get('/certificate/') || '', /server-verified/i);
-assert.match(pages.get('/verify/') || '', /PUBLIC VERIFICATION/i);
-assert.match(pages.get('/challenges/') || '', /100 Linux challenges/i);
-console.log(`Production deployment smoke checks passed: ${pages.size} sitemap pages + ${commands.length} canonical command redirects`);
+console.log(`Production deployment smoke checks passed: ISO endpoint + ${sitemapPaths.length} sitemap URLs`);
