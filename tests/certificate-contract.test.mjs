@@ -9,7 +9,7 @@ const certJs = await readFile(new URL('../certificate/certificate.js', import.me
 const verify = await readFile(new URL('../verify/index.html', import.meta.url), 'utf8');
 const verifyJs = await readFile(new URL('../verify/verify.js', import.meta.url), 'utf8');
 const loginJs = await readFile(new URL('../src/login.ts', import.meta.url), 'utf8');
-const progressJs = await readFile(new URL('../progress.js', import.meta.url), 'utf8');
+const progressJs = await readFile(new URL('../public/progress.js', import.meta.url), 'utf8');
 
 assert.match(edge, /UPSTASH_REDIS_REST_URL/);
 assert.match(edge, /UPSTASH_REDIS_REST_TOKEN/);
