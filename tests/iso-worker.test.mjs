@@ -12,7 +12,10 @@ assert.match(worker, /upstream\.status !== 206/);
 assert.match(worker, /status:\s*200/);
 assert.match(worker, /Cache-Control.*immutable/);
 assert.match(worker, /X-LinuxLab-Chunk-Total/);
-assert.match(worker, /DEVELOPER_ALPINE_ARTIFACT/);
+assert.match(worker, /try \{\n\s*upstream = await fetch/);
+assert.match(worker, /ISO origin unavailable/);
 assert.doesNotMatch(worker, /arrayBuffer\(\)/);
 assert.match(config, /"cache"\s*:\s*\{\s*"enabled"\s*:\s*true/);
-console.log('Cloudflare ISO chunk worker contract passed');
+assert.match(config, /linuxterminal\.me\/api\/iso\*/);
+
+console.log('Cloudflare ISO worker contract passed');
