@@ -5,6 +5,10 @@ import { LinuxObservatory } from '../observability/LinuxObservatory.ts';
 import { COMMAND_LESSONS, type LinuxCommandLesson } from '../commands/commandCatalog.ts';
 import { ALPINE_ARTIFACT, type PinnedArtifact } from '../core/ISOIntegrity.ts';
 
+const MAX_WORKSPACE_SNAPSHOT_FILES = 40;
+const MAX_WORKSPACE_SNAPSHOT_DEPTH = 8;
+const MAX_WORKSPACE_SNAPSHOT_PATH_BYTES = 4_096;
+
 export type LearningLevel = 'beginner' | 'intermediate' | 'expert';
 export interface ProductTelemetry { command: string; level: LearningLevel; cwd: string; exitCode: number; stdoutBytes: number; stderrBytes: number; durationMs: number; timestamp: number; }
 export interface TutorContext { level: LearningLevel; command: string; exitCode: number; cwd: string; hint: string; explanation: string; nextStep: string; history: string[]; repeatedFailure: boolean; telemetry: ReturnType<LinuxObservatory['system']>; filesystem: string[]; curriculumObjective: string; }
@@ -103,15 +107,20 @@ export class P1Runtime {
     const result: CommandResult = { command: commandLine.trim(), stdout, stderr, exitCode, durationMs: performance.now() - started };
     return { result, tutorContext: this.tutor.build(this.level, commandLine, result, this.engine.getCwd(), this.filesystemSnapshot()) };
   }
-  private filesystemSnapshot(limit = 40): string[] {
+  private filesystemSnapshot(limit = MAX_WORKSPACE_SNAPSHOT_FILES, maxDepth = MAX_WORKSPACE_SNAPSHOT_DEPTH): string[] {
     const root = this.engine.root;
     const out: string[] = [];
-    const walk = (node: VirtualNode, path: string): void => {
-      if (out.length >= limit) return;
+    const walk = (node: VirtualNode, path: string, depth: number): void => {
+      if (out.length >= limit || depth > maxDepth || new TextEncoder().encode(path).byteLength > MAX_WORKSPACE_SNAPSHOT_PATH_BYTES) return;
       if (path !== '/') out.push(path + (node.type === 'dir' ? '/' : ''));
-      if (node.type === 'dir' && node.children) for (const [name, child] of node.children) walk(child, path === '/' ? '/' + name : path + '/' + name);
+      if (out.length >= limit || depth >= maxDepth || node.type !== 'dir' || !node.children) return;
+      for (const [name, child] of node.children) {
+        if (out.length >= limit) break;
+        const childPath = path === '/' ? '/' + name : path + '/' + name;
+        walk(child, childPath, depth + 1);
+      }
     };
-    walk(root, '/');
+    walk(root, '/', 0);
     return out;
   }
 }
