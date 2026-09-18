@@ -5,9 +5,6 @@ const memoryCache = new Map<string, ArrayBuffer>();
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
 const ISO_FETCH_TIMEOUT_MS = 90_000, RANGE_FETCH_TIMEOUT_MS = 90_000;
 const DIRECT_FETCH_MAX_BYTES = 64 * 1024 * 1024, RANGE_CHUNK_BYTES = 48 * 1024 * 1024, RANGE_CONCURRENCY = 2;
-const LARGE_ISO_CACHE_THRESHOLD = 256 * 1024 * 1024;
-const IDB_NAME = 'LinuxLab_ISO_Cache', IDB_VERSION = 2, IDB_STORE = 'artifacts', MAX_PERSISTENT_CACHE_BYTES = 768 * 1024 * 1024;
-type CachedIso = { url: string; sha256: string; size: number; bytes: ArrayBuffer; storedAt: number };
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin), image = url.searchParams.get('image');
