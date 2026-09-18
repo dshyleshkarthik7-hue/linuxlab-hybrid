@@ -11,6 +11,8 @@ assert.match(worker, /const range\s*=\s*`bytes=\$\{chunk\.start\}-\$\{chunk\.end
 assert.match(worker, /Range:\s*range/);
 assert.match(worker, /upstream\.status !== 206/);
 assert.match(worker, /requestedEnd >= size/);
+assert.match(worker, /bytes=\\(\\d\\+\\)-\\(\\d\\+\\\)/);
+assert.match(worker, /request\.headers\.get\("Range"\)/);
 assert.match(worker, /return new Response\(upstream\.body, \{\s*status: 206/;
 assert.match(worker, /status:\s*200/);
 assert.match(worker, /headers\.set\(\s*"Cache-Control",\s*"public, max-age=31536000, immutable"\s*\)/s);
