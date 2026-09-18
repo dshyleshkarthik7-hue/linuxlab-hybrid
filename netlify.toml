@@ -3,9 +3,6 @@
   command = "npm run build"
 
 [[edge_functions]]
-  path = "/api/iso"
-  function = "iso"
-[[edge_functions]]
   path = "/api/tutor"
   function = "tutor"
 [[edge_functions]]
