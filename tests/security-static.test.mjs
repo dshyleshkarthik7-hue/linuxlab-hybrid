@@ -51,8 +51,8 @@ assert.equal(/crypto\.subtle\.digest/.test(integrity), false);
 assert.match(integrity, /response\.body\.getReader\(\)/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(csp, /https:\/\/netlify-rum\.netlify\.app/);
-assert.match(csp, /for = \/real-linux\/\*/);
-assert.match(csp, /for = \/developer-alpine\/\*/);
+assert.match(csp, /for = ["']\/real-linux\/\*["']/);
+assert.match(csp, /for = ["']\/developer-alpine\/\*["']/);
 for (const [name, html] of [['quiz', quiz], ['certificate', certificatePage], ['verify', verify]]) {
   assert.doesNotMatch(html, /<style[\s>]/i, `${name} inline styles`);
   assert.doesNotMatch(html, /<script(?![^>]+\bsrc=)[^>]*>/i, `${name} inline scripts`);
