@@ -48,6 +48,12 @@ function render() {
     const code = document.createElement('code');
     code.textContent = name;
     title.appendChild(code);
+    const demo = document.createElement('pre');
+    demo.className = 'command-demo';
+    const demoCode = document.createElement('code');
+    const demoText = (window.LINUX_COMMAND_DEMOS && window.LINUX_COMMAND_DEMOS[name]) || name;
+    demoCode.textContent = `$ ${demoText}`;
+    demo.appendChild(demoCode);
     const desc = document.createElement('p');
     desc.className = 'muted';
     desc.textContent = DEDICATED_LESSONS.has(name)
@@ -57,7 +63,7 @@ function render() {
     link.className = 'cta';
     link.href = DEDICATED_LESSONS.has(name) ? `/commands/${encodeURIComponent(name)}.html` : '/beginner/#commands';
     link.textContent = DEDICATED_LESSONS.has(name) ? 'Open dedicated lesson →' : 'Open beginner reference →';
-    card.append(pill, title, desc, link);
+    card.append(pill, title, demo, desc, link);
     list.appendChild(card);
   }
   if (count) count.textContent = `${filtered.length} of ${COMMANDS.length} commands`;

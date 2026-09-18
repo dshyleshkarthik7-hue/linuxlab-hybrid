@@ -11,6 +11,9 @@ const MAX_COMMAND_BYTES = 4_000;
 const MAX_QUIZ_ATTEMPTS = 200;
 const MAX_QUIZ_ANSWERS = 100;
 const MAX_QUIZ_ANSWER_BYTES = 2_000;
+const MAX_WORKSPACE_SNAPSHOT_FILES = 40;
+const MAX_WORKSPACE_SNAPSHOT_DEPTH = 8;
+const MAX_WORKSPACE_SNAPSHOT_PATH_BYTES = 4_096;
 export interface WorkspaceFile { filename: string; content: string; timestamp: number; }
 export interface LearningSession { id: string; mode: 'simulator' | 'real-linux'; title: string; startedAt: number; updatedAt: number; commands: string[]; lessonId?: string; completed?: boolean; }
 export interface QuizAttempt { id: string; quizId: string; score: number; total: number; timestamp: number; answers: string[]; }

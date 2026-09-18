@@ -12,6 +12,7 @@
     "test:engine": "node --experimental-strip-types tests/linux-engine.test.ts",
     "test:catalog": "node --experimental-strip-types tests/command-catalog.test.ts",
     "test:catalog-executable": "node --experimental-strip-types tests/catalog-executable.test.ts",
+    "test:command-demos": "node tests/command-demos.test.mjs",
     "test:result": "node --experimental-strip-types tests/command-result.test.ts",
     "test:vnext": "node --experimental-strip-types tests/vnext-correctness.test.ts",
     "test:adversarial": "node --experimental-strip-types tests/adversarial-resource.test.ts",

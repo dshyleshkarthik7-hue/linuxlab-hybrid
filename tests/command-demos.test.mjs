@@ -1,0 +1,12 @@
+import { strict as assert } from 'node:assert';
+import { readFile } from 'node:fs/promises';
+const catalog = await readFile(new URL('../src/commands/commandCatalog.ts', import.meta.url), 'utf8');
+const demos = await readFile(new URL('../public/commands-demos.js', import.meta.url), 'utf8');
+const names = [...catalog.matchAll(/\{ name: '([^']+)'/g)].map(match => match[1]);
+assert.equal(names.length, 200);
+assert.match(demos, /window\.LINUX_COMMAND_DEMOS = Object\.freeze\(/);
+const demoEntries = [...demos.matchAll(/"([^"]+)": "([^"]*)"/g)];
+assert.equal(demoEntries.length, 200);
+const demoMap = new Map(demoEntries.map(([_, name, example]) => [name, example]));
+for (const name of names) assert.ok(demoMap.has(name), `missing visible demo for ${name}`);
+console.log('All 200 command demos are present.');
