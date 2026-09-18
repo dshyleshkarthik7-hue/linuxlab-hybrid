@@ -58,7 +58,7 @@ function getImage(
   return IMAGES[image];
 }
 
-function getChunk(url: URL, size: number) {
+function getChunk(url: URL, size: number, rangeHeader?: string | null) {
   const rawStart = url.searchParams.get("chunkStart");
   const rawEnd = url.searchParams.get("chunkEnd");
   let startText = rawStart;
