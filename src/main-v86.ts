@@ -57,6 +57,8 @@ export class V86LinuxTerminal {
   private serial = '';
   private lastSerialAt = 0;
   private activeView: 'terminal' | 'screen' = 'terminal';
+  private readonly handleResize = (): void => this.fit();
+  private readonly handleOrientationChange = (): void => { window.setTimeout(() => this.fit(), 50); };
 
   constructor(containerId = 'v86-terminal-container') {
     if (!TerminalCtor || !FitAddonCtor) throw new Error('Terminal runtime failed to load');
@@ -68,8 +70,8 @@ export class V86LinuxTerminal {
     this.term.open(container);
     // Keep the xterm listener attached for the lifetime of the terminal so rebooting the VM cannot orphan input.
     this.term.onData((data) => this.sendInput(data));
-    window.addEventListener('resize', () => this.fit());
-    window.addEventListener('orientationchange', () => setTimeout(() => this.fit(), 50));
+    window.addEventListener('resize', this.handleResize);
+    window.addEventListener('orientationchange', this.handleOrientationChange);
     document.getElementById('screen_container')?.addEventListener('pointerdown', () => this.enableGuestKeyboard(), { passive: true });
     this.bindControls();
     window.linuxLabVM = this;
@@ -113,9 +115,9 @@ export class V86LinuxTerminal {
     this.profile = profileFromPage();
     if (this.profile.policy === 'developer') {
       const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-      if (typeof deviceMemory === 'number' && deviceMemory <= 4) {
-        this.status(`${this.profile.name} • low-memory device`);
-        this.monitor('Developer VM uses 1024 MiB guest RAM plus a large ISO; close other tabs before continuing.');
+      if (typeof deviceMemory === 'number' && deviceMemory < 8) {
+        this.fail('Developer VM requires an 8 GB-class device because the verified ISO and 1024 MiB guest must coexist during startup');
+        return;
       }
     }
     this.enforcer = new VMRuntimeResourceEnforcer(VM_RESOURCE_POLICIES[this.profile.policy]);
@@ -386,6 +388,8 @@ export class V86LinuxTerminal {
     this.telemetryDispose?.();
     this.telemetryDispose = null;
     document.removeEventListener('visibilitychange', this.handleVisibility);
+    window.removeEventListener('resize', this.handleResize);
+    window.removeEventListener('orientationchange', this.handleOrientationChange);
     try { this.emulator?.stop?.(); this.emulator?.destroy?.(); } catch {}
     this.emulator = null;
     this.enforcer?.stop();
