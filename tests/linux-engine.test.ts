@@ -68,6 +68,12 @@ async function run() {
   assert.equal(await e.execute('test -d /root && echo directory'), 'directory');
 
   assert.equal(await e.execute('echo "a | b"'), 'a | b');
+  assert.equal(await e.execute('echo "a > b"'), 'a > b');
+  assert.equal(await e.execute("echo 'a >> b'"), 'a >> b');
+  assert.equal(await e.execute('mkdir /tmp/redirection-tests'), '');
+  assert.equal(await e.execute('echo "a > b" > /tmp/redirection-tests/quoted-redirection && cat /tmp/redirection-tests/quoted-redirection'), 'a > b');
+  assert.equal(await e.execute('echo "a >> b" >> /tmp/redirection-tests/quoted-append && cat /tmp/redirection-tests/quoted-append'), 'a >> b');
+  assert.equal(await e.execute('rm -r /tmp/redirection-tests'), '');
   assert.equal(await e.execute("echo 'a && b'"), 'a && b');
   assert.equal(await e.execute('echo first > /tmp/a; cat /tmp/a'), 'first');
   assert.equal(await e.execute('mkdir /tmp/nested && touch /tmp/nested/x && find /tmp -type f'), '/tmp/a\n/tmp/nested/x');

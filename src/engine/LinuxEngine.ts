@@ -123,9 +123,29 @@ export class InBrowserLinuxEngine {
     const split = (input: string): string[] => { const parts: string[] = []; let current = ''; let quote = ''; let escaped = false; for (let i = 0; i < input.length; i++) { const ch = input[i]; if (escaped) { current += ch; escaped = false; continue; } if (ch === '\\') { current += ch; escaped = true; continue; } if (ch === '"' || ch === "'") { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; } if (!quote && ch === '|') { parts.push(current.trim()); current = ''; continue; } current += ch; } parts.push(current.trim()); return parts; };
     const pipeParts = split(line);
     if (pipeParts.length > 1) { let pipeOut = ''; for (const stage of pipeParts) pipeOut = await this.executeSingle(stage, pipeOut); return pipeOut; }
-    const redirect = (operator: '>>' | '>') => { const index = line.lastIndexOf(operator); if (index < 0) return null; const command = line.slice(0, index).trim(); const target = line.slice(index + operator.length).trim().replace(/^['"]|['"]$/g, ''); return command && target ? { command, target } : null; };
-    const append = redirect('>>'); if (append) { const res = await this.executeSingle(append.command); if (this.exitCode !== 0) return res; const prev = this.readFile(append.target) || ''; if (!this.writeFile(append.target, prev + res)) { this.exitCode = 1; return `bash: ${append.target}: No such file or directory`; } return ''; }
-    const overwrite = redirect('>'); if (overwrite) { const res = await this.executeSingle(overwrite.command); if (this.exitCode !== 0) return res; if (!this.writeFile(overwrite.target, res)) { this.exitCode = 1; return `bash: ${overwrite.target}: No such file or directory`; } return ''; }
+    const findRedirect = (operator: '>>' | '>') => {
+      let quote = '';
+      let escaped = false;
+      let index = -1;
+      for (let i = 0; i <= line.length - operator.length; i++) {
+        const ch = line[i];
+        if (escaped) { escaped = false; continue; }
+        if (ch === '\\') { escaped = true; continue; }
+        if (ch === '"' || ch === "'") {
+          if (!quote) quote = ch;
+          else if (quote === ch) quote = '';
+          continue;
+        }
+        if (!quote && line.startsWith(operator, i)) index = i;
+      }
+      if (index < 0) return null;
+      const command = line.slice(0, index).trim();
+      const target = line.slice(index + operator.length).trim().replace(/^['"]|['"]$/g, '');
+      return command && target ? { command, target } : null;
+    };
+    const append = findRedirect('>>');
+    if (append) { const res = await this.executeSingle(append.command); if (this.exitCode !== 0) return res; const prev = this.readFile(append.target) || ''; if (!this.writeFile(append.target, prev + res)) { this.exitCode = 1; return `bash: ${append.target}: No such file or directory`; } return ''; }
+    const overwrite = findRedirect('>'); if (overwrite) { const res = await this.executeSingle(overwrite.command); if (this.exitCode !== 0) return res; if (!this.writeFile(overwrite.target, res)) { this.exitCode = 1; return `bash: ${overwrite.target}: No such file or directory`; } return ''; }
     return this.executeSingle(line);
   }
 

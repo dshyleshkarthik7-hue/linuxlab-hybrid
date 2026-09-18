@@ -387,6 +387,13 @@ async function rateLimit(key: string, limit: number, windowSeconds: number) {
   return Number(count) <= limit;
 }
 
+function constantTimeEqualHex(left: string, right: string): boolean {
+  if (left.length !== right.length) return false;
+  let difference = 0;
+  for (let i = 0; i < left.length; i++) difference |= left.charCodeAt(i) ^ right.charCodeAt(i);
+  return difference === 0;
+}
+
 async function sign(value: string, secret = SIGNING_SECRET || '') {
   if (!secret) throw new Error('Certificate signing is not configured');
 
@@ -564,7 +571,8 @@ async function verify(id: string) {
   const kid = typeof keyId === 'string' && keyId ? keyId : SIGNING_KEY_ID;
   const secret = SIGNING_KEYS.get(kid);
   if (!secret) return json({ error: 'Certificate signing key is unavailable.' }, 500);
-  const valid = keyId ? await sign(canonical(unsigned, kid), secret) === signature : await sign(canonical(unsigned), secret) === signature;
+  const expected = keyId ? await sign(canonical(unsigned, kid), secret) : await sign(canonical(unsigned), secret);
+  const valid = constantTimeEqualHex(expected, signature);
   if (!valid) {
     return json({ error: 'Certificate signature verification failed.' }, 500);
   }
