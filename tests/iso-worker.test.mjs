@@ -11,7 +11,7 @@ assert.match(worker, /const range\s*=\s*`bytes=\$\{chunk\.start\}-\$\{chunk\.end
 assert.match(worker, /Range:\s*range/);
 assert.match(worker, /upstream\.status !== 206/);
 assert.match(worker, /status:\s*200/);
-assert.match(worker, /Cache-Control.*immutable/);
+assert.match(worker, /headers\.set\(\s*"Cache-Control",\s*"public, max-age=31536000, immutable"\s*\)/s);
 assert.match(worker, /X-LinuxLab-Chunk-Total/);
 assert.match(worker, /try \{\n\s*upstream = await fetch/);
 assert.match(worker, /ISO origin unavailable/);
