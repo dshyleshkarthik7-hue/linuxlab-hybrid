@@ -29,6 +29,10 @@ const sitemap = await sitemapResponse.text();
 const sitemapPaths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map(match => new URL(match[1]).pathname + new URL(match[1]).search);
 assert.ok(sitemapPaths.length >= 30, `sitemap found only ${sitemapPaths.length} URLs`);
 
+const bareIso = await get(`${origin}/api/iso?image=developer`);
+assert.equal(bareIso.status, 416, `bare developer ISO request returned ${bareIso.status}`);
+assert.equal(bareIso.headers.get('content-range'), 'bytes */691011584');
+
 const isoUrl = `${origin}/api/iso?image=developer&chunkStart=0&chunkEnd=0`;
 const iso = await get(isoUrl, { headers: { Range: 'bytes=0-0' } });
 assert.equal(iso.status, 206, `developer ISO probe returned ${iso.status}`);
