@@ -31,6 +31,10 @@ for (const entry of publicEntries.filter(e => e.isDirectory())) {
 }
 
 const simulator = await read('simulator.html');
+const realLinux = await read('index-v86.html');
+const developerAlpine = await read('developer-alpine/index.html');
+assert.doesNotMatch(realLinux, /application\/ld\+json/i, 'real Linux page must not contain inline JSON-LD under strict CSP');
+assert.doesNotMatch(developerAlpine, /application\/ld\+json/i, 'developer Alpine page must not contain inline JSON-LD under strict CSP');
 assert.doesNotMatch(simulator, /<script(?![^>]+src=)[^>]*>/i, 'simulator must not contain inline scripts');
 assert.doesNotMatch(simulator, /application\/ld\+json/i, 'simulator must not contain inline JSON-LD under strict CSP');
 
