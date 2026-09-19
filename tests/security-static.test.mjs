@@ -31,7 +31,7 @@ for (const [name, html, canonical] of [['real-linux', realLinux, 'https://linuxt
   assert.match(html, /<h1\b[^>]*>/i);
   assert.match(html, /rel="canonical"/);
   assert.ok(html.includes(canonical), name + ' canonical');
-  assert.match(html, /application\/ld\+json/);
+  assert.doesNotMatch(html, /application\/ld\+json/i, `${name} must not contain inline JSON-LD under strict CSP`);
   assert.match(html, /href="\/learn\/"/);
   assert.match(html, /href="\/commands\//);
 }
