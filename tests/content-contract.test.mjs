@@ -30,6 +30,10 @@ for (const entry of publicEntries.filter(e => e.isDirectory())) {
   assert.equal(await exists(`public/${entry.name}/index.html`), false, `public/${entry.name}/index.html is a duplicate page source`);
 }
 
+const progress = await read('progress/index.html');
+const progressScript = await read('public/progress.js');
+assert.match(progress, /<script src="\/progress\.js" defer><\/script>/, 'progress page must load the shared local progress ledger');
+assert.match(progressScript, /window\.LinuxProgress/, 'shared progress ledger must expose the LinuxProgress API');
 const simulator = await read('simulator.html');
 const realLinux = await read('index-v86.html');
 const developerAlpine = await read('developer-alpine/index.html');
