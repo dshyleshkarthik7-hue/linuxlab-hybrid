@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { resolve } from 'node:path';
 import { mkdir, readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -61,12 +62,18 @@ async function runSmoke() {
   page.setDefaultTimeout(STAGE_TIMEOUT_MS); page.setDefaultNavigationTimeout(STAGE_TIMEOUT_MS);
   try {
     page.on('console', message => { if (message.type() === 'error') console.error('[browser]', message.text()); });
+    const manifest = JSON.parse(await readFile(resolve('artifacts', 'manifest.json'), 'utf8'));
+    const firmwarePins = new Map(manifest.artifacts.filter((artifact) => artifact.release === 'v86-firmware-1').map((artifact) => [artifact.filename, artifact]));
     const firmware = new Map([
       ['seabios.bin', await readFile(resolve('public', 'seabios.bin'))],
       ['vgabios.bin', await readFile(resolve('public', 'vgabios.bin'))],
     ]);
     for (const [name, bytes] of firmware) {
-      if (!bytes.length) throw new Error(`Missing VM firmware fixture: ${name}`);
+      const pin = firmwarePins.get(name);
+      if (!pin) throw new Error(`Missing firmware pin: ${name}`);
+      if (bytes.byteLength !== pin.size) throw new Error(`Firmware fixture size mismatch: ${name}`);
+      const actual = createHash('sha256').update(bytes).digest('hex');
+      if (actual !== pin.sha256) throw new Error(`Firmware fixture SHA-256 mismatch: ${name}`);
     }
     await page.route('**/api/v86-firmware/**', async route => {
       const name = new URL(route.request().url()).pathname.split('/').pop();
