@@ -2,7 +2,7 @@ import { createRequire } from 'node:module';
 import { spawn } from 'node:child_process';
 import { setTimeout as sleep } from 'node:timers/promises';
 import { resolve } from 'node:path';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, readFile } from 'node:fs/promises';
 
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
@@ -61,6 +61,30 @@ async function runSmoke() {
   page.setDefaultTimeout(STAGE_TIMEOUT_MS); page.setDefaultNavigationTimeout(STAGE_TIMEOUT_MS);
   try {
     page.on('console', message => { if (message.type() === 'error') console.error('[browser]', message.text()); });
+    const firmware = new Map([
+      ['seabios.bin', await readFile(resolve('public', 'seabios.bin'))],
+      ['vgabios.bin', await readFile(resolve('public', 'vgabios.bin'))],
+    ]);
+    for (const [name, bytes] of firmware) {
+      if (!bytes.length) throw new Error(`Missing VM firmware fixture: ${name}`);
+    }
+    await page.route('**/api/v86-firmware/**', async route => {
+      const name = new URL(route.request().url()).pathname.split('/').pop();
+      const body = firmware.get(name);
+      if (!body) {
+        await route.fulfill({ status: 404, headers: {'content-type':'text/plain'}, body: 'Not found' });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        headers: {
+          'content-type':'application/octet-stream',
+          'content-length':String(body.length),
+          'cache-control':'public, max-age=31536000, immutable',
+        },
+        body,
+      });
+    });
     await page.route('**/api/iso**', async route => {
       const url = new URL(route.request().url());
       const image = url.searchParams.get('image');
@@ -84,9 +108,12 @@ async function runSmoke() {
     // must not be allowed to enter the emulator's CPU loop before this UI contract is checked.
     await stage(page, 'screen-toggle', async () => { await page.click(buttons.screen); await page.waitForFunction(() => !document.getElementById('screen_container')?.hidden && Boolean(document.getElementById('v86-terminal-container')?.hidden)); await page.click(buttons.terminal); await page.waitForFunction(() => Boolean(document.getElementById('screen_container')?.hidden) && !document.getElementById('v86-terminal-container')?.hidden); });
     await stage(page, 'boot-status', async () => page.waitForFunction(() => {
-      const status = (document.getElementById('v86-status')?.textContent || '').toLowerCase();
+      const status = document.getElementById('v86-status')?.textContent || '';
       const health = document.getElementById('v86-health')?.getAttribute('data-state') || '';
-      return health === 'ready' || health === 'offline' || /starting|checking runtime|checking image|booting|running|ready|failed|failure|error|integrity|artifact/i.test(status);
+      if (/firmware failed|firmware unavailable|failed size verification|failed SHA-256|firmware.*(404|502)/i.test(status)) {
+        throw new Error(`VM firmware startup failure: ${status}`);
+      }
+      return Boolean(health) && Boolean(status);
     }));
     await stage(page, 'alpine-profile-switching', async () => {
       await page.click(buttons.virt);

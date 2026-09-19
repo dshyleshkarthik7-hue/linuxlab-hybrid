@@ -29,6 +29,17 @@ const sitemap = await sitemapResponse.text();
 const sitemapPaths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map(match => new URL(match[1]).pathname + new URL(match[1]).search);
 assert.ok(sitemapPaths.length >= 30, `sitemap found only ${sitemapPaths.length} URLs`);
 
+for (const [name, size, sha256] of [['seabios.bin',131072,'73e3f359102e3a9982c35fce98eb7cd08f18303ac7f1ba6ebfbe6cdc1c244d98'],['vgabios.bin',36352,'a4bc0d80cc3ca028c73dafa8fee396b8d054ce87ebd8abfbd31b06b437607880']]) {
+  const firmware = await get(origin + '/' + name);
+  assert.equal(firmware.status, 200, '/' + name + ' returned ' + firmware.status);
+  assert.equal(Number(firmware.headers.get('content-length')), size);
+  const bytes = new Uint8Array(await firmware.arrayBuffer());
+  assert.equal(bytes.byteLength, size);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  const actual = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  assert.equal(actual, sha256, '/' + name + ' SHA-256 mismatch');
+}
+
 const bareIso = await get(`${origin}/api/iso?image=developer`);
 assert.equal(bareIso.status, 416, `bare developer ISO request returned ${bareIso.status}`);
 assert.equal(bareIso.headers.get('content-range'), 'bytes */691011584');
