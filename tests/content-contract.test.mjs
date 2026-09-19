@@ -33,9 +33,12 @@ for (const entry of publicEntries.filter(e => e.isDirectory())) {
 const simulator = await read('simulator.html');
 assert.doesNotMatch(simulator, /<script(?![^>]+src=)[^>]*>/i, 'simulator must not contain inline scripts');
 assert.doesNotMatch(simulator, /application\/ld\+json/i, 'simulator must not contain inline JSON-LD under strict CSP');
+
 const headers = await read('netlify.toml');
+const cspGenerator = await read('scripts/generate-netlify-headers.mjs');
 assert.match(headers, /Strict-Transport-Security/);
 assert.match(headers, /Cross-Origin-Embedder-Policy/);
-assert.match(headers, /script-src 'self' 'wasm-unsafe-eval'/);
+assert.match(cspGenerator, /script-src \\\'self\\\' \\\'wasm-unsafe-eval\\\'/);
+assert.match(cspGenerator, /Content-Security-Policy:/);
 
 console.log('Content contract checks passed');
