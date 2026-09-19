@@ -4,3 +4,4 @@ Disallow: /api/
 Disallow: /login/
 
 Sitemap: https://linuxterminal.me/sitemap.xml
+Host: https://linuxterminal.me
