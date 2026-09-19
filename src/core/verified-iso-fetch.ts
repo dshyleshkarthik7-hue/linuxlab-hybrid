@@ -1,4 +1,4 @@
-import { verifyResponse, verifyArtifact, ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT, type PinnedArtifact } from './ISOIntegrity.ts';
+import { verifyResponse, ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT, type PinnedArtifact } from './ISOIntegrity.ts';
 import { Sha256 } from './sha256.ts';
 
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
