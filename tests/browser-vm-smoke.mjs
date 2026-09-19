@@ -91,7 +91,7 @@ async function runSmoke() {
     await stage(page, 'alpine-profile-switching', async () => {
       await page.click(buttons.virt);
       await page.waitForFunction(() => document.getElementById('v86-status')?.textContent?.includes('Alpine Virt 3.24.1') || false);
-      const developerLink = page.locator('a[href="/developer-alpine/"]');
+      const developerLink = page.locator('#v86-controls a[href="/developer-alpine/"]');
       await developerLink.waitFor({ state: 'visible' });
       const href = await developerLink.getAttribute('href');
       if (href !== '/developer-alpine/') throw new Error('Developer Alpine navigation target changed unexpectedly');
