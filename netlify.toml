@@ -1,6 +1,6 @@
 [build]
   publish = "dist"
-  command = "npm run build"
+  command = "sed -i \"s|CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN|\${CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN:?Set CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN in Netlify}|g; s|CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN|\${CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN:?Set CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN in Netlify}|g\" netlify.toml && npm run build"
 
 [[edge_functions]]
   path = "/api/tutor"
@@ -18,7 +18,7 @@
 [[headers]]
   for = "/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com https://netlify-rum.netlify.app; style-src 'self'; connect-src 'self' https://linuxterminal.me https://www.linuxterminal.me https://cloudflareinsights.com; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN https://netlify-rum.netlify.app; style-src 'self'; connect-src 'self' https://linuxterminal.me https://www.linuxterminal.me CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(), usb=()"
@@ -36,16 +36,15 @@
   [headers.values]
     Content-Security-Policy = "default-src 'self'; script-src 'self' https://identity.netlify.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://identity.netlify.com; img-src 'self' data: https://identity.netlify.com; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
 
-
 [[headers]]
   for = "/real-linux/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com https://netlify-rum.netlify.app; style-src 'self' 'unsafe-inline'; connect-src 'self' https://linuxterminal.me https://www.linuxterminal.me https://cloudflareinsights.com; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN https://netlify-rum.netlify.app; style-src 'self' 'unsafe-inline'; connect-src 'self' https://linuxterminal.me https://www.linuxterminal.me CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
 
 [[headers]]
   for = "/developer-alpine/*"
   [headers.values]
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' https://static.cloudflareinsights.com https://netlify-rum.netlify.app; style-src 'self' 'unsafe-inline'; connect-src 'self' https://linuxterminal.me https://www.linuxterminal.me https://cloudflareinsights.com; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'wasm-unsafe-eval' CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN https://netlify-rum.netlify.app; style-src 'self' 'unsafe-inline'; connect-src 'self' https://linuxterminal.me https://www.linuxterminal.me CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN; img-src 'self' data:; font-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report"
 
 [[redirects]]
   from = "/commands"
@@ -55,113 +54,6 @@
   from = "/commands/"
   to = "/commands-entry.html"
   status = 200
-
-# Preserve the legacy slash URLs for the 26 dedicated lesson pages.
-[[redirects]]
-  from = "/commands/pwd/"
-  to = "/commands/pwd.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/ls/"
-  to = "/commands/ls.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/cd/"
-  to = "/commands/cd.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/mkdir/"
-  to = "/commands/mkdir.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/cat/"
-  to = "/commands/cat.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/cp/"
-  to = "/commands/cp.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/mv/"
-  to = "/commands/mv.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/rm/"
-  to = "/commands/rm.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/grep/"
-  to = "/commands/grep.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/find/"
-  to = "/commands/find.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/sed/"
-  to = "/commands/sed.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/awk/"
-  to = "/commands/awk.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/chmod/"
-  to = "/commands/chmod.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/chown/"
-  to = "/commands/chown.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/ps/"
-  to = "/commands/ps.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/top/"
-  to = "/commands/top.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/df/"
-  to = "/commands/df.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/du/"
-  to = "/commands/du.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/tar/"
-  to = "/commands/tar.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/curl/"
-  to = "/commands/curl.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/ssh/"
-  to = "/commands/ssh.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/ip/"
-  to = "/commands/ip.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/ping/"
-  to = "/commands/ping.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/git/"
-  to = "/commands/git.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/head/"
-  to = "/commands/head.html?"
-  status = 301
-[[redirects]]
-  from = "/commands/tail/"
-  to = "/commands/tail.html?"
-  status = 301
-
 [[redirects]]
   from = "/learn"
   to = "/learn/index.html"
