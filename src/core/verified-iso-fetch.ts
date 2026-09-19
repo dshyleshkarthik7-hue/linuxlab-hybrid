@@ -1,7 +1,6 @@
 import { verifyResponse, verifyArtifact, ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT, type PinnedArtifact } from './ISOIntegrity.ts';
 import { Sha256 } from './sha256.ts';
 
-const memoryCache = new Map<string, ArrayBuffer>();
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
 const ISO_FETCH_TIMEOUT_MS = 90_000, RANGE_FETCH_TIMEOUT_MS = 90_000;
 const DIRECT_FETCH_MAX_BYTES = 64 * 1024 * 1024, RANGE_CHUNK_BYTES = 48 * 1024 * 1024, RANGE_CONCURRENCY = 2;
@@ -74,10 +73,8 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   const url = new URL(rawUrl, window.location.origin);
   if (url.origin !== window.location.origin) throw new Error('ISO endpoint must be same-origin');
   const key = url.toString(), artifact = artifactForIsoUrl(key);
-  const cached = memoryCache.get(key);
-  if (cached) { await verifyArtifact(cached, artifact); return cached.slice(0); }
   const pending = inFlight.get(key);
-  if (pending) return pending.then(bytes => bytes.slice(0));
+  if (pending) return pending;
   const promise = (async () => {
     let bytes: ArrayBuffer;
     if (artifact.size <= DIRECT_FETCH_MAX_BYTES) {
@@ -91,8 +88,8 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
         bytes = await fetchIsoResumable(key, artifact, signal ?? new AbortController().signal);
       }
     } else bytes = await fetchIsoResumable(key, artifact, signal ?? new AbortController().signal);
-    memoryCache.clear(); memoryCache.set(key, bytes); return bytes;
+    return bytes;
   })();
   inFlight.set(key, promise);
-  try { return (await promise).slice(0); } finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
+  try { return await promise; } finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
 }
