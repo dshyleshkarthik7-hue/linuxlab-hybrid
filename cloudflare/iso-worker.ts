@@ -1,7 +1,7 @@
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
 
-const ALLOWED_ORIGIN = "https://linuxterminal.me";
+const ALLOWED_ORIGINS = new Set(["https://linuxterminal.me", "https://www.linuxterminal.me"]);
 const MAX_CACHEABLE_CHUNK_BYTES = MAX_CHUNK_BYTES;
 
 const IMAGES = {
@@ -32,9 +32,12 @@ const IMAGES = {
 
 type ImageName = keyof typeof IMAGES;
 
-function corsHeaders(): Headers {
+function corsHeaders(request: Request): Headers {
+  const origin = request.headers.get("Origin");
+  const isLocalDevelopmentOrigin = origin === "http://127.0.0.1:4174" || origin === "http://127.0.0.1:4176" || origin === "http://localhost:4174" || origin === "http://localhost:4176";
+  const allowedOrigin = origin && (ALLOWED_ORIGINS.has(origin) || isLocalDevelopmentOrigin) ? origin : "https://linuxterminal.me";
   return new Headers({
-    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+    "Access-Control-Allow-Origin": allowedOrigin,
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
     "Access-Control-Allow-Headers":
       "Range, If-Range, If-None-Match, If-Modified-Since",
@@ -120,7 +123,7 @@ function errorResponse(
 export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
-    const headers = corsHeaders();
+    const headers = corsHeaders(request);
 
     if (request.method === "OPTIONS") {
       return new Response(null, {
