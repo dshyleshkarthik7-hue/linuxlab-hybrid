@@ -290,7 +290,7 @@ export default {
 
       if (request.method === "HEAD") {
         return new Response(null, {
-          status: 206,
+          status: 200,
           headers,
         });
       }
