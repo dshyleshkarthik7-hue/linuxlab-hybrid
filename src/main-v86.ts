@@ -206,7 +206,7 @@ export class V86LinuxTerminal {
     if (!vm || typeof waitForVga !== 'function' || typeof vm.keyboard_send_text !== 'function') return;
     try {
       await waitForVga.call(vm, /(?:^|\\r?\\n)\\s*boot:\\s*$/im, { timeout_msec: Math.min(2500, Math.max(1000, deadline - Date.now())) });
-      vm.keyboard_send_text('\\n');
+      vm.keyboard_send_text('\n');
       this.monitor('Alpine ISO bootloader detected • selecting default boot entry');
     } catch {
       // Some firmware/runtime combinations skip the visible ISOLINUX prompt.
