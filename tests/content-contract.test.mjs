@@ -38,7 +38,7 @@ const headers = await read('netlify.toml');
 const cspGenerator = await read('scripts/generate-netlify-headers.mjs');
 assert.match(headers, /Strict-Transport-Security/);
 assert.match(headers, /Cross-Origin-Embedder-Policy/);
-assert.match(cspGenerator, /script-src 'self' 'wasm-unsafe-eval'/);
+assert.match(cspGenerator, /const scriptSrc = \[\"'self'\", \"'wasm-unsafe-eval'\"/);
 assert.match(cspGenerator, /Content-Security-Policy:/);
 
 console.log('Content contract checks passed');
