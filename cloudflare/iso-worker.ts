@@ -1,7 +1,8 @@
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
-const UPSTREAM_TIMEOUT_MS = 90_000;
+const UPSTREAM_TIMEOUT_MS = 30_000;
 
 const ALLOWED_ORIGIN = "https://linuxterminal.me";
+const MAX_CACHEABLE_CHUNK_BYTES = MAX_CHUNK_BYTES;
 
 const IMAGES = {
   developer: {
@@ -171,6 +172,10 @@ export default {
     const expectedLength =
       chunk.end - chunk.start + 1;
 
+    if (expectedLength > MAX_CACHEABLE_CHUNK_BYTES) {
+      return errorResponse("ISO chunk exceeds cacheable range", 416, headers);
+    }
+
     const range =
       `bytes=${chunk.start}-${chunk.end}`;
 
@@ -238,6 +243,7 @@ export default {
         "Cache-Control",
         "public, max-age=31536000, immutable"
       );
+      headers.set("X-Content-Verified", "sha256-client-pinned");
 
       headers.set(
         "Content-Type",
@@ -284,7 +290,7 @@ export default {
 
       if (request.method === "HEAD") {
         return new Response(null, {
-          status: 200,
+          status: 206,
           headers,
         });
       }
