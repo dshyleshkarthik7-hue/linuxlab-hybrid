@@ -2,12 +2,15 @@ import { verifyResponse, ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTI
 import { Sha256 } from './sha256.ts';
 
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
+const TRUSTED_ISO_ORIGIN = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
 const ISO_FETCH_TIMEOUT_MS = 90_000, RANGE_FETCH_TIMEOUT_MS = 90_000;
 const DIRECT_FETCH_MAX_BYTES = 64 * 1024 * 1024, RANGE_CHUNK_BYTES = 48 * 1024 * 1024, RANGE_CONCURRENCY = 2;
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin), image = url.searchParams.get('image');
-  if (url.origin !== window.location.origin || url.pathname !== '/api/iso') throw new Error('Untrusted ISO endpoint');
+  if (url.origin !== window.location.origin && url.origin !== TRUSTED_ISO_ORIGIN) throw new Error('Untrusted ISO endpoint');
+  if (url.origin === window.location.origin && url.pathname !== '/api/iso') throw new Error('Untrusted ISO endpoint');
+  if (url.origin === TRUSTED_ISO_ORIGIN && url.pathname !== '/') throw new Error('Untrusted ISO endpoint');
   if (image === 'virt') return ALPINE_ARTIFACT;
   if (image === 'linux4') return LINUX4_ARTIFACT;
   if (image === 'developer') return DEVELOPER_ALPINE_ARTIFACT;
@@ -71,7 +74,7 @@ async function fetchIsoResumable(url: string, artifact: PinnedArtifact, signal: 
 }
 export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Promise<ArrayBuffer> {
   const url = new URL(rawUrl, window.location.origin);
-  if (url.origin !== window.location.origin) throw new Error('ISO endpoint must be same-origin');
+  if (url.origin !== window.location.origin && url.origin !== TRUSTED_ISO_ORIGIN) throw new Error('ISO endpoint must be trusted');
   const key = url.toString(), artifact = artifactForIsoUrl(key);
   const pending = inFlight.get(key);
   if (pending) return pending;
