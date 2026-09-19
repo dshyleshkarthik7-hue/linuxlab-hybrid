@@ -233,7 +233,13 @@ export class V86LinuxTerminal {
     if (this.initializationFailure) throw this.initializationFailure;
     const serialPrompt = /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/m.test(this.serial);
     const serialReady = serialPrompt || this.serial.includes(READY_MARKER);
-    if (this.vgaReady && vm.keyboard_send_text && waitForVga && serialReady) {
+    let shellPromptVisible = false;
+    if (this.vgaReady && typeof waitForVga === 'function') {
+      try {
+        shellPromptVisible = await waitForVga.call(vm, /(?:^|\r?\n)\s*(?:root@[^\r\n]*|[^\r\n]*localhost[^\r\n]*)?[#$]\s*$/im, { timeout_msec: Math.min(1500, Math.max(500, deadline - Date.now())) });
+      } catch {}
+    }
+    if (this.vgaReady && vm.keyboard_send_text && waitForVga && (serialReady || shellPromptVisible)) {
       const remaining = Math.max(1000, deadline - Date.now());
       try {
         vm.keyboard_send_text(`echo ${PROBE_MARKER}\n`);
