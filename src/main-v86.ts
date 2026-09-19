@@ -200,6 +200,19 @@ export class V86LinuxTerminal {
     }
   }
 
+  private async continuePastIsoBootPrompt(deadline: number): Promise<void> {
+    const vm = this.emulator;
+    const waitForVga = vm?.wait_until_vga_screen_contains;
+    if (!vm || typeof waitForVga !== 'function' || typeof vm.keyboard_send_text !== 'function') return;
+    try {
+      await waitForVga.call(vm, /(?:^|\\r?\\n)\\s*boot:\\s*$/im, { timeout_msec: Math.min(2500, Math.max(1000, deadline - Date.now())) });
+      vm.keyboard_send_text('\\n');
+      this.monitor('Alpine ISO bootloader detected • selecting default boot entry');
+    } catch {
+      // Some firmware/runtime combinations skip the visible ISOLINUX prompt.
+    }
+  }
+
   public async waitForGuestReady(timeoutMs: number): Promise<void> {
     const deadline = Date.now() + timeoutMs;
     while (!this.emulator && !this.initializationFailure && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 50));
@@ -207,6 +220,7 @@ export class V86LinuxTerminal {
     const vm = this.emulator;
     if (!vm) throw new Error('v86 emulator was not created before readiness wait');
     const waitForVga = vm.wait_until_vga_screen_contains;
+    await this.continuePastIsoBootPrompt(deadline);
     if (typeof waitForVga === 'function') {
       while (Date.now() < deadline && !this.initializationFailure) {
         try {
@@ -219,7 +233,7 @@ export class V86LinuxTerminal {
     if (this.initializationFailure) throw this.initializationFailure;
     const serialPrompt = /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/m.test(this.serial);
     const serialReady = serialPrompt || this.serial.includes(READY_MARKER);
-    if (this.vgaReady && vm.keyboard_send_text && waitForVga) {
+    if (this.vgaReady && vm.keyboard_send_text && waitForVga && serialReady) {
       const remaining = Math.max(1000, deadline - Date.now());
       try {
         vm.keyboard_send_text(`echo ${PROBE_MARKER}\n`);
