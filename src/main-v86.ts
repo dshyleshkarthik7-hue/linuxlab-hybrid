@@ -205,7 +205,7 @@ export class V86LinuxTerminal {
     const waitForVga = vm?.wait_until_vga_screen_contains;
     if (!vm || typeof waitForVga !== 'function' || typeof vm.keyboard_send_text !== 'function') return;
     try {
-      await waitForVga.call(vm, /(?:^|\r?\n)\s*boot:\s*$/im, { timeout_msec: Math.min(2500, Math.max(1000, deadline - Date.now())) });
+      await waitForVga.call(vm, /boot:\s*/i, { timeout_msec: Math.min(5000, Math.max(1000, deadline - Date.now())) });
       vm.keyboard_send_text('\n');
       this.monitor('Alpine ISO bootloader detected • selecting default boot entry');
     } catch {
@@ -234,9 +234,29 @@ export class V86LinuxTerminal {
     const serialPrompt = /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/m.test(this.serial);
     const serialReady = serialPrompt || this.serial.includes(READY_MARKER);
     let shellPromptVisible = false;
+    let loginPromptVisible = false;
     if (this.vgaReady && typeof waitForVga === 'function') {
       try {
-        await waitForVga.call(vm, /(?:^|\r?\n)\s*(?:root@[^\r\n]*|[^\r\n]*localhost[^\r\n]*)?[#$]\s*$/im, { timeout_msec: Math.min(1500, Math.max(500, deadline - Date.now())) });
+        await waitForVga.call(vm, /(?:^|\r?\n)\s*(?:root@[^\r\n]*|localhost[^\r\n]*)?[#$]\s*$/im, { timeout_msec: Math.min(2500, Math.max(750, deadline - Date.now())) });
+        shellPromptVisible = true;
+      } catch {
+        try {
+          await waitForVga.call(vm, /localhost login:\s*/i, { timeout_msec: Math.min(2500, Math.max(750, deadline - Date.now())) });
+          loginPromptVisible = true;
+        } catch {}
+      }
+    }
+    if (loginPromptVisible && typeof vm.keyboard_send_text === 'function' && typeof waitForVga === 'function') {
+      vm.keyboard_send_text('root\\n');
+      try {
+        await waitForVga.call(vm, /password:\s*/i, { timeout_msec: Math.min(3000, Math.max(750, deadline - Date.now())) });
+        vm.keyboard_send_text('\\n');
+      } catch {}
+    }
+    if (this.vgaReady && vm.keyboard_send_text && waitForVga && (serialReady || shellPromptVisible || loginPromptVisible)) {
+      const shellDeadline = Math.min(deadline, Date.now() + 5000);
+      try {
+        await waitForVga.call(vm, /(?:^|\r?\n)\s*(?:root@[^\r\n]*|[^\r\n]*localhost[^\r\n]*)?[#$]\s*$/im, { timeout_msec: Math.max(750, shellDeadline - Date.now()) });
         shellPromptVisible = true;
       } catch {}
     }

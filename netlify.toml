@@ -14,9 +14,6 @@
 [[edge_functions]]
   path = "/api/v86-firmware/*"
   function = "v86-firmware"
-[[edge_functions]]
-  path = "/api/iso"
-  function = "iso"
 
 [[headers]]
   for = "/*"

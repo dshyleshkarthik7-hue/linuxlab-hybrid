@@ -45,6 +45,10 @@ assert.doesNotMatch(simulator, /application\/ld\+json/i, 'simulator must not con
 const headers = await read('netlify.toml');
 const cspGenerator = await read('scripts/generate-netlify-headers.mjs');
 assert.match(headers, /Strict-Transport-Security/);
+assert.doesNotMatch(headers, /path = "\/api\/iso"/);
+const cloudflareWorker = await read('cloudflare/iso-worker.ts');
+assert.match(cloudflareWorker, /linuxterminal\.me/);
+assert.match(cloudflareWorker, /MAX_CHUNK_BYTES/);
 assert.match(headers, /Cross-Origin-Embedder-Policy/);
 assert.match(cspGenerator, /const scriptSrc = \[\"'self'\", \"'wasm-unsafe-eval'\"/);
 assert.match(cspGenerator, /Content-Security-Policy:/);
