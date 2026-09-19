@@ -18,7 +18,7 @@ assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(iso, /A single byte Range header is required/);
 assert.match(iso, /MAX_RANGE_BYTES/);
 assert.match(iso, /X-LinuxLab-Chunk-Total/);
-assert.match(netlify, /path = "api\/iso"/);
+assert.match(netlify, /path = "\/api\/iso"/);
 assert.doesNotMatch(netlify, /sed -i/);
 assert.doesNotMatch(netlify, /CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN/);
 assert.doesNotMatch(sitemap, /developer-alpine\.html/);
