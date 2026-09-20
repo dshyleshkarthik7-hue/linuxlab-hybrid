@@ -10,11 +10,15 @@ const MAX_RANGE_BYTES = 48 * 1024 * 1024;
 const TIMEOUT_MS = 30_000;
 
 function getRange(request: Request, size: number): { start: number; end: number } | null {
+  const url = new URL(request.url);
+  const queryStart = url.searchParams.get('chunkStart');
+  const queryEnd = url.searchParams.get('chunkEnd');
   const header = request.headers.get('range');
-  if (!header) return null;
-  const match = /^bytes=(\d+)-(\d+)$/.exec(header);
-  if (!match) throw new Error('Only a single explicit byte range is supported');
-  const start = Number(match[1]), end = Number(match[2]);
+  const match = queryStart !== null && queryEnd !== null
+    ? /^\d+$/.test(queryStart) && /^\d+$/.test(queryEnd) ? [queryStart, queryEnd] : null
+    : header ? /^bytes=(\d+)-(\d+)$/.exec(header)?.slice(1) ?? null : null;
+  if (!match) throw new Error('A single explicit byte range or chunkStart/chunkEnd is required');
+  const start = Number(match[0]), end = Number(match[1]);
   if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start || end >= size) {
     throw new Error('Requested byte range is outside the pinned artifact');
   }

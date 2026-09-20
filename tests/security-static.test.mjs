@@ -19,7 +19,12 @@ const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
 assert.match(cloudflare, /MAX_CHUNK_BYTES/);
 assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
 assert.match(cloudflare, /upstream\.status !== 206/);
-assert.doesNotMatch(netlify, /path = "\/api\/iso"/);
+assert.match(netlify, /path = "\/api\/iso"/);
+assert.match(netlify, /function = "iso"/);
+const isoEdge = await readFile("netlify/edge-functions/iso.ts", "utf8");
+assert.match(isoEdge, /MAX_RANGE_BYTES/);
+assert.match(isoEdge, /Range/);
+assert.match(isoEdge, /DEVELOPER_ALPINE_ARTIFACT/);
 assert.doesNotMatch(netlify, /sed -i/);
 assert.doesNotMatch(netlify, /CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN/);
 assert.doesNotMatch(sitemap, /developer-alpine\.html/);
@@ -36,6 +41,8 @@ for (const [name, html, canonical] of [['real-linux', realLinux, 'https://linuxt
   assert.match(html, /href="\/learn\//);
   assert.match(html, /href="\/commands\//);
 }
+assert.match(runtime, /cdrom: ['"]\/api\/iso\?image=virt['"]/);
+assert.match(runtime, /cdrom: ['"]\/api\/iso\?image=developer['"]/);
 assert.match(realLinux, /data-v86-profile="virt"/);
 assert.match(realLinux, /data-v86-key="ctrl-o"/);
 assert.match(developer, /data-v86-profile="developer"/);
