@@ -14,9 +14,17 @@ function getRange(request: Request, size: number): { start: number; end: number 
   const queryStart = url.searchParams.get('chunkStart');
   const queryEnd = url.searchParams.get('chunkEnd');
   const header = request.headers.get('range');
-  const match = queryStart !== null && queryEnd !== null
-    ? /^\d+$/.test(queryStart) && /^\d+$/.test(queryEnd) ? [queryStart, queryEnd] : null
-    : header ? /^bytes=(\d+)-(\d+)$/.exec(header)?.slice(1) ?? null : null;
+  const queryMatch = queryStart !== null && queryEnd !== null && /^\d+$/.test(queryStart) && /^\d+$/.test(queryEnd)
+    ? [queryStart, queryEnd]
+    : null;
+  const headerMatch = header ? /^bytes=(\d+)-(\d+)$/.exec(header)?.slice(1) ?? null : null;
+  if (queryStart !== null || queryEnd !== null) {
+    if (!queryMatch) throw new Error('chunkStart and chunkEnd must be non-negative integers');
+    if (headerMatch && (headerMatch[0] !== queryMatch[0] || headerMatch[1] !== queryMatch[1])) {
+      throw new Error('Range header does not match chunkStart/chunkEnd');
+    }
+  }
+  const match = queryMatch ?? headerMatch;
   if (!match) throw new Error('A single explicit byte range or chunkStart/chunkEnd is required');
   const start = Number(match[0]), end = Number(match[1]);
   if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end) || start < 0 || end < start || end >= size) {
@@ -57,8 +65,11 @@ export default async function handler(request: Request): Promise<Response> {
         return new Response('ISO upstream did not honor the requested byte range', { status: 502 });
       }
       const contentRange = upstream.headers.get('content-range');
+      const contentLength = upstream.headers.get('content-length');
       const expectedRange = `bytes ${range.start}-${range.end}/${artifact.size}`;
+      const expectedLength = String(range.end - range.start + 1);
       if (contentRange !== expectedRange) return new Response('ISO range metadata mismatch', { status: 502 });
+      if (contentLength !== expectedLength) return new Response('ISO range length metadata mismatch', { status: 502 });
 
       const headers = new Headers({
         'Accept-Ranges': 'bytes',

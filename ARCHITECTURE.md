@@ -31,7 +31,7 @@ Lifecycle:
 
 The VM is temporary and should not be treated as a secure place for passwords, keys, tokens, or private data. It is not a host-kernel security boundary; browser/runtime limits are defense-in-depth and guest telemetry is observational. See `THREAT_MODEL.md`.
 
-The ISO Edge Function is only an ISO transport relay. It is intentionally separate from guest networking and must not be represented as a guest Internet relay. Any future guest-network feature requires explicit VM device configuration, a controlled backend, and end-to-end tests.
+The Netlify `/api/iso` Edge Function is the production ISO transport relay. It is intentionally separate from guest networking and must not be represented as a guest Internet relay. The browser requests only this same-origin endpoint and performs the authoritative full-image SHA-256 verification before boot. Any future guest-network feature requires explicit VM device configuration, a controlled backend, and end-to-end tests.
 
 ## State ownership
 
@@ -54,8 +54,6 @@ Engine A tracks command success separately from returned text. This matters beca
 Regression tests cover mixed chains and quoted operators.
 
 ## ISO source integrity
-
-The ISO relay has separate primary and fallback URLs for each image profile. Fallback improves availability only; it is not proof that two independently hosted files are identical.
 
 Release owners should publish a SHA-256 checksum for every ISO. CI or release tooling should verify the built artifact before publishing, and users who download an ISO directly can verify it with `sha256sum`. The browser relay streams large images in validated ranges. The browser incrementally hashes those ranges while assembling the complete artifact, then compares the final digest and exact size with the pinned metadata before accepting the ISO.
 

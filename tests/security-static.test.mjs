@@ -30,6 +30,8 @@ assert.match(isoEdge, /Range/);
 assert.match(isoEdge, /DEVELOPER_ALPINE_ARTIFACT/);
 assert.match(isoEdge, /chunkStart/);
 assert.match(isoEdge, /chunkEnd/);
+assert.match(isoEdge, /contentLength !== expectedLength/);
+assert.match(isoEdge, /Range header does not match chunkStart\/chunkEnd/);
 assert.doesNotMatch(netlify, /sed -i/);
 assert.doesNotMatch(netlify, /CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN/);
 assert.doesNotMatch(sitemap, /developer-alpine\.html/);
