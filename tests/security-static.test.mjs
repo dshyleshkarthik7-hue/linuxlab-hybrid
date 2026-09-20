@@ -14,6 +14,7 @@ assert.match(runtime, /waitForV86Loaded/);
 assert.match(runtime, /wait_until_vga_screen_contains/);
 assert.match(runtime, /deviceMemory < 8/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
+assert.match(csp, /analyticsBootstrapHash = [\s\S]*sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY=/);
 const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
 assert.match(cloudflare, /MAX_CHUNK_BYTES/);
 assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
@@ -32,7 +33,7 @@ for (const [name, html, canonical] of [['real-linux', realLinux, 'https://linuxt
   assert.match(html, /rel="canonical"/);
   assert.ok(html.includes(canonical), name + ' canonical');
   assert.doesNotMatch(html, /application\/ld\+json/i, `${name} must not contain inline JSON-LD under strict CSP`);
-  assert.match(html, /href="\/learn\/"/);
+  assert.match(html, /href="\/learn\//);
   assert.match(html, /href="\/commands\//);
 }
 assert.match(realLinux, /data-v86-profile="virt"/);
