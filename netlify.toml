@@ -3,6 +3,10 @@
   command = "npm run build && node scripts/generate-netlify-headers.mjs"
 
 [[edge_functions]]
+  path = "/api/iso"
+  function = "iso"
+
+[[edge_functions]]
   path = "/api/tutor"
   function = "tutor"
 [[edge_functions]]

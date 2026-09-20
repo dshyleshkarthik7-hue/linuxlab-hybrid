@@ -19,8 +19,8 @@ const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
 assert.match(cloudflare, /MAX_CHUNK_BYTES/);
 assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
 assert.match(cloudflare, /upstream\.status !== 206/);
-assert.doesNotMatch(netlify, /path = "\/api\/iso"/);
-assert.doesNotMatch(netlify, /sed -i/);
+assert.match(netlify, /path = "\/api\/iso"/);
+assert.match(netlify, /function = "iso"/);\nconst isoEdge = await readFile("netlify/edge-functions/iso.ts", "utf8");\nassert.match(isoEdge, /MAX_RANGE_BYTES/);\nassert.match(isoEdge, /Range/);\nassert.match(isoEdge, /DEVELOPER_ALPINE_ARTIFACT/);\nassert.doesNotMatch(netlify, /sed -i/);
 assert.doesNotMatch(netlify, /CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN/);
 assert.doesNotMatch(sitemap, /developer-alpine\.html/);
 assert.match(sitemap, /developer-alpine\//);
@@ -36,7 +36,7 @@ for (const [name, html, canonical] of [['real-linux', realLinux, 'https://linuxt
   assert.match(html, /href="\/learn\//);
   assert.match(html, /href="\/commands\//);
 }
-assert.match(realLinux, /data-v86-profile="virt"/);
+assert.match(runtime, /cdrom: '/api\/iso\?image=virt'/);\nassert.match(runtime, /cdrom: '/api\/iso\?image=developer'/);\nassert.match(realLinux, /data-v86-profile="virt"/);
 assert.match(realLinux, /data-v86-key="ctrl-o"/);
 assert.match(developer, /data-v86-profile="developer"/);
 assert.ok(realLinux.includes('/v86-layout.css') && developer.includes('/v86-layout.css'));
