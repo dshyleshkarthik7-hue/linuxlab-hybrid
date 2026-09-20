@@ -38,6 +38,7 @@ function corsHeaders(request: Request): Headers {
   const allowedOrigin = origin && (ALLOWED_ORIGINS.has(origin) || isLocalDevelopmentOrigin) ? origin : "https://linuxterminal.me";
   return new Headers({
     "Access-Control-Allow-Origin": allowedOrigin,
+    "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
     "Access-Control-Allow-Headers":
       "Range, If-Range, If-None-Match, If-Modified-Since",

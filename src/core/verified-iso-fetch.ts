@@ -4,7 +4,7 @@ import { Sha256 } from './sha256.ts';
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
 const TRUSTED_ISO_ORIGIN = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
 const ISO_FETCH_TIMEOUT_MS = 90_000, RANGE_FETCH_TIMEOUT_MS = 90_000;
-const DIRECT_FETCH_MAX_BYTES = 64 * 1024 * 1024, RANGE_CHUNK_BYTES = 48 * 1024 * 1024, RANGE_CONCURRENCY = 2;
+const DIRECT_FETCH_MAX_BYTES = 48 * 1024 * 1024, RANGE_CHUNK_BYTES = 48 * 1024 * 1024, RANGE_CONCURRENCY = 2;
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin), image = url.searchParams.get('image');
