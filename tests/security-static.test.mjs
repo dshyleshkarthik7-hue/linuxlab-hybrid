@@ -7,7 +7,6 @@ const sitemap = await readFile('public/sitemap.xml', 'utf8');
 const csp = await readFile('scripts/generate-netlify-headers.mjs', 'utf8');
 const realLinux = await readFile('index-v86.html', 'utf8');
 const developer = await readFile('developer-alpine/index.html', 'utf8');
-const isoEdge = await readFile('netlify/edge-functions/iso.ts', 'utf8');
 
 assert.match(runtime, /attachGuestTelemetry\s*\(\s*vm/);
 assert.match(runtime, /markReadyIfIdentityVerified\s*\(/);
@@ -23,15 +22,12 @@ assert.match(cloudflare, /MAX_CHUNK_BYTES/);
 assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
 assert.match(cloudflare, /upstream\.status !== 206/);
 
-assert.match(netlify, /path = "\/api\/iso"/);
-assert.match(netlify, /function = "iso"/);
-assert.match(isoEdge, /MAX_RANGE_BYTES/);
-assert.match(isoEdge, /Range/);
-assert.match(isoEdge, /DEVELOPER_ALPINE_ARTIFACT/);
-assert.match(isoEdge, /chunkStart/);
-assert.match(isoEdge, /chunkEnd/);
-assert.match(isoEdge, /contentLength !== expectedLength/);
-assert.match(isoEdge, /Range header does not match chunkStart\/chunkEnd/);
+// ISO delivery is intentionally Cloudflare-only. Netlify hosts the app/API and
+// must not retain the legacy /api/iso edge route contract.
+assert.doesNotMatch(netlify, /path = "\/api\/iso"/);
+assert.doesNotMatch(netlify, /function = "iso"/);
+assert.match(netlify, /path = "\/api\/v86-firmware\/\*"/);
+assert.match(netlify, /function = "v86-firmware"/);
 assert.doesNotMatch(netlify, /sed -i/);
 assert.doesNotMatch(netlify, /CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN/);
 assert.doesNotMatch(sitemap, /developer-alpine\.html/);
