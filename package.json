@@ -46,7 +46,9 @@
     "test:actions-pinning": "node tests/github-actions-pinning.test.mjs",
     "test:browser-security": "node tests/browser-security-contract.test.mjs",
     "test:all": "npm run test:ci && npm run test:smoke && npm run test:real-guest && npm run test:mobile",
-    "test:iso-worker": "node tests/iso-worker.test.mjs"
+    "test:iso-worker": "node tests/iso-worker.test.mjs",
+    "test:profile-boot": "node tests/profile-boot.mjs",
+    "test:ui-ux": "node tests/ui-ux-profile-contract.mjs"
   },
   "dependencies": {
     "@xterm/addon-fit": "0.10.0",
