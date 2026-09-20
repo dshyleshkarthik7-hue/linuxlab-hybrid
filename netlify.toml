@@ -3,6 +3,11 @@
   node_bundler = "esbuild"
   external_node_modules = ["mongodb"]
 
+[build.environment]
+  # CERTIFICATE_SIGNING_KEY_ID is a public certificate key identifier, not a signing secret.
+  # Keep secret scanning enabled for actual credentials while excluding this identifier value.
+  SECRETS_SCAN_OMIT_KEYS = "CERTIFICATE_SIGNING_KEY_ID"
+
 [build]
   publish = "dist"
   command = "npm run build && node scripts/generate-netlify-headers.mjs"
