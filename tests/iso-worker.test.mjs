@@ -11,13 +11,13 @@ assert.match(worker, /const range\s*=\s*`bytes=\$\{chunk\.start\}-\$\{chunk\.end
 assert.match(worker, /Range:\s*range/);
 assert.match(worker, /upstream\.status !== 206/);
 assert.match(worker, /requestedEnd >= size/);
-assert.match(worker, /chunkStart and chunkEnd are required/);
+assert.match(worker, /chunkStart\/chunkEnd or a single HTTP Range header is required/);
 assert.doesNotMatch(worker, /request\.headers\.get\("Range"\)/);
 assert.match(worker, /return new Response\(request\.method === "HEAD" \? null : upstream\.body, \{\s*status: 200/);
-assert.match(worker, /Do not send Content-Range here/);
+assert.match(worker, /headers\.set\(\s*"Content-Range"/s);
 assert.match(worker, /status:\s*200/);
 assert.doesNotMatch(worker, /status:\s*206/);
-assert.match(worker, /Workers Caching must receive a cacheable 200 response/);
+assert.match(worker, /cacheable 200 object/);
 assert.match(worker, /headers\.set\(\s*"Cache-Control",\s*"public, max-age=31536000, immutable"\s*\)/s);
 assert.match(worker, /X-LinuxLab-Chunk-Total/);
 assert.match(worker, /"Vary":\s*"Origin"/);
