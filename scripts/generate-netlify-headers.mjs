@@ -6,6 +6,7 @@ const connectOrigin = (process.env.CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN || '').tri
 // Netlify/Cloudflare analytics may inject this exact bootstrap inline. A CSP hash permits
 // that one known script without enabling arbitrary inline JavaScript.
 const analyticsBootstrapHash = "'sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY='";
+const analyticsInlineHash = "'sha256-Ob/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs='";
 
 function origin(value, name) {
   if (!value) return '';
@@ -18,7 +19,7 @@ function origin(value, name) {
 }
 const scriptHost = origin(scriptOrigin, 'CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN');
 const connectHost = origin(connectOrigin, 'CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN');
-const scriptSrc = ["'self'", "'wasm-unsafe-eval'", analyticsBootstrapHash, 'https://netlify-rum.netlify.app', scriptHost].filter(Boolean).join(' ');
+const scriptSrc = ["'self'", "'wasm-unsafe-eval'", analyticsBootstrapHash, analyticsInlineHash, 'https://netlify-rum.netlify.app', scriptHost].filter(Boolean).join(' ');
 const connectSrc = ["'self'", 'https://linuxterminal.me', 'https://www.linuxterminal.me', 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev', connectHost].filter(Boolean).join(' ');
 
 const common = `default-src 'self'; script-src ${scriptSrc}; style-src 'self'; connect-src ${connectSrc}; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report`;

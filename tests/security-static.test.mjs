@@ -16,11 +16,14 @@ assert.match(runtime, /wait_until_vga_screen_contains/);
 assert.match(runtime, /deviceMemory < 8/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(csp, /analyticsBootstrapHash = [\s\S]*sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY=/);
+assert.match(csp, /analyticsInlineHash = [\s\S]*sha256-Ob\/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs=/);
 
 const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
 assert.match(cloudflare, /MAX_CHUNK_BYTES/);
 assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
 assert.match(cloudflare, /upstream\.status !== 206/);
+assert.match(cloudflare, /status: 200/);
+assert.doesNotMatch(cloudflare, /status: 206/);
 
 // ISO delivery is intentionally Cloudflare-only. Netlify hosts the app/API and
 // must not retain the legacy /api/iso edge route contract.

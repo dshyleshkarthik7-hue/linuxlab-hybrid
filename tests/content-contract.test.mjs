@@ -24,6 +24,7 @@ assert.equal(await exists('public/linux-ls-command/index.html'), false, 'stale o
 assert.equal(await exists('public/robots.txt'), true, 'public/robots.txt is required by the production contract');
 assert.equal(await exists('public/sitemap.xml'), true, 'public/sitemap.xml is required by the production contract');
 assert.equal(await exists('public/_headers'), true, 'public/_headers is required by the production contract');
+assert.equal(await exists('netlify/edge-functions/iso.ts'), false, 'legacy Netlify ISO relay must not remain in the source tree');
 
 const publicEntries = await readdir(join(root, 'public'), { withFileTypes: true });
 for (const entry of publicEntries.filter(e => e.isDirectory())) {

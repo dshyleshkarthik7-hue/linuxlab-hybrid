@@ -2,7 +2,7 @@ const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
 
 const ALLOWED_ORIGINS = new Set(["https://linuxterminal.me", "https://www.linuxterminal.me"]);
-const MAX_CACHEABLE_CHUNK_BYTES = MAX_CHUNK_BYTES;
+
 
 const IMAGES = {
   developer: {
@@ -160,7 +160,7 @@ export default {
     let chunk;
 
     try {
-      chunk = getChunk(url, image.size, request.headers.get("Range"));
+      chunk = getChunk(url, image.size);
     } catch {
       headers.set(
         "Content-Range",
@@ -173,13 +173,7 @@ export default {
       });
     }
 
-    const expectedLength =
-      chunk.end - chunk.start + 1;
-
-    if (expectedLength > MAX_CACHEABLE_CHUNK_BYTES) {
-      return errorResponse("ISO chunk exceeds cacheable range", 416, headers);
-    }
-
+    const expectedLength = chunk.end - chunk.start + 1;
     const range =
       `bytes=${chunk.start}-${chunk.end}`;
 
@@ -287,20 +281,11 @@ export default {
         String(image.size)
       );
 
-      headers.set(
-        "Content-Range",
-        contentRange
-      );
-
-      if (request.method === "HEAD") {
-        return new Response(null, {
-          status: 200,
-          headers,
-        });
-      }
-
-      return new Response(upstream.body, {
-        status: 206,
+      // The chunk query is the cache key and the returned body is exactly that chunk.
+      // This is intentionally a cacheable 200 object so Workers Caching can reuse
+      // the immutable chunk without invoking this Worker again.
+      return new Response(request.method === "HEAD" ? null : upstream.body, {
+        status: 200,
         headers,
       });
     } finally {
