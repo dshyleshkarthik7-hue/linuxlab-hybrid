@@ -26,8 +26,8 @@ type V86Runtime = V86TelemetryTarget & {
 type RuntimeWindow = Window & { V86Starter?: unknown; V86?: unknown };
 type Profile = { name: string; memoryMiB: number; cdrom: string; policy: VMResourcePolicyName; expectedGuest: 'alpine' };
 
-const VIRT_PROFILE: Profile = { name: 'Alpine Virt 3.24.1', memoryMiB: 54, cdrom: '/api/iso?image=virt', policy: 'virt', expectedGuest: 'alpine' };
-const DEVELOPER_PROFILE: Profile = { name: 'Developer Alpine v1.0.0', memoryMiB: 1024, cdrom: '/api/iso?image=developer', policy: 'developer', expectedGuest: 'alpine' };
+const VIRT_PROFILE: Profile = { name: 'Alpine Virt 3.24.1', memoryMiB: 54, cdrom: 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=virt', policy: 'virt', expectedGuest: 'alpine' };
+const DEVELOPER_PROFILE: Profile = { name: 'Developer Alpine v1.0.0', memoryMiB: 1024, cdrom: 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=developer', policy: 'developer', expectedGuest: 'alpine' };
 const FIRMWARE_BASE = '/api/v86-firmware';
 const READY_MARKER = '__LINUXLAB_READY__';
 const PROBE_MARKER = '__LINUXLAB_INPUT_OK__';
@@ -200,6 +200,19 @@ export class V86LinuxTerminal {
     }
   }
 
+  private async continuePastIsoBootPrompt(deadline: number): Promise<void> {
+    const vm = this.emulator;
+    const waitForVga = vm?.wait_until_vga_screen_contains;
+    if (!vm || typeof waitForVga !== 'function' || typeof vm.keyboard_send_text !== 'function') return;
+    try {
+      await waitForVga.call(vm, /boot:\s*/i, { timeout_msec: Math.min(5000, Math.max(1000, deadline - Date.now())) });
+      vm.keyboard_send_text('\n');
+      this.monitor('Alpine ISO bootloader detected • selecting default boot entry');
+    } catch {
+      // Some firmware/runtime combinations skip the visible ISOLINUX prompt.
+    }
+  }
+
   public async waitForGuestReady(timeoutMs: number): Promise<void> {
     const deadline = Date.now() + timeoutMs;
     while (!this.emulator && !this.initializationFailure && Date.now() < deadline) await new Promise((resolve) => setTimeout(resolve, 50));
@@ -207,6 +220,7 @@ export class V86LinuxTerminal {
     const vm = this.emulator;
     if (!vm) throw new Error('v86 emulator was not created before readiness wait');
     const waitForVga = vm.wait_until_vga_screen_contains;
+    await this.continuePastIsoBootPrompt(deadline);
     if (typeof waitForVga === 'function') {
       while (Date.now() < deadline && !this.initializationFailure) {
         try {
@@ -219,7 +233,34 @@ export class V86LinuxTerminal {
     if (this.initializationFailure) throw this.initializationFailure;
     const serialPrompt = /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/m.test(this.serial);
     const serialReady = serialPrompt || this.serial.includes(READY_MARKER);
-    if (this.vgaReady && vm.keyboard_send_text && waitForVga) {
+    let shellPromptVisible = false;
+    let loginPromptVisible = false;
+    if (this.vgaReady && typeof waitForVga === 'function') {
+      try {
+        await waitForVga.call(vm, /(?:^|\r?\n)\s*(?:root@[^\r\n]*|localhost[^\r\n]*)?[#$]\s*$/im, { timeout_msec: Math.min(2500, Math.max(750, deadline - Date.now())) });
+        shellPromptVisible = true;
+      } catch {
+        try {
+          await waitForVga.call(vm, /localhost login:\s*/i, { timeout_msec: Math.min(2500, Math.max(750, deadline - Date.now())) });
+          loginPromptVisible = true;
+        } catch {}
+      }
+    }
+    if (loginPromptVisible && typeof vm.keyboard_send_text === 'function' && typeof waitForVga === 'function') {
+      vm.keyboard_send_text('root\\n');
+      try {
+        await waitForVga.call(vm, /password:\s*/i, { timeout_msec: Math.min(3000, Math.max(750, deadline - Date.now())) });
+        vm.keyboard_send_text('\\n');
+      } catch {}
+    }
+    if (this.vgaReady && vm.keyboard_send_text && waitForVga && (serialReady || shellPromptVisible || loginPromptVisible)) {
+      const shellDeadline = Math.min(deadline, Date.now() + 5000);
+      try {
+        await waitForVga.call(vm, /(?:^|\r?\n)\s*(?:root@[^\r\n]*|[^\r\n]*localhost[^\r\n]*)?[#$]\s*$/im, { timeout_msec: Math.max(750, shellDeadline - Date.now()) });
+        shellPromptVisible = true;
+      } catch {}
+    }
+    if (this.vgaReady && vm.keyboard_send_text && waitForVga && (serialReady || shellPromptVisible)) {
       const remaining = Math.max(1000, deadline - Date.now());
       try {
         vm.keyboard_send_text(`echo ${PROBE_MARKER}\n`);

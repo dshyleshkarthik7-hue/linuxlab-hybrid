@@ -1,7 +1,8 @@
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
-const UPSTREAM_TIMEOUT_MS = 90_000;
+const UPSTREAM_TIMEOUT_MS = 30_000;
 
-const ALLOWED_ORIGIN = "https://linuxterminal.me";
+const ALLOWED_ORIGINS = new Set(["https://linuxterminal.me", "https://www.linuxterminal.me"]);
+const MAX_CACHEABLE_CHUNK_BYTES = MAX_CHUNK_BYTES;
 
 const IMAGES = {
   developer: {
@@ -31,9 +32,13 @@ const IMAGES = {
 
 type ImageName = keyof typeof IMAGES;
 
-function corsHeaders(): Headers {
+function corsHeaders(request: Request): Headers {
+  const origin = request.headers.get("Origin");
+  const isLocalDevelopmentOrigin = !!origin && /^(https?:\/\/)(127\.0\.0\.1|localhost):(4173|4174|4176)$/.test(origin);
+  const allowedOrigin = origin && (ALLOWED_ORIGINS.has(origin) || isLocalDevelopmentOrigin) ? origin : "https://linuxterminal.me";
   return new Headers({
-    "Access-Control-Allow-Origin": ALLOWED_ORIGIN,
+    "Access-Control-Allow-Origin": allowedOrigin,
+    "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
     "Access-Control-Allow-Headers":
       "Range, If-Range, If-None-Match, If-Modified-Since",
@@ -119,7 +124,7 @@ function errorResponse(
 export default {
   async fetch(request: Request): Promise<Response> {
     const url = new URL(request.url);
-    const headers = corsHeaders();
+    const headers = corsHeaders(request);
 
     if (request.method === "OPTIONS") {
       return new Response(null, {
@@ -170,6 +175,10 @@ export default {
 
     const expectedLength =
       chunk.end - chunk.start + 1;
+
+    if (expectedLength > MAX_CACHEABLE_CHUNK_BYTES) {
+      return errorResponse("ISO chunk exceeds cacheable range", 416, headers);
+    }
 
     const range =
       `bytes=${chunk.start}-${chunk.end}`;
@@ -238,6 +247,7 @@ export default {
         "Cache-Control",
         "public, max-age=31536000, immutable"
       );
+      headers.set("X-Content-Verified", "sha256-client-pinned");
 
       headers.set(
         "Content-Type",

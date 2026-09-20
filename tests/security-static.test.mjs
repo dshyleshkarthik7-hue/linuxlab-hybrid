@@ -2,7 +2,6 @@ import { readFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 
 const runtime = await readFile('src/main-v86.ts', 'utf8');
-const iso = await readFile('netlify/edge-functions/iso.ts', 'utf8');
 const netlify = await readFile('netlify.toml', 'utf8');
 const sitemap = await readFile('public/sitemap.xml', 'utf8');
 const csp = await readFile('scripts/generate-netlify-headers.mjs', 'utf8');
@@ -18,7 +17,12 @@ assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(iso, /A single byte Range header is required/);
 assert.match(iso, /MAX_RANGE_BYTES/);
 assert.match(iso, /X-LinuxLab-Chunk-Total/);
-assert.match(netlify, /path = "\/api\/iso"/);
+
+const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
+assert.match(cloudflare, /MAX_CHUNK_BYTES/);
+assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
+assert.match(cloudflare, /upstream\.status !== 206/);
+assert.doesNotMatch(netlify, /path = "\/api\/iso"/);
 assert.doesNotMatch(netlify, /sed -i/);
 assert.doesNotMatch(netlify, /CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN/);
 assert.doesNotMatch(sitemap, /developer-alpine\.html/);
@@ -31,10 +35,9 @@ for (const [name, html, canonical] of [['real-linux', realLinux, 'https://linuxt
   assert.match(html, /<h1\b[^>]*>/i);
   assert.match(html, /rel="canonical"/);
   assert.ok(html.includes(canonical), name + ' canonical');
-  assert.match(html, /application\/ld\+json/);
-  assert.match(html, /href="\/learn\//);
-  assert.match(html, /href="\/commands\//);
-}
+assert.doesNotMatch(html, /application\/ld\+json/i, `${name} must not contain inline JSON-LD under strict CSP`);
+assert.match(html, /href="\/learn\/"/);
+assert.match(html, /href="\/commands\//);
 assert.match(realLinux, /data-v86-profile="virt"/);
 assert.match(realLinux, /data-v86-key="ctrl-o"/);
 assert.match(developer, /data-v86-profile="developer"/);

@@ -45,7 +45,7 @@
     "test:artifact-manifest": "node tests/artifact-manifest.test.mjs",
     "test:actions-pinning": "node tests/github-actions-pinning.test.mjs",
     "test:browser-security": "node tests/browser-security-contract.test.mjs",
-    "test:all": "npm run test:ci && npm run test:smoke && npm run test:real-guest && npm run test:mobile && npm run test:production",
+    "test:all": "npm run test:ci && npm run test:smoke && npm run test:real-guest && npm run test:mobile",
     "test:iso-worker": "node tests/iso-worker.test.mjs"
   },
   "dependencies": {

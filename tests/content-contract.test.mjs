@@ -30,12 +30,27 @@ for (const entry of publicEntries.filter(e => e.isDirectory())) {
   assert.equal(await exists(`public/${entry.name}/index.html`), false, `public/${entry.name}/index.html is a duplicate page source`);
 }
 
+const progress = await read('progress/index.html');
+const progressScript = await read('public/progress.js');
+assert.match(progress, /<script src="\/progress\.js"(?: defer)?><\/script>/, 'progress page must load the shared local progress ledger');
+assert.match(progressScript, /window\.LinuxProgress/, 'shared progress ledger must expose the LinuxProgress API');
 const simulator = await read('simulator.html');
+const realLinux = await read('index-v86.html');
+const developerAlpine = await read('developer-alpine/index.html');
+assert.doesNotMatch(realLinux, /application\/ld\+json/i, 'real Linux page must not contain inline JSON-LD under strict CSP');
+assert.doesNotMatch(developerAlpine, /application\/ld\+json/i, 'developer Alpine page must not contain inline JSON-LD under strict CSP');
 assert.doesNotMatch(simulator, /<script(?![^>]+src=)[^>]*>/i, 'simulator must not contain inline scripts');
 assert.doesNotMatch(simulator, /application\/ld\+json/i, 'simulator must not contain inline JSON-LD under strict CSP');
+
 const headers = await read('netlify.toml');
+const cspGenerator = await read('scripts/generate-netlify-headers.mjs');
 assert.match(headers, /Strict-Transport-Security/);
+assert.doesNotMatch(headers, /path = "\/api\/iso"/);
+const cloudflareWorker = await read('cloudflare/iso-worker.ts');
+assert.match(cloudflareWorker, /linuxterminal\.me/);
+assert.match(cloudflareWorker, /MAX_CHUNK_BYTES/);
 assert.match(headers, /Cross-Origin-Embedder-Policy/);
-assert.match(headers, /script-src 'self' 'wasm-unsafe-eval'/);
+assert.match(cspGenerator, /const scriptSrc = \[\"'self'\", \"'wasm-unsafe-eval'\"/);
+assert.match(cspGenerator, /Content-Security-Policy:/);
 
 console.log('Content contract checks passed');

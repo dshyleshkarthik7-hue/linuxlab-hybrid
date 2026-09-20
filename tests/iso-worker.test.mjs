@@ -17,6 +17,8 @@ assert.match(worker, /return new Response\(upstream\.body, \{\s*status: 206/);
 assert.match(worker, /status:\s*200/);
 assert.match(worker, /headers\.set\(\s*"Cache-Control",\s*"public, max-age=31536000, immutable"\s*\)/s);
 assert.match(worker, /X-LinuxLab-Chunk-Total/);
+assert.match(worker, /"Vary":\s*"Origin"/);
+assert.match(worker, /127\\\.0\\\.0\\\.1|localhost/);
 assert.match(worker, /try \{\n\s*upstream = await fetch/);
 assert.match(worker, /ISO origin unavailable/);
 assert.doesNotMatch(worker, /arrayBuffer\(\)/);

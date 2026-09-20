@@ -1,4 +1,5 @@
 import { strict as assert } from 'node:assert';
+import { readFile } from 'node:fs/promises';
 
 const baseURL = process.env.PRODUCTION_BASE_URL || process.argv[2];
 if (!baseURL) throw new Error('PRODUCTION_BASE_URL is required for post-deployment verification');
@@ -28,6 +29,20 @@ assert.match(sitemapResponse.headers.get('content-type') || '', /xml/i);
 const sitemap = await sitemapResponse.text();
 const sitemapPaths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map(match => new URL(match[1]).pathname + new URL(match[1]).search);
 assert.ok(sitemapPaths.length >= 30, `sitemap found only ${sitemapPaths.length} URLs`);
+
+const manifest = JSON.parse(await readFile('artifacts/manifest.json', 'utf8'));
+const firmwarePins = manifest.artifacts.filter((artifact) => artifact.release === 'v86-firmware-1');
+assert.equal(firmwarePins.length, 2, 'firmware manifest must contain exactly two v86 firmware assets');
+for (const pin of firmwarePins) {
+  const firmware = await get(`${origin}/api/v86-firmware/${pin.filename}`);
+  assert.equal(firmware.status, 200, `/api/v86-firmware/${pin.filename} returned ${firmware.status}`);
+  assert.equal(Number(firmware.headers.get('content-length')), pin.size);
+  const bytes = new Uint8Array(await firmware.arrayBuffer());
+  assert.equal(bytes.byteLength, pin.size);
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  const actual = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
+  assert.equal(actual, pin.sha256, `/api/v86-firmware/${pin.filename} SHA-256 mismatch`);
+}
 
 const bareIso = await get(`${origin}/api/iso?image=developer`);
 assert.equal(bareIso.status, 416, `bare developer ISO request returned ${bareIso.status}`);

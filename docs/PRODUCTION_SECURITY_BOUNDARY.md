@@ -21,7 +21,7 @@ If hostile arbitrary-code execution becomes a product requirement, it must be mo
 
 ## Artifact trust
 
-All shipped Linux images and firmware have repository-controlled SHA-256 values in `src/core/artifacts.ts`. The ISO edge function validates the GitHub release asset's published digest and size against those fixed values, while the browser performs full-image verification before boot.
+All shipped Linux images and firmware have repository-controlled SHA-256 values in `src/core/artifacts.ts`. The ISO edge function serves only pinned release URLs and validates the requested range and upstream response metadata against fixed artifact size/digest metadata; it does not hash the full ISO on each chunk request. The browser performs the authoritative full-image SHA-256 verification before boot.
 
 Changing an artifact requires changing its pinned digest and passing the integrity tests. A release must never discover a new expected digest dynamically and then trust that value as the verification target.
 
