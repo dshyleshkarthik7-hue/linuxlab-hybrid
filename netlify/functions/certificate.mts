@@ -15,12 +15,12 @@ const PASS_PERCENT = 80;
 const ATTEMPT_TTL = 3600;
 const CERT_TTL = 60 * 60 * 24 * 365 * 5;
 const MAX_BODY_BYTES = 16384;
-const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL);
-const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN);
-const SIGNING_SECRET = process.env.CERTIFICATE_SIGNING_SECRET);
-const SIGNING_KEY_ID = process.env.CERTIFICATE_SIGNING_KEY_ID) || 'current';
-const SIGNING_KEYS = (() => { const map = new Map<string, string>(); if (SIGNING_SECRET) map.set(SIGNING_KEY_ID, SIGNING_SECRET); for (const item of (process.env.CERTIFICATE_SIGNING_KEYS) || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
-const ORIGIN = process.env.TUTOR_ALLOWED_ORIGINS) || 'https://linuxterminal.me';
+const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
+const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const SIGNING_SECRET = process.env.CERTIFICATE_SIGNING_SECRET;
+const SIGNING_KEY_ID = process.env.CERTIFICATE_SIGNING_KEY_ID || 'current';
+const SIGNING_KEYS = (() => { const map = new Map<string, string>(); if (SIGNING_SECRET) map.set(SIGNING_KEY_ID, SIGNING_SECRET); for (const item of (process.env.CERTIFICATE_SIGNING_KEYS || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
+const ORIGIN = process.env.TUTOR_ALLOWED_ORIGINS || 'https://linuxterminal.me';
 
 type User = {
   id?: unknown;
