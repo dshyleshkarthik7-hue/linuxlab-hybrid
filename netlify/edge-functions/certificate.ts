@@ -511,9 +511,8 @@ async function submit(user: User, body: unknown) {
     }
 
     const percentage = Math.round(score / QUESTION_COUNT * 10000) / 100;
-    await redis(['DEL', key]);
-
     if (percentage < PASS_PERCENT) {
+      await redis(['DEL', key]);
       return json({
         passed: false,
         score,
@@ -550,6 +549,7 @@ async function submit(user: User, body: unknown) {
     };
 
     await redis(['SET', `linuxterminal:certificate:${id}`, JSON.stringify(certificate), 'EX', CERT_TTL]);
+    await redis(['DEL', key]);
     return json({
       certificate: publicCert(certificate),
       verificationPath: `/verify/?id=${encodeURIComponent(id)}`,

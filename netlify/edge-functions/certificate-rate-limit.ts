@@ -28,8 +28,12 @@ function clientKey(request: Request, context: { ip?: string }): string {
 
 async function allowed(request: Request, context: { ip?: string }): Promise<boolean> {
   const key = `linuxterminal:rate:certificate-verify:${clientKey(request, context)}`;
-  const count = Number(await redis(['INCR', key]));
-  if (count === 1) await redis(['EXPIRE', key, WINDOW_SECONDS]);
+  const script = [
+    'local count = redis.call("INCR", KEYS[1])',
+    'if count == 1 then redis.call("EXPIRE", KEYS[1], ARGV[1]) end',
+    'return count',
+  ].join(';');
+  const count = Number(await redis(['EVAL', script, '1', key, String(WINDOW_SECONDS)]));
   return count <= LIMIT;
 }
 
