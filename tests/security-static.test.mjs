@@ -7,6 +7,8 @@ const sitemap = await readFile('public/sitemap.xml', 'utf8');
 const csp = await readFile('scripts/generate-netlify-headers.mjs', 'utf8');
 const realLinux = await readFile('index-v86.html', 'utf8');
 const developer = await readFile('developer-alpine/index.html', 'utf8');
+const isoEdge = await readFile('netlify/edge-functions/iso.ts', 'utf8');
+
 assert.match(runtime, /attachGuestTelemetry\s*\(\s*vm/);
 assert.match(runtime, /markReadyIfIdentityVerified\s*\(/);
 assert.match(runtime, /autostart:\s*false/);
@@ -15,16 +17,19 @@ assert.match(runtime, /wait_until_vga_screen_contains/);
 assert.match(runtime, /deviceMemory < 8/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(csp, /analyticsBootstrapHash = [\s\S]*sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY=/);
+
 const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
 assert.match(cloudflare, /MAX_CHUNK_BYTES/);
 assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
 assert.match(cloudflare, /upstream\.status !== 206/);
+
 assert.match(netlify, /path = "\/api\/iso"/);
 assert.match(netlify, /function = "iso"/);
-const isoEdge = await readFile("netlify/edge-functions/iso.ts", "utf8");
 assert.match(isoEdge, /MAX_RANGE_BYTES/);
 assert.match(isoEdge, /Range/);
 assert.match(isoEdge, /DEVELOPER_ALPINE_ARTIFACT/);
+assert.match(isoEdge, /chunkStart/);
+assert.match(isoEdge, /chunkEnd/);
 assert.doesNotMatch(netlify, /sed -i/);
 assert.doesNotMatch(netlify, /CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN/);
 assert.doesNotMatch(sitemap, /developer-alpine\.html/);
@@ -32,19 +37,29 @@ assert.match(sitemap, /developer-alpine\//);
 assert.match(csp, /CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN/);
 assert.match(csp, /CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN/);
 assert.doesNotMatch(csp, /https:\/\/static\.cloudflareinsights\.com|https:\/\/cloudflareinsights\.com/);
-for (const [name, html, canonical] of [['real-linux', realLinux, 'https://linuxterminal.me/real-linux/'], ['developer-alpine', developer, 'https://linuxterminal.me/developer-alpine/']]) {
+
+for (const [name, html, canonical] of [
+  ['real-linux', realLinux, 'https://linuxterminal.me/real-linux/'],
+  ['developer-alpine', developer, 'https://linuxterminal.me/developer-alpine/'],
+]) {
   assert.match(html, /<title>[^<]+<\/title>/);
   assert.match(html, /<h1\b[^>]*>/i);
   assert.match(html, /rel="canonical"/);
   assert.ok(html.includes(canonical), name + ' canonical');
-  assert.doesNotMatch(html, /application\/ld\+json/i, `${name} must not contain inline JSON-LD under strict CSP`);
+  assert.doesNotMatch(
+    html,
+    /application\/ld\+json/i,
+    `${name} must not contain inline JSON-LD under strict CSP`,
+  );
   assert.match(html, /href="\/learn\//);
   assert.match(html, /href="\/commands\//);
 }
+
 assert.match(runtime, /cdrom: ['"]\/api\/iso\?image=virt['"]/);
 assert.match(runtime, /cdrom: ['"]\/api\/iso\?image=developer['"]/);
 assert.match(realLinux, /data-v86-profile="virt"/);
 assert.match(realLinux, /data-v86-key="ctrl-o"/);
 assert.match(developer, /data-v86-profile="developer"/);
 assert.ok(realLinux.includes('/v86-layout.css') && developer.includes('/v86-layout.css'));
+
 console.log('Static emulator SEO/security guardrails passed');
