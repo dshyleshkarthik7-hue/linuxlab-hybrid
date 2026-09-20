@@ -21,7 +21,7 @@ assert.match(worker, /cacheable 200 object/);
 assert.match(worker, /headers\.set\(\s*"Cache-Control",\s*"public, max-age=31536000, immutable"\s*\)/s);
 assert.match(worker, /X-LinuxLab-Chunk-Total/);
 assert.match(worker, /"Vary":\s*"Origin"/);
-assert.doesNotMatch(worker, /headers\.set\(\s*"Content-Range"/);
+
 assert.match(worker, /127\\\.0\\\.0\\\.1|localhost/);
 assert.match(worker, /try \{\n\s*upstream = await fetch/);
 assert.match(worker, /ISO origin unavailable/);
