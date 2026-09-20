@@ -604,6 +604,8 @@ async function readJsonBody(request: Request): Promise<unknown> {
   return JSON.parse(new TextDecoder().decode(bytes));
 }
 
+export const config = { path: '/api/certificate' };
+
 export default async (request: Request) => {
   if (request.method === 'OPTIONS') {
     return new Response('', {

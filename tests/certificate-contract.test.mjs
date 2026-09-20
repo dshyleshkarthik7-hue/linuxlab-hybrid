@@ -1,8 +1,7 @@
 import { strict as assert } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 
-const edge = await readFile(new URL('../netlify/edge-functions/certificate.ts', import.meta.url), 'utf8');
-const limiter = await readFile(new URL('../netlify/edge-functions/certificate-rate-limit.ts', import.meta.url), 'utf8');
+const certificate = await readFile(new URL('../netlify/functions/certificate.mts', import.meta.url), 'utf8');
 const netlify = await readFile(new URL('../netlify.toml', import.meta.url), 'utf8');
 const page = await readFile(new URL('../certificate/index.html', import.meta.url), 'utf8');
 const certJs = await readFile(new URL('../certificate/certificate.js', import.meta.url), 'utf8');
@@ -11,27 +10,28 @@ const verifyJs = await readFile(new URL('../verify/verify.js', import.meta.url),
 const loginJs = await readFile(new URL('../src/login.ts', import.meta.url), 'utf8');
 const progressJs = await readFile(new URL('../public/progress.js', import.meta.url), 'utf8');
 
-assert.match(edge, /UPSTASH_REDIS_REST_URL/);
-assert.match(edge, /UPSTASH_REDIS_REST_TOKEN/);
-assert.match(edge, /CERTIFICATE_SIGNING_SECRET/);
-assert.match(edge, /HMAC/);
-assert.match(edge, /QUESTION_COUNT\s*=\s*30/);
-assert.match(edge, /PASS_PERCENT\s*=\s*80/);
-assert.match(edge, /canonical\(unsigned\)/);
-assert.match(edge, /new TextEncoder\(\)\.encode\(secret\)/, 'certificate signing must use the selected key, not only the current key');
-assert.match(edge, /constantTimeEqualHex\(expected, signature\)/, 'certificate verification must compare signatures without ordinary string equality');
-assert.match(edge, /userId/);
-assert.match(edge, /DEL/);
-assert.doesNotMatch(edge, /(?:\:\s*any\b|\bas\s+any\b|<\s*any\s*>)/);
+assert.match(certificate, /UPSTASH_REDIS_REST_URL/);
+assert.match(certificate, /UPSTASH_REDIS_REST_TOKEN/);
+assert.match(certificate, /CERTIFICATE_SIGNING_SECRET/);
+assert.match(certificate, /HMAC/);
+assert.match(certificate, /QUESTION_COUNT\s*=\s*30/);
+assert.match(certificate, /PASS_PERCENT\s*=\s*80/);
+assert.match(certificate, /canonical\(unsigned/);
+assert.match(certificate, /new TextEncoder\(\)\.encode\(secret\)/, 'certificate signing must use the selected key, not only the current key');
+assert.match(certificate, /constantTimeEqualHex\(expected, signature\)/, 'certificate verification must compare signatures without ordinary string equality');
+assert.match(certificate, /userId/);
+assert.match(certificate, /DEL/);
+assert.doesNotMatch(certificate, /(?:\:\s*any\b|\bas\s+any\b|<\s*any\s*>)/);
 
-assert.match(limiter, /LIMIT\s*=\s*60/);
-assert.match(limiter, /WINDOW_SECONDS\s*=\s*60/);
-assert.match(limiter, /INCR/);
-assert.match(limiter, /EXPIRE/);
-assert.match(limiter, /429/);
-assert.match(limiter, /certificate\(request\)/);
-assert.match(netlify, /function = "certificate-rate-limit"/);
-assert.doesNotMatch(netlify, /function = "certificate"\s*\n/);
+assert.match(certificate, /rateLimit\(/, 'certificate API must retain Redis-backed rate limiting');
+assert.match(certificate, /INCR/);
+assert.match(certificate, /EXPIRE/);
+assert.match(certificate, /MongoClient/);
+assert.match(certificate, /certificatesCollection/);
+assert.match(certificate, /updateOne\(/);
+assert.match(certificate, /findOne\(/);
+assert.match(certificate, /export const config = \{ path: ['\"]\/api\/certificate['\"] \}/);
+assert.doesNotMatch(netlify, /function = "certificate"/);
 
 for (const [name, html] of [['certificate', page], ['verify', verify]]) {
   assert.doesNotMatch(html, /<style[\s>]/i, `${name} must not use inline styles`);
@@ -52,4 +52,4 @@ assert.match(progressJs, /(?:Exact score|Final score)/);
 assert.match(progressJs, /recordQuiz\(\s*Number\(\s*(?:m|match)\[1\]\s*\),\s*Number\(\s*(?:m|match)\[2\]\s*\)\s*\)/);
 assert.match(verify, /PUBLIC VERIFICATION/);
 assert.match(verifyJs, /\/api\/certificate/);
-console.log('Verified exam, auth-return, progress, and certificate rate-limit contracts passed');
+console.log('Verified production certificate, MongoDB persistence, auth-return, progress, and security contracts passed');
