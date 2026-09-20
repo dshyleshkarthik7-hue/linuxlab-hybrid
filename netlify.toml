@@ -5,9 +5,6 @@
 [[edge_functions]]
   path = "/api/tutor"
   function = "tutor"
-[[functions]]
-  path = "/api/certificate"
-  function = "certificate"
 [[edge_functions]]
   path = "/api/csp-report"
   function = "csp-report"
