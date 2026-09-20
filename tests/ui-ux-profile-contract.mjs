@@ -11,7 +11,7 @@ const developerPage = await read('developer-alpine/index.html');
 
 const profiles = [
   ['developer','DEVELOPER_ALPINE_ARTIFACT',691011584,1024],
-  ['virt','ALPINE_ARTIFACT',51380224,54],
+  ['virt','ALPINE_ARTIFACT',51380224,256],
   ['linux4','LINUX4_ARTIFACT',7731200,256],
 ];
 for (const [id, artifact, size, memory] of profiles) {

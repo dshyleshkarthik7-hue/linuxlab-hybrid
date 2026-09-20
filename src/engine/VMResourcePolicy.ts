@@ -17,7 +17,7 @@ export interface VMResourcePolicy {
 
 export const VM_RESOURCE_POLICIES = {
   developer: { memoryMiB: 1024, vgaMemoryMiB: 8, bootTimeoutMs: 5 * 60_000, maxSessionMs: 60 * 60_000, maxSerialBytes: 256_000, maxCommandMs: 30_000, maxOutputBytes: 1_000_000, maxFileBytes: 8_000_000, maxFilesystemBytes: 128_000_000, maxPipelineStages: 16, maxProcesses: 128, cpuSeconds: 30, networkAllowed: false, telemetryMaxAgeMs: 5_000 },
-  virt: { memoryMiB: 54, vgaMemoryMiB: 4, bootTimeoutMs: 4 * 60_000, maxSessionMs: 45 * 60_000, maxSerialBytes: 256_000, maxCommandMs: 30_000, maxOutputBytes: 1_000_000, maxFileBytes: 8_000_000, maxFilesystemBytes: 48_000_000, maxPipelineStages: 16, maxProcesses: 64, cpuSeconds: 30, networkAllowed: false, telemetryMaxAgeMs: 5_000 },
+  virt: { memoryMiB: 256, vgaMemoryMiB: 4, bootTimeoutMs: 4 * 60_000, maxSessionMs: 45 * 60_000, maxSerialBytes: 256_000, maxCommandMs: 30_000, maxOutputBytes: 1_000_000, maxFileBytes: 8_000_000, maxFilesystemBytes: 48_000_000, maxPipelineStages: 16, maxProcesses: 64, cpuSeconds: 30, networkAllowed: false, telemetryMaxAgeMs: 5_000 },
   linux4: { memoryMiB: 256, vgaMemoryMiB: 4, bootTimeoutMs: 90_000, maxSessionMs: 30 * 60_000, maxSerialBytes: 256_000, maxCommandMs: 15_000, maxOutputBytes: 512_000, maxFileBytes: 4_000_000, maxFilesystemBytes: 32_000_000, maxPipelineStages: 8, maxProcesses: 32, cpuSeconds: 15, networkAllowed: false, telemetryMaxAgeMs: 5_000 },
 } as const satisfies Record<string, VMResourcePolicy>;
 
