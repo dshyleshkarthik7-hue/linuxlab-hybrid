@@ -6,13 +6,14 @@ const config = await readFile(new URL('../cloudflare/wrangler.jsonc', import.met
 
 assert.match(worker, /chunkStart/);
 assert.match(worker, /chunkEnd/);
+assert.match(worker, /getChunk\(url, image\.size, request\.headers\.get\("Range"\)\)/);
 assert.match(worker, /MAX_CHUNK_BYTES\s*=\s*48\s*\*\s*1024\s*\*\s*1024/);
 assert.match(worker, /const range\s*=\s*`bytes=\$\{chunk\.start\}-\$\{chunk\.end\}`/);
 assert.match(worker, /Range:\s*range/);
 assert.match(worker, /upstream\.status !== 206/);
 assert.match(worker, /requestedEnd >= size/);
 assert.match(worker, /chunkStart\/chunkEnd or a single HTTP Range header is required/);
-assert.doesNotMatch(worker, /request\.headers\.get\("Range"\)/);
+assert.match(worker, /request\.headers\.get\("Range"\)/);
 assert.match(worker, /return new Response\(request\.method === "HEAD" \? null : upstream\.body, \{\s*status: 200/);
 assert.match(worker, /headers\.set\(\s*"Content-Range"/s);
 assert.match(worker, /status:\s*200/);
