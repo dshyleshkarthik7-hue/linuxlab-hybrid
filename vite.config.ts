@@ -2,13 +2,12 @@ import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { Readable } from 'node:stream';
+import manifest from './artifacts/manifest.json';
 
 const entry = (name: string) => fileURLToPath(new URL(`./${name}`, import.meta.url));
-const testIsoSources: Record<string, string> = {
-  developer: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso',
-  virt: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/V2.00/alpine-virt-3.24.1-x86.iso',
-  linux4: 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso'
-};
+const testIsoSources: Record<string, string> = Object.fromEntries(
+  manifest.artifacts.filter((artifact) => artifact.image).map((artifact) => [artifact.image, artifact.url]),
+);
 
 function testIsoProxy() {
   return {
@@ -54,48 +53,20 @@ export default defineConfig({
     target: 'esnext',
     cssMinify: false,
     chunkSizeWarningLimit: 1000,
-    modulePreload: {
-      resolveDependencies(filename, deps) {
-        if (filename.includes('simulator')) return deps.filter(dep => !/(^|\/)monaco(?:-[^/]+)?\.js(?:\?.*)?$/.test(dep));
-        return deps;
-      }
-    },
+    modulePreload: { resolveDependencies(filename, deps) { if (filename.includes('simulator')) return deps.filter(dep => !/(^|\/)monaco(?:-[^/]+)?\.js(?:\?.*)?$/.test(dep)); return deps; } },
     rollupOptions: {
       input: {
-        main: entry('index.html'),
-        beginner: entry('beginner/index.html'),
-        intermediate: entry('intermediate/index.html'),
-        expert: entry('expert/index.html'),
-        simulator: entry('simulator.html'),
-        v86: entry('index-v86.html'),
-        developerAlpine: entry('developer-alpine/index.html'),
-        linux4: entry('linux4.html'),
-        about: entry('about/index.html'),
-        contact: entry('contact/index.html'),
-        curriculum: entry('curriculum/index.html'),
-        commandsBuild: entry('commands-entry.html'),
-        quiz: entry('quiz/index.html'),
-        challenges: entry('challenges/index.html'),
-        iso: entry('open-source-iso/index.html'),
-        webTerminal: entry('web-terminal.html'),
-        login: entry('login/index.html'),
-        certificate: entry('certificate/index.html'),
-        verify: entry('verify/index.html'),
-        progress: entry('progress/index.html'),
-        learn: entry('learn/index.html'),
-        learnLinuxBasics: entry('learn/linux-basics/index.html'),
-        learnTerminalNavigation: entry('learn/terminal-navigation/index.html'),
-        learnFiles: entry('learn/files-and-directories/index.html'),
-        learnText: entry('learn/text-processing/index.html'),
-        learnPermissions: entry('learn/permissions/index.html'),
-        learnProcesses: entry('learn/processes/index.html'),
-        learnShell: entry('learn/shell-scripting/index.html')
+        main: entry('index.html'), beginner: entry('beginner/index.html'), intermediate: entry('intermediate/index.html'), expert: entry('expert/index.html'),
+        simulator: entry('simulator.html'), v86: entry('index-v86.html'), developerAlpine: entry('developer-alpine/index.html'), linux4: entry('linux4.html'),
+        about: entry('about/index.html'), contact: entry('contact/index.html'), curriculum: entry('curriculum/index.html'), commandsBuild: entry('commands-entry.html'),
+        quiz: entry('quiz/index.html'), challenges: entry('challenges/index.html'), iso: entry('open-source-iso/index.html'), webTerminal: entry('web-terminal.html'),
+        login: entry('login/index.html'), certificate: entry('certificate/index.html'), verify: entry('verify/index.html'), progress: entry('progress/index.html'),
+        learn: entry('learn/index.html'), learnLinuxBasics: entry('learn/linux-basics/index.html'), learnTerminalNavigation: entry('learn/terminal-navigation/index.html'),
+        learnFiles: entry('learn/files-and-directories/index.html'), learnText: entry('learn/text-processing/index.html'), learnPermissions: entry('learn/permissions/index.html'),
+        learnProcesses: entry('learn/processes/index.html'), learnShell: entry('learn/shell-scripting/index.html')
       },
       output: {
-        manualChunks(id) {
-          if (id.includes('monaco-editor')) return 'monaco';
-          if (id.includes('@xterm')) return 'xterm';
-        }
+        manualChunks(id) { if (id.includes('monaco-editor')) return 'monaco'; if (id.includes('@xterm')) return 'xterm'; }
       }
     }
   }

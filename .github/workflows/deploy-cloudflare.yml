@@ -4,6 +4,7 @@ on:
     branches: [main]
     paths:
       - 'cloudflare/**'
+      - 'artifacts/manifest.json'
       - '.github/workflows/deploy-cloudflare.yml'
   workflow_dispatch:
 permissions:

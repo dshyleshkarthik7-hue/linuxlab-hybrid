@@ -7,15 +7,16 @@ const sitemap = await readFile('public/sitemap.xml', 'utf8');
 const csp = await readFile('scripts/generate-netlify-headers.mjs', 'utf8');
 const realLinux = await readFile('index-v86.html', 'utf8');
 const developer = await readFile('developer-alpine/index.html', 'utf8');
+const webTerminal = await readFile('web-terminal.html', 'utf8');
 
 assert.match(runtime, /attachGuestTelemetry\s*\(\s*vm/);
 assert.match(runtime, /markReadyIfIdentityVerified\s*\(/);
 assert.match(runtime, /autostart:\s*false/);
 assert.match(runtime, /waitForV86Loaded/);
 assert.match(runtime, /wait_until_vga_screen_contains/);
-assert.match(runtime, /deviceMemory < 8/);
+assert.match(runtime, /const LOW_MEMORY_THRESHOLD_GB = 16/);\nassert.match(runtime, /deviceMemory < LOW_MEMORY_THRESHOLD_GB/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
-assert.match(csp, /analyticsBootstrapHash = [\s\S]*sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY=/);
+assert.match(webTerminal, /<meta name="description" content="[^"]{20,320}">/);\nassert.match(csp, /frame-ancestors 'none'/);\nassert.doesNotMatch(csp, /style-src 'self' 'unsafe-inline'/);\nassert.match(csp, /Reporting-Endpoints: csp-endpoint="\\/api\\/csp-report"/);\nassert.match(csp, /analyticsBootstrapHash = [\s\S]*sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY=/);
 assert.match(csp, /analyticsInlineHash = [\s\S]*sha256-Ob\/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs=/);
 
 const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');

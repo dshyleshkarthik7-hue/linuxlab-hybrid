@@ -6,7 +6,7 @@ const inFlight = new Map<string, Promise<ArrayBuffer>>();
 const TRUSTED_ISO_ORIGIN = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
 const RANGE_FETCH_TIMEOUT_MS = 90_000;
 const RANGE_CHUNK_BYTES = 48 * 1024 * 1024;
-const RANGE_CONCURRENCY = 2;
+const RANGE_CONCURRENCY = 4;
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin), image = url.searchParams.get('image');

@@ -7,6 +7,8 @@ import { artifactForIsoUrl, fetchVerifiedIso } from './core/verified-iso-fetch.t
 import { SEABIOS_ARTIFACT, VGABIOS_ARTIFACT } from './core/artifacts.ts';
 import { waitForV86Loaded } from './v86-ready.ts';
 
+const LOW_MEMORY_THRESHOLD_GB = 16;
+
 const TerminalCtor = xtermModule.Terminal;
 const FitAddonCtor = fitModule.FitAddon;
 
@@ -115,7 +117,7 @@ export class V86LinuxTerminal {
     this.profile = profileFromPage();
     if (this.profile.policy === 'developer') {
       const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-      if (typeof deviceMemory === 'number' && deviceMemory < 16) {
+      if (typeof deviceMemory === 'number' && deviceMemory < LOW_MEMORY_THRESHOLD_GB) {
         this.fail('Developer VM requires a 16 GB-class device because the verified ISO and 1024 MiB guest must coexist during startup');
         return;
       }

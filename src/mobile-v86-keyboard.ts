@@ -1,4 +1,4 @@
-type Shortcut = 'ctrl-o' | 'ctrl-x' | 'ctrl-w' | 'ctrl-k' | 'esc' | 'tab' | 'enter' | 'backspace';
+type Shortcut = 'ctrl-o' | 'ctrl-x' | 'ctrl-w' | 'ctrl-k' | 'ctrl-c' | 'ctrl-d' | 'ctrl-l' | 'ctrl-u' | 'ctrl-a' | 'ctrl-e' | 'esc' | 'tab' | 'enter' | 'backspace';
 
 declare global {
   interface Window {
@@ -11,6 +11,12 @@ const SHORTCUTS: Record<Shortcut, string> = {
   'ctrl-x': '\u0018',
   'ctrl-w': '\u0017',
   'ctrl-k': '\u000b',
+  'ctrl-c': '\u0003',
+  'ctrl-d': '\u0004',
+  'ctrl-l': '\u000c',
+  'ctrl-u': '\u0015',
+  'ctrl-a': '\u0001',
+  'ctrl-e': '\u0005',
   esc: '\u001b',
   tab: '\t',
   enter: '\r',

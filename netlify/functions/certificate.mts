@@ -13,6 +13,8 @@ const EXAM_VERSION = 'linux-foundations-1.0';
 const QUESTION_COUNT = 30;
 const PASS_PERCENT = 80;
 const ATTEMPT_TTL = 3600;
+const VERIFY_RATE_LIMIT = 60;
+const VERIFY_RATE_WINDOW_SECONDS = 60;
 const CERT_TTL = 60 * 60 * 24 * 365 * 5;
 const MAX_BODY_BYTES = 16384;
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
@@ -571,7 +573,14 @@ async function submit(user: User, body: unknown) {
   }
 }
 
-async function verify(id: string) {
+async function verify(id: string, request: Request) {
+  if (UPSTASH_URL && UPSTASH_TOKEN) {
+    const forwarded = request.headers.get('x-nf-client-connection-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
+    const client = safe(forwarded.trim().slice(0, 128));
+    if (!(await rateLimit(`linuxterminal:rate:certificate-verify:${client}`, VERIFY_RATE_LIMIT, VERIFY_RATE_WINDOW_SECONDS))) {
+      return json({ error: 'Too many verification requests. Please try again later.' }, 429);
+    }
+  }
   if (!id || id.length > 80) return json({ error: 'A certificate ID is required.' }, 400);
   if (!/^[A-Z0-9:_-]+$/i.test(id)) return json({ error: 'Invalid certificate ID.' }, 400);
 
@@ -620,7 +629,7 @@ export default async (request: Request) => {
 
   try {
     const url = new URL(request.url);
-    if (request.method === 'GET') return verify(url.searchParams.get('id') || '');
+    if (request.method === 'GET') return verify(url.searchParams.get('id') || '', request);
     if (request.method !== 'POST') return json({ error: 'method not allowed' }, 405);
 
     const user = await auth(request);

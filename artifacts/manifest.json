@@ -1,5 +1,5 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "repository": "dshyleshkarthik7-hue/linuxlab-hybrid",
   "artifacts": [
     {
@@ -8,7 +8,10 @@
       "filename": "alpine-virt-3.24.1-x86.iso",
       "size": 51380224,
       "sha256": "9895695d27eabc1e2782598ff0190f7966df8317cc2afe2a6d25360e148a4209",
-      "release": "V2.00"
+      "release": "V2.00",
+      "image": "virt",
+      "url": "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/V2.00/alpine-virt-3.24.1-x86.iso",
+      "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/V2.00"
     },
     {
       "version": "v1.0.0",
@@ -16,7 +19,10 @@
       "filename": "alpine.iso",
       "size": 691011584,
       "sha256": "9a4683039f356b6bdfa40897f1985b39d5a02e0f46d477e427e8262401301211",
-      "release": "v1.0.0"
+      "release": "v1.0.0",
+      "image": "developer",
+      "url": "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso",
+      "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v1.0.0"
     },
     {
       "version": "v3.00",
@@ -24,7 +30,10 @@
       "filename": "linux4.iso",
       "size": 7731200,
       "sha256": "a8ea434ab3b177c55f01275dcc1d35f52cfbee9bd44a32e74765c975b58bcc73",
-      "release": "v3.00"
+      "release": "v3.00",
+      "image": "linux4",
+      "url": "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso",
+      "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v3.00"
     },
     {
       "version": "v86-firmware-1",
@@ -32,7 +41,9 @@
       "filename": "seabios.bin",
       "size": 131072,
       "sha256": "73e3f359102e3a9982c35fce98eb7cd08f18303ac7f1ba6ebfbe6cdc1c244d98",
-      "release": "v86-firmware-1"
+      "release": "v86-firmware-1",
+      "url": "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v86-firmware-1/seabios.bin",
+      "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v86-firmware-1"
     },
     {
       "version": "v86-firmware-1",
@@ -40,7 +51,9 @@
       "filename": "vgabios.bin",
       "size": 36352,
       "sha256": "a4bc0d80cc3ca028c73dafa8fee396b8d054ce87ebd8abfbd31b06b437607880",
-      "release": "v86-firmware-1"
+      "release": "v86-firmware-1",
+      "url": "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v86-firmware-1/vgabios.bin",
+      "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v86-firmware-1"
     }
   ]
 }
