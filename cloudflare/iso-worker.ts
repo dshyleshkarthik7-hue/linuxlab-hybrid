@@ -76,7 +76,7 @@ export default {
     const image = getImage(url);
     if (!image) return new Response("Unknown image. Use image=developer, image=virt, or image=linux4.", { status: 404, headers });
     let chunk;
-    try { chunk = getChunk(url, image.size); }
+    try { chunk = getChunk(url, image.size, request.headers.get("Range")); }
     catch {
       headers.set("Content-Range", `bytes */${image.size}`);
       return new Response("Invalid chunk", { status: 416, headers });
