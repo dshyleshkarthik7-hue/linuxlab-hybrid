@@ -2,7 +2,6 @@ const EXAM_VERSION = 'linux-foundations-1.0';
 const QUESTION_COUNT = 30;
 const PASS_PERCENT = 80;
 const ATTEMPT_TTL = 3600;
-const CERT_TTL = 60 * 60 * 24 * 365 * 5;
 const MAX_BODY_BYTES = 16384;
 const UPSTASH_URL = Netlify.env.get('UPSTASH_REDIS_REST_URL');
 const UPSTASH_TOKEN = Netlify.env.get('UPSTASH_REDIS_REST_TOKEN');
@@ -548,7 +547,7 @@ async function submit(user: User, body: unknown) {
       keyId: SIGNING_KEY_ID,
     };
 
-    await redis(['SET', `linuxterminal:certificate:${id}`, JSON.stringify(certificate), 'EX', CERT_TTL]);
+    await redis(['SET', `linuxterminal:certificate:${id}`, JSON.stringify(certificate)]);
     await redis(['DEL', key]);
     return json({
       certificate: publicCert(certificate),
