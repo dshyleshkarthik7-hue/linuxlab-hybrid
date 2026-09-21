@@ -2,14 +2,28 @@ import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 
 const artifacts = await readFile('src/core/artifacts.ts', 'utf8');
+const manifest = JSON.parse(await readFile('artifacts/manifest.json', 'utf8'));
 const vm = await readFile('src/main-v86.ts', 'utf8');
 const boundary = await readFile('docs/PRODUCTION_SECURITY_BOUNDARY.md', 'utf8');
 const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
 
-for (const name of ['ALPINE_ARTIFACT', 'DEVELOPER_ALPINE_ARTIFACT', 'LINUX4_ARTIFACT']) {
-  const block = artifacts.slice(artifacts.indexOf(`export const ${name}`), artifacts.indexOf('\nexport const', artifacts.indexOf(`export const ${name}`) + 1) === -1 ? artifacts.length : artifacts.indexOf('\nexport const', artifacts.indexOf(`export const ${name}`) + 1));
-  assert.match(block, /sha256:\s*'[0-9a-f]{64}'/i, `${name} must have a fixed SHA-256 digest`);
-  assert.match(block, /size:\s*\d+/, `${name} must have a fixed size`);
+const requiredArtifacts = [
+  ['ALPINE_ARTIFACT', 'alpine-virt-3.24.1-x86.iso'],
+  ['DEVELOPER_ALPINE_ARTIFACT', 'alpine.iso'],
+  ['LINUX4_ARTIFACT', 'linux4.iso'],
+];
+
+for (const [name, filename] of requiredArtifacts) {
+  const declaration = artifacts.match(new RegExp(`export const ${name}\\s*=\\s*artifact\\('([^']+)'\\)`));
+  assert.ok(declaration, `${name} must resolve through the canonical artifact manifest`);
+  assert.equal(declaration[1], filename, `${name} must reference its expected manifest artifact`);
+
+  const entry = manifest.artifacts.find((item) => item.filename === filename);
+  assert.ok(entry, `${name} must have a manifest entry`);
+  assert.match(entry.sha256, /^[0-9a-f]{64}$/i, `${name} must have a fixed SHA-256 digest in the manifest`);
+  assert.ok(Number.isSafeInteger(entry.size) && entry.size > 0, `${name} must have a fixed positive size in the manifest`);
+  assert.match(entry.url, /^https:\/\//, `${name} must have a pinned HTTPS artifact URL`);
+  assert.match(entry.releaseManifestUrl, /^https:\/\//, `${name} must have a release manifest URL`);
 }
 
 assert.match(vm, /net_device:\s*\{\s*type:\s*'none'\s*\}/, 'v86 production profile must keep networking disabled');
