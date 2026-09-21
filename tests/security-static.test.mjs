@@ -20,7 +20,8 @@ assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(webTerminal, /<meta name="description" content="[^"]{20,320}">/);
 assert.match(csp, /frame-ancestors 'none'/);
 assert.doesNotMatch(csp, /style-src 'self' 'unsafe-inline'/);
-assert.doesNotMatch(csp, /style-src[^\n]*unsafe-inline/);
+assert.doesNotMatch(csp, /style-src[^
+]*unsafe-inline/);
 assert.match(csp, /report-to csp-endpoint/);
 assert.match(csp, /Reporting-Endpoints: csp-endpoint="\/api\/csp-report"/);
 assert.match(csp, /analyticsBootstrapHash = [\s\S]*sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY=/);
