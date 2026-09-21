@@ -1,7 +1,8 @@
 import type { PinnedArtifact } from './artifacts.ts';
 
 const CACHE_NAME = 'linuxlab-iso-v1';
-const CACHE_VERSION = '1';
+const CACHE_VERSION = '2';
+const MAX_CACHED_ARTIFACT_BYTES = 128 * 1024 * 1024;
 
 function cacheKey(artifact: PinnedArtifact, start: number, end: number): Request {
   const url = new URL('https://linuxlab.local/__iso-cache__');
@@ -13,9 +14,10 @@ function cacheKey(artifact: PinnedArtifact, start: number, end: number): Request
 }
 
 function available(): boolean { return typeof caches !== 'undefined'; }
+function cacheable(artifact: PinnedArtifact): boolean { return artifact.size <= MAX_CACHED_ARTIFACT_BYTES; }
 
 export async function readIsoChunkCache(artifact: PinnedArtifact, start: number, end: number): Promise<ArrayBuffer | null> {
-  if (!available()) return null;
+  if (!available() || !cacheable(artifact)) return null;
   try {
     const cache = await caches.open(CACHE_NAME);
     const response = await cache.match(cacheKey(artifact, start, end));
@@ -34,7 +36,7 @@ export async function readIsoChunkCache(artifact: PinnedArtifact, start: number,
 }
 
 export async function writeIsoChunkCache(artifact: PinnedArtifact, start: number, end: number, bytes: ArrayBuffer): Promise<void> {
-  if (!available() || bytes.byteLength !== end - start + 1) return;
+  if (!available() || !cacheable(artifact) || bytes.byteLength !== end - start + 1) return;
   try {
     const response = new Response(bytes.slice(0), {
       status: 200,
