@@ -17,7 +17,9 @@ assert.match(worker, /return new Response\(request\.method === "HEAD" \? null : 
 assert.match(worker, /headers\.set\(\s*"Content-Range"/s);
 assert.match(worker, /status:\s*200/);
 assert.doesNotMatch(worker, /status:\s*206/);
-assert.match(worker, /cacheable 200 object/);
+assert.match(worker, /manifest\.json/);
+assert.match(worker, /isoEntries\.map/);
+assert.match(worker, /X-LinuxLab-SHA256/);
 assert.match(worker, /headers\.set\(\s*"Cache-Control",\s*"public, max-age=31536000, immutable"\s*\)/s);
 assert.match(worker, /X-LinuxLab-Chunk-Total/);
 assert.match(worker, /"Vary":\s*"Origin"/);
