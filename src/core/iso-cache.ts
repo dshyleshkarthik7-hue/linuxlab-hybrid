@@ -1,8 +1,10 @@
 import type { PinnedArtifact } from './artifacts.ts';
 
 const CACHE_NAME = 'linuxlab-iso-v1';
-const CACHE_VERSION = '2';
+const CACHE_VERSION = '3';
 const MAX_CACHED_ARTIFACT_BYTES = 128 * 1024 * 1024;
+const MAX_CACHE_BYTES = 96 * 1024 * 1024;
+const MAX_CACHE_AGE_MS = 7 * 24 * 60 * 60 * 1000;
 
 function cacheKey(artifact: PinnedArtifact, start: number, end: number): Request {
   const url = new URL('https://linuxlab.local/__iso-cache__');
@@ -16,11 +18,36 @@ function cacheKey(artifact: PinnedArtifact, start: number, end: number): Request
 function available(): boolean { return typeof caches !== 'undefined'; }
 function cacheable(artifact: PinnedArtifact): boolean { return artifact.size <= MAX_CACHED_ARTIFACT_BYTES; }
 
+async function prune(cache: Cache): Promise<void> {
+  const requests = await cache.keys();
+  const now = Date.now();
+  const entries: Array<{ request: Request; size: number; touched: number }> = [];
+  for (const request of requests) {
+    const response = await cache.match(request);
+    if (!response) continue;
+    const size = Number(response.headers.get('content-length') || 0);
+    const touched = Number(response.headers.get('x-linuxlab-cache-touched') || 0);
+    if (!Number.isSafeInteger(size) || size <= 0 || !Number.isFinite(touched) || touched <= 0 || now - touched > MAX_CACHE_AGE_MS) {
+      await cache.delete(request);
+      continue;
+    }
+    entries.push({ request, size, touched });
+  }
+  let total = entries.reduce((sum, entry) => sum + entry.size, 0);
+  entries.sort((a, b) => a.touched - b.touched);
+  for (const entry of entries) {
+    if (total <= MAX_CACHE_BYTES) break;
+    await cache.delete(entry.request);
+    total -= entry.size;
+  }
+}
+
 export async function readIsoChunkCache(artifact: PinnedArtifact, start: number, end: number): Promise<ArrayBuffer | null> {
   if (!available() || !cacheable(artifact)) return null;
   try {
     const cache = await caches.open(CACHE_NAME);
-    const response = await cache.match(cacheKey(artifact, start, end));
+    const key = cacheKey(artifact, start, end);
+    const response = await cache.match(key);
     if (!response || !response.ok) return null;
     const expectedLength = end - start + 1;
     const length = response.headers.get('content-length');
@@ -31,12 +58,23 @@ export async function readIsoChunkCache(artifact: PinnedArtifact, start: number,
     if (length !== null && Number(length) !== expectedLength) return null;
     if (cachedStart !== String(start) || cachedEnd !== String(end) || cachedTotal !== String(artifact.size) || cachedSha !== artifact.sha256) return null;
     const bytes = await response.arrayBuffer();
-    return bytes.byteLength === expectedLength ? bytes : null;
+    if (bytes.byteLength !== expectedLength) return null;
+    const touched = new Response(bytes.slice(0), { status: 200, headers: {
+      'content-type': 'application/octet-stream',
+      'content-length': String(bytes.byteLength),
+      'x-linuxlab-chunk-start': String(start),
+      'x-linuxlab-chunk-end': String(end),
+      'x-linuxlab-chunk-total': String(artifact.size),
+      'x-linuxlab-sha256': artifact.sha256,
+      'x-linuxlab-cache-touched': String(Date.now()),
+    }});
+    await cache.put(key, touched);
+    return bytes;
   } catch { return null; }
 }
 
 export async function writeIsoChunkCache(artifact: PinnedArtifact, start: number, end: number, bytes: ArrayBuffer): Promise<void> {
-  if (!available() || !cacheable(artifact) || bytes.byteLength !== end - start + 1) return;
+  if (!available() || !cacheable(artifact) || bytes.byteLength !== end - start + 1 || bytes.byteLength > MAX_CACHE_BYTES) return;
   try {
     const response = new Response(bytes.slice(0), {
       status: 200,
@@ -47,10 +85,12 @@ export async function writeIsoChunkCache(artifact: PinnedArtifact, start: number
         'x-linuxlab-chunk-end': String(end),
         'x-linuxlab-chunk-total': String(artifact.size),
         'x-linuxlab-sha256': artifact.sha256,
+        'x-linuxlab-cache-touched': String(Date.now()),
       },
     });
     const cache = await caches.open(CACHE_NAME);
     await cache.put(cacheKey(artifact, start, end), response);
+    await prune(cache);
   } catch {}
 }
 

@@ -115,8 +115,8 @@ export class V86LinuxTerminal {
     this.profile = profileFromPage();
     if (this.profile.policy === 'developer') {
       const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-      if (typeof deviceMemory === 'number' && deviceMemory < 8) {
-        this.fail('Developer VM requires an 8 GB-class device because the verified ISO and 1024 MiB guest must coexist during startup');
+      if (typeof deviceMemory === 'number' && deviceMemory < 16) {
+        this.fail('Developer VM requires a 16 GB-class device because the verified ISO and 1024 MiB guest must coexist during startup');
         return;
       }
     }
