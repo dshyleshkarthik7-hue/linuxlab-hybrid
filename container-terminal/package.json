@@ -1,0 +1,8 @@
+{
+  "name":"linuxterminal-free-container-terminal",
+  "private":true,
+  "type":"module",
+  "scripts":{"start":"node src/server.mjs"},
+  "dependencies":{"ws":"8.18.3"},
+  "engines":{"node":">=22"}
+}

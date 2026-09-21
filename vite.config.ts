@@ -77,6 +77,7 @@ export default defineConfig({
         quiz: entry('quiz/index.html'),
         challenges: entry('challenges/index.html'),
         iso: entry('open-source-iso/index.html'),
+        webTerminal: entry('web-terminal.html'),
         login: entry('login/index.html'),
         certificate: entry('certificate/index.html'),
         verify: entry('verify/index.html'),

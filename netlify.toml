@@ -195,6 +195,10 @@
   to = "/api/v86-firmware/vgabios.bin"
   status = 200
 [[redirects]]
+  from = "/web-terminal"
+  to = "/web-terminal.html"
+  status = 200
+[[redirects]]
   from = "/real-linux/"
   to = "/index-v86.html"
   status = 200
