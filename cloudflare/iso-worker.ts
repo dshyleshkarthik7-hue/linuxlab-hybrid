@@ -1,4 +1,4 @@
-import manifest from "../artifacts/manifest.json";
+import manifest from '../artifacts/manifest.json' with { type: 'json' };
 
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;

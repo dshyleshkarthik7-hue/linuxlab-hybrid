@@ -1,4 +1,4 @@
-import manifest from '../../artifacts/manifest.json';
+import manifest from '../../artifacts/manifest.json' with { type: 'json' };
 
 export type PinnedArtifact = {
   version: string;

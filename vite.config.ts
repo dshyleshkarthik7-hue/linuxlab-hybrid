@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { Readable } from 'node:stream';
-import manifest from './artifacts/manifest.json';
+import manifest from './artifacts/manifest.json' with { type: 'json' };
 
 const entry = (name: string) => fileURLToPath(new URL(`./${name}`, import.meta.url));
 const testIsoSources: Record<string, string> = Object.fromEntries(
