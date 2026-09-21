@@ -25,7 +25,7 @@ assert.match(worker, /X-LinuxLab-Chunk-Total/);
 assert.match(worker, /"Vary":\s*"Origin"/);
 
 assert.match(worker, /127\\\.0\\\.0\\\.1|localhost/);
-assert.match(worker, /try \{\n\s*upstream = await fetch/);
+assert.match(worker, /try\s*\{\s*upstream\s*=\s*await\s+fetch/);
 assert.match(worker, /ISO origin unavailable/);
 assert.doesNotMatch(worker, /arrayBuffer\(\)/);
 assert.match(config, /"cache"\s*:\s*\{\s*"enabled"\s*:\s*true/);
