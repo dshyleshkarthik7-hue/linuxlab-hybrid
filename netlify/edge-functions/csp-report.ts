@@ -18,12 +18,14 @@ function cors(request: Request): Record<string, string> {
 }
 
 function clientKey(context: EdgeContext): string {
-  return context.ip?.trim() || 'unknown';
+  return context.ip?.trim() || '';
 }
 
 async function rateLimited(context: EdgeContext): Promise<boolean> {
-  if (!UPSTASH_URL || !UPSTASH_TOKEN) return true;
-  const key = `linuxterminal:csp:${clientKey(context).replace(/[^a-zA-Z0-9:._-]/g, '_')}`;
+  const identity = clientKey(context);
+  if (!identity) return false;
+  if (!UPSTASH_URL || !UPSTASH_TOKEN) return false;
+  const key = `linuxterminal:csp:${identity.replace(/[^a-zA-Z0-9:._-]/g, '_')}`;
   const script = `
 local limit = tonumber(ARGV[1])
 local ttl = tonumber(ARGV[2])
@@ -48,14 +50,14 @@ return redis.call('INCR', KEYS[1])
         String(RATE_WINDOW_SECONDS),
       ]),
     });
-    if (!response.ok) return true;
+    if (!response.ok) return false;
     const data: unknown = await response.json();
     const result = typeof data === 'object' && data !== null && 'result' in data
       ? (data as { result?: unknown }).result
       : null;
-    return typeof result !== 'number' || result < 0;
+    return typeof result === 'number' && result < 0;
   } catch {
-    return true;
+    return false;
   }
 }
 

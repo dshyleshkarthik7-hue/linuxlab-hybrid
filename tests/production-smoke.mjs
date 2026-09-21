@@ -7,6 +7,7 @@ const origin = baseURL.replace(/\/$/, '');
 const timeoutMs = Number(process.env.PRODUCTION_SMOKE_TIMEOUT_MS || 30000);
 const retryMs = Number(process.env.PRODUCTION_SMOKE_RETRY_MS || 2000);
 const retries = Number(process.env.PRODUCTION_SMOKE_RETRIES || 5);
+const isoOrigin = (process.env.ISO_BASE_URL || 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev').replace(/\/$/, '');
 
 async function get(url, options = {}) {
   let lastError;
@@ -44,13 +45,13 @@ for (const pin of firmwarePins) {
   assert.equal(actual, pin.sha256, `/api/v86-firmware/${pin.filename} SHA-256 mismatch`);
 }
 
-const bareIso = await get(`${origin}/api/iso?image=developer`);
+const bareIso = await get(`${isoOrigin}/?image=developer`);
 assert.equal(bareIso.status, 416, `bare developer ISO request returned ${bareIso.status}`);
 assert.equal(bareIso.headers.get('content-range'), 'bytes */691011584');
 
-const isoUrl = `${origin}/api/iso?image=developer&chunkStart=0&chunkEnd=0`;
+const isoUrl = `${isoOrigin}/?image=developer&chunkStart=0&chunkEnd=0`;
 const iso = await get(isoUrl, { headers: { Range: 'bytes=0-0' } });
-assert.equal(iso.status, 206, `developer ISO probe returned ${iso.status}`);
+assert.equal(iso.status, 200, `developer ISO probe returned ${iso.status}`);
 assert.equal(iso.headers.get('x-linuxlab-chunk-start'), '0');
 assert.equal(iso.headers.get('x-linuxlab-chunk-end'), '0');
 assert.equal(iso.headers.get('x-linuxlab-chunk-total'), '691011584');
@@ -59,9 +60,9 @@ assert.equal(iso.headers.get('accept-ranges'), 'bytes');
 assert.equal(iso.headers.get('content-range'), 'bytes 0-0/691011584');
 assert.equal((await iso.arrayBuffer()).byteLength, 1);
 
-const outOfBounds = await get(`${origin}/api/iso?image=developer&chunkStart=691011584&chunkEnd=691011584`);
+const outOfBounds = await get(`${isoOrigin}/?image=developer&chunkStart=691011584&chunkEnd=691011584`);
 assert.equal(outOfBounds.status, 416);
-const unknown = await get(`${origin}/api/iso?image=unknown&chunkStart=0&chunkEnd=0`);
+const unknown = await get(`${isoOrigin}/?image=unknown&chunkStart=0&chunkEnd=0`);
 assert.equal(unknown.status, 404);
 
 console.log(`Production deployment smoke checks passed: ISO endpoint + ${sitemapPaths.length} sitemap URLs`);

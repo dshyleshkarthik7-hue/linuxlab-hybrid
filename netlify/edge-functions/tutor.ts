@@ -10,6 +10,7 @@ const GLOBAL_LIMIT = Number(Netlify.env.get('TUTOR_GLOBAL_LIMIT_PER_MINUTE') || 
 const GLOBAL_TOKEN_BUDGET = Number(Netlify.env.get('TUTOR_GLOBAL_TOKEN_BUDGET_PER_MINUTE') || 90000);
 const CIRCUIT_FAILURE_LIMIT = Number(Netlify.env.get('TUTOR_CIRCUIT_FAILURE_LIMIT') || 8);
 const CIRCUIT_OPEN_SECONDS = Number(Netlify.env.get('TUTOR_CIRCUIT_OPEN_SECONDS') || 30);
+const GLOBAL_EFFECTIVE_LIMIT = Math.max(1, Math.min(GLOBAL_LIMIT, Math.floor(GLOBAL_TOKEN_BUDGET / MAX_OUTPUT_TOKENS)));
 const TIMEOUT_MS = 15000;
 const UPSTASH_URL = Netlify.env.get('UPSTASH_REDIS_REST_URL');
 const UPSTASH_TOKEN = Netlify.env.get('UPSTASH_REDIS_REST_TOKEN');
@@ -111,7 +112,7 @@ async function durableLimit(userId: string, ip: string): Promise<RateLimitResult
         authorization: `Bearer ${UPSTASH_TOKEN}`,
         'content-type': 'application/json',
       },
-      body: JSON.stringify(['EVAL', RATE_LIMIT_SCRIPT, '3', userKey, ipKey, globalKey, String(LIMIT), String(WINDOW_SECONDS), String(Math.max(1, GLOBAL_LIMIT))]),
+      body: JSON.stringify(['EVAL', RATE_LIMIT_SCRIPT, '3', userKey, ipKey, globalKey, String(LIMIT), String(WINDOW_SECONDS), String(GLOBAL_EFFECTIVE_LIMIT)]),
     });
     if (!response.ok) return { available: false, allowed: false };
     const data: unknown = await response.json();
@@ -123,6 +124,24 @@ async function durableLimit(userId: string, ip: string): Promise<RateLimitResult
   } catch {
     return { available: false, allowed: false };
   }
+}
+
+async function circuitOpen(): Promise<boolean> {
+  if (!UPSTASH_URL || !UPSTASH_TOKEN) return true;
+  try {
+    const response = await fetch(UPSTASH_URL, { method: 'POST', headers: { authorization: `Bearer ${UPSTASH_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify(['GET', 'linuxterminal:tutor:circuit:open']) });
+    if (!response.ok) return true;
+    const data = await response.json() as { result?: unknown };
+    return data.result === '1';
+  } catch { return true; }
+}
+async function recordCircuitFailure(): Promise<void> {
+  if (!UPSTASH_URL || !UPSTASH_TOKEN) return;
+  try { await fetch(UPSTASH_URL, { method: 'POST', headers: { authorization: `Bearer ${UPSTASH_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify(['EVAL', "local failures = redis.call('INCR', KEYS[1]); if failures == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end; if failures >= tonumber(ARGV[2]) then redis.call('SET', KEYS[2], '1', 'EX', ARGV[3]) end; return failures", '2', 'linuxterminal:tutor:circuit:failures', 'linuxterminal:tutor:circuit:open', String(CIRCUIT_OPEN_SECONDS), String(CIRCUIT_FAILURE_LIMIT), String(CIRCUIT_OPEN_SECONDS)]) }); } catch {}
+}
+async function recordCircuitSuccess(): Promise<void> {
+  if (!UPSTASH_URL || !UPSTASH_TOKEN) return;
+  try { await fetch(UPSTASH_URL, { method: 'POST', headers: { authorization: `Bearer ${UPSTASH_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify(['DEL', 'linuxterminal:tutor:circuit:failures']) }); } catch {}
 }
 
 async function authenticatedUser(request: Request): Promise<IdentityUser | null> {
@@ -208,6 +227,7 @@ export default async (request: Request, context: unknown) => {
     question,
   ].join('\n');
 
+  if (await circuitOpen()) return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -226,12 +246,14 @@ export default async (request: Request, context: unknown) => {
         stream: false,
       }),
     });
-    if (!response.ok) return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin);
+    if (!response.ok) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin); }
     const data: unknown = await response.json();
     const answer = (data as HuggingFaceResponse)?.choices?.[0]?.message?.content;
-    if (typeof answer !== 'string' || !answer.trim()) return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin);
+    if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin); }
+    await recordCircuitSuccess();
     return json({ answer: answer.trim().slice(0, 5000), model: MODEL, provider: 'nscale' }, 200, origin);
   } catch (error) {
+    await recordCircuitFailure();
     console.error('Tutor request failed', error instanceof Error ? error.message : String(error));
     return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin);
   } finally {

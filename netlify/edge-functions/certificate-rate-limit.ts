@@ -22,12 +22,14 @@ async function redis(command: unknown[]): Promise<unknown> {
 }
 
 function clientKey(request: Request, context: { ip?: string }): string {
-  const ip = context.ip || request.headers.get('x-nf-client-connection-ip') || 'unknown';
+  const ip = context.ip?.trim() || request.headers.get('x-nf-client-connection-ip')?.trim() || '';
   return ip.replace(/[^a-zA-Z0-9:._-]/g, '_').slice(0, 128);
 }
 
 async function allowed(request: Request, context: { ip?: string }): Promise<boolean> {
-  const key = `linuxterminal:rate:certificate-verify:${clientKey(request, context)}`;
+  const identity = clientKey(request, context);
+  if (!identity) throw new Error('Trusted client identity is unavailable');
+  const key = `linuxterminal:rate:certificate-verify:${identity}`;
   const script = [
     'local count = redis.call("INCR", KEYS[1])',
     'if count == 1 then redis.call("EXPIRE", KEYS[1], ARGV[1]) end',
