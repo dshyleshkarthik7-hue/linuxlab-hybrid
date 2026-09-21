@@ -14,9 +14,16 @@ assert.match(runtime, /markReadyIfIdentityVerified\s*\(/);
 assert.match(runtime, /autostart:\s*false/);
 assert.match(runtime, /waitForV86Loaded/);
 assert.match(runtime, /wait_until_vga_screen_contains/);
-assert.match(runtime, /const LOW_MEMORY_THRESHOLD_GB = 16/);\nassert.match(runtime, /deviceMemory < LOW_MEMORY_THRESHOLD_GB/);
+assert.match(runtime, /const LOW_MEMORY_THRESHOLD_GB = 16/);
+assert.match(runtime, /deviceMemory < LOW_MEMORY_THRESHOLD_GB/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
-assert.match(webTerminal, /<meta name="description" content="[^"]{20,320}">/);\nassert.match(csp, /frame-ancestors 'none'/);\nassert.doesNotMatch(csp, /style-src 'self' 'unsafe-inline'/);\nassert.match(csp, /Reporting-Endpoints: csp-endpoint="\\/api\\/csp-report"/);\nassert.match(csp, /analyticsBootstrapHash = [\s\S]*sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY=/);
+assert.match(webTerminal, /<meta name="description" content="[^"]{20,320}">/);
+assert.match(csp, /frame-ancestors 'none'/);
+assert.doesNotMatch(csp, /style-src 'self' 'unsafe-inline'/);
+assert.doesNotMatch(csp, /style-src[^\n]*unsafe-inline/);
+assert.match(csp, /report-to csp-endpoint/);
+assert.match(csp, /Reporting-Endpoints: csp-endpoint="\/api\/csp-report"/);
+assert.match(csp, /analyticsBootstrapHash = [\s\S]*sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY=/);
 assert.match(csp, /analyticsInlineHash = [\s\S]*sha256-Ob\/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs=/);
 
 const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
@@ -25,9 +32,6 @@ assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
 assert.match(cloudflare, /upstream\.status !== 206/);
 assert.match(cloudflare, /status: 200/);
 assert.doesNotMatch(cloudflare, /status: 206/);
-
-// ISO delivery is intentionally Cloudflare-only. Netlify hosts the app/API and
-// must not retain the legacy /api/iso edge route contract.
 assert.doesNotMatch(netlify, /path = "\/api\/iso"/);
 assert.doesNotMatch(netlify, /function = "iso"/);
 assert.match(netlify, /path = "\/api\/v86-firmware\/\*"/);
@@ -48,11 +52,7 @@ for (const [name, html, canonical] of [
   assert.match(html, /<h1\b[^>]*>/i);
   assert.match(html, /rel="canonical"/);
   assert.ok(html.includes(canonical), name + ' canonical');
-  assert.doesNotMatch(
-    html,
-    /application\/ld\+json/i,
-    `${name} must not contain inline JSON-LD under strict CSP`,
-  );
+  assert.doesNotMatch(html, /application\/ld\+json/i, `${name} must not contain inline JSON-LD under strict CSP`);
   assert.match(html, /href="\/learn\//);
   assert.match(html, /href="\/commands\//);
 }
