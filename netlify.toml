@@ -10,7 +10,7 @@
 
 [build]
   publish = "dist"
-  command = "npm run build && node scripts/generate-netlify-headers.mjs"
+  command = "npm run build && node scripts/write-build-info.mjs && node scripts/generate-netlify-headers.mjs"
 
 [[edge_functions]]
   path = "/api/tutor"
@@ -190,10 +190,6 @@
 [[redirects]]
   from = "/vgabios.bin"
   to = "/api/v86-firmware/vgabios.bin"
-  status = 200
-[[redirects]]
-  from = "/web-terminal"
-  to = "/web-terminal.html"
   status = 200
 [[redirects]]
   from = "/real-linux/"

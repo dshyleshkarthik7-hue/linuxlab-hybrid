@@ -22,7 +22,8 @@ const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const SIGNING_SECRET = process.env.CERTIFICATE_SIGNING_SECRET;
 const SIGNING_KEY_ID = process.env.CERTIFICATE_SIGNING_KEY_ID || 'current';
 const SIGNING_KEYS = (() => { const map = new Map<string, string>(); if (SIGNING_SECRET) map.set(SIGNING_KEY_ID, SIGNING_SECRET); for (const item of (process.env.CERTIFICATE_SIGNING_KEYS || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
-const ORIGIN = process.env.TUTOR_ALLOWED_ORIGINS || 'https://linuxterminal.me';
+const ALLOWED_ORIGINS = new Set((process.env.TUTOR_ALLOWED_ORIGINS || 'https://linuxterminal.me').split(',').map(value => value.trim()).filter(Boolean));
+const corsOrigin = (request: Request) => { const origin = request.headers.get('origin'); return origin && ALLOWED_ORIGINS.has(origin) ? origin : [...ALLOWED_ORIGINS][0] || 'https://linuxterminal.me'; };
 
 type User = {
   id?: unknown;
@@ -339,13 +340,13 @@ function shuffle<T>(values: readonly T[]): T[] {
   return result;
 }
 
-const json = (value: Record<string, unknown>, status = 200) => new Response(JSON.stringify(value), {
+const json = (value: Record<string, unknown>, status = 200, requestOrigin = 'https://linuxterminal.me') => new Response(JSON.stringify(value), {
   status,
   headers: {
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store',
     'x-content-type-options': 'nosniff',
-    'access-control-allow-origin': ORIGIN,
+    'access-control-allow-origin': requestOrigin,
     'access-control-allow-methods': 'GET,POST,OPTIONS',
     'access-control-allow-headers': 'content-type,authorization',
   },
@@ -395,8 +396,8 @@ async function redis(command: unknown[]) {
 const safe = (value: string) => value.replace(/[^a-zA-Z0-9:._-]/g, '_');
 
 async function rateLimit(key: string, limit: number, windowSeconds: number) {
-  const count = await redis(['INCR', key]);
-  if (Number(count) === 1) await redis(['EXPIRE', key, windowSeconds]);
+  const script = 'local n=redis.call("INCR",KEYS[1]); if n==1 then redis.call("EXPIRE",KEYS[1],ARGV[1]); end; return n';
+  const count = await redis(['EVAL', script, '1', key, String(windowSeconds)]);
   return Number(count) <= limit;
 }
 
@@ -537,11 +538,7 @@ async function submit(user: User, body: unknown) {
     }
 
     const issuedAt = new Date().toISOString();
-    const name = typeof user.user_metadata?.full_name === 'string'
-      ? user.user_metadata.full_name.trim().slice(0, 120)
-      : typeof user.email === 'string'
-        ? user.email.slice(0, 120)
-        : 'LinuxTerminal learner';
+    const name = typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim() ? user.user_metadata.full_name.trim().slice(0, 120) : 'LinuxTerminal learner';
     const id = `LT-LNX-${new Date().getUTCFullYear()}-${crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase()}`;
     const unsigned: Omit<Cert, 'signature'> = {
       id,
@@ -562,7 +559,7 @@ async function submit(user: User, body: unknown) {
     };
 
     const collection = await certificatesCollection();
-    await collection.updateOne({ _id: id }, { $set: { ...certificate, _id: id, userEmail: typeof user.email === 'string' ? user.email : null, createdAt: new Date(issuedAt) } }, { upsert: true });
+    await collection.updateOne({ _id: id }, { $set: { ...certificate, _id: id, userEmail: null, createdAt: new Date(issuedAt) } }, { upsert: true });
     await redis(['DEL', key]);
     return json({
       certificate: publicCert(certificate),
@@ -574,7 +571,8 @@ async function submit(user: User, body: unknown) {
 }
 
 async function verify(id: string, request: Request) {
-  if (UPSTASH_URL && UPSTASH_TOKEN) {
+  if (!UPSTASH_URL || !UPSTASH_TOKEN) return json({ error: 'Certificate verification is temporarily unavailable.' }, 503, corsOrigin(request));
+  {
     const forwarded = request.headers.get('x-nf-client-connection-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
     const client = safe(forwarded.trim().slice(0, 128));
     if (!(await rateLimit(`linuxterminal:rate:certificate-verify:${client}`, VERIFY_RATE_LIMIT, VERIFY_RATE_WINDOW_SECONDS))) {

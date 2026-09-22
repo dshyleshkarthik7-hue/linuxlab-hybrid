@@ -4,7 +4,7 @@
 
 `main` is the only production/deployment branch. Feature and audit branches must not be configured as Netlify production deploy targets.
 
-The browser VM uses the same-origin `/api/iso` Netlify Edge Function as its canonical production ISO endpoint. The Cloudflare ISO worker is not part of the browser VM request path.
+The browser VM uses the canonical external Cloudflare ISO worker at `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/`. Netlify is the application host, not the ISO transport.
 
 ## v86 runtime source of truth
 
@@ -14,7 +14,7 @@ The browser VM runtime is owned by:
 - `src/v86-entry.ts` — static runtime loading
 - `src/core/ISOIntegrity.ts` — pinned ISO metadata and verification
 - `src/core/verified-iso-fetch.ts` — same-origin verified ISO delivery
-- `netlify/edge-functions/iso.ts` — same-origin, range-validated ISO relay
+- `cloudflare/iso-worker.ts` — range-validated external ISO transport
 
 The runtime is considered initialized only after the v86 lifecycle readiness checks complete. Guest identity and telemetry remain untrusted observations.
 

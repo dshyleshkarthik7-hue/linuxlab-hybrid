@@ -7,8 +7,11 @@ const origin = baseURL.replace(/\/$/, '');
 const timeoutMs = Number(process.env.PRODUCTION_SMOKE_TIMEOUT_MS || 30000);
 const retryMs = Number(process.env.PRODUCTION_SMOKE_RETRY_MS || 2000);
 const retries = Number(process.env.PRODUCTION_SMOKE_RETRIES || 5);
-const isoOrigin = (process.env.ISO_BASE_URL || origin).replace(/\/$/, '');
-const isoPath = process.env.ISO_BASE_URL ? '/' : '/api/iso';
+const isoOrigin=(process.env.ISO_BASE_URL||'').replace(/\/$/,'');
+if(!isoOrigin) throw new Error('ISO_BASE_URL is required');
+const isoPath='/';
+const expectedDeploySha=process.env.EXPECTED_DEPLOY_SHA||'';
+const deployWaitMs=Number(process.env.PRODUCTION_DEPLOY_WAIT_MS||180000);
 
 async function get(url, options = {}) {
   let lastError;
@@ -25,6 +28,7 @@ async function get(url, options = {}) {
   throw lastError || new Error(`Request failed: ${url}`);
 }
 
+if(expectedDeploySha){const deadline=Date.now()+deployWaitMs;let deployed=null;while(Date.now()<deadline){const response=await get(`${origin}/build-info.json`);if(response.ok){const info=await response.json();if(info.commit===expectedDeploySha){deployed=info;break;}}await new Promise(resolve=>setTimeout(resolve,5000));}assert.equal(deployed?.commit,expectedDeploySha,`production is not serving expected commit ${expectedDeploySha}`);}
 const sitemapResponse = await get(`${origin}/sitemap.xml`);
 assert.equal(sitemapResponse.ok, true, `/sitemap.xml returned ${sitemapResponse.status}`);
 assert.match(sitemapResponse.headers.get('content-type') || '', /xml/i);
