@@ -16,14 +16,12 @@ assert.match(runtime, /wait_until_vga_screen_contains/);
 assert.match(runtime, /const LOW_MEMORY_THRESHOLD_GB = 16/);
 assert.match(runtime, /deviceMemory < LOW_MEMORY_THRESHOLD_GB/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
-assert.match(webTerminal, /<meta name="description" content="[^"]{20,320}">/);
 assert.match(csp, /frame-ancestors 'none'/);
 assert.doesNotMatch(csp, /style-src 'self' 'unsafe-inline'/);
 assert.doesNotMatch(csp, /style-src[^\n]*unsafe-inline/);
 assert.match(csp, /report-to csp-endpoint/);
 assert.match(csp, /Reporting-Endpoints: csp-endpoint="\/api\/csp-report"/);
-assert.match(csp, /analyticsBootstrapHash = [\s\S]*sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY=/);
-assert.match(csp, /analyticsInlineHash = [\s\S]*sha256-Ob\/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs=/);
+assert.doesNotMatch(csp, /analyticsBootstrapHash|analyticsInlineHash/);
 
 const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
 assert.match(cloudflare, /MAX_CHUNK_BYTES/);

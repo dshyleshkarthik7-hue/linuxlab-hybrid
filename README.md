@@ -120,3 +120,7 @@ Learning progress does not collect or retain a learner's birthday or other unnec
 
 ## Release governance
 Production deployment requires the GitHub `production` environment, required review/protection rules, and retained CI security/dependency reports. These repository-administration controls must be enabled in GitHub settings.
+
+
+### Current deployment architecture
+The browser VM uses the explicitly trusted Cloudflare ISO worker at `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/`; there is intentionally no Netlify `/api/iso` Edge Function. The repository's architecture and deployment documentation are authoritative for this split.

@@ -10,7 +10,7 @@ The production build must contain every public HTML entry point and every styles
 
 ## Learning record privacy
 
-The learning ledger is browser-local. It may contain a learner display name, session timestamps, tutorial/challenge completion, points, quiz attempts/best score, and local certificate metadata. It must not persist terminal input/output, guest filesystem contents, VM memory, passwords, tokens, or arbitrary command history.
+The learning ledger is browser-local and does not collect birthdays. It may contain a learner display name, session timestamps, tutorial/challenge completion, points, quiz attempts/best score, and local certificate metadata. It must not persist terminal input/output, guest filesystem contents, VM memory, passwords, tokens, or arbitrary command history.
 
 ## Certificate semantics
 
