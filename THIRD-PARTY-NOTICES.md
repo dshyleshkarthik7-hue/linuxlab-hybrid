@@ -25,3 +25,7 @@ The vendored artifact must retain its upstream copyright and license notices. Th
 ## Firmware
 
 SeaBIOS/VGA BIOS assets are served only through the verified firmware path. The build must fail if required firmware is represented by an unresolved Git LFS pointer rather than actual binary content.
+
+
+## Provenance requirements
+For every vendored runtime or firmware artifact, releases must record the upstream repository, immutable commit/version, build command, applicable license, and SHA-256 in the release artifact manifest. Public source visibility does not alter third-party license terms.
