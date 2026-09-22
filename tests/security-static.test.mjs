@@ -31,8 +31,8 @@ assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
 assert.match(cloudflare, /upstream\.status !== 206/);
 assert.match(cloudflare, /status: 200/);
 assert.doesNotMatch(cloudflare, /status: 206/);
-assert.doesNotMatch(netlify, /path = "\/api\/iso"/);
-assert.doesNotMatch(netlify, /function = "iso"/);
+assert.match(netlify, /path = "\/api\/iso\/linux4"/);
+assert.match(netlify, /function = "linux4-iso"/);
 assert.match(netlify, /path = "\/api\/v86-firmware\/\*"/);
 assert.match(netlify, /function = "v86-firmware"/);
 assert.doesNotMatch(netlify, /sed -i/);
@@ -56,10 +56,20 @@ for (const [name, html, canonical] of [
   assert.match(html, /href="\/commands\//);
 }
 
-assert.match(runtime, /const ISO_BASE_URL = 'https:\/\/linuxterminal-iso\.dshyleshkarthik7\.workers\.dev'/);
-assert.match(runtime, /cdrom: `\$\{ISO_BASE_URL\}\/\?image=virt`/);
-assert.match(runtime, /cdrom: `\$\{ISO_BASE_URL\}\/\?image=developer`/);
+assert.doesNotMatch(runtime, /const ISO_BASE_URL/);
+assert.match(runtime, /cdrom: ALPINE_ARTIFACT\.url/);
+assert.match(runtime, /cdrom: DEVELOPER_ALPINE_ARTIFACT\.url/);
+assert.match(runtime, /cdrom: LINUX4_ARTIFACT\.url/);
+assert.match(runtime, /const LINUX4_PROFILE/);
 assert.match(realLinux, /data-v86-profile="virt"/);
+const manifest = JSON.parse(await readFile('artifacts/manifest.json', 'utf8'));
+const byImage = Object.fromEntries(manifest.artifacts.filter((item) => item.image).map((item) => [item.image, item]));
+assert.match(byImage.virt.url, /^https:\/\/huggingface\.co\/buckets\/shyleshkarthikd\/alpine-iso-bucket\/resolve\/alpine-virt-3\.24\.1-x86\.iso\?download=true$/);
+assert.match(byImage.developer.url, /^https:\/\/huggingface\.co\/buckets\/shyleshkarthikd\/alpine-iso-bucket\/resolve\/alpine\.iso\?download=true$/);
+assert.equal(byImage.linux4.url, 'https://linuxterminal.me/api/iso/linux4');
+assert.ok(byImage.virt.fallbackUrls.includes('https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=virt'));
+assert.ok(byImage.developer.fallbackUrls.includes('https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=developer'));
+assert.ok(byImage.linux4.fallbackUrls.some((url) => url.includes('/alpine-iso-bucket/resolve/linux4.iso')));
 assert.match(realLinux, /data-v86-key="ctrl-o"/);
 assert.match(developer, /data-v86-profile="developer"/);
 assert.ok(realLinux.includes('/v86-layout.css') && developer.includes('/v86-layout.css'));

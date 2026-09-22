@@ -106,7 +106,6 @@ async function fetchIsoResumable(url: string, artifact: PinnedArtifact, signal: 
 
 export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Promise<ArrayBuffer> {
   const url = new URL(rawUrl, window.location.origin);
-  if (url.origin !== window.location.origin && url.origin !== TRUSTED_ISO_ORIGIN) throw new Error('ISO endpoint must be trusted');
   const artifact = artifactForIsoUrl(url.toString());
   const key = artifact.filename;
   const pending = inFlight.get(key);
