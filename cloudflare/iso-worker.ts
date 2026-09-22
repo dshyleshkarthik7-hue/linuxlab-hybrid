@@ -5,8 +5,8 @@ const UPSTREAM_TIMEOUT_MS = 30_000;
 const WORKER_PROTOCOL_VERSION = "2";
 const ALLOWED_ORIGINS = new Set(["https://linuxterminal.me", "https://www.linuxterminal.me"]);
 
-type ManifestArtifact = typeof manifest.artifacts[number] & { image?: string };
-type Image = { url: string; sha256: string; size: number; filename: string };
+type ManifestArtifact = typeof manifest.artifacts[number] & { image?: string; fallbackUrls?: string[] };
+type Image = { url: string; sha256: string; size: number; filename: string; fallbacks: string[] };
 const isoEntries = (manifest.artifacts as ManifestArtifact[]).filter((artifact) => artifact.image);
 const IMAGES = Object.fromEntries(
   isoEntries.map((artifact) => [artifact.image, {
@@ -87,13 +87,14 @@ export default {
     const controller = new AbortController();
     const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     try {
-      const upstreamRequest = new Request(image.url, {
-        method: "GET",
-        headers: { Accept: "application/octet-stream", "User-Agent": "LinuxTerminal-ISO-Worker/1.0", "Accept-Encoding": "identity", Range: range },
-      });
-      let upstream: Response;
-      try { upstream = await fetch(upstreamRequest, { signal: controller.signal }); }
-      catch { return errorResponse("ISO origin temporarily unavailable", 504, headers); }
+      let upstream: Response | null = null;
+      for (const origin of [image.url, ...image.fallbacks]) {
+        try {
+          upstream = await fetch(new Request(origin, { method: "GET", headers: { Accept: "application/octet-stream", "User-Agent": "LinuxTerminal-ISO-Worker/2.0", "Accept-Encoding": "identity", Range: range } }), { signal: controller.signal });
+          if (upstream.status === 206) break;
+        } catch { if (controller.signal.aborted) break; }
+      }
+      if (!upstream) return errorResponse("ISO origin temporarily unavailable", 504, headers);
       if (upstream.status !== 206) return errorResponse(`ISO origin unavailable (${upstream.status})`, 502, headers);
       const contentRange = upstream.headers.get("content-range");
       const contentLength = upstream.headers.get("content-length");

@@ -4,7 +4,7 @@ import '@xterm/xterm/css/xterm.css';
 import { attachGuestTelemetry, type GuestIdentity, type V86TelemetryTarget } from './v86-telemetry.ts';
 import { VM_RESOURCE_POLICIES, VMRuntimeResourceEnforcer, type VMResourcePolicyName } from './engine/VMResourcePolicy.ts';
 import { artifactForIsoUrl, fetchVerifiedIso } from './core/verified-iso-fetch.ts';
-import { SEABIOS_ARTIFACT, VGABIOS_ARTIFACT } from './core/artifacts.ts';
+import { ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT, SEABIOS_ARTIFACT, VGABIOS_ARTIFACT } from './core/artifacts.ts';
 import { waitForV86Loaded } from './v86-ready.ts';
 
 const LOW_MEMORY_THRESHOLD_GB = 16;
@@ -28,14 +28,14 @@ type V86Runtime = V86TelemetryTarget & {
 type RuntimeWindow = Window & { V86Starter?: unknown; V86?: unknown };
 type Profile = { name: string; memoryMiB: number; cdrom: string; policy: VMResourcePolicyName; expectedGuest: 'alpine' };
 
-const ISO_BASE_URL = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
-const VIRT_PROFILE: Profile = { name: 'Alpine Virt 3.24.1', memoryMiB: 256, cdrom: `${ISO_BASE_URL}/?image=virt`, policy: 'virt', expectedGuest: 'alpine' };
-const DEVELOPER_PROFILE: Profile = { name: 'Developer Alpine v1.0.0', memoryMiB: 1024, cdrom: `${ISO_BASE_URL}/?image=developer`, policy: 'developer', expectedGuest: 'alpine' };
+const VIRT_PROFILE: Profile = { name: 'Alpine Virt 3.24.1', memoryMiB: 256, cdrom: ALPINE_ARTIFACT.url, policy: 'virt', expectedGuest: 'alpine' };
+const DEVELOPER_PROFILE: Profile = { name: 'Developer Alpine v1.0.0', memoryMiB: 1024, cdrom: DEVELOPER_ALPINE_ARTIFACT.url, policy: 'developer', expectedGuest: 'alpine' };
+const LINUX4_PROFILE: Profile = { name: 'Linux 4', memoryMiB: 256, cdrom: LINUX4_ARTIFACT.url, policy: 'virt', expectedGuest: 'alpine' };
 const FIRMWARE_BASE = '/api/v86-firmware';
 const READY_MARKER = '__LINUXLAB_READY__';
 const PROBE_MARKER = '__LINUXLAB_INPUT_OK__';
 
-function profileFromPage(): Profile { return document.documentElement.dataset.v86Profile === 'developer' ? DEVELOPER_PROFILE : VIRT_PROFILE; }
+function profileFromPage(): Profile { const profile = document.documentElement.dataset.v86Profile; if (profile === 'developer') return DEVELOPER_PROFILE; if (profile === 'linux4') return LINUX4_PROFILE; return VIRT_PROFILE; }
 
 export class V86LinuxTerminal {
   private term: xtermModule.Terminal;

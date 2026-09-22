@@ -2,7 +2,7 @@ import { strict as assert } from 'node:assert';
 import { readFileSync } from 'node:fs';
 
 const manifest = JSON.parse(readFileSync('artifacts/manifest.json', 'utf8'));
-assert.equal(manifest.schemaVersion, 2);
+assert.equal(manifest.schemaVersion, 3);
 assert.ok(Array.isArray(manifest.artifacts) && manifest.artifacts.length >= 5);
 
 for (const artifact of manifest.artifacts) {
@@ -10,6 +10,7 @@ for (const artifact of manifest.artifacts) {
   assert.ok(Number.isSafeInteger(artifact.size) && artifact.size > 0);
   assert.match(artifact.release, /^[A-Za-z0-9._-]+$/);
   assert.match(artifact.url, /^https:\/\//);
+  if (artifact.fallbackUrls) for (const fallback of artifact.fallbackUrls) assert.match(fallback, /^https:\/\//);
   assert.match(artifact.releaseManifestUrl, /^https:\/\//);
 }
 

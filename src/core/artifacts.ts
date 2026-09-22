@@ -8,9 +8,11 @@ export type PinnedArtifact = {
   sha256: string;
   size: number;
   releaseManifestUrl: string;
+  fallbackUrls?: string[];
+  delivery?: string;
 };
 
-type ManifestArtifact = typeof manifest.artifacts[number] & { image?: string };
+type ManifestArtifact = typeof manifest.artifacts[number] & { image?: string; fallbackUrls?: string[]; delivery?: string };
 
 function artifact(filename: string): PinnedArtifact {
   const value = (manifest.artifacts as ManifestArtifact[]).find((item) => item.filename === filename);
@@ -23,6 +25,8 @@ function artifact(filename: string): PinnedArtifact {
     sha256: value.sha256,
     size: value.size,
     releaseManifestUrl: value.releaseManifestUrl,
+    fallbackUrls: value.fallbackUrls,
+    delivery: value.delivery,
   };
 }
 
