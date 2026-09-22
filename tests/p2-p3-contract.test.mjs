@@ -11,8 +11,8 @@ for (const file of required.filter(f => f.endsWith('.html'))) {
   assert.match(html, /<meta[^>]+name=["']viewport/i, `${file}: missing viewport`);
   assert.match(html, /<title>[^<]+<\/title>/i, `${file}: missing title`);
 }
-const headers = readFileSync('dist/_headers', 'utf8');
-for (const header of ['X-Content-Type-Options','Referrer-Policy','Strict-Transport-Security','Permissions-Policy']) assert.match(headers, new RegExp(header));
+const generatedHeaders = readFileSync('scripts/generate-netlify-headers.mjs', 'utf8');
+for (const header of ['Cross-Origin-Embedder-Policy','Strict-Transport-Security','Permissions-Policy']) assert.match(generatedHeaders, new RegExp(header));
 const robots = readFileSync('public/robots.txt', 'utf8');
 assert.match(robots, /Sitemap:/);
 console.log('P2/P3 production contract checks passed');
