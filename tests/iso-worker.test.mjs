@@ -11,7 +11,7 @@ assert.match(worker, /MAX_CHUNK_BYTES\s*=\s*48\s*\*\s*1024\s*\*\s*1024/);
 assert.match(worker, /const range\s*=\s*`bytes=\$\{chunk\.start\}-\$\{chunk\.end\}`/);
 assert.match(worker, /Range:\s*range/);
 assert.match(worker, /upstream\.status !== 206/);
-assert.match(worker, /requestedEnd >= size/);
+assert.match(worker, /requestedEnd >= size/);\nassert.match(worker, /\\^bytes=\\(\\\\d\\+\\)-\\(\\\\d\\*\\)\\$/);
 assert.match(worker, /chunkStart\/chunkEnd or a single HTTP Range header is required/);
 assert.match(worker, /request\.headers\.get\("Range"\)/);
 assert.match(worker, /return new Response\(request\.method === "HEAD" \? null : upstream\.body, \{\s*status: 200/);
