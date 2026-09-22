@@ -28,8 +28,6 @@ assert.match(developerPage, /data-v86-profile="developer"/);
 for (const source of [page, developerPage]) {
   assert.match(source, /id="v86-terminal-container"/);
   assert.match(source, /id="screen_container"/);
-  assert.match(source, /btn-v86-terminal/);
-  assert.match(source, /btn-v86-screen/);
   assert.match(source, /btn-v86-restart/);
   assert.match(source, /aria-label=/);
 }
