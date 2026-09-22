@@ -7,7 +7,6 @@ const sitemap = await readFile('public/sitemap.xml', 'utf8');
 const csp = await readFile('scripts/generate-netlify-headers.mjs', 'utf8');
 const realLinux = await readFile('index-v86.html', 'utf8');
 const developer = await readFile('developer-alpine/index.html', 'utf8');
-const webTerminal = await readFile('web-terminal.html', 'utf8');
 
 assert.match(runtime, /attachGuestTelemetry\s*\(\s*vm/);
 assert.match(runtime, /markReadyIfIdentityVerified\s*\(/);
