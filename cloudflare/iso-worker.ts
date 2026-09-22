@@ -4,6 +4,7 @@ const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
 const WORKER_PROTOCOL_VERSION = "2";
 const ALLOWED_ORIGINS = new Set(["https://linuxterminal.me", "https://www.linuxterminal.me"]);
+// Local development origins such as 127.0.0.1 and localhost are intentionally not trusted in production.
 
 type ManifestArtifact = typeof manifest.artifacts[number] & { image?: string; fallbackUrls?: string[] };
 type Image = { url: string; sha256: string; size: number; filename: string; fallbacks: string[] };
