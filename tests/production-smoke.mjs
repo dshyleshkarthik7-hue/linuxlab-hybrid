@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { readFile } from 'node:fs/promises';
+import { chromium } from 'playwright';
 
 const baseURL = process.env.PRODUCTION_BASE_URL || process.argv[2];
 if (!baseURL) throw new Error('PRODUCTION_BASE_URL is required for post-deployment verification');
@@ -34,6 +35,15 @@ assert.equal(homeResponse.ok, true, `home page returned ${homeResponse.status}`)
 const homeHtml = await homeResponse.text();
 assert.match(homeHtml, /v86|main-v86|Linux/i, 'production page must expose the browser VM application');
 assert.match(homeResponse.headers.get('content-security-policy') || '', /connect-src[^;]*linuxterminal-iso\.dshyleshkarthik7\.workers\.dev/, 'production CSP must allow the canonical ISO worker');
+const browser = await chromium.launch({ headless: true });
+const page = await browser.newPage();
+try {
+  await page.goto(`${origin}/real-linux/`, { waitUntil: 'domcontentloaded', timeout: Number(process.env.PRODUCTION_VM_PAGE_TIMEOUT_MS || 30000) });
+  const health = page.locator('#v86-health');
+  await health.waitFor({ state: 'attached', timeout: Number(process.env.PRODUCTION_VM_BOOT_TIMEOUT_MS || 120000) });
+  await page.waitForFunction(() => document.querySelector('#v86-health')?.getAttribute('data-state') === 'ready', { timeout: Number(process.env.PRODUCTION_VM_BOOT_TIMEOUT_MS || 120000) });
+  assert.equal(await health.getAttribute('data-state'), 'ready', 'deployed v86 runtime did not reach ready state');
+} finally { await browser.close(); }
 const sitemapResponse = await get(`${origin}/sitemap.xml`);
 assert.equal(sitemapResponse.ok, true, `/sitemap.xml returned ${sitemapResponse.status}`);
 assert.match(sitemapResponse.headers.get('content-type') || '', /xml/i);

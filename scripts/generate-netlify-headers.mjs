@@ -1,10 +1,14 @@
-import { mkdir, writeFile } from 'node:fs/promises';
+import { mkdir, writeFile, readdir, readFile } from 'node:fs/promises';
+import { createHash } from 'node:crypto';
 
 const scriptOrigin = (process.env.CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN || '').trim();
 const connectOrigin = (process.env.CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN || '').trim();
 
-const analyticsBootstrapHash = "'sha256-mTJ4cJaTm2Gw95GeXEpZdvEEY9ybh6FZu1bwcNE7QlY='";
-const analyticsInlineHash = "'sha256-Ob/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs='";
+async function analyticsHashes() {
+  const hashes = new Set();
+  async function walk(dir) { for (const entry of await readdir(dir, { withFileTypes: true })) { const file = `${dir}/${entry.name}`; if (entry.isDirectory()) await walk(file); else if (entry.name.endsWith('.html')) { const html = await readFile(file, 'utf8'); for (const match of html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)) { const body = match[1].trim(); if (body && /analytics|cloudflare|beacon/i.test(body)) hashes.add(`'sha256-${createHash('sha256').update(body).digest('base64')}'`); } } } }
+  await walk('dist'); return [...hashes];
+}
 
 function origin(value, name) {
   if (!value) return '';
@@ -17,7 +21,7 @@ function origin(value, name) {
 }
 const scriptHost = origin(scriptOrigin, 'CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN');
 const connectHost = origin(connectOrigin, 'CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN');
-const scriptSrc = ["'self'", "'wasm-unsafe-eval'", analyticsBootstrapHash, analyticsInlineHash, 'https://netlify-rum.netlify.app', scriptHost].filter(Boolean).join(' ');
+const scriptSrc = ["'self'", "'wasm-unsafe-eval'", ...(await analyticsHashes()), 'https://netlify-rum.netlify.app', scriptHost].filter(Boolean).join(' ');
 const connectSrc = ["'self'", 'https://linuxterminal.me', 'https://www.linuxterminal.me', 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev', connectHost].filter(Boolean).join(' ');
 
 const common = `default-src 'self'; script-src ${scriptSrc}; style-src 'self'; connect-src ${connectSrc}; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report; report-to csp-endpoint`;
