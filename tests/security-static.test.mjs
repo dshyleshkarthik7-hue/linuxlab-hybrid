@@ -56,8 +56,9 @@ for (const [name, html, canonical] of [
   assert.match(html, /href="\/commands\//);
 }
 
-assert.match(runtime, /cdrom: ['"]\/api\/iso\?image=virt['"]/);
-assert.match(runtime, /cdrom: ['"]\/api\/iso\?image=developer['"]/);
+assert.match(runtime, /const ISO_BASE_URL = 'https:\/\/linuxterminal-iso\.dshyleshkarthik7\.workers\.dev'/);
+assert.match(runtime, /cdrom: `\$\{ISO_BASE_URL\}\/\?image=virt`/);
+assert.match(runtime, /cdrom: `\$\{ISO_BASE_URL\}\/\?image=developer`/);
 assert.match(realLinux, /data-v86-profile="virt"/);
 assert.match(realLinux, /data-v86-key="ctrl-o"/);
 assert.match(developer, /data-v86-profile="developer"/);
