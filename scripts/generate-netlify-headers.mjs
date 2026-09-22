@@ -6,7 +6,7 @@ const connectOrigin = (process.env.CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN || '').tri
 
 async function analyticsHashes() {
   const hashes = new Set();
-  async function walk(dir) { for (const entry of await readdir(dir, { withFileTypes: true })) { const file = `${dir}/${entry.name}`; if (entry.isDirectory()) await walk(file); else if (entry.name.endsWith('.html')) { const html = await readFile(file, 'utf8'); for (const match of html.matchAll(/<script(?:\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)) { const body = match[1].trim(); if (body && /analytics|cloudflare|beacon/i.test(body)) hashes.add(`'sha256-${createHash('sha256').update(body).digest('base64')}'`); } } } }
+  async function walk(dir) { for (const entry of await readdir(dir, { withFileTypes: true })) { const file = `${dir}/${entry.name}`; if (entry.isDirectory()) await walk(file); else if (entry.name.endsWith('.html')) { const html = await readFile(file, 'utf8'); for (const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)) { const body = match[1].trim(); if (body && /analytics|cloudflare|beacon/i.test(body)) hashes.add(`'sha256-${createHash('sha256').update(body).digest('base64')}'`); } } } }
   await walk('dist'); return [...hashes];
 }
 
