@@ -23,7 +23,7 @@ function clientKey(context: EdgeContext): string {
 
 async function rateLimited(context: EdgeContext): Promise<boolean> {
   const identity = clientKey(context);
-  if (!identity) return false;
+  if (!identity) return true;
   if (!UPSTASH_URL || !UPSTASH_TOKEN) return true;
   const key = `linuxterminal:csp:${identity.replace(/[^a-zA-Z0-9:._-]/g, '_')}`;
   const script = `
