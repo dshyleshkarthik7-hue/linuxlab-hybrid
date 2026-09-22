@@ -26,6 +26,8 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
   const cached = await readIsoChunkCache(artifact, start, end);
   if (cached) return cached;
   const chunkUrl = new URL(url);
+  chunkUrl.searchParams.set('chunkStart', String(start));
+  chunkUrl.searchParams.set('chunkEnd', String(end));
   const range = `bytes=${start}-${end}`;
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt += 1) {
