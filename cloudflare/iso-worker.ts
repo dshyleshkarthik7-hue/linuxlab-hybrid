@@ -2,6 +2,7 @@ import manifest from '../artifacts/manifest.json' with { type: 'json' };
 
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
+const WORKER_PROTOCOL_VERSION = "2";
 const ALLOWED_ORIGINS = new Set(["https://linuxterminal.me", "https://www.linuxterminal.me"]);
 
 type ManifestArtifact = typeof manifest.artifacts[number] & { image?: string };
@@ -100,6 +101,8 @@ export default {
       if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) return errorResponse("ISO origin returned invalid chunk metadata", 502, headers);
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
       headers.set("X-LinuxLab-SHA256", image.sha256);
+      headers.set("X-LinuxLab-Artifact-Size", String(image.size));
+      headers.set("X-LinuxLab-Worker-Protocol", WORKER_PROTOCOL_VERSION);
       headers.set("X-LinuxLab-Chunk-Start", String(chunk.start));
       headers.set("X-LinuxLab-Chunk-End", String(chunk.end));
       headers.set("X-LinuxLab-Chunk-Total", String(image.size));
