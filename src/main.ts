@@ -23,6 +23,7 @@ class LinuxLabApp {
   private waitingForProgramInput = false;
   private pendingProgramCommand = '';
   private commandHistory: string[] = [];
+  private historyCursor = -1;
   private sessionCommands: string[] = [];
   private escapeBuffer = '';
   private sessionId = crypto.randomUUID();
@@ -75,11 +76,18 @@ class LinuxLabApp {
 
   private handleInput(data: string): void {
     if (this.escapeBuffer || data === '\u001b') { this.escapeBuffer += data; if (/[A-Za-z~]$/.test(this.escapeBuffer) || this.escapeBuffer.length > 8) this.escapeBuffer = ''; return; }
+    if (data === '\u0003') { this.currentInputBuffer=''; this.historyCursor=-1; this.simTerm.write('^C\r\n'+this.engine.getPrompt()); return; }
+    if (data === '\u001b[A') { this.navigateHistory(-1); return; }
+    if (data === '\u001b[B') { this.navigateHistory(1); return; }
+    if (data === '\t') { this.completeInput(); return; }
     if (data === '\r') { this.simTerm.writeln(''); const cmd = this.currentInputBuffer; this.currentInputBuffer = ''; if (cmd.trim().length > 0) void this.executeTerminalCommand(cmd); else this.simTerm.write(this.engine.getPrompt()); return; }
     if (data === '\u007F' || data === '\b') { if (this.currentInputBuffer.length > 0) { this.currentInputBuffer = this.currentInputBuffer.slice(0, -1); this.simTerm.write('\b \b'); } return; }
     if (data >= ' ' || data === '\t') { this.currentInputBuffer += data; this.simTerm.write(data); }
   }
 
+  private replaceInput(value:string):void { this.simTerm.write('\r\x1b[2K'+this.engine.getPrompt()+value); this.currentInputBuffer=value; }
+  private navigateHistory(direction:number):void { if(!this.commandHistory.length)return; this.historyCursor=Math.max(0,Math.min(this.commandHistory.length-1,this.historyCursor+direction)); this.replaceInput(this.commandHistory[this.commandHistory.length-1-this.historyCursor]); }
+  private completeInput():void { const token=(this.currentInputBuffer.match(/(?:^|\s)([^\s]*)$/)?.[1]||''); const commands=['pwd','ls','cd','mkdir','cat','cp','mv','rm','grep','find','echo','clear','help','history','whoami','uname','date','free','export','man','touch']; const hits=commands.filter(c=>c.startsWith(token)); if(hits.length===1)this.replaceInput(this.currentInputBuffer.slice(0,-token.length)+hits[0]+' '); else if(hits.length>1)this.simTerm.write('\r\n'+hits.join('  ')+'\r\n'+this.engine.getPrompt()+this.currentInputBuffer); else this.simTerm.write('\a'); }
   private fitSimulatorTerminal(context: string): void { try { this.simFitAddon.fit(); } catch (error) { console.warn(`[LinuxLab] Terminal fit failed during ${context}:`, error); } }
 
   private async executeTerminalCommand(cmd: string): Promise<void> {
