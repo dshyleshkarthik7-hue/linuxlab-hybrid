@@ -11,5 +11,11 @@ assert.doesNotMatch(source, /JSON\.stringify\(parsed\)\.slice\(0, MAX_REPORT_BYT
 
 console.log('CSP report logging contract checks passed');
 
-assert.match(source, /return true;\s*}\s*}\s*catch/);
+// The limiter must fail closed for every unavailable or malformed dependency state.
+assert.match(source, /if \(!identity\) return true;/);
+assert.match(source, /if \(!UPSTASH_URL \|\| !UPSTASH_TOKEN\) return true;/);
+assert.match(source, /if \(!response\.ok\) return true;/);
+assert.match(source, /if \(typeof data !== 'object' \|\| data === null \|\| !\('result' in data\)\)/);
+assert.match(source, /if \(typeof result !== 'number'\)/);
+assert.match(source, /catch \{\s*return true;\s*\}/);
 assert.match(source, /Origin Not Allowed/);
