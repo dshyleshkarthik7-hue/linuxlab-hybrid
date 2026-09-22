@@ -11,7 +11,7 @@ assert.match(headers,/script-src[^\n]*https:\/\/netlify-rum\.netlify\.app/);
 assert.match(headers,/\/login\/\*[\s\S]*style-src[^\n]*'unsafe-inline'/);
 assert.match(headers,/connect-src[^\n]*https:\/\/linuxterminal-iso\.dshyleshkarthik7\.workers\.dev/);
 assert.match(headers,/Permissions-Policy:\s*camera=\(\)/);
-assert.match(progress,/^import ['"]\/progress\.js['"];?$/m);
+assert.match(readFileSync('progress/index.html','utf8'),/<script type="module" src="\.\/progress\.js"><\/script>/);
 console.log('Browser security regression contract checks passed');
 
 const v86=readFileSync('src/main-v86.ts','utf8'); assert.match(v86,/net_device:\s*\{ type: 'none' \}/); assert.match(v86,/visibilitychange/); assert.match(v86,/destroy\?\./); console.log('VM lifecycle/network regression contract passed');
