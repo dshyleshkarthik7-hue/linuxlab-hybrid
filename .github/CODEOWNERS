@@ -1,7 +1,4 @@
-# Default owner for future multi-maintainer review workflows.
-# GitHub branch protection must separately require CODEOWNERS review.
-* @dshyleshkarthik7-hue
-
+# Independent review is a release requirement. Replace with the actual second maintainer/team before production.
 /src/ @dshyleshkarthik7-hue
 /netlify/ @dshyleshkarthik7-hue
 /iso-builder/ @dshyleshkarthik7-hue

@@ -13,7 +13,10 @@ const EXAM_VERSION = 'linux-foundations-1.0';
 const QUESTION_COUNT = 30;
 const PASS_PERCENT = 80;
 const ATTEMPT_TTL = 3600;
-const VERIFY_RATE_LIMIT = 60;
+const VERIFY_RATE_LIMIT = 30;
+const EXAM_RATE_LIMIT = 20;
+const EXAM_RATE_WINDOW_SECONDS = 3600;
+const REVOKED_CERTIFICATE_IDS = new Set((process.env.REVOKED_CERTIFICATE_IDS || '').split(',').map(v => v.trim()).filter(Boolean));
 const VERIFY_RATE_WINDOW_SECONDS = 60;
 const CERT_TTL = 60 * 60 * 24 * 365 * 5;
 const MAX_BODY_BYTES = 16384;
@@ -445,12 +448,14 @@ const publicCert = (value: Cert) => ({
   version: value.version,
 });
 
-async function start(user: User) {
+async function start(user: User, request: Request) {
   if (!UPSTASH_URL || !UPSTASH_TOKEN || !SIGNING_SECRET) {
     return json({ error: 'The free verified exam is temporarily unavailable because persistence or signing is not configured.' }, 503);
   }
 
-  if (!(await rateLimit(`linuxterminal:rate:exam-start:${safe(String(user.id))}`, 5, 3600))) {
+  const ip = safe((request.headers.get('x-nf-client-connection-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown').trim().slice(0, 128));
+  if (!(await rateLimit(`linuxterminal:rate:exam-start:ip:${ip}`, EXAM_RATE_LIMIT, EXAM_RATE_WINDOW_SECONDS))) return json({ error: 'Too many exam starts from this client. Please try again later.' }, 429);
+  if (!(await rateLimit(`linuxterminal:rate:exam-start:user:${safe(String(user.id))}`, 5, 3600))) {
     return json({ error: 'Too many exam starts. Please try again later.' }, 429);
   }
 
@@ -475,12 +480,14 @@ async function start(user: User) {
   });
 }
 
-async function submit(user: User, body: unknown) {
+async function submit(user: User, body: unknown, request: Request) {
   if (!UPSTASH_URL || !UPSTASH_TOKEN || !SIGNING_SECRET) {
     return json({ error: 'Verified exam is not configured.' }, 503);
   }
 
-  if (!(await rateLimit(`linuxterminal:rate:exam-submit:${safe(String(user.id))}`, 10, 3600))) {
+  const ip = safe((request.headers.get('x-nf-client-connection-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown').trim().slice(0, 128));
+  if (!(await rateLimit(`linuxterminal:rate:exam-submit:ip:${ip}`, EXAM_RATE_LIMIT, EXAM_RATE_WINDOW_SECONDS))) return json({ error: 'Too many exam submissions from this client. Please try again later.' }, 429);
+  if (!(await rateLimit(`linuxterminal:rate:exam-submit:user:${safe(String(user.id))}`, 10, 3600))) {
     return json({ error: 'Too many exam submissions. Please try again later.' }, 429);
   }
   if (!body || typeof body !== 'object') return json({ error: 'Invalid request body.' }, 400);
@@ -585,6 +592,7 @@ async function verify(id: string, request: Request) {
   const collection = await certificatesCollection();
   const certificate = await collection.findOne({ _id: id }) as unknown as Cert | null;
   if (!certificate) return json({ error: 'Certificate not found.' }, 404);
+  if (REVOKED_CERTIFICATE_IDS.has(id)) return json({ error: 'Certificate has been revoked.' }, 410, corsOrigin(request));
   const { signature, keyId, ...unsigned } = certificate;
   const kid = typeof keyId === 'string' && keyId ? keyId : SIGNING_KEY_ID;
   const secret = SIGNING_KEYS.get(kid);
@@ -635,7 +643,7 @@ export default async (request: Request) => {
 
     const action = url.searchParams.get('action');
     if (action !== 'start' && action !== 'submit') return json({ error: 'Unknown action.' }, 400);
-    if (action === 'start') return start(user);
+    if (action === 'start') return start(user, request);
 
     let body: unknown;
     try {
@@ -644,7 +652,7 @@ export default async (request: Request) => {
       const message = error instanceof Error ? error.message : String(error);
       return json({ error: message }, message === 'request body is too large' ? 413 : 400);
     }
-    return submit(user, body);
+    return submit(user, body, request);
   } catch (error) {
     console.error('Certificate service failed', error instanceof Error ? error.message : String(error));
     return json({ error: 'Certificate service unavailable.' }, 503);

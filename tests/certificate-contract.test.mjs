@@ -56,3 +56,7 @@ console.log('Verified production certificate, MongoDB persistence, auth-return, 
 
 assert.match(certificate, /crypto\.randomUUID\(\)\.replaceAll\('\-', ''\)\.toUpperCase\(\)/);
 assert.match(certificate, /cache-control.*no-store/i);
+
+assert.match(certificate, /REVOKED_CERTIFICATE_IDS/);
+assert.match(certificate, /rate:exam-start:ip/);
+assert.match(certificate, /rate:exam-submit:ip/);

@@ -75,3 +75,6 @@ assert.match(developer, /data-v86-profile="developer"/);
 assert.ok(realLinux.includes('/v86-layout.css') && developer.includes('/v86-layout.css'));
 
 console.log('Static emulator SEO/security guardrails passed');
+
+assert.match(await readFile('netlify/edge-functions/tutor.ts','utf8'), /Tutor provider is temporarily unavailable/);
+assert.match(await readFile('cloudflare/iso-worker.ts','utf8'), /ALLOWED_ORIGINS\.has\(origin\)/);

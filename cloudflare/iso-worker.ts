@@ -22,8 +22,7 @@ type ImageName = keyof typeof IMAGES;
 
 function corsHeaders(request: Request): Headers {
   const origin = request.headers.get("Origin");
-  const isLocalDevelopmentOrigin = !!origin && /^(https?:\/\/)(127\.0\.0\.1|localhost):(4173|4174|4176)$/.test(origin);
-  const allowedOrigin = origin && (ALLOWED_ORIGINS.has(origin) || isLocalDevelopmentOrigin) ? origin : "https://linuxterminal.me";
+  const allowedOrigin = origin && ALLOWED_ORIGINS.has(origin) ? origin : "https://linuxterminal.me";
   return new Headers({
     "Access-Control-Allow-Origin": allowedOrigin,
     "Vary": "Origin",

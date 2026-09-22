@@ -1,22 +1,18 @@
-# Production operations and security gates
+# Production operations
 
-## Non-source controls
+The repository enforces what can be enforced in source. Account-level controls remain release gates.
 
-These controls cannot be completed by a source commit and must be configured in the GitHub/Netlify/Cloudflare/MongoDB/Upstash accounts:
+## Mandatory external gates
 
-1. Require pull requests and at least one approving reviewer on `main`; require CODEOWNERS review and the `verify` status check.
-2. Use two independent production maintainers; no person should approve their own production change.
-3. Use separate staging and production projects/accounts and least-privilege deployment tokens.
-4. Configure MongoDB automated backups, point-in-time recovery where available, and perform a restore drill at least quarterly. Record RPO/RTO.
-5. Maintain two active certificate signing keys during rotation; test recovery quarterly; retain old verification keys until all certificates they signed have expired or been explicitly revoked.
-6. Configure Cloudflare worker deployment to the intended account and verify the worker deployment identity after every release.
-7. Enable GitHub secret scanning/push protection and review historical secret-scan results.
-8. Run an independent security assessment before treating the browser VM as a production hostile-code execution environment. Browser v86 is not a host-kernel isolation boundary.
+- Protect `main` with pull requests, required `verify`, CODEOWNERS review, and at least one reviewer other than the author.
+- Add a second production maintainer/team as CODEOWNER before declaring independent approval available. The checked-in CODEOWNERS intentionally names only the current owner until another maintainer is actually assigned; this prevents a fictional reviewer from being represented as real.
+- Use separate staging and production Netlify/Cloudflare projects and credentials.
+- Enable GitHub secret scanning and push protection.
+- Configure MongoDB backups/PITR and perform quarterly restore drills; record RPO/RTO.
+- Rotate certificate signing keys with overlapping verification keys and test recovery quarterly. Use `REVOKED_CERTIFICATE_IDS` for emergency revocation until a durable revocation store is introduced.
+- Perform an independent security assessment before enabling any claim of hostile-code sandboxing.
+- Record successful dependency-outage, database-restore, signing-key, and rollback drills.
 
-## Release gates
+## Security boundary
 
-A release is production-eligible only when CI passes, the production smoke test serves the exact commit SHA, artifact attestations verify, the SBOM is generated, and the staging smoke test has passed using production-equivalent headers and ISO infrastructure.
-
-## Recovery drills
-
-Record successful database restore, signing-key recovery/rotation, Cloudflare rollback, Netlify rollback, and dependency-outage drills. A document alone does not count as a completed drill.
+The browser VM is not a host-kernel isolation boundary. Guest networking remains disabled for the real guest profile. This project must not be marketed or operated as a general-purpose hostile-code execution service.

@@ -229,7 +229,7 @@ export default async (request: Request, context: unknown) => {
     question,
   ].join('\n');
 
-  if (await circuitOpen()) return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin);
+  if (await circuitOpen()) return json({ error: 'Tutor provider is temporarily unavailable.' }, 503, origin, { 'retry-after': String(CIRCUIT_OPEN_SECONDS) });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -257,7 +257,7 @@ export default async (request: Request, context: unknown) => {
   } catch (error) {
     await recordCircuitFailure();
     console.error('Tutor request failed', error instanceof Error ? error.message : String(error));
-    return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin);
+    return json({ error: 'Tutor provider is temporarily unavailable.' }, 503, origin, { 'retry-after': '60' });
   } finally {
     clearTimeout(timeout);
   }
