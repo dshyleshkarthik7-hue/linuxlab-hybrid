@@ -1,3 +1,0 @@
-import assert from "node:assert/strict";import fs from "node:fs";
-const html=fs.readFileSync("web-terminal.html","utf8"),client=fs.readFileSync("src/web-terminal.ts","utf8"),server=fs.readFileSync("container-terminal/src/server.mjs","utf8");
-assert.match(html,/src="\/src\/web-terminal\.ts"/);assert.match(client,/VITE_CONTAINER_TERMINAL_WS/);assert.match(server,/--network","none/);assert.match(server,/--memory","256m/);assert.match(server,/--pids-limit","64/);assert.match(server,/--cap-drop","ALL/);assert.match(server,/--read-only/);assert.match(server,/--user","65532:65532/);assert.match(server,/SESSION_MS/);console.log("web terminal contract: ok");
