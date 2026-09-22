@@ -29,6 +29,11 @@ async function get(url, options = {}) {
 }
 
 if(expectedDeploySha){const deadline=Date.now()+deployWaitMs;let deployed=null;while(Date.now()<deadline){const response=await get(`${origin}/build-info.json`);if(response.ok){const info=await response.json();if(info.commit===expectedDeploySha){deployed=info;break;}}await new Promise(resolve=>setTimeout(resolve,5000));}assert.equal(deployed?.commit,expectedDeploySha,`production is not serving expected commit ${expectedDeploySha}`);}
+const homeResponse = await get(`${origin}/`);
+assert.equal(homeResponse.ok, true, `home page returned ${homeResponse.status}`);
+const homeHtml = await homeResponse.text();
+assert.match(homeHtml, /v86|main-v86|Linux/i, 'production page must expose the browser VM application');
+assert.match(homeResponse.headers.get('content-security-policy') || '', /connect-src[^;]*linuxterminal-iso\.dshyleshkarthik7\.workers\.dev/, 'production CSP must allow the canonical ISO worker');
 const sitemapResponse = await get(`${origin}/sitemap.xml`);
 assert.equal(sitemapResponse.ok, true, `/sitemap.xml returned ${sitemapResponse.status}`);
 assert.match(sitemapResponse.headers.get('content-type') || '', /xml/i);

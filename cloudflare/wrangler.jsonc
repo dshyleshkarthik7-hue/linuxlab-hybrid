@@ -3,6 +3,7 @@
   "name": "linuxterminal-iso",
   "main": "./iso-worker.ts",
   "compatibility_date": "2026-09-18",
+  "observability": { "enabled": true },
   "workers_dev": true,
   "cache": {
     "enabled": true

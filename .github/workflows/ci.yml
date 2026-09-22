@@ -6,9 +6,12 @@ on:
     branches: [main]
   workflow_dispatch:
   schedule:
-    - cron: '17 * * * *'
+    - cron: '17 3 * * *'
 permissions:
   contents: read
+concurrency:
+  group: linuxlab-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   verify:
     runs-on: ubuntu-latest
@@ -59,6 +62,8 @@ jobs:
       - run: node tests/p2-p3-contract.test.mjs
       - run: node tests/artifact-manifest.test.mjs
       - run: node tests/github-actions-pinning.test.mjs
+      - name: Verify Cloudflare worker contract
+        run: npm run test:iso-worker
       - name: Production smoke (main deployment gate)
         if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
         env:

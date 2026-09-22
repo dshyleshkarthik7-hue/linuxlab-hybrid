@@ -108,3 +108,8 @@ The repository uses strict TypeScript, reproducible npm installs, pinned CI acti
 ## License
 
 See `LICENSE` and `NOTICE`.
+
+
+### Container-terminal status
+
+The former Docker-backed `container-terminal` service has been removed from this repository. There is no publicly deployable WebSocket/Docker terminal backend in the current tree; therefore its historical authentication, Origin, quota, identity, image-pinning, Docker-host, and lockfile findings are intentionally resolved by removal rather than by exposing an unsafe service. Do not reintroduce such a backend without authentication, Origin allowlisting, per-user/IP quotas, immutable image and dependency pins, isolated Docker privileges, and host-level sandboxing.

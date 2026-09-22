@@ -31,5 +31,7 @@ assert.match(worker, /ISO origin unavailable/);
 assert.doesNotMatch(worker, /arrayBuffer\(\)/);
 assert.match(config, /"cache"\s*:\s*\{\s*"enabled"\s*:\s*true/);
 assert.match(config, /linuxterminal\.me\/api\/iso\*/);
+assert.match(config, /compatibility_date/);
+assert.match(config, /observability/);
 
 console.log('Cloudflare ISO worker contract passed');
