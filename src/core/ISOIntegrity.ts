@@ -32,7 +32,7 @@ export function sha256StreamHex(chunks: Iterable<Uint8Array>): string {
 export function assertTrustedArtifact(artifact: PinnedArtifact): void {
   if (!SHA256_RE.test(artifact.sha256)) throw new Error(`Artifact ${artifact.filename} has no trusted SHA-256 digest configured`);
   if (!Number.isSafeInteger(artifact.size) || artifact.size <= 0) throw new Error(`Artifact ${artifact.filename} has no trusted exact size configured`);
-  if (!trustedUrl(artifact.url, TRUSTED_RELEASE_PREFIX) && !trustedUrl(artifact.url, TRUSTED_HF_PREFIX) && !trustedUrl(artifact.url, TRUSTED_NETLIFY_PREFIX)) throw new Error(`Artifact ${artifact.filename} is not from a trusted ISO origin`);
+  if (!trustedUrl(artifact.url, TRUSTED_RELEASE_PREFIX) && !trustedUrl(artifact.url, TRUSTED_HF_PREFIX) && !trustedUrl(artifact.url, TRUSTED_NETLIFY_PREFIX)) throw new Error(`Artifact ${artifact.filename} is not from a trusted release host or ISO origin`);
   for (const fallback of artifact.fallbackUrls ?? []) {
     if (!trustedUrl(fallback, TRUSTED_RELEASE_PREFIX) && !trustedUrl(fallback, TRUSTED_HF_PREFIX) && !trustedUrl(fallback, TRUSTED_NETLIFY_PREFIX) && !fallback.startsWith('https://linuxterminal-iso.dshyleshkarthik7.workers.dev/')) throw new Error(`Artifact ${artifact.filename} has an untrusted fallback origin`);
   }
