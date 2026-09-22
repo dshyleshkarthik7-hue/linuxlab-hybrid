@@ -52,10 +52,12 @@ return redis.call('INCR', KEYS[1])
     });
     if (!response.ok) return true;
     const data: unknown = await response.json();
-    const result = typeof data === 'object' && data !== null && 'result' in data
-      ? (data as { result?: unknown }).result
-      : null;
-    return typeof result === 'number' && result < 0;
+    if (typeof data === 'object' && data !== null && 'result' in data) {
+      const result = (data as { result?: unknown }).result;
+      if (typeof result === 'number') return result < 0;
+    }
+    // Unexpected limiter responses fail closed rather than bypassing abuse controls.
+    return true;
   } catch {
     return true;
   }
