@@ -1,6 +1,7 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
+import { spawn } from 'node:child_process';
 const { chromium } = createRequire(import.meta.url)('playwright');
 const read = path => readFile(path, 'utf8');
 const artifacts = await read('src/core/artifacts.ts');
@@ -35,16 +36,34 @@ assert.match(runtime, /keyboard_send_text/);
 assert.match(runtime, /keyboard_set_enabled/);
 assert.match(runtime, /handleResize/);
 
+const base = process.env.UI_UX_BASE_URL || 'http://127.0.0.1:4173';
+let preview;
+if (!process.env.UI_UX_BASE_URL) {
+  preview = spawn(process.execPath, ['node_modules/vite/bin/vite.js', 'preview', '--host', '127.0.0.1', '--port', '4173'], { stdio: 'ignore' });
+  let ready = false;
+  for (let attempt = 0; attempt < 60; attempt += 1) {
+    try {
+      const response = await fetch(base + '/index-v86.html');
+      if (response.ok) { ready = true; break; }
+    } catch {}
+    await new Promise(resolve => setTimeout(resolve, 250));
+  }
+  assert.ok(ready, 'Vite preview server must start for the UI/UX contract test');
+}
+
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
 const p = await context.newPage();
 try {
-  const base = process.env.UI_UX_BASE_URL || 'http://127.0.0.1:4173';
   const response = await p.goto(base + '/index-v86.html', { waitUntil: 'domcontentloaded', timeout: 15000 });
   assert.ok(response?.ok(), 'v86 page must load');
   assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true, 'v86 UI must not horizontally overflow on mobile');
   assert.equal(await p.locator('#v86-controls').count(), 1);
   await p.keyboard.press('Tab');
   assert.ok(await p.locator(':focus').count() > 0, 'keyboard Tab must reach a focusable control');
-} finally { await context.close(); await browser.close(); }
+} finally {
+  await context.close();
+  await browser.close();
+  if (preview) preview.kill('SIGTERM');
+}
 console.log('Three-ISO artifact/profile contracts and keyboard/mobile UI checks passed');
