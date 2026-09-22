@@ -28,8 +28,9 @@ type V86Runtime = V86TelemetryTarget & {
 type RuntimeWindow = Window & { V86Starter?: unknown; V86?: unknown };
 type Profile = { name: string; memoryMiB: number; cdrom: string; policy: VMResourcePolicyName; expectedGuest: 'alpine' };
 
-const VIRT_PROFILE: Profile = { name: 'Alpine Virt 3.24.1', memoryMiB: 256, cdrom: '/api/iso?image=virt', policy: 'virt', expectedGuest: 'alpine' };
-const DEVELOPER_PROFILE: Profile = { name: 'Developer Alpine v1.0.0', memoryMiB: 1024, cdrom: '/api/iso?image=developer', policy: 'developer', expectedGuest: 'alpine' };
+const ISO_BASE_URL = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
+const VIRT_PROFILE: Profile = { name: 'Alpine Virt 3.24.1', memoryMiB: 256, cdrom: `${ISO_BASE_URL}/?image=virt`, policy: 'virt', expectedGuest: 'alpine' };
+const DEVELOPER_PROFILE: Profile = { name: 'Developer Alpine v1.0.0', memoryMiB: 1024, cdrom: `${ISO_BASE_URL}/?image=developer`, policy: 'developer', expectedGuest: 'alpine' };
 const FIRMWARE_BASE = '/api/v86-firmware';
 const READY_MARKER = '__LINUXLAB_READY__';
 const PROBE_MARKER = '__LINUXLAB_INPUT_OK__';

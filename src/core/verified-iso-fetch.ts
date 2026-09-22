@@ -3,16 +3,14 @@ import { Sha256 } from './sha256.ts';
 import { clearIsoArtifactCache, readIsoChunkCache, writeIsoChunkCache } from './iso-cache.ts';
 
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
-const TRUSTED_ISO_ORIGIN = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
+export const TRUSTED_ISO_ORIGIN = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
 const RANGE_FETCH_TIMEOUT_MS = 90_000;
 const RANGE_CHUNK_BYTES = 48 * 1024 * 1024;
 const RANGE_CONCURRENCY = 4;
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin), image = url.searchParams.get('image');
-  if (url.origin !== window.location.origin && url.origin !== TRUSTED_ISO_ORIGIN) throw new Error('Untrusted ISO endpoint');
-  if (url.origin === window.location.origin && url.pathname !== '/api/iso') throw new Error('Untrusted ISO endpoint');
-  if (url.origin === TRUSTED_ISO_ORIGIN && url.pathname !== '/') throw new Error('Untrusted ISO endpoint');
+  if (url.origin !== TRUSTED_ISO_ORIGIN || url.pathname !== '/') throw new Error('Untrusted ISO endpoint');
   if (image === 'virt') return ALPINE_ARTIFACT;
   if (image === 'linux4') return LINUX4_ARTIFACT;
   if (image === 'developer') return DEVELOPER_ALPINE_ARTIFACT;
@@ -94,8 +92,9 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   if (url.origin !== window.location.origin && url.origin !== TRUSTED_ISO_ORIGIN) throw new Error('ISO endpoint must be trusted');
   const key = url.toString(), artifact = artifactForIsoUrl(key);
   const pending = inFlight.get(key);
-  if (pending) return pending;
-  const promise = fetchIsoResumable(key, artifact, signal ?? new AbortController().signal);
+  if (pending) return raceWithCallerSignal(pending, signal);
+  const promise = fetchIsoResumable(key, artifact, new AbortController().signal);
   inFlight.set(key, promise);
-  try { return await promise; } finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
+  try { return await raceWithCallerSignal(promise, signal); } finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
 }
+async function raceWithCallerSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> { if (!signal) return promise; if (signal.aborted) throw signal.reason ?? new DOMException('Aborted','AbortError'); return new Promise<T>((resolve,reject)=>{ const abort=()=>reject(signal.reason ?? new DOMException('Aborted','AbortError')); signal.addEventListener('abort',abort,{once:true}); promise.then(v=>{signal.removeEventListener('abort',abort);resolve(v);},err=>{signal.removeEventListener('abort',abort);reject(err);}); }); }
