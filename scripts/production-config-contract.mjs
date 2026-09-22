@@ -1,0 +1,10 @@
+import { readFile } from 'node:fs/promises';
+const pkg=JSON.parse(await readFile('package.json','utf8'));
+const lock=JSON.parse(await readFile('package-lock.json','utf8'));
+if(pkg.dependencies?.mongodb!=='6.20.0') throw new Error('mongodb must be exact-pinned');
+if(lock.packages?.['']?.dependencies?.mongodb!=='6.20.0') throw new Error('lockfile mongodb pin mismatch');
+const vite=await readFile('vite.config.ts','utf8');
+for(const required of ["target: 'es2022'","cssMinify: true","chunkSizeWarningLimit: 500"]) if(!vite.includes(required)) throw new Error('missing Vite production budget: '+required);
+const ts=JSON.parse(await readFile('tsconfig.json','utf8')); if(ts.compilerOptions.skipLibCheck!==false) throw new Error('skipLibCheck must remain disabled');
+const manifest=JSON.parse(await readFile('artifacts/manifest.json','utf8')); if(manifest.provenance?.attestationRequired!==true) throw new Error('artifact attestation requirement missing');
+console.log('production configuration contract passed');

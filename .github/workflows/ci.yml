@@ -9,6 +9,8 @@ on:
     - cron: '17 3 * * *'
 permissions:
   contents: read
+  id-token: write
+  attestations: write
 concurrency:
   group: linuxlab-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
@@ -62,6 +64,17 @@ jobs:
           test -f node_modules/playwright/cli.js
           node node_modules/playwright/cli.js install --with-deps chromium firefox webkit
       - run: npm run test:ci
+      - name: Package production build
+        run: tar -czf linuxlab-dist-${GITHUB_SHA}.tar.gz dist
+      - name: Generate signed build provenance
+        uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
+        with:
+          subject-path: linuxlab-dist-${GITHUB_SHA}.tar.gz
+      - name: Upload SBOM
+        uses: actions/upload-artifact@v4
+        with:
+          name: sbom-${{ github.sha }}
+          path: sbom.cdx.json
       - run: npm run test:smoke
       - name: Real guest isolation gate
         env:

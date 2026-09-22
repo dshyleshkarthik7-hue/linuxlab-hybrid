@@ -70,5 +70,11 @@
       "url": "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v86-firmware-1/vgabios.bin",
       "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v86-firmware-1"
     }
-  ]
+  ],
+  "provenance": {
+    "schema": "slsa-v1",
+    "attestationRequired": true,
+    "attestationWorkflow": ".github/workflows/ci.yml",
+    "verification": "gh attestation verify"
+  }
 }

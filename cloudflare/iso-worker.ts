@@ -14,6 +14,7 @@ const IMAGES = Object.fromEntries(
     sha256: artifact.sha256,
     size: artifact.size,
     filename: artifact.filename,
+    fallbacks: artifact.fallbackUrls ?? [],
   }]),
 ) as Record<'developer' | 'virt' | 'linux4', Image>;
 

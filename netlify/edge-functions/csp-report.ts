@@ -24,7 +24,7 @@ function clientKey(context: EdgeContext): string {
 async function rateLimited(context: EdgeContext): Promise<boolean> {
   const identity = clientKey(context);
   if (!identity) return false;
-  if (!UPSTASH_URL || !UPSTASH_TOKEN) return false;
+  if (!UPSTASH_URL || !UPSTASH_TOKEN) return true;
   const key = `linuxterminal:csp:${identity.replace(/[^a-zA-Z0-9:._-]/g, '_')}`;
   const script = `
 local limit = tonumber(ARGV[1])
@@ -104,6 +104,8 @@ export default async (request: Request, context: EdgeContext): Promise<Response>
       },
     });
   }
+  const contentType = request.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase();
+  if (request.method === 'POST' && contentType !== 'application/csp-report' && contentType !== 'application/reports+json' && contentType !== 'application/json') return new Response('Unsupported Media Type', { status: 415, headers });
   if (request.method !== 'POST') {
     return new Response('Method Not Allowed', {
       status: 405,
