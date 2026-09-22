@@ -18,7 +18,7 @@ assert.match(runtime, /deviceMemory < LOW_MEMORY_THRESHOLD_GB/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(csp, /frame-ancestors 'none'/);
 assert.match(csp, /const login = `[^`]*style-src 'self' 'unsafe-inline'/);
-assert.match(csp, /const common = `[^`]*style-src 'self'/);\nassert.doesNotMatch(csp.match(/const common = `([^`]*)`/)?.[1] || '', /unsafe-inline/);
+assert.match(csp, /const common = `[^`]*style-src 'self'/);\nconst commonCsp = csp.match(/const common = `([^`]*)`/)?.[1] || '';\nassert.doesNotMatch(commonCsp, /unsafe-inline/);
 assert.match(csp, /report-to csp-endpoint/);
 assert.match(csp, /Reporting-Endpoints: csp-endpoint="\/api\/csp-report"/);
 assert.doesNotMatch(csp, /analyticsBootstrapHash|analyticsInlineHash/);
