@@ -28,7 +28,7 @@ function corsHeaders(request: Request): Headers {
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
     "Access-Control-Allow-Headers": "Range, If-Range, If-None-Match, If-Modified-Since",
-    "Access-Control-Expose-Headers": "Accept-Ranges, Content-Length, Content-Range, Content-Type, ETag, X-LinuxLab-SHA256, X-LinuxLab-Chunk-Start, X-LinuxLab-Chunk-End, X-LinuxLab-Chunk-Total",
+    "Access-Control-Expose-Headers": "Accept-Ranges, Content-Length, Content-Range, Content-Type, ETag, X-LinuxLab-SHA256, X-LinuxLab-Chunk-Start, X-LinuxLab-Chunk-End, X-LinuxLab-Chunk-Total, X-LinuxLab-Artifact-Size, X-LinuxLab-Worker-Protocol",
   });
 }
 
@@ -47,7 +47,7 @@ function getChunk(url: URL, size: number, rangeHeader?: string | null) {
     const match = /^bytes=(\d+)-(\d+)$/.exec(rangeHeader || "");
     if (!match) throw new Error("chunkStart/chunkEnd or a single HTTP Range header is required");
     startText = match[1];
-    endText = match[2];
+    endText = match[2] === "" ? String(size - 1) : match[2];
   }
   if (!/^\d+$/.test(startText) || !/^\d+$/.test(endText)) throw new Error("Invalid chunk boundary");
   const start = Number(startText);
