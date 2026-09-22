@@ -62,7 +62,7 @@ assert.match(vmPolicy, /developer: \{ memoryMiB: 1024/);
 const cloudflareWorker = await read('cloudflare/iso-worker.ts');
 assert.match(cloudflareWorker, /linuxterminal\.me/);
 assert.match(cloudflareWorker, /MAX_CHUNK_BYTES/);
-assert.match(headers, /Cross-Origin-Embedder-Policy/);
+assert.match(cspGenerator, /Cross-Origin-Embedder-Policy/);
 assert.match(cspGenerator, /const scriptSrc = \[\"'self'\", \"'wasm-unsafe-eval'\"/);
 assert.match(cspGenerator, /Content-Security-Policy:/);
 
