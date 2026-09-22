@@ -45,7 +45,7 @@ assert.doesNotMatch(simulator, /application\/ld\+json/i, 'simulator must not con
 
 const headers = await read('netlify.toml');
 const cspGenerator = await read('scripts/generate-netlify-headers.mjs');
-assert.match(headers, /Strict-Transport-Security/);
+assert.match(cspGenerator, /Strict-Transport-Security/);
 assert.doesNotMatch(headers, /path = "\/api\/iso"/);
 assert.match(headers, /path = "\/api\/v86-firmware\/\*/);
 assert.match(headers, /from = "\/vgabios\.bin"/);
