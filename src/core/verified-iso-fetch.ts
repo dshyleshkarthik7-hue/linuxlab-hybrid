@@ -36,7 +36,7 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
       const chunkTotal = response.headers.get('x-linuxlab-chunk-total');
       const isChunkResponse = chunkStart === String(start) && chunkEnd === String(end) && chunkTotal === String(artifact.size);
       if (response.status === 206) {
-        const contentRange = response.headers.get('content-range')?.match(/^bytes (\\d+)-(\\d+)\\/(\\d+)$/);
+        const contentRange = response.headers.get('content-range')?.match(/^bytes (\d+)-(\d+)\/(\d+)$/);
         if (!contentRange) throw new Error('ISO range integrity metadata mismatch');
         const responseStart = Number(contentRange[1]), responseEnd = Number(contentRange[2]), responseTotal = Number(contentRange[3]);
         if (!Number.isSafeInteger(responseStart) || !Number.isSafeInteger(responseEnd) || !Number.isSafeInteger(responseTotal) || responseStart !== start || responseEnd < start || responseEnd > end || responseTotal !== artifact.size) throw new Error('ISO range integrity metadata mismatch');
