@@ -16,3 +16,12 @@ Security-sensitive areas include browser VM isolation, CSP, firmware and ISO int
 - Firmware and ISO artifacts must be verified before use.
 - CSP must not be weakened merely to make a page load.
 - Secrets must remain server-side and must never be committed to the repository.
+
+
+## Browser VM boundary
+
+The browser VM is an educational execution environment, not a host-kernel security boundary and not a general-purpose hostile-code execution sandbox. The real guest profile keeps guest networking disabled. Do not enable arbitrary guest networking without an independently reviewed isolation design.
+
+## Data handling
+
+Tutor requests are authenticated and rate-limited. Learner context is treated as untrusted prompt data. Production failures are returned as explicit 5xx responses rather than silently converted into successful fallback responses. Do not log learner prompts or authentication material.

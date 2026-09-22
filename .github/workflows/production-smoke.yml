@@ -1,0 +1,26 @@
+name: Production smoke monitor
+on:
+  schedule:
+    - cron: '23 * * * *'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci --ignore-scripts
+      - run: npx playwright install --with-deps chromium
+      - name: Production smoke
+        env:
+          PRODUCTION_BASE_URL: https://linuxterminal.me
+          ISO_BASE_URL: https://linuxterminal-iso.dshyleshkarthik7.workers.dev
+          PRODUCTION_SMOKE_TIMEOUT_MS: 30000
+          PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
+        run: npm run test:production

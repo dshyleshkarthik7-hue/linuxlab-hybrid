@@ -539,7 +539,7 @@ async function submit(user: User, body: unknown) {
 
     const issuedAt = new Date().toISOString();
     const name = typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim() ? user.user_metadata.full_name.trim().slice(0, 120) : 'LinuxTerminal learner';
-    const id = `LT-LNX-${new Date().getUTCFullYear()}-${crypto.randomUUID().replaceAll('-', '').slice(0, 10).toUpperCase()}`;
+    const id = `LT-LNX-${new Date().getUTCFullYear()}-${crypto.randomUUID().replaceAll('-', '').toUpperCase()}`;
     const unsigned: Omit<Cert, 'signature'> = {
       id,
       userId: String(user.id),
@@ -594,7 +594,7 @@ async function verify(id: string, request: Request) {
   if (!valid) {
     return json({ error: 'Certificate signature verification failed.' }, 500);
   }
-  return json({ certificate: publicCert(certificate) });
+  return json({ certificate: publicCert(certificate) }, 200, corsOrigin(request), { 'cache-control': 'no-store' });
 }
 
 async function readJsonBody(request: Request): Promise<unknown> {

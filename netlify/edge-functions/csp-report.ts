@@ -50,14 +50,14 @@ return redis.call('INCR', KEYS[1])
         String(RATE_WINDOW_SECONDS),
       ]),
     });
-    if (!response.ok) return false;
+    if (!response.ok) return true;
     const data: unknown = await response.json();
     const result = typeof data === 'object' && data !== null && 'result' in data
       ? (data as { result?: unknown }).result
       : null;
     return typeof result === 'number' && result < 0;
   } catch {
-    return false;
+    return true;
   }
 }
 
@@ -104,6 +104,8 @@ export default async (request: Request, context: EdgeContext): Promise<Response>
       },
     });
   }
+  const origin = request.headers.get('origin');
+  if (origin && origin !== 'https://linuxterminal.me' && origin !== 'https://www.linuxterminal.me') return new Response('Origin Not Allowed', { status: 403, headers });
   const contentType = request.headers.get('content-type')?.split(';', 1)[0].trim().toLowerCase();
   if (request.method === 'POST' && contentType !== 'application/csp-report' && contentType !== 'application/reports+json' && contentType !== 'application/json') return new Response('Unsupported Media Type', { status: 415, headers });
   if (request.method !== 'POST') {

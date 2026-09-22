@@ -10,3 +10,6 @@ assert.match(source, /JSON\.stringify\(sanitizeReport\(parsed as CspReport\)\)/)
 assert.doesNotMatch(source, /JSON\.stringify\(parsed\)\.slice\(0, MAX_REPORT_BYTES\)/);
 
 console.log('CSP report logging contract checks passed');
+
+assert.match(source, /return true;\s*}\s*}\s*catch/);
+assert.match(source, /Origin Not Allowed/);

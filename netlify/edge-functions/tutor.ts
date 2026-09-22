@@ -1,4 +1,5 @@
-const MODEL = Netlify.env.get('HF_MODEL') || 'Qwen/Qwen3-8B:nscale';
+const MODEL = Netlify.env.get('HF_MODEL') || '';
+const MODEL_PIN_RE = /^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+@[0-9a-f]{7,64}$/i;
 const MAX_OUTPUT_TOKENS = 300;
 const MAX_CONTEXT_CHARS = 5000;
 const MAX_QUESTION_CHARS = 1200;
@@ -210,8 +211,9 @@ export default async (request: Request, context: unknown) => {
   const contextText = readText(body.context, MAX_CONTEXT_CHARS);
   if (!question) return json({ error: 'Question is required.' }, 400, origin);
 
+  if (!MODEL_PIN_RE.test(MODEL)) return json({ error: 'Tutor model is not pinned to an immutable revision.' }, 503, origin, { 'retry-after': '60' });
   const token = Netlify.env.get('HF_TOKEN');
-  if (!token) return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin);
+  if (!token) return json({ error: 'Tutor provider is temporarily unavailable.' }, 503, origin, { 'retry-after': '60' });
 
   const prompt = [
     'You are LinuxTerminal Tutor, a concise Linux teacher.',
@@ -246,10 +248,10 @@ export default async (request: Request, context: unknown) => {
         stream: false,
       }),
     });
-    if (!response.ok) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin); }
+    if (!response.ok) { await recordCircuitFailure(); return json({ error: 'Tutor provider is temporarily unavailable.' }, 503, origin, { 'retry-after': '60' }); }
     const data: unknown = await response.json();
     const answer = (data as HuggingFaceResponse)?.choices?.[0]?.message?.content;
-    if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'LinuxTerminal-guided-tutor', limited: true }, 200, origin); }
+    if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ error: 'Tutor provider returned an invalid response.' }, 503, origin, { 'retry-after': '60' }); }
     await recordCircuitSuccess();
     return json({ answer: answer.trim().slice(0, 5000), model: MODEL, provider: 'nscale' }, 200, origin);
   } catch (error) {

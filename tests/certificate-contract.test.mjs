@@ -53,3 +53,6 @@ assert.match(progressJs, /recordQuiz\(\s*Number\(\s*(?:m|match)\[1\]\s*\),\s*Num
 assert.match(verify, /PUBLIC VERIFICATION/);
 assert.match(verifyJs, /\/api\/certificate/);
 console.log('Verified production certificate, MongoDB persistence, auth-return, progress, and security contracts passed');
+
+assert.match(certificate, /crypto\.randomUUID\(\)\.replaceAll\('\-', ''\)\.toUpperCase\(\)/);
+assert.match(certificate, /cache-control.*no-store/i);
