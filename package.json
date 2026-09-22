@@ -51,8 +51,6 @@
     "test:ui-ux": "node tests/ui-ux-profile-contract.mjs"
   },
   "dependencies": {
-    "@xterm/addon-fit": "0.10.0",
-    "@xterm/xterm": "5.5.0",
     "monaco-editor": "0.52.2",
     "mongodb": "^6.20.0"
   },
