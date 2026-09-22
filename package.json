@@ -34,7 +34,7 @@
     "test:real-guest": "node tests/real-guest-alpine.mjs",
     "test:coverage": "node tests/coverage-threshold.mjs",
     "test:security": "npm audit --audit-level=high",
-    "test:ci": "npm run test && npm run test:coverage && npm run test:security && npm run build && npm run test:dist-routes && npm run test:artifact-manifest && npm run sbom && npm run test:actions-pinning && npm run test:browser-security && npm run test:profile-boot && npm run test:ui-ux",
+    "test:ci": "npm run test:config && npm run test && npm run test:coverage && npm run test:security && npm run build && npm run test:dist-routes && npm run test:artifact-manifest && npm run sbom && npm run test:actions-pinning && npm run test:browser-security && npm run test:profile-boot && npm run test:ui-ux",
     "lint": "tsc --noEmit && node tests/security-static.test.mjs",
     "build:iso": "node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
