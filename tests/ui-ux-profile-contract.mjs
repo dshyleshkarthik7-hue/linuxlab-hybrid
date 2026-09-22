@@ -4,6 +4,7 @@ import { createRequire } from 'node:module';
 const { chromium } = createRequire(import.meta.url)('playwright');
 const read = path => readFile(path, 'utf8');
 const artifacts = await read('src/core/artifacts.ts');
+const manifest = JSON.parse(await read('artifacts/manifest.json'));
 const policy = await read('src/engine/VMResourcePolicy.ts');
 const runtime = await read('src/main-v86.ts');
 const page = await read('index-v86.html');
@@ -15,8 +16,9 @@ const profiles = [
   ['linux4','LINUX4_ARTIFACT',7731200,256],
 ];
 for (const [id, artifact, size, memory] of profiles) {
-  assert.match(artifacts, new RegExp('export const ' + artifact + ': PinnedArtifact'));
-  assert.match(artifacts, new RegExp('size: ' + size));
+  assert.match(artifacts, new RegExp('export const ' + artifact + ' = artifact\\('));
+  const manifestEntry = manifest.artifacts.find(item => item.filename === (artifact === 'DEVELOPER_ALPINE_ARTIFACT' ? 'alpine.iso' : artifact === 'ALPINE_ARTIFACT' ? 'alpine-virt-3.24.1-x86.iso' : 'linux4.iso'));
+  assert.equal(manifestEntry?.size, size);
   assert.match(policy, new RegExp(id + ': \\{ memoryMiB: ' + memory));
 }
 assert.match(runtime, /Developer Alpine v1\.0\.0/);
