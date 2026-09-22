@@ -23,7 +23,7 @@ assert.equal(await exists('public/linux-cd-command/index.html'), false, 'stale o
 assert.equal(await exists('public/linux-ls-command/index.html'), false, 'stale orphan SEO page must not ship');
 assert.equal(await exists('public/robots.txt'), true, 'public/robots.txt is required by the production contract');
 assert.equal(await exists('public/sitemap.xml'), true, 'public/sitemap.xml is required by the production contract');
-assert.equal(await exists('public/_headers'), true, 'public/_headers is required by the production contract');
+assert.equal(await exists('scripts/generate-netlify-headers.mjs'), true, 'security headers must have a canonical build-time generator');
 assert.equal(await exists('netlify/edge-functions/iso.ts'), false, 'legacy Netlify ISO relay must not remain in the source tree');
 
 const publicEntries = await readdir(join(root, 'public'), { withFileTypes: true });

@@ -618,7 +618,7 @@ export default async (request: Request) => {
     return new Response('', {
       status: 204,
       headers: {
-        'access-control-allow-origin': ORIGIN,
+        'access-control-allow-origin': corsOrigin(request),
         'access-control-allow-methods': 'GET,POST,OPTIONS',
         'access-control-allow-headers': 'content-type,authorization',
       },
