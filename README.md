@@ -57,8 +57,10 @@ Required Netlify environment variables:
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
 - `CERTIFICATE_SIGNING_SECRET`
+- `MONGODB_URI`
+- `MONGODB_DB` (optional; defaults to the configured certificate database)
 
-Never commit the signing secret.
+Never commit secrets.
 
 ## AI Tutor
 
