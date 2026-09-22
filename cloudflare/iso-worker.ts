@@ -44,7 +44,7 @@ function getChunk(url: URL, size: number, rangeHeader?: string | null) {
   let startText = rawStart;
   let endText = rawEnd;
   if (startText === null || endText === null) {
-    const match = /^bytes=(\d+)-(\d+)$/.exec(rangeHeader || "");
+    const match = /^bytes=(\d+)-(\d*)$/.exec(rangeHeader || "");
     if (!match) throw new Error("chunkStart/chunkEnd or a single HTTP Range header is required");
     startText = match[1];
     endText = match[2] === "" ? String(size - 1) : match[2];
