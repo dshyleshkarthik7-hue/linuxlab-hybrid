@@ -1,7 +1,7 @@
 import { readFileSync, existsSync } from 'node:fs';
 import { strict as assert } from 'node:assert';
 
-const required = ['index.html','about/index.html','contact/index.html','curriculum/index.html','beginner/index.html','intermediate/index.html','expert/index.html','public/sitemap.xml','public/robots.txt','public/_headers'];
+const required = ['index.html','about/index.html','contact/index.html','curriculum/index.html','beginner/index.html','intermediate/index.html','expert/index.html','public/sitemap.xml','public/robots.txt'];
 for (const file of required) assert.ok(existsSync(file), `missing ${file}`);
 assert.equal(existsSync('sitemap.xml'), false, 'duplicate root sitemap must not be present');
 assert.equal(existsSync('robots.txt'), false, 'duplicate root robots file must not be present');
@@ -11,7 +11,7 @@ for (const file of required.filter(f => f.endsWith('.html'))) {
   assert.match(html, /<meta[^>]+name=["']viewport/i, `${file}: missing viewport`);
   assert.match(html, /<title>[^<]+<\/title>/i, `${file}: missing title`);
 }
-const headers = readFileSync('public/_headers', 'utf8');
+const headers = readFileSync('dist/_headers', 'utf8');
 for (const header of ['X-Content-Type-Options','Referrer-Policy','Strict-Transport-Security','Permissions-Policy']) assert.match(headers, new RegExp(header));
 const robots = readFileSync('public/robots.txt', 'utf8');
 assert.match(robots, /Sitemap:/);

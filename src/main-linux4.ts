@@ -11,7 +11,7 @@ type Linux4RuntimeConfig = { profile: 'linux4'; memoryBytes: number; vgaMemoryBy
 declare global { interface Window { V86?: new (options: Record<string, unknown>) => V86; __linux4VmConfig?: Linux4RuntimeConfig; } }
 
 const POLICY = VM_RESOURCE_POLICIES.linux4;
-const ISO_URL = '/api/iso?image=linux4';
+const ISO_URL = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=linux4';
 
 async function boot(): Promise<void> {
   const container = document.getElementById('linux4-terminal');
