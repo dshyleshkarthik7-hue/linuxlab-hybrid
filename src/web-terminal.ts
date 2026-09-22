@@ -1,8 +1,0 @@
-import {Terminal} from "@xterm/xterm"; import {FitAddon} from "@xterm/addon-fit"; import "@xterm/xterm/css/xterm.css";
-const status=document.getElementById("status"),container=document.getElementById("terminal"),endpoint=(import.meta.env.VITE_CONTAINER_TERMINAL_WS||"").trim();
-if(!status||!container)throw new Error("Web terminal markup is incomplete");
-const term=new Terminal({cursorBlink:true,convertEol:true,fontSize:14,rows:24,cols:100,theme:{background:"#020617",foreground:"#e2e8f0"}});
-const fit=new FitAddon();term.loadAddon(fit);term.open(container);fit.fit();
-if(!endpoint){status.textContent="The free container terminal is not enabled on this deployment yet.";term.write("\r\n\x1b[33mBackend is not configured; the existing Real Linux browser VM remains available.\x1b[0m\r\n");}
-else{status.textContent="Connecting to a temporary container…";const socket=new WebSocket(endpoint);socket.addEventListener("open",()=>{status.textContent="Connected. The session expires automatically.";term.write("\r\n\x1b[1;36mLinuxTerminal temporary container\x1b[0m\r\nNetwork access is disabled.\r\n\r\n")});socket.addEventListener("message",e=>term.write(typeof e.data==="string"?e.data:""));socket.addEventListener("close",()=>{status.textContent="Session closed.";term.write("\r\n\x1b[33m[session closed]\x1b[0m\r\n")});socket.addEventListener("error",()=>{status.textContent="Unable to connect to the container backend.";term.write("\r\n\x1b[31m[backend unavailable]\x1b[0m\r\n")});term.onData(data=>{if(socket.readyState===WebSocket.OPEN)socket.send(data)})}
-window.addEventListener("resize",()=>fit.fit());
