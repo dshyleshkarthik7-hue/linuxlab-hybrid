@@ -2,7 +2,7 @@ import manifest from '../artifacts/manifest.json' with { type: 'json' };
 
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
-const WORKER_PROTOCOL_VERSION = "3";
+const WORKER_PROTOCOL_VERSION = "4";
 
 type ManifestArtifact = typeof manifest.artifacts[number] & { image?: string; fallbackUrls?: string[] };
 type Image = { url: string; sha256: string; size: number; filename: string; fallbacks: string[] };
@@ -125,7 +125,7 @@ export default {
       const contentLength = upstream.headers.get("content-length");
       const expectedContentRange = `bytes ${chunk.start}-${chunk.end}/${image.size}`;
       if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) return errorResponse("ISO origin returned invalid chunk metadata", 502, headers);
-      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      // CORS is origin-specific. Public edge caching by URL can otherwise replay a\n      // response generated for linuxterminal.me to a Netlify Preview origin.\n      // Keep the worker response private and let the browser manage its own range cache.\n      headers.set("Cache-Control", "private, no-store");
       headers.set("X-LinuxLab-SHA256", image.sha256);
       headers.set("X-LinuxLab-Artifact-Size", String(image.size));
       headers.set("X-LinuxLab-Worker-Protocol", WORKER_PROTOCOL_VERSION);
@@ -136,7 +136,7 @@ export default {
       headers.set("Content-Length", String(expectedLength));
       headers.set("Accept-Ranges", "bytes");
       headers.set("ETag", `"${image.sha256}-${chunk.start}-${chunk.end}"`);
-      return new Response(request.method === "HEAD" ? null : upstream.body, { status: 200, headers });
+      return new Response(request.method === "HEAD" ? null : upstream.body, { status: 206, headers });
     } finally { clearTimeout(timeout); }
   },
 };
