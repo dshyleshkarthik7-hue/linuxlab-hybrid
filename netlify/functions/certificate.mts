@@ -595,7 +595,8 @@ async function submit(user: User, body: unknown, request: Request) {
     };
 
     const collection = await certificatesCollection();
-    await collection.updateOne({ _id: id }, { $setOnInsert: { ...certificate, _id: id, userEmail: null, createdAt: new Date(issuedAt), attemptId: value.attemptId, audit: { issuedAt, source: 'assessment' } } }, { upsert: true });
+    const expiresAt = new Date(Date.now() + CERT_TTL * 1000);
+    await collection.updateOne({ _id: id }, { $setOnInsert: { ...certificate, _id: id, userEmail: null, createdAt: new Date(issuedAt), expiresAt, attemptId: value.attemptId, audit: { issuedAt, source: 'assessment' } } }, { upsert: true });
     const stored = await collection.findOne({ _id: id }) as unknown as Cert | null;
     const response = { certificate: publicCert(stored || certificate), verificationPath: `/verify/?id=${encodeURIComponent(id)}` };
     await saveSubmissionResult(key, String(user.id), response);

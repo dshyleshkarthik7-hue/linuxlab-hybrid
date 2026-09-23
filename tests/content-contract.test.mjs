@@ -32,7 +32,7 @@ for (const entry of publicEntries.filter(e => e.isDirectory())) {
 }
 
 const progress = await read('progress/index.html');
-const progressScript = await read('public/progress.js');
+const progressScript = await read('publicprogress.js');
 assert.match(progress, /<script src="\/progress\.js"(?: defer)?><\/script>/, 'progress page must load the shared local progress ledger');
 assert.match(progressScript, /window\.LinuxProgress/, 'shared progress ledger must expose the LinuxProgress API');
 const simulator = await read('simulator.html');
