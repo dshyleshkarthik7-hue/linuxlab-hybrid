@@ -52,7 +52,7 @@ async function run() {
     const browser = await engine.launch({ headless: true, timeout: 15000 });
     try {
       for (const device of [devices['iPhone 13'], devices['Pixel 7']]) {
-        const page = await browser.newPage({ ...device });
+        // Playwright's Firefox driver does not support the Chromium/WebKit-only\n        // isMobile context option. Keep the device viewport/UA settings so the\n        // responsive layout is still exercised, but omit the unsupported flag.\n        const deviceOptions = { ...device };\n        if (engineName === 'firefox') delete deviceOptions.isMobile;\n        const page = await browser.newPage(deviceOptions);
         page.setDefaultTimeout(8000);
         page.setDefaultNavigationTimeout(15000);
         try {
