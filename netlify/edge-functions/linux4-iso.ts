@@ -1,7 +1,7 @@
 import type { Config } from "@netlify/edge-functions";
 import { LINUX4_ARTIFACT } from "../../src/core/artifacts.ts";
 
-const UPSTREAMS = [LINUX4_ARTIFACT.url, ...(LINUX4_ARTIFACT.fallbackUrls ?? [])];
+const UPSTREAMS = (LINUX4_ARTIFACT.fallbackUrls ?? []).filter((url) => !url.startsWith('https://linuxterminal.me/api/iso/'));
 const TIMEOUT_MS = 30_000;
 
 export default async function handler(request: Request): Promise<Response> {

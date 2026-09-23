@@ -26,3 +26,6 @@ assert.doesNotMatch(vite, /testIsoSources\s*=\s*\{[^}]*developer/);
 assert.doesNotMatch(source, /sha256:\s*['"][a-f0-9]{64}['"]/);
 
 console.log('Artifact provenance manifest contract passed');
+
+assert.equal(manifest.artifacts.find(item => item.filename === 'linux4.iso')?.image, 'linux4');
+assert.match(readFileSync('index-v86.html', 'utf8'), /data-v86-profile="linux4"/);

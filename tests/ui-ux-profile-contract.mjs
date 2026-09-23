@@ -24,7 +24,9 @@ for (const [id, artifact, size, memory] of profiles) {
 }
 assert.match(runtime, /Developer Alpine v1\.0\.0/);
 assert.match(runtime, /Alpine Virt 3\.24\.1/);
-assert.match(page, /data-v86-profile="virt"/);
+assert.match(runtime, /expectedGuest: 'alpine' \| 'buildroot'/);
+assert.match(page, /data-v86-profile="linux4"/);
+assert.doesNotMatch(runtime, /16 GB-class device/);
 assert.match(developerPage, /data-v86-profile="developer"/);
 for (const source of [page, developerPage]) {
   assert.match(source, /id="v86-terminal-container"/);

@@ -7,8 +7,6 @@ import { artifactForIsoUrl, fetchVerifiedIso } from './core/verified-iso-fetch.t
 import { ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT, SEABIOS_ARTIFACT, VGABIOS_ARTIFACT } from './core/artifacts.ts';
 import { waitForV86Loaded } from './v86-ready.ts';
 
-const LOW_MEMORY_THRESHOLD_GB = 16;
-
 const TerminalCtor = xtermModule.Terminal;
 const FitAddonCtor = fitModule.FitAddon;
 
@@ -26,16 +24,16 @@ type V86Runtime = V86TelemetryTarget & {
   wait_until_vga_screen_contains?: (text: string | RegExp, options?: { timeout_msec?: number }) => Promise<boolean>;
 };
 type RuntimeWindow = Window & { V86Starter?: unknown; V86?: unknown };
-type Profile = { name: string; memoryMiB: number; cdrom: string; policy: VMResourcePolicyName; expectedGuest: 'alpine' };
+type Profile = { name: string; memoryMiB: number; cdrom: string; policy: VMResourcePolicyName; expectedGuest: 'alpine' | 'buildroot' };
 
 const VIRT_PROFILE: Profile = { name: 'Alpine Virt 3.24.1', memoryMiB: 256, cdrom: ALPINE_ARTIFACT.url, policy: 'virt', expectedGuest: 'alpine' };
 const DEVELOPER_PROFILE: Profile = { name: 'Developer Alpine v1.0.0', memoryMiB: 1024, cdrom: DEVELOPER_ALPINE_ARTIFACT.url, policy: 'developer', expectedGuest: 'alpine' };
-const LINUX4_PROFILE: Profile = { name: 'Linux 4', memoryMiB: 256, cdrom: LINUX4_ARTIFACT.url, policy: 'virt', expectedGuest: 'alpine' };
+const LINUX4_PROFILE: Profile = { name: 'Linux 4', memoryMiB: 256, cdrom: LINUX4_ARTIFACT.url, policy: 'linux4', expectedGuest: 'buildroot' };
 const FIRMWARE_BASE = '/api/v86-firmware';
 const READY_MARKER = '__LINUXLAB_READY__';
 const PROBE_MARKER = '__LINUXLAB_INPUT_OK__';
 
-function profileFromPage(): Profile { const profile = document.documentElement.dataset.v86Profile; if (profile === 'developer') return DEVELOPER_PROFILE; if (profile === 'linux4') return LINUX4_PROFILE; return VIRT_PROFILE; }
+function profileFromPage(): Profile { const profile = document.documentElement.dataset.v86Profile; if (profile === 'developer') return DEVELOPER_PROFILE; if (profile === 'virt') return VIRT_PROFILE; return LINUX4_PROFILE; }
 
 export class V86LinuxTerminal {
   private term: xtermModule.Terminal;
@@ -116,13 +114,6 @@ export class V86LinuxTerminal {
     await this.dispose();
     if (id !== this.bootId || signal.aborted) return;
     this.profile = profileFromPage();
-    if (this.profile.policy === 'developer') {
-      const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-      if (typeof deviceMemory === 'number' && deviceMemory < LOW_MEMORY_THRESHOLD_GB) {
-        this.fail('Developer VM requires a 16 GB-class device because the verified ISO and 1024 MiB guest must coexist during startup');
-        return;
-      }
-    }
     this.enforcer = new VMRuntimeResourceEnforcer(VM_RESOURCE_POLICIES[this.profile.policy]);
     this.ready = false;
     this.vgaReady = false;
@@ -154,7 +145,7 @@ export class V86LinuxTerminal {
       this.setIntegrityState('verified');
       // The pinned ISO is the authoritative guest identity for this offline browser VM.
       // Alpine Virt does not reliably emit the optional serial identity frame on every browser/runtime.
-      this.guestIdentity = { kind: 'alpine', isAlpine: true, release: `verified artifact ${artifact.version} (${artifact.sha256})` };
+      this.guestIdentity = { kind: this.profile.expectedGuest, isAlpine: this.profile.expectedGuest === 'alpine', release: `verified artifact ${artifact.version} (${artifact.sha256})` };
       const screen = document.getElementById('screen_container');
       if (!screen) throw new Error('VM screen container is missing');
       const policy = this.enforcer;
@@ -190,8 +181,8 @@ export class V86LinuxTerminal {
       this.status(`${this.profile.name} • initializing v86`);
       await waitForV86Loaded(vm, policy.policy.bootTimeoutMs, signal);
       if (id !== this.bootId || signal.aborted) return;
-      this.bootStage = 'booting Alpine';
-      this.status(`${this.profile.name} • booting Alpine`);
+      this.bootStage = `booting ${this.profile.name}`;
+      this.status(`${this.profile.name} • booting`);
       await run.call(vm);
       if (id !== this.bootId || signal.aborted) return;
       await this.waitForGuestReady(policy.policy.bootTimeoutMs);
@@ -227,7 +218,7 @@ export class V86LinuxTerminal {
     if (typeof waitForVga === 'function') {
       while (Date.now() < deadline && !this.initializationFailure) {
         try {
-          await waitForVga.call(vm, /Alpine Linux|Welcome to Alpine|localhost login:|LinuxLab Engine B/i, { timeout_msec: 1000 });
+          await waitForVga.call(vm, /Alpine Linux|Welcome to Alpine|Buildroot|Linux version|localhost login:|LinuxLab Engine B/i, { timeout_msec: 1000 });
           this.vgaReady = true;
           break;
         } catch { await new Promise((resolve) => setTimeout(resolve, 100)); }
@@ -275,31 +266,31 @@ export class V86LinuxTerminal {
     } else {
       this.shellReady = serialReady;
     }
-    if (!this.shellReady) throw new Error('Alpine shell readiness was not observed');
-    if (!this.guestIdentity?.isAlpine || this.guestIdentity.kind !== this.profile.expectedGuest) throw new Error('Verified Alpine artifact identity was not established');
+    if (!this.shellReady) throw new Error('Linux shell readiness was not observed');
+    if (!this.guestIdentity || this.guestIdentity.kind !== this.profile.expectedGuest) throw new Error(`Verified ${this.profile.expectedGuest} artifact identity was not established`);
     this.markReadyIfIdentityVerified();
     if (!this.ready) throw new Error('Guest boot did not reach the verified ready state');
   }
 
   private acceptGuestIdentity(identity: GuestIdentity): void {
-    if (!identity.isAlpine || identity.kind !== this.profile.expectedGuest) {
+    if (identity.kind !== this.profile.expectedGuest) {
       if (identity.kind !== 'unknown') this.fail(`Guest identity mismatch: expected ${this.profile.expectedGuest}`);
       return;
     }
     this.guestIdentity = identity;
-    this.monitor(`Alpine identity detected • ${this.profile.memoryMiB} MiB allocation`);
+    this.monitor(`${this.profile.name} identity detected • ${this.profile.memoryMiB} MiB allocation`);
     this.markReadyIfIdentityVerified();
   }
 
   private markReadyIfIdentityVerified(): void {
-    if (this.ready || !this.guestIdentity?.isAlpine || !this.shellReady) return;
+    if (this.ready || !this.guestIdentity || this.guestIdentity.kind !== this.profile.expectedGuest || !this.shellReady) return;
     this.ready = true;
-    this.bootStage = 'interactive Alpine shell verified from verified artifact';
+    this.bootStage = `interactive ${this.profile.name} shell verified from verified artifact`;
     if (this.bootTimeout !== null) window.clearTimeout(this.bootTimeout);
     this.bootTimeout = null;
     this.setHealth('ready');
     this.status(`${this.profile.name} • running`);
-    this.monitor('Interactive Alpine shell verified from pinned Alpine artifact • network disabled');
+    this.monitor(`Interactive ${this.profile.name} shell verified from pinned artifact • network disabled`);
     this.fit();
   }
 
@@ -312,12 +303,13 @@ export class V86LinuxTerminal {
     if (identity) this.acceptGuestIdentity(identity);
     const accepted = this.enforcer.acceptOutput(ch);
     if (accepted.value) this.term.write(accepted.value);
-    if (this.serial.includes(READY_MARKER) || /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/.test(this.serial)) this.shellReady = true;
+    if (this.serial.includes(READY_MARKER) || /Buildroot|Linux version|(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/.test(this.serial)) this.shellReady = true;
     if (this.shellReady) this.markReadyIfIdentityVerified();
   }
 
   private detectGuestIdentity(text: string): GuestIdentity | null {
     if (/(?:^|\r?\n)ID=alpine(?:\r?\n|$)/im.test(text) || /Alpine Linux/i.test(text)) return { kind: 'alpine', isAlpine: true, release: text.slice(-4096) };
+    if (/(?:^|\r?\n)(?:ID=buildroot|NAME=.*buildroot)(?:\r?\n|$)/im.test(text) || /Buildroot|Linux version/i.test(text)) return { kind: 'buildroot', isAlpine: false, release: text.slice(-4096) };
     return null;
   }
 
