@@ -1,31 +1,39 @@
-import type { Config } from "@netlify/edge-functions";
-import { LINUX4_ARTIFACT } from "../../src/core/artifacts.ts";
+const UPSTREAM = 'https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/linux4.iso?download=true';
 
-const UPSTREAMS = (LINUX4_ARTIFACT.fallbackUrls ?? []).filter((url) => !url.startsWith('https://linuxterminal.me/api/iso/'));
-const TIMEOUT_MS = 30_000;
-
-export default async function handler(request: Request): Promise<Response> {
-  if (request.method !== "GET" && request.method !== "HEAD") return new Response("Method Not Allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
-  const range = request.headers.get("Range");
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), TIMEOUT_MS);
+function corsOrigin(origin) {
+  if (!origin) return null;
   try {
-    for (const origin of UPSTREAMS) {
-      try {
-        const headers = new Headers({ Accept: "application/octet-stream" });
-        if (range) headers.set("Range", range);
-        const upstream = await fetch(origin, { method: "GET", redirect: "follow", cache: "no-store", headers, signal: controller.signal });
-        if (upstream.status !== 200 && upstream.status !== 206) continue;
-        const responseHeaders = new Headers(upstream.headers);
-        responseHeaders.set("Cache-Control", "public, max-age=31536000, immutable");
-        responseHeaders.set("Accept-Ranges", "bytes");
-        responseHeaders.set("X-LinuxLab-SHA256", LINUX4_ARTIFACT.sha256);
-        responseHeaders.set("X-LinuxLab-Artifact-Size", String(LINUX4_ARTIFACT.size));
-        responseHeaders.set("X-LinuxLab-Source", origin);
-        return new Response(request.method === "HEAD" ? null : upstream.body, { status: upstream.status, headers: responseHeaders });
-      } catch { if (controller.signal.aborted) break; }
-    }
-    return new Response("Linux4 ISO temporarily unavailable", { status: 502 });
-  } finally { clearTimeout(timer); }
+    const u = new URL(origin);
+    if (u.origin === 'https://linuxterminal.me' || u.origin === 'https://www.linuxterminal.me' || u.hostname.endsWith('.netlify.app')) return u.origin;
+  } catch {}
+  return null;
 }
-export const config: Config = { path: "/api/iso/linux4", cache: "manual" };
+
+export default async function handler(request) {
+  const url = new URL(request.url);
+  const origin = corsOrigin(request.headers.get('Origin'));
+  const headers = new Headers({
+    'Access-Control-Allow-Methods': 'GET,HEAD,OPTIONS',
+    'Access-Control-Allow-Headers': 'Range,Content-Type',
+    'Access-Control-Expose-Headers': 'Accept-Ranges,Content-Length,Content-Range,X-LinuxLab-Chunk-Start,X-LinuxLab-Chunk-End,X-LinuxLab-Chunk-Total',
+    'Vary': 'Origin',
+    'Accept-Ranges': 'bytes',
+    'Content-Type': 'application/octet-stream'
+  });
+  if (origin) headers.set('Access-Control-Allow-Origin', origin);
+  if (request.method === 'OPTIONS') return new Response(null, {status:204,headers});
+  if (!['GET','HEAD'].includes(request.method)) return new Response('Method Not Allowed',{status:405,headers});
+
+  const start=url.searchParams.get('chunkStart');
+  const end=url.searchParams.get('chunkEnd');
+  const range=request.headers.get('Range') || (start !== null && end !== null ? `bytes=${start}-${end}` : null);
+  const upstream=await fetch(UPSTREAM,{headers:range?{Range:range}:{}});
+  const total=upstream.headers.get('Content-Range')?.match(/\/([0-9]+)$/)?.[1] || '7731200';
+  if(upstream.status===416){headers.set('Content-Range',`bytes */${total}`);return new Response(null,{status:416,headers});}
+  if(!upstream.ok && upstream.status!==206)return new Response('ISO upstream unavailable',{status:502,headers});
+  for(const name of ['Content-Range','Content-Length']) if(upstream.headers.get(name)) headers.set(name,upstream.headers.get(name));
+  if(start!==null)headers.set('X-LinuxLab-Chunk-Start',start);
+  if(end!==null)headers.set('X-LinuxLab-Chunk-End',end);
+  headers.set('X-LinuxLab-Chunk-Total',total);
+  return new Response(request.method==='HEAD'?null:upstream.body,{status:upstream.status,headers});
+}
