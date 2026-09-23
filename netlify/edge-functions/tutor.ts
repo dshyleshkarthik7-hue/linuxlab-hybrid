@@ -4,6 +4,8 @@ const MAX_OUTPUT_TOKENS = 300;
 const MAX_CONTEXT_CHARS = 5000;
 const MAX_QUESTION_CHARS = 1200;
 const MAX_BODY_BYTES = 16384;
+const MAX_OUTPUT_CHARS = 5000;
+const CONTROL_CHARS = /[\u0000-\u0008\u000B\u000C\u000E-\u001F\u007F]/g;
 const WINDOW_MS = 60000;
 const WINDOW_SECONDS = 60;
 const LIMIT = 12;
@@ -253,7 +255,9 @@ export default async (request: Request, context: unknown) => {
     const answer = (data as HuggingFaceResponse)?.choices?.[0]?.message?.content;
     if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ error: 'Tutor provider returned an invalid response.' }, 503, origin, { 'retry-after': '60' }); }
     await recordCircuitSuccess();
-    return json({ answer: answer.trim().slice(0, 5000), model: MODEL, provider: 'nscale' }, 200, origin);
+    const safeAnswer = answer.replace(CONTROL_CHARS, '').trim().slice(0, MAX_OUTPUT_CHARS);
+    if (!safeAnswer) return json({ error: 'Tutor provider returned an empty response.' }, 503, origin);
+    return json({ answer: safeAnswer, model: MODEL, provider: 'nscale', outputFormat: 'plain-text' }, 200, origin);
   } catch (error) {
     await recordCircuitFailure();
     console.error('Tutor request failed', error instanceof Error ? error.message : String(error));

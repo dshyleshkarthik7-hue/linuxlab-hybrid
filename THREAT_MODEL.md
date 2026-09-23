@@ -38,3 +38,11 @@ Large ISO files are fetched in validated byte ranges. The client incrementally c
 ## Operational controls
 
 Production releases should require protected `main`, passing CI, reviewed changes, secret configuration outside Git, deployment smoke tests, and a documented rollback path. Repository branch protection is a GitHub setting and cannot be represented by source code alone.
+
+
+## Production trust boundaries
+Browser VM resource policies are advisory UX/resource-abuse controls, not cgroups/seccomp or host-kernel isolation. Browser-side artifact verification proves the pinned artifact digest, not client trust or authorization.
+
+The Cloudflare ISO relay is transport only. Release tests must cover malformed Content-Range, truncated responses, upstream 404/5xx, concurrent range requests, cache-key separation, fallback origins, and complete-image digest verification.
+
+Certificate verification proves an authentic signed record, not human identity, invigilation, unique authorship, collaboration-free completion, or accreditation. Signing keys are versioned; retain old keys through the documented verification-retention window and revoke compromised/withdrawn certificate IDs. Redis attempts expire and submission is locked; MongoDB is the durable certificate store. Production operations must maintain backup/restore and provider-outage procedures.

@@ -25,3 +25,9 @@ The browser VM is an educational execution environment, not a host-kernel securi
 ## Data handling
 
 Tutor requests are authenticated and rate-limited. Learner context is treated as untrusted prompt data. Production failures are returned as explicit 5xx responses rather than silently converted into successful fallback responses. Do not log learner prompts or authentication material.
+
+
+## Credential and client trust
+Certificate verification establishes that a server-signed educational record exists; it does not establish identity, unique authorship, invigilation, absence of collaboration, institutional recognition, or professional accreditation.
+
+Browser ISO verification is an artifact-integrity control, not trusted-client verification. VM resource controls are stability/abuse controls, not host-kernel isolation. External Identity, Redis, MongoDB, and Tutor-provider services are production trust boundaries and must fail closed where they affect authentication or credential issuance.

@@ -126,3 +126,9 @@ Production deployment requires the GitHub `production` environment, required rev
 
 ### Current deployment architecture
 The browser VM uses the explicitly trusted Cloudflare ISO worker at `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/`; there is intentionally no Netlify `/api/iso` Edge Function. The repository's architecture and deployment documentation are authoritative for this split.
+
+
+## Security and credential trust
+The browser VM is an educational execution environment, not a hostile-code sandbox or host-kernel security boundary. Browser-side ISO SHA-256 verification protects artifact integrity in transit; it cannot make a modified client trusted.
+
+A verified certificate proves that LinuxTerminal has an authentic signed assessment record. It does not prove presenter identity, unique authorship, invigilation, absence of collaboration, employment/university recognition, or professional accreditation.

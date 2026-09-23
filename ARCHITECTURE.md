@@ -65,3 +65,11 @@ Only supported workspace files are persisted:
 - `Main.java`
 
 Unexpected filenames are rejected before IndexedDB writes or reads.
+
+
+## Security boundaries
+The browser VM is not a hostile-code sandbox. Resource limits are advisory. Browser-side SHA-256 verification protects artifact integrity but cannot establish trust in a modified browser.
+
+The Cloudflare ISO worker is a transport dependency, not the artifact trust root. The pinned artifact manifest and final SHA-256 digest are authoritative.
+
+The certificate service is a credential-issuing subsystem: Redis holds short-lived attempts/rate limits, MongoDB stores signed records, and signing keys are versioned. A verified record is cryptographically authentic but does not prove human identity, invigilation, unique authorship, or accreditation.

@@ -49,6 +49,8 @@ type Attempt = {
   startedAt: string;
 };
 
+type SubmissionResult = { userId: string; response: Record<string, unknown> };
+
 type Cert = {
   id: string;
   userId: string;
@@ -480,6 +482,16 @@ async function start(user: User, request: Request) {
   });
 }
 
+async function stableCertificateId(attemptId: string): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(attemptId));
+  const hex = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('').toUpperCase();
+  return `LT-LNX-${new Date().getUTCFullYear()}-${hex.slice(0, 32)}`;
+}
+
+async function saveSubmissionResult(key: string, userId: string, response: Record<string, unknown>) {
+  await redis(['SET', `${key}:result`, JSON.stringify({ userId, response } satisfies SubmissionResult), 'EX', ATTEMPT_TTL]);
+}
+
 async function submit(user: User, body: unknown, request: Request) {
   if (!UPSTASH_URL || !UPSTASH_TOKEN || !SIGNING_SECRET) {
     return json({ error: 'Verified exam is not configured.' }, 503);
@@ -504,6 +516,11 @@ async function submit(user: User, body: unknown, request: Request) {
   }
 
   try {
+    const existingResult = await redis(['GET', `${key}:result`]);
+    if (typeof existingResult === 'string') {
+      const saved = JSON.parse(existingResult) as SubmissionResult;
+      if (saved.userId === String(user.id) && saved.response && typeof saved.response === 'object') return json(saved.response);
+    }
     const raw = await redis(['GET', key]);
     if (typeof raw !== 'string') return json({ error: 'Exam attempt expired or was not found.' }, 404);
 
@@ -533,20 +550,22 @@ async function submit(user: User, body: unknown, request: Request) {
 
     const percentage = Math.round(score / QUESTION_COUNT * 10000) / 100;
     if (percentage < PASS_PERCENT) {
-      await redis(['DEL', key]);
-      return json({
+      const response = {
         passed: false,
         score,
         total: QUESTION_COUNT,
         percentage,
         version: EXAM_VERSION,
         message: 'Not passed. Review the tutorials and retake the free assessment.',
-      });
+      };
+      await saveSubmissionResult(key, String(user.id), response);
+      await redis(['DEL', key]);
+      return json(response);
     }
 
     const issuedAt = new Date().toISOString();
     const name = typeof user.user_metadata?.full_name === 'string' && user.user_metadata.full_name.trim() ? user.user_metadata.full_name.trim().slice(0, 120) : 'LinuxTerminal learner';
-    const id = `LT-LNX-${new Date().getUTCFullYear()}-${crypto.randomUUID().replaceAll('-', '').toUpperCase()}`;
+    const id = await stableCertificateId(value.attemptId);
     const unsigned: Omit<Cert, 'signature'> = {
       id,
       userId: String(user.id),
@@ -566,12 +585,12 @@ async function submit(user: User, body: unknown, request: Request) {
     };
 
     const collection = await certificatesCollection();
-    await collection.updateOne({ _id: id }, { $set: { ...certificate, _id: id, userEmail: null, createdAt: new Date(issuedAt) } }, { upsert: true });
+    await collection.updateOne({ _id: id }, { $setOnInsert: { ...certificate, _id: id, userEmail: null, createdAt: new Date(issuedAt), attemptId: value.attemptId, audit: { issuedAt, source: 'assessment' } } }, { upsert: true });
+    const stored = await collection.findOne({ _id: id }) as unknown as Cert | null;
+    const response = { certificate: publicCert(stored || certificate), verificationPath: `/verify/?id=${encodeURIComponent(id)}` };
+    await saveSubmissionResult(key, String(user.id), response);
     await redis(['DEL', key]);
-    return json({
-      certificate: publicCert(certificate),
-      verificationPath: `/verify/?id=${encodeURIComponent(id)}`,
-    });
+    return json(response);
   } finally {
     await redis(['DEL', lock]).catch(() => {});
   }
