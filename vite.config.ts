@@ -51,7 +51,7 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     target: 'es2022',
-    cssMinify: true,
+    cssMinify: 'esbuild',
     chunkSizeWarningLimit: 500,
     modulePreload: { resolveDependencies(filename, deps) { if (filename.includes('simulator')) return deps.filter(dep => !/(^|\/)monaco(?:-[^/]+)?\.js(?:\?.*)?$/.test(dep)); return deps; } },
     rollupOptions: {
