@@ -62,7 +62,7 @@ assert.match(runtime, /cdrom: ALPINE_ARTIFACT\.url/);
 assert.match(runtime, /cdrom: DEVELOPER_ALPINE_ARTIFACT\.url/);
 assert.match(runtime, /cdrom: LINUX4_ARTIFACT\.url/);
 assert.match(runtime, /const LINUX4_PROFILE/);
-assert.match(realLinux, /data-v86-profile="virt"/);
+assert.match(realLinux, /data-v86-profile="linux4"/);
 const manifest = JSON.parse(await readFile('artifacts/manifest.json', 'utf8'));
 const byImage = Object.fromEntries(manifest.artifacts.filter((item) => item.image).map((item) => [item.image, item]));
 assert.match(byImage.virt.url, /^https:\/\/huggingface\.co\/buckets\/shyleshkarthikd\/alpine-iso-bucket\/resolve\/alpine-virt-3\.24\.1-x86\.iso\?download=true$/);
