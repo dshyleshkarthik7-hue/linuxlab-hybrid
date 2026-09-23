@@ -82,6 +82,8 @@ jobs:
           REAL_GUEST_BROWSERS: chromium,firefox,webkit
         run: npm run test:real-guest
       - run: npm run test:mobile
+      - name: Accessibility gate
+        run: npm run test:accessibility
       - run: node tests/p2-p3-contract.test.mjs
       - run: node tests/artifact-manifest.test.mjs
       - run: node tests/github-actions-pinning.test.mjs

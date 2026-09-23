@@ -23,3 +23,16 @@ After deployment, manually verify every primary route, stylesheet, JavaScript mo
 ## Failure policy
 
 Missing production secrets, unavailable distributed rate limiting, failed artifact integrity checks, failed certificate signing configuration, failed build, failed browser route checks, or failed security tests are release blockers. Do not silently downgrade a security control to an unbounded or process-local implementation in production.
+
+
+## Browser and accessibility gates
+
+The release browser gate covers Chromium, Firefox, and WebKit for the real guest and mobile viewport checks. Accessibility checks run against the built site and cover document language, page title, form labels, keyboard focus visibility, heading structure, landmark presence, image alternative text, interactive controls, reduced-motion behavior, reflow at mobile and wide viewports, and touch-target sizing. Terminal limitations are documented separately because emulator/canvas/terminal widgets cannot be assessed like ordinary HTML controls.
+
+## Production HTTP security contract
+
+The production smoke test is authoritative for deployed headers. It fails when required security headers are absent or weakened. Source configuration alone is not considered evidence.
+
+## Local learning-data disclosure
+
+Progress data and the optional learner display name are browser-local. UI copy must explain that storage is not synchronized across browsers/devices and may disappear when site data is cleared, private browsing is used, or browser storage is unavailable. The local store must not contain terminal input/output, VM memory, guest filesystem contents, passwords, or tokens.
