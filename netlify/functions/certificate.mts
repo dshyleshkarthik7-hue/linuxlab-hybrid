@@ -6,7 +6,12 @@ let mongoPromise: Promise<MongoClient> | null = null;
 async function certificatesCollection() {
   if (!MONGODB_URI) throw new Error('MONGODB_URI is not configured');
   if (!mongoPromise) mongoPromise = new MongoClient(MONGODB_URI, { maxPoolSize: 5, serverSelectionTimeoutMS: 8000, serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true } }).connect().catch(error => { mongoPromise = null; throw error; });
-  return (await mongoPromise).db(MONGODB_DB).collection('certificates');
+  const collection = (await mongoPromise).db(MONGODB_DB).collection('certificates');
+  if (!CERT_INDEX_READY.has(collection)) {
+    await collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: 'certificates_expiresAt_ttl' });
+    CERT_INDEX_READY.add(collection);
+  }
+  return collection;
 }
 
 const EXAM_VERSION = 'linux-foundations-1.0';
@@ -19,14 +24,15 @@ const EXAM_RATE_WINDOW_SECONDS = 3600;
 const REVOKED_CERTIFICATE_IDS = new Set((process.env.REVOKED_CERTIFICATE_IDS || '').split(',').map(v => v.trim()).filter(Boolean));
 const VERIFY_RATE_WINDOW_SECONDS = 60;
 const CERT_TTL = 60 * 60 * 24 * 365 * 5;
+const CERT_INDEX_READY = new WeakSet<object>();
 const MAX_BODY_BYTES = 16384;
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const SIGNING_SECRET = process.env.CERTIFICATE_SIGNING_SECRET;
 const SIGNING_KEY_ID = process.env.CERTIFICATE_SIGNING_KEY_ID || 'current';
 const SIGNING_KEYS = (() => { const map = new Map<string, string>(); if (SIGNING_SECRET) map.set(SIGNING_KEY_ID, SIGNING_SECRET); for (const item of (process.env.CERTIFICATE_SIGNING_KEYS || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
-const ALLOWED_ORIGINS = new Set((process.env.TUTOR_ALLOWED_ORIGINS || 'https://linuxterminal.me').split(',').map(value => value.trim()).filter(Boolean));
-const corsOrigin = (request: Request) => { const origin = request.headers.get('origin'); return origin && ALLOWED_ORIGINS.has(origin) ? origin : [...ALLOWED_ORIGINS][0] || 'https://linuxterminal.me'; };
+const ALLOWED_ORIGINS = new Set((process.env.CERTIFICATE_ALLOWED_ORIGINS || 'https://linuxterminal.me').split(',').map(value => value.trim()).filter(Boolean));
+const corsOrigin = (request: Request) => { const origin = request.headers.get('origin'); return origin && ALLOWED_ORIGINS.has(origin) ? origin : undefined; };
 
 type User = {
   id?: unknown;
@@ -345,17 +351,19 @@ function shuffle<T>(values: readonly T[]): T[] {
   return result;
 }
 
-const json = (value: Record<string, unknown>, status = 200, requestOrigin = 'https://linuxterminal.me') => new Response(JSON.stringify(value), {
-  status,
-  headers: {
+const json = (value: Record<string, unknown>, status = 200, requestOrigin?: string, extra?: Record<string, string>) => {
+  const headers = new Headers({
     'content-type': 'application/json; charset=utf-8',
     'cache-control': 'no-store',
     'x-content-type-options': 'nosniff',
-    'access-control-allow-origin': requestOrigin,
     'access-control-allow-methods': 'GET,POST,OPTIONS',
     'access-control-allow-headers': 'content-type,authorization',
-  },
-});
+    'vary': 'Origin',
+  });
+  if (requestOrigin) headers.set('access-control-allow-origin', requestOrigin);
+  for (const [key, value] of Object.entries(extra || {})) headers.set(key, value);
+  return new Response(JSON.stringify(value), { status, headers });
+};
 
 async function auth(request: Request): Promise<User | null> {
   const authorization = request.headers.get('authorization');
@@ -529,12 +537,14 @@ async function submit(user: User, body: unknown, request: Request) {
       return json({ error: 'Exam attempt does not belong to this account.' }, 403);
     }
 
+    const questionIds = new Set(attempt.questions.map(question => question.id));
+    if (questionIds.size !== QUESTION_COUNT) return json({ error: 'Stored exam attempt is invalid.' }, 500);
     const answers = new Map<string, number>();
     for (const item of value.answers) {
       if (!item || typeof item !== 'object') return json({ error: 'Invalid answer entry.' }, 400);
       const answer = item as { id?: unknown; choice?: unknown };
-      if (typeof answer.id !== 'string' || !Number.isInteger(answer.choice) || answers.has(answer.id)) {
-        return json({ error: 'Each question must be answered exactly once.' }, 400);
+      if (typeof answer.id !== 'string' || !questionIds.has(answer.id) || !Number.isInteger(answer.choice) || answer.choice < 0 || answer.choice >= 4 || answers.has(answer.id)) {
+        return json({ error: 'Each question must be answered exactly once with a valid choice.' }, 400);
       }
       answers.set(answer.id, answer.choice as number);
     }
@@ -621,7 +631,8 @@ async function verify(id: string, request: Request) {
   if (!valid) {
     return json({ error: 'Certificate signature verification failed.' }, 500);
   }
-  return json({ certificate: publicCert(certificate) }, 200, corsOrigin(request), { 'cache-control': 'no-store' });
+  const origin = corsOrigin(request);
+  return json({ certificate: publicCert(certificate) }, 200, origin, { 'cache-control': 'no-store' });
 }
 
 async function readJsonBody(request: Request): Promise<unknown> {
@@ -642,12 +653,15 @@ export const config = { path: '/api/certificate' };
 
 export default async (request: Request) => {
   if (request.method === 'OPTIONS') {
+    const origin = corsOrigin(request);
+    if (request.headers.get('origin') && !origin) return new Response('Origin not allowed.', { status: 403, headers: { 'cache-control': 'no-store', 'x-content-type-options': 'nosniff', 'vary': 'Origin' } });
     return new Response('', {
       status: 204,
       headers: {
-        'access-control-allow-origin': corsOrigin(request),
+        ...(origin ? { 'access-control-allow-origin': origin } : {}),
         'access-control-allow-methods': 'GET,POST,OPTIONS',
         'access-control-allow-headers': 'content-type,authorization',
+        'vary': 'Origin',
       },
     });
   }
@@ -655,7 +669,7 @@ export default async (request: Request) => {
   try {
     const url = new URL(request.url);
     if (request.method === 'GET') return verify(url.searchParams.get('id') || '', request);
-    if (request.method !== 'POST') return json({ error: 'method not allowed' }, 405);
+    if (request.method !== 'POST') return json({ error: 'method not allowed' }, 405, corsOrigin(request));
 
     const user = await auth(request);
     if (!user) return json({ error: 'Sign in to take the free verified exam.' }, 401);

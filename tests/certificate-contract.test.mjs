@@ -24,6 +24,12 @@ assert.match(certificate, /DEL/);
 assert.doesNotMatch(certificate, /(?:\:\s*any\b|\bas\s+any\b|<\s*any\s*>)/);
 
 assert.match(certificate, /rateLimit\(/, 'certificate API must retain Redis-backed rate limiting');
+assert.match(certificate, /CERTIFICATE_ALLOWED_ORIGINS/, 'certificate CORS must use a dedicated allowlist');
+assert.match(certificate, /createIndex\(\{ expiresAt: 1 \}/, 'certificate persistence must create an expiry index');
+assert.match(certificate, /expiresAt,/, 'issued certificates must receive an explicit expiry');
+assert.match(certificate, /questionIds\.has\(answer\.id\)/, 'submissions must bind answers to the server-issued question set');
+assert.match(certificate, /answer\.choice < 0/, 'submissions must reject negative answer indexes');
+assert.match(certificate, /answer\.choice >= 4/, 'submissions must reject out-of-range answer indexes');
 assert.match(certificate, /INCR/);
 assert.match(certificate, /EXPIRE/);
 assert.match(certificate, /MongoClient/);
