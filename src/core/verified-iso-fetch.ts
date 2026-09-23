@@ -39,7 +39,7 @@ function requestSignal(parent: AbortSignal | undefined, timeoutMs: number): Abor
 async function fetchRange(url: string, start: number, end: number, artifact: PinnedArtifact, signal: AbortSignal): Promise<ArrayBuffer> {
   const cached = await readIsoChunkCache(artifact, start, end);
   if (cached) return cached;
-  const chunkUrl = new URL(url);
+  const chunkUrl = new URL(url, window.location.origin);
   chunkUrl.searchParams.set('chunkStart', String(start));
   chunkUrl.searchParams.set('chunkEnd', String(end));
   const range = `bytes=${start}-${end}`;

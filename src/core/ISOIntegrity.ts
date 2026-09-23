@@ -12,7 +12,8 @@ const TRUSTED_MANIFEST_PREFIX = 'https://api.github.com/repos/dshyleshkarthik7-h
 
 const trustedUrl = (value: string, prefix: string) => {
   try {
-    const url = new URL(value);
+    const url = new URL(value, window.location.origin);
+    if (value.startsWith('/')) return url.origin === window.location.origin && url.pathname === '/api/iso/linux4' && !url.search.includes('..') && !url.hash;
     return url.protocol === 'https:' && value.startsWith(prefix) && !value.includes('..');
   } catch {
     return false;
