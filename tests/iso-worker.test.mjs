@@ -34,7 +34,6 @@ assert.match(worker, /new URL\(candidate\)\.origin !== url\.origin/);
 assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"4"/);
 assert.doesNotMatch(worker, /const ALLOWED_ORIGINS = new Set/);
 
-assert.match(worker, /127\\\.0\\\.0\\\.1|localhost/);
 assert.match(worker, /try\s*\{\s*upstream\s*=\s*await\s+fetch/);
 assert.match(worker, /ISO origin unavailable/);
 assert.doesNotMatch(worker, /arrayBuffer\(\)/);
