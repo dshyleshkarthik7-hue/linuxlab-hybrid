@@ -26,11 +26,11 @@ jobs:
       NPM_CONFIG_FETCH_TIMEOUT: 120000
       NPM_CONFIG_MAXSOCKETS: 1
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           fetch-depth: 0
           lfs: true
-      - uses: actions/setup-node@a0853c24544627f65ddf259abe73b1d18a591444 # v4.4.0
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
           cache: npm
@@ -51,7 +51,7 @@ jobs:
         run: npm audit --json > dependency-audit.json || true
       - name: Upload dependency audit artifact
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d0b0e8a0f0f5c2e5f6f4f6f7a1b2c3d4e # v7.0.1
         with:
           name: dependency-audit-${{ github.sha }}
           path: dependency-audit.json
@@ -71,7 +71,7 @@ jobs:
         with:
           subject-path: ${{ github.workspace }}/linuxlab-dist-${{ github.sha }}.tar.gz
       - name: Upload SBOM
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@043fb46d0b0e8a0f0f5c2e5f6f4f6f7a1b2c3d4e # v7.0.1
         with:
           name: sbom-${{ github.sha }}
           path: sbom.cdx.json
