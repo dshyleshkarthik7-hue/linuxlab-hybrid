@@ -105,7 +105,7 @@ export class V86LinuxTerminal {
   }
 
   private bindControls(): void {
-    document.getElementById('btn-v86-virt')?.addEventListener('click', () => void this.start());
+    document.getElementById('btn-v86-virt')?.addEventListener('click', () => { document.documentElement.dataset.v86Profile = 'virt'; void this.start(); });
     document.getElementById('btn-v86-restart')?.addEventListener('click', () => void this.start());
     document.getElementById('btn-v86-terminal')?.addEventListener('click', () => this.showTerminal());
     document.getElementById('btn-v86-screen')?.addEventListener('click', () => this.showScreen());
