@@ -10,11 +10,46 @@ import { loadMonaco, type MonacoEditor, type MonacoEditorModule } from './monaco
 const TerminalConstructor = xtermModule.Terminal;
 const FitAddonConstructor = fitModule.FitAddon;
 
+type EditorAdapter = {
+  getValue(): string;
+  setValue(value: string): void;
+  layout(): void;
+  dispose(): void;
+};
+
+class MobileEditor implements EditorAdapter {
+  private readonly textarea: HTMLTextAreaElement;
+  constructor(container: HTMLElement, value: string) {
+    container.replaceChildren();
+    container.classList.add('mobile-code-editor');
+    const toolbar = document.createElement('div');
+    toolbar.className = 'mobile-editor-toolbar';
+    toolbar.innerHTML = '<span>Touch Editor</span><span>Tap, type, paste, and scroll</span>';
+    this.textarea = document.createElement('textarea');
+    this.textarea.className = 'mobile-editor-input';
+    this.textarea.value = value;
+    this.textarea.spellcheck = false;
+    this.textarea.autocapitalize = 'off';
+    this.textarea.autocomplete = 'off';
+    this.textarea.setAttribute('autocorrect', 'off');
+    this.textarea.setAttribute('inputmode', 'text');
+    this.textarea.setAttribute('aria-label', 'Mobile code editor');
+    this.textarea.setAttribute('enterkeyhint', 'enter');
+    container.append(toolbar, this.textarea);
+  }
+  getValue(): string { return this.textarea.value; }
+  setValue(value: string): void { this.textarea.value = value; }
+  layout(): void { this.textarea.style.height = '100%'; }
+  focus(): void { this.textarea.focus(); }
+  dispose(): void { this.textarea.remove(); }
+}
+
 class LinuxLabApp {
   private engine: InBrowserLinuxEngine;
   private assessment: AssessmentRunner;
-  private editor: MonacoEditor | null = null;
+  private editor: MonacoEditor | MobileEditor | null = null;
   private monaco: MonacoEditorModule | null = null;
+  private editorMode: 'monaco' | 'mobile' | null = null;
   private monacoLoad: Promise<void> | null = null;
   private simTerm!: xtermModule.Terminal;
   private simFitAddon!: fitModule.FitAddon;
@@ -43,12 +78,35 @@ class LinuxLabApp {
     await this.monacoLoad;
   }
 
+  private isMobileEditor(): boolean {
+    return window.matchMedia('(max-width: 768px), (pointer: coarse)').matches;
+  }
+
   private async initMonaco(): Promise<void> {
     const container = document.getElementById('monaco-container');
-    if (!container) throw new Error('Monaco editor container is missing');
-    this.monaco = await loadMonaco();
+    if (!container) throw new Error('Editor container is missing');
     const initialCode = this.engine.readFile('/root/main.c') || '';
-    this.editor = this.monaco.editor.create(container, { value: initialCode, language: 'c', theme: 'vs-dark', automaticLayout: true, fontSize: 14, fontFamily: '"Cascadia Code", "Fira Code", monospace', minimap: { enabled: false }, scrollBeyondLastLine: false });
+    if (this.isMobileEditor()) {
+      this.editor = new MobileEditor(container, initialCode);
+      this.editorMode = 'mobile';
+      this.attachEditorHook();
+      this.editor.layout();
+      return;
+    }
+    this.monaco = await loadMonaco();
+    this.editor = this.monaco.editor.create(container, {
+      value: initialCode,
+      language: 'c',
+      theme: 'vs-dark',
+      automaticLayout: true,
+      fontSize: 14,
+      fontFamily: '"Cascadia Code", "Fira Code", monospace',
+      minimap: { enabled: false },
+      scrollBeyondLastLine: false,
+      wordWrap: 'on',
+      padding: { top: 10, bottom: 10 },
+    });
+    this.editorMode = 'monaco';
     this.attachEditorHook();
     setTimeout(() => this.editor?.layout(), 200);
   }
@@ -99,7 +157,13 @@ class LinuxLabApp {
   }
 
   private async persistSession(command: string): Promise<void> { try { this.sessionCommands.push(command); if (this.sessionCommands.length > 200) this.sessionCommands.shift(); await StorageService.saveSession({ id: this.sessionId, mode: 'simulator', title: 'POSIX Simulator Session', startedAt: this.sessionStartedAt, updatedAt: Date.now(), commands: [...this.sessionCommands] }); } catch (error) { console.warn('[LinuxLab] Session save failed:', error); } }
-  private switchFileTab(filename: string, forcedContent?: string): void { this.currentFile = filename; const content = forcedContent ?? this.engine.readFile(`/root/${filename}`) ?? ''; const lang = filename.endsWith('.java') ? 'java' : 'c'; if (this.editor) { const model = this.editor.getModel(); if (model && this.monaco) this.monaco.editor.setModelLanguage(model, lang); this.editor.setValue(content); } document.querySelectorAll('.file-tab').forEach(tab => tab.classList.remove('active')); if (filename === 'main.c') document.getElementById('tab-main-c')?.classList.add('active'); if (filename === 'Main.java') document.getElementById('tab-main-java')?.classList.add('active'); }
+  private switchFileTab(filename: string, forcedContent?: string): void { this.currentFile = filename; const content = forcedContent ?? this.engine.readFile(`/root/${filename}`) ?? ''; const lang = filename.endsWith('.java') ? 'java' : 'c'; if (this.editor) {
+      if (this.editorMode === 'monaco' && this.monaco && 'getModel' in this.editor) {
+        const model = this.editor.getModel();
+        if (model) this.monaco.editor.setModelLanguage(model, lang);
+      }
+      this.editor.setValue(content);
+    } document.querySelectorAll('.file-tab').forEach(tab => tab.classList.remove('active')); if (filename === 'main.c') document.getElementById('tab-main-c')?.classList.add('active'); if (filename === 'Main.java') document.getElementById('tab-main-java')?.classList.add('active'); }
   private async restoreWorkspace(): Promise<void> { try { const saved = await StorageService.getWorkspace(); for (const [filename, content] of Object.entries(saved)) if (filename === 'main.c' || filename === 'Main.java') this.engine.writeFile(`/root/${filename}`, content); const restored = saved[this.currentFile]; if (restored !== undefined && this.editor) this.switchFileTab(this.currentFile, restored); const feedback = document.getElementById('test-output-list'); if (feedback && Object.keys(saved).length) { feedback.replaceChildren(); const notice = document.createElement('span'); notice.style.color = '#38bdf8'; notice.textContent = '↻ Restored saved workspace from IndexedDB.'; feedback.appendChild(notice); } } catch (error) { console.warn('[LinuxLab] Workspace restore unavailable:', error); } }
   private async saveCurrentEditorToFS(): Promise<void> { await this.ensureMonaco(); if (!this.editor) return; const val = this.editor.getValue(); this.engine.writeFile(`/root/${this.currentFile}`, val); void StorageService.saveFile(this.currentFile, val).catch(error => console.warn('[LinuxLab] IndexedDB save failed:', error)); const feedback = document.getElementById('test-output-list'); if (feedback) { feedback.replaceChildren(); const notice = document.createElement('span'); notice.style.color = '#4ade80'; notice.textContent = `✓ Saved '/root/${this.currentFile}' to Virtual File System.`; feedback.appendChild(notice); } }
   private async runAutomatedGrading(): Promise<void> { await this.ensureMonaco(); if (!this.editor) return; await this.saveCurrentEditorToFS(); const code = this.editor.getValue(); const feedbackList = document.getElementById('test-output-list'); if (!feedbackList) return; const res = this.currentFile.endsWith('.java') ? this.assessment.runJavaTestSuite(code) : this.assessment.runCTestSuite(code); feedbackList.replaceChildren(); const summary = document.createElement('div'); summary.className = 'assessment-summary'; summary.textContent = `${res.score}% — ${res.passed}/${res.total} checks passed`; feedbackList.appendChild(summary); for (const check of res.checks) { const line = document.createElement('div'); line.className = check.passed ? 'assessment-check passed' : 'assessment-check failed'; line.textContent = `${check.passed ? '✓' : '○'} ${check.label} — ${check.feedback}`; feedbackList.appendChild(line); } void StorageService.saveProgress(this.currentFile.endsWith('.java') ? 'java-prime' : 'c-table', res.score, res.score >= 80).catch(error => console.warn('[LinuxLab] Progress save failed:', error)); }
