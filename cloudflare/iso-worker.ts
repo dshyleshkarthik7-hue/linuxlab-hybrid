@@ -36,6 +36,8 @@ function corsHeaders(request: Request): Headers {
   const headers = new Headers({
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
+    "Cache-Control": "no-store",
+    "CDN-Cache-Control": "no-store",
     "Access-Control-Allow-Headers": "Range, If-Range, If-None-Match, If-Modified-Since",
     "Access-Control-Expose-Headers": "Accept-Ranges, Content-Length, Content-Range, Content-Type, ETag, X-LinuxLab-SHA256, X-LinuxLab-Chunk-Start, X-LinuxLab-Chunk-End, X-LinuxLab-Chunk-Total, X-LinuxLab-Artifact-Size, X-LinuxLab-Worker-Protocol",
   });
@@ -113,7 +115,7 @@ export default {
               "Accept-Encoding": "identity",
               Range: range,
             },
-          }), { signal: controller.signal });
+          }), { signal: controller.signal, cache: "no-store" });
           if (upstream.status === 206) break;
         } catch {
           if (controller.signal.aborted) break;
@@ -125,7 +127,8 @@ export default {
       const contentLength = upstream.headers.get("content-length");
       const expectedContentRange = `bytes ${chunk.start}-${chunk.end}/${image.size}`;
       if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) return errorResponse("ISO origin returned invalid chunk metadata", 502, headers);
-      // CORS is origin-specific. Public edge caching by URL can otherwise replay a\n      // response generated for linuxterminal.me to a Netlify Preview origin.\n      // Keep the worker response private and let the browser manage its own range cache.\n      headers.set("Cache-Control", "private, no-store");
+      // CORS is origin-specific. Public edge caching by URL can otherwise replay a\n      // response generated for linuxterminal.me to a Netlify Preview origin.\n      // Keep the worker response private and let the browser manage its own range cache.\n      headers.set("Cache-Control", "no-store");
+      headers.set("CDN-Cache-Control", "no-store");
       headers.set("X-LinuxLab-SHA256", image.sha256);
       headers.set("X-LinuxLab-Artifact-Size", String(image.size));
       headers.set("X-LinuxLab-Worker-Protocol", WORKER_PROTOCOL_VERSION);
