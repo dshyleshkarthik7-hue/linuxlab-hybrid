@@ -40,7 +40,7 @@ function lowMemoryWarning(): string | null {
   return null;
 }
 
-function profileFromPage(): Profile { const profile = document.documentElement.dataset.v86Profile; if (profile === 'developer') return DEVELOPER_PROFILE; if (profile === 'virt') return VIRT_PROFILE; return LINUX4_PROFILE; }
+function profileFromPage(): Profile { const declared = document.documentElement.dataset.v86Profile; const requested = new URLSearchParams(window.location.search).get('profile'); const profile = requested === 'developer' || requested === 'virt' || requested === 'linux4' ? requested : declared; if (profile === 'developer') return DEVELOPER_PROFILE; if (profile === 'virt') return VIRT_PROFILE; return LINUX4_PROFILE; }
 
 export class V86LinuxTerminal {
   private term: xtermModule.Terminal;
