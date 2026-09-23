@@ -13,7 +13,7 @@ async function analyticsHashes() {
       else if (entry.name.endsWith('.html')) {
         const html = await readFile(file, 'utf8');
         for (const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)) {
-          const body = match[1].trim();
+          const body = match[1];
           if (body) hashes.add(`'sha256-${createHash('sha256').update(body).digest('base64')}'`);
         }
       }
