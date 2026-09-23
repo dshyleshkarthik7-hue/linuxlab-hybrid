@@ -32,13 +32,6 @@ const LINUX4_PROFILE: Profile = { name: 'Linux 4', memoryMiB: 256, cdrom: LINUX4
 const FIRMWARE_BASE = '/api/v86-firmware';
 const READY_MARKER = '__LINUXLAB_READY__';
 const PROBE_MARKER = '__LINUXLAB_INPUT_OK__';
-const LOW_MEMORY_THRESHOLD_GB = 16;
-
-function lowMemoryWarning(): string | null {
-  const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
-  if (typeof deviceMemory === 'number' && deviceMemory < LOW_MEMORY_THRESHOLD_GB) return `This browser reports approximately ${deviceMemory} GB of device memory. The VM may be slow or may run out of memory; close other heavy tabs before starting.\n`;
-  return null;
-}
 
 function profileFromPage(): Profile { const profile = document.documentElement.dataset.v86Profile; if (profile === 'developer') return DEVELOPER_PROFILE; if (profile === 'virt') return VIRT_PROFILE; return LINUX4_PROFILE; }
 
@@ -136,8 +129,6 @@ export class V86LinuxTerminal {
     document.addEventListener('visibilitychange', this.handleVisibility, { passive: true });
     this.term.clear();
     this.term.writeln(`LinuxTerminal — ${this.profile.name}`);
-    const memoryWarning = lowMemoryWarning();
-    if (memoryWarning) this.term.writeln(memoryWarning);
     this.status(`${this.profile.name} • checking runtime`);
     try {
       await this.loadRuntime(signal);

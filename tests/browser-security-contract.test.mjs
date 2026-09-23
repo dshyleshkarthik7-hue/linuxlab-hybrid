@@ -18,5 +18,5 @@ const v86=readFileSync('src/main-v86.ts','utf8'); assert.match(v86,/net_device:\
 
 const mainV86=readFileSync('src/main-v86.ts','utf8');
 assert.match(mainV86,/verified artifact \$\{artifact\.version\}/);
-assert.match(mainV86,/Verified Alpine artifact identity was not established/);
+assert.match(mainV86,/Verified \$\{this\.profile\.expectedGuest\} artifact identity was not established/);
 console.log('Verified-artifact readiness contract passed');
