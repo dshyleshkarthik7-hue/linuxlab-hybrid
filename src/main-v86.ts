@@ -100,14 +100,21 @@ export class V86LinuxTerminal {
   private sendInput(data: string): void {
     const vm = this.emulator;
     if (!vm || !this.enforcer || this.enforcer.isStopped() || this.enforcer.sessionExpired()) return;
-    if (vm.keyboard_send_text) {
-      // libv86 maps ASCII LF (10) to the Enter key, but its simulate_char()
-      // table has no mapping for CR (13). xterm/mobile input commonly emits CR.
-      // Normalize terminal Enter to LF at the v86 keyboard boundary so Enter is
-      // delivered as a real key event instead of logging "ascii -> keyCode not found".
-      vm.keyboard_send_text(data.replace(/\\r\\n/g, '\\n').replace(/\\r/g, '\\n'));
-    } else {
+
+    // The Terminal view is backed by v86's serial0 console: the bytes displayed
+    // by serial0-output-byte must be returned through serial0-input. Sending
+    // xterm data to the PS/2 keyboard adapter makes the browser log key-mapping
+    // warnings while the Linux serial shell receives nothing.
+    if (this.activeView === 'terminal') {
       vm.serial0_send(data);
+      return;
+    }
+
+    // The Screen view is the VGA/PS2 path, so keyboard text belongs on v86's
+    // keyboard adapter. Normalize CR to LF because libv86's ASCII table does
+    // not contain ASCII 13.
+    if (vm.keyboard_send_text) {
+      vm.keyboard_send_text(data.replace(/\r\n/g, '\n').replace(/\r/g, '\n'));
     }
   }
 
