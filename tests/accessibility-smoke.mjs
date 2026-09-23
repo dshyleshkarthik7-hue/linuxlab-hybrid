@@ -1,8 +1,51 @@
 import { createRequire } from 'node:module';
+import { spawn } from 'node:child_process';
+import { setTimeout as sleep } from 'node:timers/promises';
+import { resolve } from 'node:path';
+
 const require = createRequire(import.meta.url);
 const { chromium } = require('playwright');
-const baseURL = process.env.A11Y_BASE_URL || process.argv[2] || 'http://127.0.0.1:4173';
+const explicit = process.env.A11Y_BASE_URL || process.argv[2];
+const port = process.env.A11Y_PORT || '4173';
+const baseURL = explicit || `http://127.0.0.1:${port}`;
 const routes = ['/', '/learn/', '/quiz/', '/progress/', '/certificate/', '/verify/'];
+let server;
+
+async function waitForServer(url, timeoutMs = 20000) {
+  const deadline = Date.now() + timeoutMs;
+  while (Date.now() < deadline) {
+    try {
+      const response = await fetch(url, { signal: AbortSignal.timeout(1500) });
+      if (response.ok) return;
+    } catch {}
+    await sleep(200);
+  }
+  throw new Error(`Timed out waiting for accessibility preview server at ${url}`);
+}
+
+function stopServer() {
+  if (!server || server.exitCode !== null) return;
+  try {
+    if (process.platform === 'win32') server.kill();
+    else process.kill(-server.pid, 'SIGTERM');
+  } catch {
+    try { server.kill('SIGTERM'); } catch {}
+  }
+  server = undefined;
+}
+
+if (!explicit) {
+  const viteBin = resolve('node_modules', '.bin', process.platform === 'win32' ? 'vite.cmd' : 'vite');
+  server = spawn(viteBin, ['preview', '--host', '127.0.0.1', '--port', port, '--strictPort'], {
+    stdio: ['ignore', 'pipe', 'pipe'],
+    env: process.env,
+    detached: process.platform !== 'win32'
+  });
+  server.stdout.on('data', data => process.stdout.write(String(data)));
+  server.stderr.on('data', data => process.stderr.write(String(data)));
+  await waitForServer(baseURL);
+}
+
 const browser = await chromium.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
@@ -23,5 +66,8 @@ try {
       if (await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1)) throw new Error(route + ' overflows at ' + width + 'px');
     }
   }
-} finally { await browser.close(); }
+} finally {
+  await browser.close();
+  stopServer();
+}
 console.log('Accessibility smoke checks passed');
