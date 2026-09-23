@@ -12,6 +12,11 @@
   for = "/*"
   [headers.values]
     Strict-Transport-Security = "max-age=31536000; includeSubDomains"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+    Cross-Origin-Opener-Policy = "same-origin"
+    Cross-Origin-Resource-Policy = "same-origin"
 
 [build]
   publish = "dist"
@@ -40,111 +45,6 @@
   to = "/commands-entry.html"
   status = 200
 
-# Preserve the canonical slash URLs for the dedicated command lessons.
-[[redirects]]
-  from = "/commands/pwd/"
-  to = "/commands/pwd.html"
-  status = 301
-[[redirects]]
-  from = "/commands/ls/"
-  to = "/commands/ls.html"
-  status = 301
-[[redirects]]
-  from = "/commands/cd/"
-  to = "/commands/cd.html"
-  status = 301
-[[redirects]]
-  from = "/commands/mkdir/"
-  to = "/commands/mkdir.html"
-  status = 301
-[[redirects]]
-  from = "/commands/cat/"
-  to = "/commands/cat.html"
-  status = 301
-[[redirects]]
-  from = "/commands/cp/"
-  to = "/commands/cp.html"
-  status = 301
-[[redirects]]
-  from = "/commands/mv/"
-  to = "/commands/mv.html"
-  status = 301
-[[redirects]]
-  from = "/commands/rm/"
-  to = "/commands/rm.html"
-  status = 301
-[[redirects]]
-  from = "/commands/grep/"
-  to = "/commands/grep.html"
-  status = 301
-[[redirects]]
-  from = "/commands/find/"
-  to = "/commands/find.html"
-  status = 301
-[[redirects]]
-  from = "/commands/sed/"
-  to = "/commands/sed.html"
-  status = 301
-[[redirects]]
-  from = "/commands/awk/"
-  to = "/commands/awk.html"
-  status = 301
-[[redirects]]
-  from = "/commands/chmod/"
-  to = "/commands/chmod.html"
-  status = 301
-[[redirects]]
-  from = "/commands/chown/"
-  to = "/commands/chown.html"
-  status = 301
-[[redirects]]
-  from = "/commands/ps/"
-  to = "/commands/ps.html"
-  status = 301
-[[redirects]]
-  from = "/commands/top/"
-  to = "/commands/top.html"
-  status = 301
-[[redirects]]
-  from = "/commands/df/"
-  to = "/commands/df.html"
-  status = 301
-[[redirects]]
-  from = "/commands/du/"
-  to = "/commands/du.html"
-  status = 301
-[[redirects]]
-  from = "/commands/tar/"
-  to = "/commands/tar.html"
-  status = 301
-[[redirects]]
-  from = "/commands/curl/"
-  to = "/commands/curl.html"
-  status = 301
-[[redirects]]
-  from = "/commands/ssh/"
-  to = "/commands/ssh.html"
-  status = 301
-[[redirects]]
-  from = "/commands/ip/"
-  to = "/commands/ip.html"
-  status = 301
-[[redirects]]
-  from = "/commands/ping/"
-  to = "/commands/ping.html"
-  status = 301
-[[redirects]]
-  from = "/commands/git/"
-  to = "/commands/git.html"
-  status = 301
-[[redirects]]
-  from = "/commands/head/"
-  to = "/commands/head.html"
-  status = 301
-[[redirects]]
-  from = "/commands/tail/"
-  to = "/commands/tail.html"
-  status = 301
 
 [[redirects]]
   from = "/learn"
