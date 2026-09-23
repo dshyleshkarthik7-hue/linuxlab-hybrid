@@ -2,9 +2,7 @@ import manifest from '../artifacts/manifest.json' with { type: 'json' };
 
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
-const WORKER_PROTOCOL_VERSION = "2";
-const ALLOWED_ORIGINS = new Set(["https://linuxterminal.me", "https://www.linuxterminal.me"]);
-// Local development origins such as 127.0.0.1 and localhost are intentionally not trusted in production.
+const WORKER_PROTOCOL_VERSION = "3";
 
 type ManifestArtifact = typeof manifest.artifacts[number] & { image?: string; fallbackUrls?: string[] };
 type Image = { url: string; sha256: string; size: number; filename: string; fallbacks: string[] };
@@ -21,16 +19,29 @@ const IMAGES = Object.fromEntries(
 
 type ImageName = keyof typeof IMAGES;
 
+function isAllowedOrigin(origin: string | null): boolean {
+  if (!origin) return false;
+  try {
+    const parsed = new URL(origin);
+    return parsed.protocol === "https:" &&
+      (parsed.origin === "https://linuxterminal.me" ||
+       parsed.origin === "https://www.linuxterminal.me" ||
+       parsed.hostname.endsWith(".netlify.app"));
+  } catch {
+    return false;
+  }
+}
+
 function corsHeaders(request: Request): Headers {
-  const origin = request.headers.get("Origin");
-  const allowedOrigin = origin && ALLOWED_ORIGINS.has(origin) ? origin : "https://linuxterminal.me";
-  return new Headers({
-    "Access-Control-Allow-Origin": allowedOrigin,
+  const headers = new Headers({
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
     "Access-Control-Allow-Headers": "Range, If-Range, If-None-Match, If-Modified-Since",
     "Access-Control-Expose-Headers": "Accept-Ranges, Content-Length, Content-Range, Content-Type, ETag, X-LinuxLab-SHA256, X-LinuxLab-Chunk-Start, X-LinuxLab-Chunk-End, X-LinuxLab-Chunk-Total, X-LinuxLab-Artifact-Size, X-LinuxLab-Worker-Protocol",
   });
+  const origin = request.headers.get("Origin");
+  if (isAllowedOrigin(origin)) headers.set("Access-Control-Allow-Origin", origin!);
+  return headers;
 }
 
 function getImage(url: URL): Image | null {
@@ -89,11 +100,24 @@ export default {
     const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     try {
       let upstream: Response | null = null;
-      for (const origin of [image.url, ...image.fallbacks]) {
+      const origins = [image.url, ...image.fallbacks].filter((candidate) => {
+        try { return new URL(candidate).origin !== url.origin; } catch { return false; }
+      });
+      for (const origin of origins) {
         try {
-          upstream = await fetch(new Request(origin, { method: "GET", headers: { Accept: "application/octet-stream", "User-Agent": "LinuxTerminal-ISO-Worker/2.0", "Accept-Encoding": "identity", Range: range } }), { signal: controller.signal });
+          upstream = await fetch(new Request(origin, {
+            method: "GET",
+            headers: {
+              Accept: "application/octet-stream",
+              "User-Agent": "LinuxTerminal-ISO-Worker/3.0",
+              "Accept-Encoding": "identity",
+              Range: range,
+            },
+          }), { signal: controller.signal });
           if (upstream.status === 206) break;
-        } catch { if (controller.signal.aborted) break; }
+        } catch {
+          if (controller.signal.aborted) break;
+        }
       }
       if (!upstream) return errorResponse("ISO origin temporarily unavailable", 504, headers);
       if (upstream.status !== 206) return errorResponse(`ISO origin unavailable (${upstream.status})`, 502, headers);

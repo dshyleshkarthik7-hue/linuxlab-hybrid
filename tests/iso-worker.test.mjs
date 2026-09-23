@@ -28,6 +28,10 @@ assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"2"/);
 assert.match(worker, /headers\.set\(\s*"Cache-Control",\s*"public, max-age=31536000, immutable"\s*\)/s);
 assert.match(worker, /X-LinuxLab-Chunk-Total/);
 assert.match(worker, /"Vary":\s*"Origin"/);
+assert.match(worker, /hostname\.endsWith\("\.netlify\.app"\)/);
+assert.match(worker, /new URL\(candidate\)\.origin !== url\.origin/);
+assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"3"/);
+assert.doesNotMatch(worker, /const ALLOWED_ORIGINS = new Set/);
 
 assert.match(worker, /127\\\.0\\\.0\\\.1|localhost/);
 assert.match(worker, /try\s*\{\s*upstream\s*=\s*await\s+fetch/);

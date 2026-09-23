@@ -8,6 +8,7 @@ const RANGE_FETCH_TIMEOUT_MS = 90_000;
 const RANGE_CHUNK_BYTES = 48 * 1024 * 1024;
 const RANGE_CONCURRENCY = 4;
 const TRUSTED_HF_PREFIX = 'https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/';
+const ISO_DELIVERY_ORIGIN = TRUSTED_ISO_ORIGIN;
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin);
@@ -111,7 +112,7 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   const key = artifact.filename;
   const pending = inFlight.get(key);
   if (pending) return raceWithCallerSignal(pending, signal);
-  const promise = (async () => { let lastError: unknown; for (const candidate of [artifact.url, ...(artifact.fallbackUrls ?? [])]) { try { return await fetchIsoResumable(candidate, artifact, new AbortController().signal); } catch (error) { lastError = error; } } throw lastError instanceof Error ? lastError : new Error(`Artifact ${artifact.filename} could not be downloaded`); })();
+  const promise = (async () => { let lastError: unknown; for (const candidate of [artifact.url, ...(artifact.fallbackUrls ?? []).filter((value) => { try { return new URL(value).origin === ISO_DELIVERY_ORIGIN; } catch { return false; } })]) { try { return await fetchIsoResumable(candidate, artifact, new AbortController().signal); } catch (error) { lastError = error; } } throw lastError instanceof Error ? lastError : new Error(`Artifact ${artifact.filename} could not be downloaded`); })();
   inFlight.set(key, promise);
   try { return await raceWithCallerSignal(promise, signal); } finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
 }
