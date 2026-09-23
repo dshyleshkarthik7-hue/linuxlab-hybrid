@@ -135,7 +135,9 @@ export class V86LinuxTerminal {
     this.showTerminal();
     document.addEventListener('visibilitychange', this.handleVisibility, { passive: true });
     this.term.clear();
-    this.term.writeln(`LinuxTerminal — ${this.profile.name}`);\n    const memoryWarning = lowMemoryWarning();\n    if (memoryWarning) this.term.writeln(memoryWarning);
+    this.term.writeln(`LinuxTerminal — ${this.profile.name}`);
+    const memoryWarning = lowMemoryWarning();
+    if (memoryWarning) this.term.writeln(memoryWarning);
     this.status(`${this.profile.name} • checking runtime`);
     try {
       await this.loadRuntime(signal);
