@@ -4,6 +4,7 @@ import { clearIsoArtifactCache, readIsoChunkCache, writeIsoChunkCache } from './
 
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
 export const TRUSTED_ISO_ORIGIN = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
+export const ISO_DELIVERY_PATH = '/api/iso/linux4';
 const RANGE_FETCH_TIMEOUT_MS = 90_000;
 const RANGE_CHUNK_BYTES = 48 * 1024 * 1024;
 const RANGE_CONCURRENCY = 4;
@@ -13,7 +14,7 @@ const ISO_DELIVERY_ORIGIN = TRUSTED_ISO_ORIGIN;
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin);
   const artifacts = [LINUX4_ARTIFACT, ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT];
-  const direct = artifacts.find((a) => a.url === url.toString());
+  const direct = artifacts.find((a) => new URL(a.url, window.location.origin).toString() === url.toString());
   if (direct) return direct;
   if (url.origin === TRUSTED_HF_PREFIX.slice(0, -1) && url.href.startsWith(TRUSTED_HF_PREFIX)) {
     if (url.pathname.endsWith('/linux4.iso')) return LINUX4_ARTIFACT;

@@ -35,7 +35,7 @@ function origin(value, name) {
 
 const scriptHost = origin(scriptOrigin, 'CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN');
 const connectHost = origin(connectOrigin, 'CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN');
-const scriptSrc = ["'self'", "'wasm-unsafe-eval'", ...(await analyticsHashes()), 'https://netlify-rum.netlify.app', scriptHost].filter(Boolean).join(' ');
+const scriptSrc = ["'self'", "'wasm-unsafe-eval'", "'sha256-Ob/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs='", ...(await analyticsHashes()), 'https://netlify-rum.netlify.app', scriptHost].filter(Boolean).join(' ');
 const connectSrc = ["'self'", 'https://linuxterminal.me', 'https://www.linuxterminal.me', 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev', 'https://huggingface.co', 'https://github.com', connectHost].filter(Boolean).join(' ');
 
 const security = `Strict-Transport-Security: max-age=31536000; includeSubDomains
