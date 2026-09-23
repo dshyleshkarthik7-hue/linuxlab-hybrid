@@ -10,7 +10,7 @@
       "sha256": "9895695d27eabc1e2782598ff0190f7966df8317cc2afe2a6d25360e148a4209",
       "release": "V2.00",
       "image": "virt",
-      "url": "/api/iso/linux4?image=virt",
+      "url": "https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=virt",
       "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/V2.00",
       "fallbackUrls": [
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/alpine-virt-3.24.1-x86.iso?download=true",
@@ -26,7 +26,7 @@
       "sha256": "9a4683039f356b6bdfa40897f1985b39d5a02e0f46d477e427e8262401301211",
       "release": "v1.0.0",
       "image": "developer",
-      "url": "/api/iso/linux4?image=developer",
+      "url": "https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=developer",
       "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v1.0.0",
       "fallbackUrls": [
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/alpine.iso?download=true",
@@ -42,7 +42,7 @@
       "sha256": "a8ea434ab3b177c55f01275dcc1d35f52cfbee9bd44a32e74765c975b58bcc73",
       "release": "v3.00",
       "image": "linux4",
-      "url": "/api/iso/linux4?image=linux4",
+      "url": "https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=linux4",
       "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v3.00",
       "fallbackUrls": [
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/linux4.iso?download=true",
