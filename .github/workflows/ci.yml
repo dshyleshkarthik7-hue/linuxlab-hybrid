@@ -108,6 +108,8 @@ jobs:
         env:
           PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL || 'https://linuxterminal.me' }}
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
+          PRODUCTION_VM_PAGE_TIMEOUT_MS: 60000
+          PRODUCTION_VM_BOOT_TIMEOUT_MS: 180000
           ISO_BASE_URL: https://linuxterminal-iso.dshyleshkarthik7.workers.dev
           EXPECTED_DEPLOY_SHA: ${{ github.sha }}
           PRODUCTION_DEPLOY_WAIT_MS: 180000
