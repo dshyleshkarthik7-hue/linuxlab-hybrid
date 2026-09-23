@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "prebuild": "node scripts/fetch-v86-firmware.mjs && node scripts/generate-static-redirects.mjs",
-    "build": "tsc && vite build && node scripts/generate-netlify-headers.mjs",
+    "build": "tsc && vite build && node scripts/generate-netlify-headers.mjs && node scripts/generate-build-info.mjs",
     "preview": "vite preview",
     "test": "npm run test:engine && npm run test:catalog && npm run test:result && npm run test:vnext && npm run test:adversarial && npm run test:session && npm run test:p1 && npm run test:catalog-executable && npm run test:observatory && npm run test:iso && npm run test:iso-worker && npm run test:content-contract && npm run test:telemetry && npm run test:static-security && npm run test:vm-policy && npm run test:tutorials && npm run test:quiz-quality && npm run test:certificate-contract && npm run test:csp-contract && npm run test:sha256 && npm run test:release-security && npm run test:site-routes",
     "test:engine": "node --experimental-strip-types tests/linux-engine.test.ts",
