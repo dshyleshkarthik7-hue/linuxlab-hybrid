@@ -27,6 +27,7 @@ assert.match(csp, /Reporting-Endpoints: csp-endpoint="\/api\/csp-report"/);
 assert.doesNotMatch(csp, /analyticsBootstrapHash|analyticsInlineHash/);
 
 const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
+const cloudflareConfig = await readFile('cloudflare/wrangler.jsonc', 'utf8');
 assert.match(cloudflare, /MAX_CHUNK_BYTES/);
 assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
 assert.match(cloudflare, /upstream\.status !== 206/);
@@ -35,7 +36,7 @@ assert.match(cloudflare, /"Cache-Control": "no-store"/);
 assert.match(cloudflare, /"CDN-Cache-Control": "no-store"/);
 assert.match(cloudflare, /cache: "no-store"/);
 assert.match(cloudflare, /"Vary": "Origin"/);
-assert.match(files["cloudflare/wrangler.jsonc"], /"enabled": false/);
+assert.match(cloudflareConfig, /"enabled": false/);
 assert.match(netlify, /path = "\/api\/iso\/linux4"/);
 assert.match(netlify, /function = "linux4-iso"/);
 assert.match(netlify, /path = "\/api\/v86-firmware\/\*"/);
