@@ -89,8 +89,22 @@ jobs:
       - run: node tests/github-actions-pinning.test.mjs
       - name: Verify Cloudflare worker contract
         run: npm run test:iso-worker
-      - name: Production smoke (main deployment gate)
+      - name: Check production gate freshness
+        id: production_freshness
         if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+        run: |
+          set -euo pipefail
+          git fetch origin main --quiet
+          current_main_sha="$(git rev-parse origin/main)"
+          if [[ "$current_main_sha" != "${GITHUB_SHA}" ]]; then
+            echo "current=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::Skipping production smoke for stale commit ${GITHUB_SHA}; main is now ${current_main_sha}."
+            exit 0
+          fi
+          echo "current=true" >> "$GITHUB_OUTPUT"
+
+      - name: Production smoke (main deployment gate)
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.production_freshness.outputs.current == 'true' }}
         env:
           PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL || 'https://linuxterminal.me' }}
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
