@@ -15,8 +15,8 @@ jobs:
         with:
           node-version: 22
           cache: npm
-      - run: npm ci --ignore-scripts
-      - run: npx playwright install --with-deps chromium
+      - run: npm ci --include=dev --ignore-scripts
+      - run: npm exec --no -- playwright install --with-deps chromium
       - name: Production smoke
         env:
           PRODUCTION_BASE_URL: https://linuxterminal.me
