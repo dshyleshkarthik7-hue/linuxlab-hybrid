@@ -26,7 +26,7 @@ function isAllowedOrigin(origin: string | null): boolean {
     return parsed.protocol === "https:" &&
       (parsed.origin === "https://linuxterminal.me" ||
        parsed.origin === "https://www.linuxterminal.me" ||
-       /^([a-z0-9-]+)--linuxterminal\\.netlify\\.app$/i.test(parsed.hostname));
+       /^([a-z0-9-]+)--linuxterminal\.netlify\.app$/i.test(parsed.hostname));
   } catch {
     return false;
   }
@@ -76,6 +76,7 @@ function getChunk(url: URL, size: number, rangeHeader?: string | null) {
 function errorResponse(message: string, status: number, headers: Headers): Response {
   const responseHeaders = new Headers(headers);
   responseHeaders.set("Cache-Control", "no-store");
+  responseHeaders.set("CDN-Cache-Control", "no-store");
   return new Response(message, { status, headers: responseHeaders });
 }
 
