@@ -59,9 +59,10 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
         await writeIsoChunkCache(artifact, responseStart, responseEnd, bytes);
         return bytes;
       }
-      if (response.status === 200 && (isChunkResponse || (response.headers.get('content-length') === String(end - start + 1)))) {
+      if (response.status === 200 && isChunkResponse) {
         const length = response.headers.get('content-length');
         if (length !== null && Number(length) !== end - start + 1) throw new Error('ISO chunk size metadata mismatch');
+        if (response.headers.get('x-linuxlab-sha256') !== artifact.sha256) throw new Error('ISO chunk digest metadata mismatch');
         const bytes = await response.arrayBuffer();
         if (bytes.byteLength !== end - start + 1) throw new Error('ISO chunk size mismatch');
         await writeIsoChunkCache(artifact, start, end, bytes);
