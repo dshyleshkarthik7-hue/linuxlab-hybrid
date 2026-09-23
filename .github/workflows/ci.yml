@@ -69,7 +69,7 @@ jobs:
       - name: Generate signed build provenance
         uses: actions/attest@508db95dd578ae2727ebd6217d5ba78e4fbda05d # v4.2.1
         with:
-          subject-path: linuxlab-dist-${GITHUB_SHA}.tar.gz
+          subject-path: ${{ github.workspace }}/linuxlab-dist-${{ github.sha }}.tar.gz
       - name: Upload SBOM
         uses: actions/upload-artifact@v4
         with:
