@@ -26,7 +26,7 @@ function isAllowedOrigin(origin: string | null): boolean {
     return parsed.protocol === "https:" &&
       (parsed.origin === "https://linuxterminal.me" ||
        parsed.origin === "https://www.linuxterminal.me" ||
-       parsed.hostname.endsWith(".netlify.app"));
+       /^([a-z0-9-]+)--linuxterminal\\.netlify\\.app$/i.test(parsed.hostname));
   } catch {
     return false;
   }
@@ -98,14 +98,14 @@ export default {
     }
     const expectedLength = chunk.end - chunk.start + 1;
     const range = `bytes=${chunk.start}-${chunk.end}`;
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
     try {
       let upstream: Response | null = null;
       const origins = [image.url, ...image.fallbacks].filter((candidate) => {
         try { return new URL(candidate).origin !== url.origin; } catch { return false; }
       });
       for (const origin of origins) {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
         try {
           upstream = await fetch(new Request(origin, {
             method: "GET",
@@ -118,7 +118,9 @@ export default {
           }), { signal: controller.signal, cache: "no-store" });
           if (upstream.status === 206) break;
         } catch {
-          if (controller.signal.aborted) break;
+          if (controller.signal.aborted) continue;
+        } finally {
+          clearTimeout(timeout);
         }
       }
       if (!upstream) return errorResponse("ISO origin temporarily unavailable", 504, headers);
@@ -140,6 +142,6 @@ export default {
       headers.set("Accept-Ranges", "bytes");
       headers.set("ETag", `"${image.sha256}-${chunk.start}-${chunk.end}"`);
       return new Response(request.method === "HEAD" ? null : upstream.body, { status: 206, headers });
-    } finally { clearTimeout(timeout); }
+    }
   },
 };

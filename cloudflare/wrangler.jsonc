@@ -6,7 +6,7 @@
   "observability": { "enabled": false },
   "workers_dev": true,
   "cache": {
-    "enabled": true
+    "enabled": false
   },
   "routes": [
     {
