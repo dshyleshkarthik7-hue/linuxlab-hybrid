@@ -23,10 +23,20 @@ function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
   try {
     const parsed = new URL(origin);
-    return parsed.protocol === "https:" &&
-      (parsed.origin === "https://linuxterminal.me" ||
-       parsed.origin === "https://www.linuxterminal.me" ||
-       /^([a-z0-9-]+)--linuxterminal\.netlify\.app$/i.test(parsed.hostname));
+    if (parsed.protocol !== "https:") return false;
+
+    const isProductionOrigin =
+      parsed.origin === "https://linuxterminal.me" ||
+      parsed.origin === "https://www.linuxterminal.me";
+
+    // Netlify preview deploys use the immutable deploy-id prefix. Support the
+    // current site name (linuxterminalm) and the previous site name
+    // (linuxterminal) while keeping the hostname allowlist scoped to Netlify.
+    const isNetlifyPreview =
+      /^([a-z0-9-]+)--linuxterminalm\.netlify\.app$/i.test(parsed.hostname) ||
+      /^([a-z0-9-]+)--linuxterminal\.netlify\.app$/i.test(parsed.hostname);
+
+    return isProductionOrigin || isNetlifyPreview;
   } catch {
     return false;
   }
@@ -130,7 +140,10 @@ export default {
       const contentLength = upstream.headers.get("content-length");
       const expectedContentRange = `bytes ${chunk.start}-${chunk.end}/${image.size}`;
       if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) return errorResponse("ISO origin returned invalid chunk metadata", 502, headers);
-      // CORS is origin-specific. Public edge caching by URL can otherwise replay a\n      // response generated for linuxterminal.me to a Netlify Preview origin.\n      // Keep the worker response private and let the browser manage its own range cache.\n      headers.set("Cache-Control", "no-store");
+      // CORS is origin-specific. Public edge caching by URL can otherwise replay a
+      // response generated for linuxterminal.me to a Netlify Preview origin.
+      // Keep the worker response private and let the browser manage its own range cache.
+      headers.set("Cache-Control", "no-store");
       headers.set("CDN-Cache-Control", "no-store");
       headers.set("X-LinuxLab-SHA256", image.sha256);
       headers.set("X-LinuxLab-Artifact-Size", String(image.size));
