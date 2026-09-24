@@ -4,7 +4,7 @@ export const config = { path: '/api/iso/linux4', cache: 'manual' as const };
 
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
-const WORKER_PROTOCOL_VERSION = '4';
+const WORKER_PROTOCOL_VERSION = '5';
 
 type Artifact = {
   image?: string;
@@ -113,12 +113,12 @@ export default async function handler(request: Request): Promise<Response> {
       });
 
       let response = upstream;
-      if (upstream.status >= 300 && upstream.status < 400) {
-        const location = upstream.headers.get('Location');
-        if (!location) continue;
+      for (let redirect = 0; redirect < 5 && response.status >= 300 && response.status < 400; redirect += 1) {
+        const location = response.headers.get('Location');
+        if (!location) { response = new Response(null, { status: 502 }); break; }
         let redirected: URL;
-        try { redirected = new URL(location, candidate); } catch { continue; }
-        if (!isTrustedUpstream(redirected.href)) continue;
+        try { redirected = new URL(location, redirect === 0 ? candidate : response.url); } catch { response = new Response(null, { status: 502 }); break; }
+        if (!isTrustedUpstream(redirected.href)) { response = new Response(null, { status: 502 }); break; }
         const redirectController = new AbortController();
         const redirectTimer = setTimeout(() => redirectController.abort(), UPSTREAM_TIMEOUT_MS);
         try {
@@ -132,7 +132,6 @@ export default async function handler(request: Request): Promise<Response> {
         } finally {
           clearTimeout(redirectTimer);
         }
-        if (response.status >= 300 && response.status < 400) continue;
       }
 
       if (response.status !== 206) continue;
