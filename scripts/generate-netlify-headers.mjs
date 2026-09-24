@@ -69,5 +69,11 @@ await writeFile('dist/_headers', `/*
 
   /developer-alpine/*
   ${headerBlock(vmCsp)}
+
+  /index-v86.html
+  ${headerBlock(vmCsp)}
+
+  /developer-alpine/index.html
+  ${headerBlock(vmCsp)}
 `);
 console.log('[LinuxLab] Generated deploy security headers with separate HTTP headers and CSP directives.');

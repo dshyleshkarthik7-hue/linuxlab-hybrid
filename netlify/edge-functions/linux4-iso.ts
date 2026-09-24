@@ -46,13 +46,11 @@ function parseRange(value: string | null, size: number): { start: number; end: n
 function isTrustedUpstream(value: string): boolean {
   try {
     const url = new URL(value);
-    return url.protocol === 'https:' && (
-      url.href.startsWith('https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/') ||
-      url.href.startsWith('https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/')
-    );
-  } catch {
-    return false;
-  }
+    if (url.protocol !== 'https:') return false;
+    return url.hostname === 'huggingface.co' || url.hostname.endsWith('.hf.co') ||
+      url.hostname === 'github.com' || url.hostname === 'objects.githubusercontent.com' ||
+      url.hostname === 'release-assets.githubusercontent.com';
+  } catch { return false; }
 }
 
 function baseHeaders(origin: string | null): Headers {

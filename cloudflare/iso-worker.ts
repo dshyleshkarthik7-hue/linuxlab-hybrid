@@ -2,7 +2,12 @@ import manifest from '../artifacts/manifest.json' with { type: 'json' };
 
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
-const WORKER_PROTOCOL_VERSION = "4";
+const WORKER_PROTOCOL_VERSION = "5";
+
+function isTrustedUpstream(value: string): boolean {
+  try { const url = new URL(value); if (url.protocol !== "https:") return false; return url.hostname === "huggingface.co" || url.hostname.endsWith(".hf.co") || url.hostname === "github.com" || url.hostname === "objects.githubusercontent.com" || url.hostname === "release-assets.githubusercontent.com"; } catch { return false; }
+}
+
 
 type ManifestArtifact = typeof manifest.artifacts[number] & { image?: string; fallbackUrls?: string[] };
 type Image = { url: string; sha256: string; size: number; filename: string; fallbacks: string[] };
@@ -118,21 +123,23 @@ export default {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
         try {
-          upstream = await fetch(new Request(origin, {
-            method: "GET",
-            headers: {
-              Accept: "application/octet-stream",
-              "User-Agent": "LinuxTerminal-ISO-Worker/3.0",
-              "Accept-Encoding": "identity",
-              Range: range,
-            },
-          }), { signal: controller.signal, cache: "no-store", redirect: "manual" });
-          if (upstream.status === 206) break;
+          let current = new URL(origin);
+          for (let redirect = 0; redirect < 5; redirect += 1) {
+            if (!isTrustedUpstream(current.href) || current.origin === url.origin) break;
+            const response = await fetch(new Request(current.href, {
+              method: "GET",
+              headers: { Accept: "application/octet-stream", "User-Agent": "LinuxTerminal-ISO-Worker/5.0", "Accept-Encoding": "identity", Range: range },
+            }), { signal: controller.signal, cache: "no-store", redirect: "manual" });
+            if (response.status === 206) { upstream = response; break; }
+            if (response.status < 300 || response.status >= 400) { upstream = response; break; }
+            const location = response.headers.get("Location");
+            if (!location) break;
+            current = new URL(location, current);
+          }
+          if (upstream?.status === 206) break;
         } catch {
           if (controller.signal.aborted) continue;
-        } finally {
-          clearTimeout(timeout);
-        }
+        } finally { clearTimeout(timeout); }
       }
       if (!upstream) return errorResponse("ISO origin temporarily unavailable", 504, headers);
       if (upstream.status !== 206) return errorResponse(`ISO origin unavailable (${upstream.status})`, 502, headers);
