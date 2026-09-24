@@ -1,6 +1,6 @@
 import manifest from '../../artifacts/manifest.json' with { type: 'json' };
 
-export const config = { path: '/api/iso/linux4', cache: 'manual' as const };
+export const config = { path: '/api/iso/linux4' };
 
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
@@ -79,6 +79,11 @@ export default async function handler(request: Request): Promise<Response> {
     return new Response('Method Not Allowed', { status: 405, headers });
   }
   if (!ARTIFACT) return new Response('Linux4 artifact is not configured', { status: 500, headers });
+
+  const requestedImage = url.searchParams.get('image');
+  if (requestedImage && requestedImage !== 'linux4') {
+    return new Response('Unknown Linux image', { status: 404, headers });
+  }
 
   const queryStart = url.searchParams.get('chunkStart');
   const queryEnd = url.searchParams.get('chunkEnd');
