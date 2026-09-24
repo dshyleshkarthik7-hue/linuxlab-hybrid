@@ -9,7 +9,6 @@ const RANGE_FETCH_TIMEOUT_MS = 90_000;
 const RANGE_CHUNK_BYTES = 48 * 1024 * 1024;
 const RANGE_CONCURRENCY = 4;
 const TRUSTED_HF_PREFIX = 'https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/';
-const ISO_DELIVERY_ORIGIN = 'https://linuxterminal.me';
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin);
