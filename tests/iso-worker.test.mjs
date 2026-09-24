@@ -31,7 +31,7 @@ assert.match(worker, /cache:\s*"no-store"/);
 assert.match(worker, /X-LinuxLab-Chunk-Total/);
 assert.match(worker, /"Vary":\s*"Origin"/);
 assert.match(worker, /netlify\\\\\.app|netlify\\.app/);
-assert(manifest.artifacts.some((artifact) => artifact.fallbackUrls?.some((url) => url.includes('huggingface.co/buckets/'))));
+assert(manifest.artifacts.some((artifact) => artifact.fallbackUrls?.some((url) => url.startsWith('https://huggingface.co/buckets/'))));
 assert.match(worker, /new URL\(candidate\)\.origin !== url\.origin/);
 assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"5"/);
 assert.doesNotMatch(worker, /const ALLOWED_ORIGINS = new Set/);
