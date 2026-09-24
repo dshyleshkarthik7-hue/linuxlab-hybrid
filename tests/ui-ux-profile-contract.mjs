@@ -10,6 +10,9 @@ const policy = await read('src/engine/VMResourcePolicy.ts');
 const runtime = await read('src/main-v86.ts');
 const page = await read('index-v86.html');
 const developerPage = await read('developer-alpine/index.html');
+const home = await read('index.html');
+const progressPage = await read('progress/index.html');
+const careerPage = await read('linux-careers.html');
 
 const profiles = [
   ['developer','DEVELOPER_ALPINE_ARTIFACT',691011584,1024],
@@ -28,6 +31,12 @@ assert.match(runtime, /expectedGuest: 'alpine' \| 'buildroot'/);
 assert.match(page, /data-v86-profile="linux4"/);
 assert.doesNotMatch(runtime, /16 GB-class device/);
 assert.match(developerPage, /data-v86-profile="developer"/);
+assert.match(home, /href="\/linux-careers\/">Careers<\/a>/);
+assert.match(home, /href="\.\/home\.css"/);
+assert.match(progressPage, /href="\.\/progress\.css"/);
+assert.doesNotMatch(progressPage, /src="\/progress\.js"/);
+assert.match(careerPage, /<link rel="stylesheet" href="\.\/linux-careers\.css">/);
+assert.match(careerPage, /href="\/linux-careers\/" aria-current="page"/);
 for (const source of [page, developerPage]) {
   assert.match(source, /id="v86-terminal-container"/);
   assert.match(source, /id="screen_container"/);
@@ -63,6 +72,14 @@ try {
   assert.equal(await p.locator('#v86-controls').count(), 1);
   await p.keyboard.press('Tab');
   assert.ok(await p.locator(':focus').count() > 0, 'keyboard Tab must reach a focusable control');
+  const homeCss = await p.request.get(base + '/home.css');
+  assert.ok(homeCss.ok(), 'homepage CSS must be a real production asset');
+  const progressResponse = await p.request.get(base + '/progress/');
+  assert.ok(progressResponse.ok(), 'progress page must load');
+  const progressCss = await p.request.get(base + '/progress/progress.css');
+  assert.ok(progressCss.ok(), 'progress CSS must load directly');
+  const careerResponse = await p.request.get(base + '/linux-careers/');
+  assert.ok(careerResponse.ok(), 'career page must load');
 } finally {
   await context.close();
   await browser.close();

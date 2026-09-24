@@ -60,7 +60,7 @@ export default defineConfig({
         simulator: entry('simulator.html'), v86: entry('index-v86.html'), developerAlpine: entry('developer-alpine/index.html'), linux4: entry('linux4.html'),
         about: entry('about/index.html'), contact: entry('contact/index.html'), curriculum: entry('curriculum/index.html'), commandsBuild: entry('commands-entry.html'),
         quiz: entry('quiz/index.html'), challenges: entry('challenges/index.html'), iso: entry('open-source-iso/index.html'),
-        login: entry('login/index.html'), certificate: entry('certificate/index.html'), verify: entry('verify/index.html'), progress: entry('progress/index.html'),
+        login: entry('login/index.html'), certificate: entry('certificate/index.html'), verify: entry('verify/index.html'), progress: entry('progress/index.html'), career: entry('linux-careers.html'),
         learn: entry('learn/index.html'), learnLinuxBasics: entry('learn/linux-basics/index.html'), learnTerminalNavigation: entry('learn/terminal-navigation/index.html'),
         learnFiles: entry('learn/files-and-directories/index.html'), learnText: entry('learn/text-processing/index.html'), learnPermissions: entry('learn/permissions/index.html'),
         learnProcesses: entry('learn/processes/index.html'), learnShell: entry('learn/shell-scripting/index.html')
