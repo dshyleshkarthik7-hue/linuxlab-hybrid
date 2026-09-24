@@ -152,6 +152,9 @@ export default {
       headers.set("X-LinuxLab-Chunk-End", String(chunk.end));
       headers.set("X-LinuxLab-Chunk-Total", String(image.size));
       headers.set("Content-Type", upstream.headers.get("content-type") || "application/octet-stream");
+      // The browser-side verifier requires the range contract on the worker response,
+      // not only on the upstream response. Forward the already-validated Content-Range.
+      headers.set("Content-Range", expectedContentRange);
       headers.set("Content-Length", String(expectedLength));
       headers.set("Accept-Ranges", "bytes");
       headers.set("ETag", `"${image.sha256}-${chunk.start}-${chunk.end}"`);
