@@ -1,4 +1,4 @@
-import manifest from '../../artifacts/manifest.json' with { type: 'json' };
+import manifest from '../../artifacts/manifest.json' with { type: 'json' };\n\nexport const config = { path: '/api/iso/linux4', cache: 'manual' as const };
 
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
@@ -104,7 +104,7 @@ export default async function handler(request: Request): Promise<Response> {
     try {
       const upstream = await fetch(candidate, {
         method: 'GET',
-        redirect: 'follow',
+        redirect: 'manual',
         cache: 'no-store',
         signal: controller.signal,
         headers: {
@@ -114,7 +114,7 @@ export default async function handler(request: Request): Promise<Response> {
         },
       });
 
-      if (upstream.status !== 206) {
+      if (upstream.status >= 300 && upstream.status < 400) {\n        const location = upstream.headers.get('Location');\n        if (!location) { lastFailure = 'ISO upstream redirect missing Location'; continue; }\n        let redirected: URL;\n        try { redirected = new URL(location, candidate); } catch { lastFailure = 'ISO upstream returned invalid redirect'; continue; }\n        if (!isTrustedUpstream(redirected.href)) { lastFailure = 'ISO upstream redirect target is not trusted'; continue; }\n        const redirectController = new AbortController();\n        const redirectTimer = setTimeout(() => redirectController.abort(), UPSTREAM_TIMEOUT_MS);\n        try {\n          const followed = await fetch(redirected.href, { method: 'GET', redirect: 'manual', cache: 'no-store', signal: redirectController.signal, headers: { Range: range, Accept: 'application/octet-stream', 'Accept-Encoding': 'identity' } });\n          if (followed.status >= 300 && followed.status < 400) { lastFailure = 'ISO upstream redirect chain too long'; continue; }\n          if (followed.status !== 206) { lastFailure = `ISO upstream returned ${followed.status}`; continue; }\n          const contentRange = followed.headers.get('Content-Range');\n          const contentLength = followed.headers.get('Content-Length');\n          if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) { lastFailure = 'ISO upstream returned invalid chunk metadata'; continue; }\n          headers.set('Content-Range', expectedContentRange); headers.set('Content-Length', String(expectedLength));\n          headers.set('X-LinuxLab-SHA256', ARTIFACT.sha256); headers.set('X-LinuxLab-Worker-Protocol', WORKER_PROTOCOL_VERSION);\n          headers.set('X-LinuxLab-Chunk-Start', String(chunk.start)); headers.set('X-LinuxLab-Chunk-End', String(chunk.end)); headers.set('X-LinuxLab-Chunk-Total', String(ARTIFACT.size)); headers.set('X-LinuxLab-Artifact-Size', String(ARTIFACT.size));\n          headers.set('ETag', `"${ARTIFACT.sha256}-${chunk.start}-${chunk.end}"`);\n          return new Response(request.method === 'HEAD' ? null : followed.body, { status: 206, headers });\n        } finally { clearTimeout(redirectTimer); }\n      }\n\n      if (upstream.status !== 206) {
         lastFailure = `ISO upstream returned ${upstream.status}`;
         continue;
       }
