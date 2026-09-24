@@ -42,7 +42,7 @@
       "sha256": "a8ea434ab3b177c55f01275dcc1d35f52cfbee9bd44a32e74765c975b58bcc73",
       "release": "v3.00",
       "image": "linux4",
-      "url": "https://linuxterminal.me/api/iso/linux4",
+      "url": "https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=linux4",
       "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v3.00",
       "fallbackUrls": [
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/linux4.iso?download=true",
