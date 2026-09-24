@@ -62,7 +62,7 @@ try { await startServers(); log('browser',`launching Chromium; deadline=${browse
         'x-linuxlab-worker-protocol': '2',
         'x-linuxlab-chunk-start': String(start),
         'x-linuxlab-chunk-end': String(end),
-        'x-linuxlab-chunk-total': String(iso.length),
+        'x-linuxlab-chunk-total': String(verifiedIso.length),
         'cache-control': 'no-store',
       },
       body,
