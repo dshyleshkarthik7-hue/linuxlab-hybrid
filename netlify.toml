@@ -83,6 +83,14 @@
   to = "/certificate/"
   status = 301
 [[redirects]]
+  from = "/api/v86-firmware/seabios.bin"
+  to = "/api/v86-firmware/seabios.bin"
+  status = 200
+[[redirects]]
+  from = "/api/v86-firmware/vgabios.bin"
+  to = "/api/v86-firmware/vgabios.bin"
+  status = 200
+[[redirects]]
   from = "/seabios.bin"
   to = "/api/v86-firmware/seabios.bin"
   status = 200
