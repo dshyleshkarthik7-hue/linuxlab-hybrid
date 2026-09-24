@@ -3,6 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 const worker = await readFile(new URL('../cloudflare/iso-worker.ts', import.meta.url), 'utf8');
 const config = await readFile(new URL('../cloudflare/wrangler.jsonc', import.meta.url), 'utf8');
+const manifest = JSON.parse(await readFile(new URL('../artifacts/manifest.json', import.meta.url), 'utf8'));
 
 assert.match(worker, /chunkStart/);
 assert.match(worker, /chunkEnd/);
@@ -30,11 +31,13 @@ assert.match(worker, /cache:\s*"no-store"/);
 assert.match(worker, /X-LinuxLab-Chunk-Total/);
 assert.match(worker, /"Vary":\s*"Origin"/);
 assert(worker.includes('netlify\\.app'));
+assert(manifest.artifacts.some((artifact) => artifact.fallbackUrls?.some((url) => url.includes('huggingface.co/buckets/'))));
 assert.match(worker, /new URL\(candidate\)\.origin !== url\.origin/);
 assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"5"/);
 assert.doesNotMatch(worker, /const ALLOWED_ORIGINS = new Set/);
 
-assert.match(worker, /const response\s*=\s*await\s+fetch/);
+assert.match(worker, /const response\s*=\s*await\s*fetch/);
+assert.match(worker, /const response\s*=\s*await\s*fetch/);
 assert.match(worker, /ISO origin unavailable/);
 assert.doesNotMatch(worker, /arrayBuffer\(\)/);
 assert.match(config, /"cache"\s*:\s*\{\s*"enabled"\s*:\s*false/);
