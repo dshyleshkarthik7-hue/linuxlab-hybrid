@@ -6,8 +6,9 @@ const firmware = await readFile(new URL('../netlify/edge-functions/v86-firmware.
 const config = await readFile(new URL('../netlify.toml', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../artifacts/manifest.json', import.meta.url), 'utf8'));
 
-assert.match(config, /path = "\/api\/iso\/linux4"/);
-assert.match(config, /function = "linux4-iso"/);
+assert.doesNotMatch(config, /path = "\/api\/iso\/linux4"/);
+assert.match(iso, /export const config = \{ path: '\/api\/iso\/linux4' \}/);
+assert.match(iso, /requestedImage && requestedImage !== 'linux4'/);
 assert.match(config, /path = "\/api\/v86-firmware\/\*"/);
 assert.match(config, /function = "v86-firmware"/);
 assert.doesNotMatch(config, /from = "\/api\/v86-firmware\/(?:seabios|vgabios)\.bin"\s*\n\s*to = "\/api\/v86-firmware\/(?:seabios|vgabios)\.bin"/);
