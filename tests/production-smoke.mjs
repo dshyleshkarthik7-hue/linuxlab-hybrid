@@ -65,7 +65,7 @@ assert.equal(firmwarePins.length, 2, 'firmware manifest must contain exactly two
 for (const pin of firmwarePins) {
   const firmware = await get(`${origin}/api/v86-firmware/${pin.filename}`);
   assert.equal(firmware.status, 200, `/api/v86-firmware/${pin.filename} returned ${firmware.status}`);
-  assert.equal(Number(firmware.headers.get('content-length')), pin.size);
+  assert.equal(Number(firmware.headers.get('x-content-size')), pin.size, 'verified firmware size header must match manifest');
   const bytes = new Uint8Array(await firmware.arrayBuffer());
   assert.equal(bytes.byteLength, pin.size);
   const digest = await crypto.subtle.digest('SHA-256', bytes);
