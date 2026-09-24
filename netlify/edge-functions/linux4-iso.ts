@@ -1,26 +1,32 @@
-import manifest from '../../artifacts/manifest.json' with { type: 'json' };\n\nexport const config = { path: '/api/iso/linux4', cache: 'manual' as const };
+import manifest from '../../artifacts/manifest.json' with { type: 'json' };
+
+export const config = { path: '/api/iso/linux4', cache: 'manual' as const };
 
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
 const WORKER_PROTOCOL_VERSION = '4';
-const ARTIFACT = (manifest.artifacts as Array<{
+
+type Artifact = {
   image?: string;
   size: number;
   sha256: string;
   filename: string;
   fallbackUrls?: string[];
-}>).find((artifact) => artifact.image === 'linux4');
+};
+
+const ARTIFACT = (manifest.artifacts as Artifact[]).find((artifact) => artifact.image === 'linux4');
 
 function corsOrigin(origin: string | null): string | null {
   if (!origin) return null;
   try {
     const u = new URL(origin);
-    const allowedPreview = /^([a-z0-9-]+)--linuxterminalm\.netlify\.app$/i.test(u.hostname)
-      || /^([a-z0-9-]+)--linuxterminal\.netlify\.app$/i.test(u.hostname);
+    const allowedPreview =
+      /^([a-z0-9-]+)--linuxterminalm\.netlify\.app$/i.test(u.hostname) ||
+      /^([a-z0-9-]+)--linuxterminal\.netlify\.app$/i.test(u.hostname);
     if (u.protocol === 'https:' && (
-      u.origin === 'https://linuxterminal.me'
-      || u.origin === 'https://www.linuxterminal.me'
-      || allowedPreview
+      u.origin === 'https://linuxterminal.me' ||
+      u.origin === 'https://www.linuxterminal.me' ||
+      allowedPreview
     )) return u.origin;
   } catch {}
   return null;
@@ -40,11 +46,10 @@ function parseRange(value: string | null, size: number): { start: number; end: n
 function isTrustedUpstream(value: string): boolean {
   try {
     const url = new URL(value);
-    return url.protocol === 'https:'
-      && (
-        url.href.startsWith('https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/')
-        || url.href.startsWith('https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/')
-      );
+    return url.protocol === 'https:' && (
+      url.href.startsWith('https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/') ||
+      url.href.startsWith('https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/')
+    );
   } catch {
     return false;
   }
@@ -96,7 +101,6 @@ export default async function handler(request: Request): Promise<Response> {
   const expectedContentRange = `bytes ${chunk.start}-${chunk.end}/${ARTIFACT.size}`;
   const range = `bytes=${chunk.start}-${chunk.end}`;
   const candidates = (ARTIFACT.fallbackUrls ?? []).filter(isTrustedUpstream);
-  let lastFailure = 'ISO upstream unavailable';
 
   for (const candidate of candidates) {
     const controller = new AbortController();
@@ -107,24 +111,36 @@ export default async function handler(request: Request): Promise<Response> {
         redirect: 'manual',
         cache: 'no-store',
         signal: controller.signal,
-        headers: {
-          Range: range,
-          Accept: 'application/octet-stream',
-          'Accept-Encoding': 'identity',
-        },
+        headers: { Range: range, Accept: 'application/octet-stream', 'Accept-Encoding': 'identity' },
       });
 
-      if (upstream.status >= 300 && upstream.status < 400) {\n        const location = upstream.headers.get('Location');\n        if (!location) { lastFailure = 'ISO upstream redirect missing Location'; continue; }\n        let redirected: URL;\n        try { redirected = new URL(location, candidate); } catch { lastFailure = 'ISO upstream returned invalid redirect'; continue; }\n        if (!isTrustedUpstream(redirected.href)) { lastFailure = 'ISO upstream redirect target is not trusted'; continue; }\n        const redirectController = new AbortController();\n        const redirectTimer = setTimeout(() => redirectController.abort(), UPSTREAM_TIMEOUT_MS);\n        try {\n          const followed = await fetch(redirected.href, { method: 'GET', redirect: 'manual', cache: 'no-store', signal: redirectController.signal, headers: { Range: range, Accept: 'application/octet-stream', 'Accept-Encoding': 'identity' } });\n          if (followed.status >= 300 && followed.status < 400) { lastFailure = 'ISO upstream redirect chain too long'; continue; }\n          if (followed.status !== 206) { lastFailure = `ISO upstream returned ${followed.status}`; continue; }\n          const contentRange = followed.headers.get('Content-Range');\n          const contentLength = followed.headers.get('Content-Length');\n          if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) { lastFailure = 'ISO upstream returned invalid chunk metadata'; continue; }\n          headers.set('Content-Range', expectedContentRange); headers.set('Content-Length', String(expectedLength));\n          headers.set('X-LinuxLab-SHA256', ARTIFACT.sha256); headers.set('X-LinuxLab-Worker-Protocol', WORKER_PROTOCOL_VERSION);\n          headers.set('X-LinuxLab-Chunk-Start', String(chunk.start)); headers.set('X-LinuxLab-Chunk-End', String(chunk.end)); headers.set('X-LinuxLab-Chunk-Total', String(ARTIFACT.size)); headers.set('X-LinuxLab-Artifact-Size', String(ARTIFACT.size));\n          headers.set('ETag', `"${ARTIFACT.sha256}-${chunk.start}-${chunk.end}"`);\n          return new Response(request.method === 'HEAD' ? null : followed.body, { status: 206, headers });\n        } finally { clearTimeout(redirectTimer); }\n      }\n\n      if (upstream.status !== 206) {
-        lastFailure = `ISO upstream returned ${upstream.status}`;
-        continue;
+      let response = upstream;
+      if (upstream.status >= 300 && upstream.status < 400) {
+        const location = upstream.headers.get('Location');
+        if (!location) continue;
+        let redirected: URL;
+        try { redirected = new URL(location, candidate); } catch { continue; }
+        if (!isTrustedUpstream(redirected.href)) continue;
+        const redirectController = new AbortController();
+        const redirectTimer = setTimeout(() => redirectController.abort(), UPSTREAM_TIMEOUT_MS);
+        try {
+          response = await fetch(redirected.href, {
+            method: 'GET',
+            redirect: 'manual',
+            cache: 'no-store',
+            signal: redirectController.signal,
+            headers: { Range: range, Accept: 'application/octet-stream', 'Accept-Encoding': 'identity' },
+          });
+        } finally {
+          clearTimeout(redirectTimer);
+        }
+        if (response.status >= 300 && response.status < 400) continue;
       }
 
-      const contentRange = upstream.headers.get('Content-Range');
-      const contentLength = upstream.headers.get('Content-Length');
-      if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) {
-        lastFailure = 'ISO upstream returned invalid chunk metadata';
-        continue;
-      }
+      if (response.status !== 206) continue;
+      const contentRange = response.headers.get('Content-Range');
+      const contentLength = response.headers.get('Content-Length');
+      if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) continue;
 
       headers.set('Content-Range', expectedContentRange);
       headers.set('Content-Length', String(expectedLength));
@@ -133,15 +149,15 @@ export default async function handler(request: Request): Promise<Response> {
       headers.set('X-LinuxLab-Chunk-Start', String(chunk.start));
       headers.set('X-LinuxLab-Chunk-End', String(chunk.end));
       headers.set('X-LinuxLab-Chunk-Total', String(ARTIFACT.size));
-      headers.set('X-LinuxLab-Artifact-Size', String(ARTIFACT.size));
+      headers.set('X-LinuxLab-Artifact-Size', String(ARTIFACT.size);
       headers.set('ETag', `"${ARTIFACT.sha256}-${chunk.start}-${chunk.end}"`);
-      return new Response(request.method === 'HEAD' ? null : upstream.body, { status: 206, headers });
-    } catch (error) {
-      lastFailure = error instanceof Error && error.name === 'AbortError' ? 'ISO upstream timeout' : 'ISO upstream unavailable';
+      return new Response(request.method === 'HEAD' ? null : response.body, { status: 206, headers });
+    } catch {
+      // Try the next pinned origin.
     } finally {
       clearTimeout(timer);
     }
   }
 
-  return new Response(lastFailure, { status: 502, headers });
+  return new Response('ISO upstream temporarily unavailable', { status: 502, headers });
 }

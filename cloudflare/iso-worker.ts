@@ -126,7 +126,7 @@ export default {
               "Accept-Encoding": "identity",
               Range: range,
             },
-          }), { signal: controller.signal, cache: "no-store" });
+          }), { signal: controller.signal, cache: "no-store", redirect: "manual" });
           if (upstream.status === 206) break;
         } catch {
           if (controller.signal.aborted) continue;
