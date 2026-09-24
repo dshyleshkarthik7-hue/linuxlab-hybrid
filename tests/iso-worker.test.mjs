@@ -23,7 +23,7 @@ assert.match(worker, /isoEntries\.map/);
 assert.match(worker, /X-LinuxLab-SHA256/);
 assert.match(worker, /X-LinuxLab-Artifact-Size/);
 assert.match(worker, /X-LinuxLab-Worker-Protocol/);
-assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"4"/);
+assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"5"/);
 assert.match(worker, /"Cache-Control":\s*"no-store"/);
 assert.match(worker, /"CDN-Cache-Control":\s*"no-store"/);
 assert.match(worker, /cache:\s*"no-store"/);
@@ -31,7 +31,7 @@ assert.match(worker, /X-LinuxLab-Chunk-Total/);
 assert.match(worker, /"Vary":\s*"Origin"/);
 assert(worker.includes('netlify\\.app'));
 assert.match(worker, /new URL\(candidate\)\.origin !== url\.origin/);
-assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"4"/);
+assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"5"/);
 assert.doesNotMatch(worker, /const ALLOWED_ORIGINS = new Set/);
 
 assert.match(worker, /try\s*\{\s*upstream\s*=\s*await\s+fetch/);
