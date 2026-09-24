@@ -3,6 +3,7 @@ import manifest from '../artifacts/manifest.json' with { type: 'json' };
 const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
 const WORKER_PROTOCOL_VERSION = "5";
+const HUGGINGFACE_BUCKET_ORIGIN = "https://huggingface.co/buckets/";
 
 function isTrustedUpstream(value: string): boolean {
   try { const url = new URL(value); if (url.protocol !== "https:") return false; return url.hostname === "huggingface.co" || url.hostname.endsWith(".hf.co") || url.hostname === "github.com" || url.hostname === "objects.githubusercontent.com" || url.hostname === "release-assets.githubusercontent.com"; } catch { return false; }
