@@ -38,8 +38,10 @@ assert.match(worker, /try\s*\{\s*upstream\s*=\s*await\s+fetch/);
 assert.match(worker, /ISO origin unavailable/);
 assert.doesNotMatch(worker, /arrayBuffer\(\)/);
 assert.match(config, /"cache"\s*:\s*\{\s*"enabled"\s*:\s*false/);
-assert.match(config, /linuxterminal\.me\/api\/iso\*/);
+assert.doesNotMatch(config, /linuxterminal\.me\/api\/iso\*/);
 assert.match(config, /compatibility_date/);
 assert.match(config, /observability/);
 
 console.log('Cloudflare ISO worker contract passed');
+
+assert.match(config, /"workers_dev"\s*:\s*true/);

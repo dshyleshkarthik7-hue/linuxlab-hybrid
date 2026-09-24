@@ -9,23 +9,23 @@ const RANGE_FETCH_TIMEOUT_MS = 90_000;
 const RANGE_CHUNK_BYTES = 48 * 1024 * 1024;
 const RANGE_CONCURRENCY = 4;
 const TRUSTED_HF_PREFIX = 'https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/';
-const ISO_DELIVERY_ORIGIN = TRUSTED_ISO_ORIGIN;
+const ISO_DELIVERY_ORIGIN = 'https://linuxterminal.me';
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin);
   const artifacts = [LINUX4_ARTIFACT, ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT];
   const direct = artifacts.find((a) => new URL(a.url, window.location.origin).toString() === url.toString());
   if (direct) return direct;
-  if (url.origin === TRUSTED_HF_PREFIX.slice(0, -1) && url.href.startsWith(TRUSTED_HF_PREFIX)) {
-    if (url.pathname.endsWith('/linux4.iso')) return LINUX4_ARTIFACT;
-    if (url.pathname.endsWith('/alpine-virt-3.24.1-x86.iso')) return ALPINE_ARTIFACT;
-    if (url.pathname.endsWith('/alpine.iso')) return DEVELOPER_ALPINE_ARTIFACT;
-  }
   if (url.origin === TRUSTED_ISO_ORIGIN && url.pathname === '/') {
     const image = url.searchParams.get('image');
     if (image === 'virt') return ALPINE_ARTIFACT;
     if (image === 'linux4') return LINUX4_ARTIFACT;
     if (image === 'developer') return DEVELOPER_ALPINE_ARTIFACT;
+  }
+  if (url.origin === TRUSTED_HF_PREFIX.slice(0, -1) && url.href.startsWith(TRUSTED_HF_PREFIX)) {
+    if (url.pathname.endsWith('/linux4.iso')) return LINUX4_ARTIFACT;
+    if (url.pathname.endsWith('/alpine-virt-3.24.1-x86.iso')) return ALPINE_ARTIFACT;
+    if (url.pathname.endsWith('/alpine.iso')) return DEVELOPER_ALPINE_ARTIFACT;
   }
   for (const a of artifacts) if ((a.fallbackUrls ?? []).includes(url.toString())) return a;
   throw new Error('Untrusted ISO endpoint');
@@ -113,8 +113,25 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   const key = artifact.filename;
   const pending = inFlight.get(key);
   if (pending) return raceWithCallerSignal(pending, signal);
-  const promise = (async () => { let lastError: unknown; for (const candidate of [artifact.url, ...(artifact.fallbackUrls ?? []).filter((value) => { try { return new URL(value).origin === ISO_DELIVERY_ORIGIN; } catch { return false; } })]) { try { return await fetchIsoResumable(candidate, artifact, new AbortController().signal); } catch (error) { lastError = error; } } throw lastError instanceof Error ? lastError : new Error(`Artifact ${artifact.filename} could not be downloaded`); })();
+  const promise = (async () => {
+    let lastError: unknown;
+    const image = url.searchParams.get('image') || (artifact.filename === 'linux4.iso' ? 'linux4' : artifact.filename === 'alpine.iso' ? 'developer' : 'virt');
+    const candidates = [
+      artifact.url,
+      `${TRUSTED_ISO_ORIGIN}/?image=${image}`,
+    ];
+    for (const candidate of candidates) {
+      try { return await fetchIsoResumable(candidate, artifact, new AbortController().signal); }
+      catch (error) { lastError = error; }
+    }
+    throw lastError instanceof Error ? lastError : new Error(`Artifact ${artifact.filename} could not be downloaded`);
+  })();
   inFlight.set(key, promise);
   try { return await raceWithCallerSignal(promise, signal); } finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
 }
-async function raceWithCallerSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> { if (!signal) return promise; if (signal.aborted) throw signal.reason ?? new DOMException('Aborted','AbortError'); return new Promise<T>((resolve,reject)=>{ const abort=()=>reject(signal.reason ?? new DOMException('Aborted','AbortError')); signal.addEventListener('abort',abort,{once:true}); promise.then(v=>{signal.removeEventListener('abort',abort);resolve(v);},err=>{signal.removeEventListener('abort',abort);reject(err);}); }); }
+
+async function raceWithCallerSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  if (!signal) return promise;
+  if (signal.aborted) throw signal.reason ?? new DOMException('Aborted','AbortError');
+  return new Promise<T>((resolve,reject)=>{ const abort=()=>reject(signal.reason ?? new DOMException('Aborted','AbortError')); signal.addEventListener('abort',abort,{once:true}); promise.then(v=>{signal.removeEventListener('abort',abort);resolve(v);},err=>{signal.removeEventListener('abort',abort);reject(err);}); });
+}

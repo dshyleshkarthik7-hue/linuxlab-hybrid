@@ -1,5 +1,34 @@
 import { SEABIOS_ARTIFACT, VGABIOS_ARTIFACT } from '../../src/core/artifacts.ts';
+
 const ASSETS = { '/seabios.bin': SEABIOS_ARTIFACT, '/vgabios.bin': VGABIOS_ARTIFACT };
 const UPSTREAM_TIMEOUT_MS = 30_000;
-async function sha256Hex(bytes: ArrayBuffer): Promise<string> { const digest = await crypto.subtle.digest('SHA-256', bytes); return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join(''); }
-export default async function handler(request: Request): Promise<Response> { const pathname = new URL(request.url).pathname; const asset = ASSETS[pathname.replace(/^\/api\/v86-firmware/, '') as keyof typeof ASSETS]; if (!asset) return new Response('Not found', { status: 404 }); if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } }); const controller = new AbortController(); const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS); try { const upstream = await fetch(asset.url, { redirect: 'follow', cache: 'no-store', signal: controller.signal }); if (!upstream.ok) return new Response(`Firmware upstream returned ${upstream.status}`, { status: 502 }); const bytes = await upstream.arrayBuffer(); if (bytes.byteLength !== asset.size) throw new Error(`size ${bytes.byteLength} != ${asset.size}`); const actual = await sha256Hex(bytes); if (actual !== asset.sha256) throw new Error(`SHA-256 ${actual} != ${asset.sha256}`); const headers = new Headers({ 'Content-Type': 'application/octet-stream', 'Content-Length': String(bytes.byteLength), 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Verified': 'sha256', 'X-Content-SHA256': actual, 'X-Content-Size': String(bytes.byteLength) }); return request.method === 'HEAD' ? new Response(null, { status: 200, headers }) : new Response(bytes, { status: 200, headers }); } catch (error) { console.error(`v86 firmware verification failed for ${pathname}: ${error instanceof Error ? error.message : String(error)}`); return new Response('Verified firmware asset unavailable', { status: 502 }); } finally { clearTimeout(timer); } }
+
+async function sha256Hex(bytes: ArrayBuffer): Promise<string> {
+  const digest = await crypto.subtle.digest('SHA-256', bytes);
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, '0')).join('');
+}
+
+export default async function handler(request: Request): Promise<Response> {
+  const pathname = new URL(request.url).pathname;
+  const asset = ASSETS[pathname.replace(/^\/api\/v86-firmware/, '') as keyof typeof ASSETS];
+  if (!asset) return new Response('Not found', { status: 404 });
+  if (request.method !== 'GET' && request.method !== 'HEAD') return new Response('Method not allowed', { status: 405, headers: { Allow: 'GET, HEAD' } });
+
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+  try {
+    const upstream = await fetch(asset.url, { redirect: 'follow', cache: 'no-store', signal: controller.signal, headers: { Accept: 'application/octet-stream', 'Accept-Encoding': 'identity' } });
+    if (!upstream.ok) return new Response(`Firmware upstream returned ${upstream.status}`, { status: 502 });
+    const bytes = await upstream.arrayBuffer();
+    if (bytes.byteLength !== asset.size) throw new Error(`size ${bytes.byteLength} != ${asset.size}`);
+    const actual = await sha256Hex(bytes);
+    if (actual !== asset.sha256) throw new Error(`SHA-256 ${actual} != ${asset.sha256}`);
+    const headers = new Headers({ 'Content-Type': 'application/octet-stream', 'Content-Length': String(bytes.byteLength), 'Cache-Control': 'public, max-age=31536000, immutable', 'X-Content-Verified': 'sha256', 'X-Content-SHA256': actual, 'X-Content-Size': String(bytes.byteLength) });
+    return request.method === 'HEAD' ? new Response(null, { status: 200, headers }) : new Response(bytes, { status: 200, headers });
+  } catch (error) {
+    console.error(`v86 firmware verification failed for ${pathname}: ${error instanceof Error ? error.message : String(error)}`);
+    return new Response('Verified firmware asset unavailable', { status: 502 });
+  } finally {
+    clearTimeout(timer);
+  }
+}

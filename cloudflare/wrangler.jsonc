@@ -7,11 +7,5 @@
   "workers_dev": true,
   "cache": {
     "enabled": false
-  },
-  "routes": [
-    {
-      "pattern": "linuxterminal.me/api/iso*",
-      "zone_name": "linuxterminal.me"
-    }
-  ]
+  }
 }
