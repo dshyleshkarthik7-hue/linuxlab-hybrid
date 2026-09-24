@@ -13,7 +13,7 @@ assert.ok(learn.includes('/learn/learn.css') && learn.includes('/progress.js'), 
 const challenges = readFileSync(join(root, 'challenges/index.html'), 'utf8');
 assert.ok(challenges.includes('/challenges/challenges.js') && challenges.includes('/challenges/challenges.css'), 'Challenge assets missing');
 const progress = readFileSync(join(root, 'progress/index.html'), 'utf8');
-assert.ok(progress.includes('/progress/progress.css') && progress.includes('/progress.js'), 'Progress assets missing');
+assert.ok(/<link[^>]+href="(?:\.\/)?progress\.css"/.test(progress) && progress.includes('/progress.js'), 'Progress assets missing');
 assert.match(progress, /<script src="\/progress\.js"(?: defer)?><\/script>\s*<script type="module" src="\.\/progress\.js"><\/script>/, 'Progress ledger must load before progress UI module');
 
 const commands = ['pwd','ls','cd','mkdir','cat','cp','mv','rm','grep','find','sed','awk','chmod','chown','ps','top','df','du','tar','curl','ssh','ip','ping','git','head','tail'];
