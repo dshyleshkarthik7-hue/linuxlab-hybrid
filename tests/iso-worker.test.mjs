@@ -29,7 +29,7 @@ assert.match(worker, /"CDN-Cache-Control":\s*"no-store"/);
 assert.match(worker, /cache:\s*"no-store"/);
 assert.match(worker, /X-LinuxLab-Chunk-Total/);
 assert.match(worker, /"Vary":\s*"Origin"/);
-assert(worker.includes('netlify\\.app'));
+assert.match(worker, /netlify\\\.app/);
 assert.match(worker, /new URL\(candidate\)\.origin !== url\.origin/);
 assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"5"/);
 assert.doesNotMatch(worker, /const ALLOWED_ORIGINS = new Set/);
