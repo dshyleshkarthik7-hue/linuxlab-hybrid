@@ -60,7 +60,7 @@ assert.match(verify, /PUBLIC VERIFICATION/);
 assert.match(verifyJs, /\/api\/certificate/);
 console.log('Verified production certificate, MongoDB persistence, auth-return, progress, and security contracts passed');
 
-assert.match(certificate, /crypto\.randomUUID\(\)\.replaceAll\('\-', ''\)\.toUpperCase\(\)/);
+assert.match(certificate, /stableCertificateId\(attemptId\)/, 'certificate IDs must be deterministic per attempt for idempotent issuance');
 assert.match(certificate, /cache-control.*no-store/i);
 
 assert.match(certificate, /REVOKED_CERTIFICATE_IDS/);
