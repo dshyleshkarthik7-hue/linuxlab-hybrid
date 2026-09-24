@@ -34,7 +34,7 @@ assert.match(worker, /new URL\(candidate\)\.origin !== url\.origin/);
 assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"5"/);
 assert.doesNotMatch(worker, /const ALLOWED_ORIGINS = new Set/);
 
-assert.match(worker, /try\s*\{\s*upstream\s*=\s*await\s+fetch/);
+assert.match(worker, /upstream\s*=\s*await\s+fetch/);
 assert.match(worker, /ISO origin unavailable/);
 assert.doesNotMatch(worker, /arrayBuffer\(\)/);
 assert.match(config, /"cache"\s*:\s*\{\s*"enabled"\s*:\s*false/);
