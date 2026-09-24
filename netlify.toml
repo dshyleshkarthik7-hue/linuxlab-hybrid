@@ -31,11 +31,6 @@
 [[edge_functions]]
   path = "/api/v86-firmware/*"
   function = "v86-firmware"
-[[edge_functions]]
-  path = "/api/iso/linux4"
-  function = "linux4-iso"
-  cache = "manual"
-
 [[redirects]]
   from = "/commands"
   to = "/commands-entry.html"
