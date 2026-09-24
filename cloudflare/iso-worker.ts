@@ -143,6 +143,8 @@ export default {
       headers.set("Accept-Ranges", "bytes");
       headers.set("ETag", `"${image.sha256}-${chunk.start}-${chunk.end}"`);
       return new Response(request.method === "HEAD" ? null : upstream.body, { status: 206, headers });
+    } catch {
+      return errorResponse("ISO origin temporarily unavailable", 504, headers);
     }
   },
 };
