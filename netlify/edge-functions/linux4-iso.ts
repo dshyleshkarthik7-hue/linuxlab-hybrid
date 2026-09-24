@@ -38,6 +38,8 @@ export default async function handler(request) {
     'Content-Type': 'application/octet-stream',
   });
   if (origin) headers.set('Access-Control-Allow-Origin', origin);
+  headers.set('Cache-Control', 'no-store');
+  headers.set('CDN-Cache-Control', 'no-store');
   if (request.method === 'OPTIONS') return new Response(null, { status: 204, headers });
   if (!['GET', 'HEAD'].includes(request.method)) return new Response('Method Not Allowed', { status: 405, headers });
   if (!artifact) return new Response('Unknown ISO image', { status: 404, headers });
