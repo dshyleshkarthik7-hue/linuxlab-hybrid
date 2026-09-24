@@ -67,7 +67,7 @@ try { await startServers(); log('browser',`launching Chromium; deadline=${browse
         'cache-control': 'no-store',
         // The browser still enforces CORS for Playwright route.fulfill responses.
         // Expose the range-integrity headers consumed by verified-iso-fetch.
-        'access-control-allow-origin': new URL(request.url()).origin.replace('linuxterminal-iso.dshyleshkarthik7.workers.dev', '127.0.0.1:4174'),
+        'access-control-allow-origin': new URL(baseURL).origin,
         'access-control-expose-headers': 'Content-Range, X-LinuxLab-SHA256, X-LinuxLab-Artifact-Size, X-LinuxLab-Worker-Protocol, X-LinuxLab-Chunk-Start, X-LinuxLab-Chunk-End, X-LinuxLab-Chunk-Total',
       },
       body,
