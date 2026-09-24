@@ -72,11 +72,12 @@ const manifest = JSON.parse(await readFile('artifacts/manifest.json', 'utf8'));
 const byImage = Object.fromEntries(manifest.artifacts.filter((item) => item.image).map((item) => [item.image, item]));
 assert.equal(byImage.virt.url, 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=virt');
 assert.equal(byImage.developer.url, 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=developer');
-assert.equal(byImage.linux4.url, 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=linux4');
+assert.equal(byImage.linux4.url, 'https://linuxterminal.me/api/iso/linux4');
 assert.ok(byImage.virt.fallbackUrls.some((url) => url.includes('/alpine-iso-bucket/resolve/alpine-virt-3.24.1-x86.iso')));
 assert.ok(byImage.developer.fallbackUrls.some((url) => url.includes('/alpine-iso-bucket/resolve/alpine.iso')));
 assert.ok(byImage.linux4.fallbackUrls.some((url) => url.includes('/alpine-iso-bucket/resolve/linux4.iso')));
 assert.match(realLinux, /data-v86-key="ctrl-o"/);
+assert.match(byImage.linux4.url, /^https:\/\/linuxterminal\.me\/api\/iso\/linux4$/);
 assert.match(developer, /data-v86-profile="developer"/);
 assert.ok(realLinux.includes('/v86-layout.css') && developer.includes('/v86-layout.css'));
 
