@@ -149,7 +149,7 @@ export default async function handler(request: Request): Promise<Response> {
       headers.set('X-LinuxLab-Chunk-Start', String(chunk.start));
       headers.set('X-LinuxLab-Chunk-End', String(chunk.end));
       headers.set('X-LinuxLab-Chunk-Total', String(ARTIFACT.size));
-      headers.set('X-LinuxLab-Artifact-Size', String(ARTIFACT.size));
+      headers.set('X-LinuxLab-Artifact-Size', String(ARTIFACT.size);
       headers.set('ETag', `"${ARTIFACT.sha256}-${chunk.start}-${chunk.end}"`);
       return new Response(request.method === 'HEAD' ? null : response.body, { status: 206, headers });
     } catch {
