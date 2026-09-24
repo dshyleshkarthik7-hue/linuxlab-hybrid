@@ -52,14 +52,15 @@ try { await startServers(); log('browser',`launching Chromium; deadline=${browse
     }
     const body = verifiedIso.subarray(start, end + 1);
     return route.fulfill({
-      status: 200,
+      status: 206,
       headers: {
         'content-type': 'application/octet-stream',
         'content-length': String(body.length),
         'accept-ranges': 'bytes',
+        'content-range': `bytes ${start}-${end}/${verifiedIso.length}`,
         'x-linuxlab-sha256': isoSha256,
         'x-linuxlab-artifact-size': String(verifiedIso.length),
-        'x-linuxlab-worker-protocol': '2',
+        'x-linuxlab-worker-protocol': '4',
         'x-linuxlab-chunk-start': String(start),
         'x-linuxlab-chunk-end': String(end),
         'x-linuxlab-chunk-total': String(verifiedIso.length),
