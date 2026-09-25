@@ -23,6 +23,9 @@
   command = "npm run build && node scripts/write-build-info.mjs"
 
 [[edge_functions]]
+  path = "/api/iso/linux4"
+  function = "linux4-iso"
+[[edge_functions]]
   path = "/api/tutor"
   function = "tutor"
 [[edge_functions]]

@@ -1,11 +1,5 @@
 name: Deploy Cloudflare ISO Worker
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'cloudflare/**'
-      - 'artifacts/manifest.json'
-      - '.github/workflows/deploy-cloudflare.yml'
   workflow_dispatch:
   workflow_run:
     workflows: [CI]
