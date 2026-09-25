@@ -16,6 +16,7 @@ async function certificatesCollection() {
 
 const EXAM_VERSION = 'linux-foundations-1.0';
 const QUESTION_COUNT = 30;
+const MIN_QUESTION_BANK_SIZE = 70;
 const PASS_PERCENT = 80;
 const ATTEMPT_TTL = 3600;
 const VERIFY_RATE_LIMIT = 30;
@@ -332,6 +333,237 @@ const BANK: Q[] = [
     t: 'network',
   },
   {
+    id: 'date',
+    q: 'Which command prints the current date and time?',
+    c: ['date', 'time', 'clock', 'now'],
+    a: 'date',
+    t: 'system',
+  },
+  {
+    id: 'env',
+    q: 'Which command prints environment variables?',
+    c: ['env', 'vars', 'printenvs', 'export-all'],
+    a: 'env',
+    t: 'shell',
+  },
+  {
+    id: 'echo',
+    q: 'What does echo normally do?',
+    c: ['write its arguments to stdout', 'change directories', 'list processes', 'compile source'],
+    a: 'write its arguments to stdout',
+    t: 'shell',
+  },
+  {
+    id: 'printf',
+    q: 'Why can printf be preferred over echo in shell scripts?',
+    c: ['its formatting behavior is more specified', 'it always runs faster', 'it changes permissions', 'it lists files'],
+    a: 'its formatting behavior is more specified',
+    t: 'shell',
+  },
+  {
+    id: 'which',
+    q: 'What does command -v commonly help identify?',
+    c: ['how the shell resolves a command', 'filesystem capacity', 'the kernel version', 'a file checksum'],
+    a: 'how the shell resolves a command',
+    t: 'shell',
+  },
+  {
+    id: 'basename',
+    q: 'What does basename /var/log/app.log return?',
+    c: ['app.log', '/var/log', 'var', 'log/app'],
+    a: 'app.log',
+    t: 'files',
+  },
+  {
+    id: 'dirname',
+    q: 'What does dirname /var/log/app.log return?',
+    c: ['/var/log', 'app.log', '/var', 'log'],
+    a: '/var/log',
+    t: 'files',
+  },
+  {
+    id: 'touch',
+    q: 'What does touch file.txt commonly do when the file does not exist?',
+    c: ['create an empty file', 'delete the file', 'compress it', 'change its owner'],
+    a: 'create an empty file',
+    t: 'files',
+  },
+  {
+    id: 'ln',
+    q: 'Which ln form creates a symbolic link?',
+    c: ['ln -s target link', 'ln -r target link', 'ln -p target link', 'ln -c target link'],
+    a: 'ln -s target link',
+    t: 'files',
+  },
+  {
+    id: 'file',
+    q: 'What does file report about a path?',
+    c: ['its detected file type and related metadata', 'its network route', 'its process ID', 'its password'],
+    a: 'its detected file type and related metadata',
+    t: 'files',
+  },
+  {
+    id: 'stat',
+    q: 'Which command displays detailed file metadata such as mode and timestamps?',
+    c: ['stat', 'meta', 'lsfile', 'attrs'],
+    a: 'stat',
+    t: 'files',
+  },
+  {
+    id: 'less',
+    q: 'What is less commonly used for?',
+    c: ['viewing text interactively', 'changing permissions', 'creating archives', 'starting processes'],
+    a: 'viewing text interactively',
+    t: 'text',
+  },
+  {
+    id: 'tr',
+    q: 'What does tr commonly do?',
+    c: ['translate or delete characters', 'list processes', 'mount filesystems', 'compile C'],
+    a: 'translate or delete characters',
+    t: 'text',
+  },
+  {
+    id: 'xargs',
+    q: 'What does xargs commonly do?',
+    c: ['build command arguments from standard input', 'show kernel logs', 'compress directories', 'change file owners'],
+    a: 'build command arguments from standard input',
+    t: 'shell',
+  },
+  {
+    id: 'tee',
+    q: 'What does tee normally do in a pipeline?',
+    c: ['copy stdin to stdout and one or more files', 'replace stderr', 'sort records', 'change directories'],
+    a: 'copy stdin to stdout and one or more files',
+    t: 'shell',
+  },
+  {
+    id: 'jobs',
+    q: 'What does jobs report in an interactive shell?',
+    c: ['shell-managed background and stopped jobs', 'all system processes', 'disk usage', 'network interfaces'],
+    a: 'shell-managed background and stopped jobs',
+    t: 'processes',
+  },
+  {
+    id: 'fg',
+    q: 'What does fg normally do in a shell?',
+    c: ['bring a shell job to the foreground', 'force a filesystem check', 'filter grep output', 'format a disk'],
+    a: 'bring a shell job to the foreground',
+    t: 'processes',
+  },
+  {
+    id: 'kill',
+    q: 'What does kill primarily send to a process?',
+    c: ['a signal', 'a file', 'a network packet', 'a compiler flag'],
+    a: 'a signal',
+    t: 'processes',
+  },
+  {
+    id: 'top',
+    q: 'What does top provide interactively?',
+    c: ['a live process and resource view', 'a file editor', 'a package archive', 'a network tunnel'],
+    a: 'a live process and resource view',
+    t: 'processes',
+  },
+  {
+    id: 'free-memory',
+    q: 'Which resource does free primarily report?',
+    c: ['RAM and swap', 'filesystem inodes', 'CPU model only', 'network routes'],
+    a: 'RAM and swap',
+    t: 'system',
+  },
+  {
+    id: 'uptime',
+    q: 'What does uptime commonly show besides how long the system has run?',
+    c: ['load averages', 'file permissions', 'open ports only', 'kernel source'],
+    a: 'load averages',
+    t: 'system',
+  },
+  {
+    id: 'hostname',
+    q: 'What does hostname normally print?',
+    c: ['the system hostname', 'the current username', 'the working directory', 'the default shell'],
+    a: 'the system hostname',
+    t: 'system',
+  },
+  {
+    id: 'dmesg',
+    q: 'What does dmesg commonly display?',
+    c: ['kernel ring-buffer messages', 'shell history only', 'filesystem contents', 'compiler errors only'],
+    a: 'kernel ring-buffer messages',
+    t: 'system',
+  },
+  {
+    id: 'mount',
+    q: 'What does mount primarily manage?',
+    c: ['filesystem attachments to the directory tree', 'process priorities', 'shell variables', 'archive compression'],
+    a: 'filesystem attachments to the directory tree',
+    t: 'storage',
+  },
+  {
+    id: 'lnode',
+    q: 'What does df -h change compared with plain df?',
+    c: ['uses human-readable units', 'shows hidden files', 'sorts by filename', 'follows processes'],
+    a: 'uses human-readable units',
+    t: 'storage',
+  },
+  {
+    id: 'duh',
+    q: 'What does du -sh commonly provide?',
+    c: ['a human-readable total for a path', 'filesystem free space', 'kernel memory', 'process count'],
+    a: 'a human-readable total for a path',
+    t: 'storage',
+  },
+  {
+    id: 'tar-extract',
+    q: 'Which tar operation extracts an archive?',
+    c: ['-x', '-c', '-t', '-r'],
+    a: '-x',
+    t: 'archives',
+  },
+  {
+    id: 'tar-list',
+    q: 'Which tar operation lists archive contents?',
+    c: ['-t', '-x', '-c', '-z'],
+    a: '-t',
+    t: 'archives',
+  },
+  {
+    id: 'ssh-key',
+    q: 'Which file commonly stores a user private SSH key?',
+    c: ['~/.ssh/id_ed25519', '~/.ssh/known_hosts', '~/.ssh/config.pub', '/etc/ssh/ports'],
+    a: '~/.ssh/id_ed25519',
+    t: 'network',
+  },
+  {
+    id: 'scp',
+    q: 'What is scp commonly used for?',
+    c: ['copying files over SSH', 'compressing files only', 'listing processes', 'editing shell history'],
+    a: 'copying files over SSH',
+    t: 'network',
+  },
+  {
+    id: 'dig',
+    q: 'What does dig commonly query?',
+    c: ['DNS records', 'process tables', 'filesystem permissions', 'CPU registers'],
+    a: 'DNS records',
+    t: 'network',
+  },
+  {
+    id: 'ss',
+    q: 'What does ss commonly inspect?',
+    c: ['network sockets', 'file contents', 'shell aliases', 'compiler dependencies'],
+    a: 'network sockets',
+    t: 'network',
+  },
+  {
+    id: 'env-assignment',
+    q: 'What does VAR=value command commonly do?',
+    c: ['set VAR for that command invocation', 'persist VAR globally forever', 'delete VAR', 'export every variable'],
+    a: 'set VAR for that command invocation',
+    t: 'shell',
+  },
+  {
     id: 'cut',
     q: 'Which cut options commonly select delimiter-separated fields?',
     c: ['-d and -f', '-n and -r', '-x and -z', '-p and -q'],
@@ -486,6 +718,7 @@ async function start(user: User, request: Request) {
     return json({ error: 'Too many exam starts. Please try again later.' }, 429);
   }
 
+  if (BANK.length < MIN_QUESTION_BANK_SIZE) return json({ error: 'The verified exam question bank is not sufficiently large.' }, 503);
   const selected = shuffle(BANK)
     .slice(0, QUESTION_COUNT)
     .map((question) => ({ ...question, c: shuffle(question.c) }));

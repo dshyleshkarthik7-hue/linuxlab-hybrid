@@ -12,9 +12,14 @@ const progressJs = await readFile(new URL('../public/progress.js', import.meta.u
 
 assert.match(certificate, /UPSTASH_REDIS_REST_URL/);
 assert.match(certificate, /UPSTASH_REDIS_REST_TOKEN/);
-assert.match(certificate, /CERTIFICATE_SIGNING_SECRET/);
+assert.match(certificate, /CERTIFICATE_SIGNING_KEYS/);
+assert.match(certificate, /CERTIFICATE_SIGNING_KEY_ID/);
+assert.doesNotMatch(certificate, /CERTIFICATE_SIGNING_SECRET/, 'legacy signing secret must not remain in certificate runtime or tests');
 assert.match(certificate, /HMAC/);
 assert.match(certificate, /QUESTION_COUNT\s*=\s*30/);
+assert.match(certificate, /MIN_QUESTION_BANK_SIZE\s*=\s*70/);
+const bankEntries = certificate.match(/^\s*id:\s*'[^']+'/gm) || [];
+assert.ok(bankEntries.length >= 70, `certificate question bank must contain at least 70 questions; found ${bankEntries.length}`);
 assert.match(certificate, /PASS_PERCENT\s*=\s*80/);
 assert.match(certificate, /canonical\(unsigned/);
 assert.match(certificate, /new TextEncoder\(\)\.encode\(secret\)/, 'certificate signing must use the selected key, not only the current key');

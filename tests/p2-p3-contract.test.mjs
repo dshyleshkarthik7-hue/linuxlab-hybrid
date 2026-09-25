@@ -38,4 +38,6 @@ assert.match(cloudflare, /github\.event\.workflow_run\.event == 'push'/, 'Cloudf
 assert.match(cloudflare, /Verify deployed ISO worker/, 'Cloudflare deployment must include a post-deploy worker verification');
 const certificate = readFileSync('netlify/functions/certificate.mts', 'utf8');
 assert.doesNotMatch(certificate, /CERTIFICATE_SIGNING_SECRET/, 'certificate signing must use the keyring only');
+assert.match(certificate, /CERTIFICATE_SIGNING_KEYS/);
+assert.match(certificate, /CERTIFICATE_SIGNING_KEY_ID/);
 console.log('P2/P3 production contract checks passed');

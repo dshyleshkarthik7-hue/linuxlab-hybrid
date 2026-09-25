@@ -46,7 +46,7 @@ The practice quiz is browser-local and is not treated as a credential.
 
 ## Free verified assessment and certificate
 
-The verified assessment is free. A signed-in user starts a server-created exam attempt. The server chooses and randomizes 30 questions and their choices, stores the answer key in Upstash Redis, grades the submitted answers server-side, and requires 80% to pass.
+The verified assessment is free. A signed-in user starts a server-created exam attempt. The server chooses and randomizes 30 questions from a bank of at least 70 and randomizes their choices, stores the answer key in Upstash Redis, grades the submitted answers server-side, and requires 80% to pass.
 
 A passing attempt creates a unique certificate ID and a server-signed record containing the exact score, percentage, issue date and assessment version. The public verification page checks the stored record and signature.
 
@@ -56,7 +56,8 @@ Required Netlify environment variables:
 
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
-- `CERTIFICATE_SIGNING_SECRET`
+- `CERTIFICATE_SIGNING_KEYS` — comma-separated `keyId=secret` keyring
+- `CERTIFICATE_SIGNING_KEY_ID` — active signing key ID
 - `MONGODB_URI`
 - `MONGODB_DB` (optional; defaults to the configured certificate database)
 

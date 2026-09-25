@@ -44,9 +44,9 @@ The application does not invent a second authentication protocol: the browser ob
 
 ## Certificate service
 
-Certificate issuance is authenticated and graded server-side. Certificate records are signed with the server-only `CERTIFICATE_SIGNING_SECRET`; that secret must never be exposed to the browser or committed to Git.
+Certificate issuance is authenticated and graded server-side. Certificate records are signed with the server-only `CERTIFICATE_SIGNING_KEYS` keyring using `CERTIFICATE_SIGNING_KEY_ID` as the active key. Secrets must never be exposed to the browser or committed to Git.
 
-Certificate verification is public and read-only. Keep certificate identifiers unguessable and treat verification traffic as untrusted public traffic. The deployed certificate verifier must enforce a bounded public-request rate before querying Redis; if this control is unavailable in the current edge implementation, do not claim unlimited abuse resistance.
+Keep the previous signing key in the keyring for as long as certificates signed with it must remain verifiable; follow `docs/PHASE2-OPERATIONS.md` for rotation. Certificate verification is public and read-only. Keep certificate identifiers unguessable and treat verification traffic as untrusted public traffic. The deployed certificate verifier must enforce a bounded public-request rate before querying Redis; if this control is unavailable in the current edge implementation, do not claim unlimited abuse resistance.
 
 Certificate records currently use a five-year Redis TTL. This is an explicit retention policy, not a security guarantee. Review it against the site's privacy policy and legal/data-retention requirements before launch, and shorten it if the product does not require five years of public verification.
 
