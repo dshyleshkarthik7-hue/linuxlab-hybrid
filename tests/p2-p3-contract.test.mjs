@@ -14,5 +14,13 @@ for (const file of required.filter(f => f.endsWith('.html'))) {
 const generatedHeaders = readFileSync('scripts/generate-netlify-headers.mjs', 'utf8');
 for (const header of ['Cross-Origin-Embedder-Policy','Strict-Transport-Security','Permissions-Policy']) assert.match(generatedHeaders, new RegExp(header));
 const robots = readFileSync('public/robots.txt', 'utf8');
-assert.match(robots, /Sitemap:/);
+assert.match(robots, /^Sitemap:\s*https:\/\/linuxterminal\.me\/sitemap\.xml$/m);
+const workflows = ['.github/workflows/ci.yml','.github/workflows/deploy-cloudflare.yml','.github/workflows/production-smoke.yml'];
+for (const workflow of workflows) {
+  const yaml = readFileSync(workflow, 'utf8');
+  assert.doesNotMatch(yaml, /\bworkflow_dispatch:\s*$/m, `${workflow}: manual production bypass is not permitted`);
+}
+const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
+assert.match(ci, /Production smoke \(main deployment gate\)/);
+assert.match(ci, /EXPECTED_DEPLOY_SHA:\s*\$\{\{ github\.sha \}\}/);
 console.log('P2/P3 production contract checks passed');
