@@ -2,5 +2,6 @@ User-agent: *
 Allow: /
 Disallow: /api/
 Disallow: /login/
+Disallow: /progress/
 
 Sitemap: https://linuxterminal.me/sitemap.xml
