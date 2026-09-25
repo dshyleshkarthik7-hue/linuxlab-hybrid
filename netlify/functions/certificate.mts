@@ -5,7 +5,7 @@ const MONGODB_DB = process.env.MONGODB_DB || 'linuxlab';
 let mongoPromise: Promise<MongoClient> | null = null;
 async function certificatesCollection() {
   if (!MONGODB_URI) throw new Error('MONGODB_URI is not configured');
-  if (!mongoPromise) mongoPromise = new MongoClient(MONGODB_URI, { maxPoolSize: 5, serverSelectionTimeoutMS: 8000, serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true } }).connect().catch(error => { mongoPromise = null; throw error; });
+  if (!mongoPromise) mongoPromise = new MongoClient(MONGODB_URI, { maxPoolSize: 5, maxIdleTimeMS: 30000, retryWrites: true, retryReads: true, serverSelectionTimeoutMS: 8000, serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true } }).connect().catch(error => { mongoPromise = null; throw error; });
   const collection = (await mongoPromise).db(MONGODB_DB).collection('certificates');
   if (!CERT_INDEX_READY.has(collection)) {
     await collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: 'certificates_expiresAt_ttl' });
