@@ -1,6 +1,5 @@
 name: Deploy Cloudflare ISO Worker
 on:
-  workflow_dispatch:
   workflow_run:
     workflows: [CI]
     types: [completed]
@@ -13,7 +12,20 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
+      - name: Ensure main has not advanced since CI passed
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -euo pipefail
+          current_main_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          if [[ "$current_main_sha" != "$TESTED_SHA" ]]; then
+            echo "Main advanced from tested CI commit $TESTED_SHA to $current_main_sha; refusing stale production deploy."
+            exit 1
+          fi
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
