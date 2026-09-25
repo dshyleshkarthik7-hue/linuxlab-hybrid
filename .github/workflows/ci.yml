@@ -94,7 +94,7 @@ jobs:
         run: npm run test:iso-worker
       - name: Check production gate freshness
         id: production_freshness
-        if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' }}
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' }}
         run: |
           set -euo pipefail
           git fetch origin main --quiet
