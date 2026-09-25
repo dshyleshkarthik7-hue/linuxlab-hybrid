@@ -3,6 +3,8 @@ import { Sha256 } from './sha256.ts';
 import { clearIsoArtifactCache, readIsoChunkCache, writeIsoChunkCache } from './iso-cache.ts';
 
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
+const inFlightConsumers = new Map<string, number>();
+const inFlightControllers = new Map<string, AbortController>();
 export const TRUSTED_ISO_ORIGIN = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
 export const ISO_DELIVERY_PATH = '/api/iso/linux4';
 const RANGE_FETCH_TIMEOUT_MS = 90_000;
@@ -112,6 +114,7 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   const key = artifact.filename;
   const pending = inFlight.get(key);
   if (pending) return raceWithCallerSignal(pending, signal);
+  const controller = new AbortController();
   const promise = (async () => {
     let lastError: unknown;
     const image = url.searchParams.get('image') || (artifact.filename === 'linux4.iso' ? 'linux4' : artifact.filename === 'alpine.iso' ? 'developer' : 'virt');
@@ -120,13 +123,33 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
       `${TRUSTED_ISO_ORIGIN}/?image=${image}`,
     ];
     for (const candidate of candidates) {
-      try { return await fetchIsoResumable(candidate, artifact, new AbortController().signal); }
+      try { return await fetchIsoResumable(candidate, artifact, controller.signal); }
       catch (error) { lastError = error; }
     }
     throw lastError instanceof Error ? lastError : new Error(`Artifact ${artifact.filename} could not be downloaded`);
   })();
   inFlight.set(key, promise);
-  try { return await raceWithCallerSignal(promise, signal); } finally { if (inFlight.get(key) === promise) inFlight.delete(key); }
+  inFlightConsumers.set(key, 0);
+  inFlightControllers.set(key, controller);
+  try { return await waitForInFlight(key, promise, signal); } finally { releaseInFlight(key, promise); }
+}
+
+async function waitForInFlight<T>(key: string, promise: Promise<T>, signal?: AbortSignal): Promise<T> {
+  inFlightConsumers.set(key, (inFlightConsumers.get(key) ?? 0) + 1);
+  return raceWithCallerSignal(promise, signal);
+}
+
+function releaseInFlight(key: string, promise: Promise<ArrayBuffer>): void {
+  const consumers = Math.max(0, (inFlightConsumers.get(key) ?? 1) - 1);
+  if (consumers === 0 && inFlight.get(key) === promise) {
+    inFlightControllers.get(key)?.abort(new DOMException('No ISO download consumers remain', 'AbortError'));
+    inFlightConsumers.delete(key);
+    inFlightControllers.delete(key);
+    inFlight.delete(key);
+  } else {
+    inFlightConsumers.set(key, consumers);
+    if (inFlight.get(key) !== promise) return;
+  }
 }
 
 async function raceWithCallerSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {

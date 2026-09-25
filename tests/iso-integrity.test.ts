@@ -64,4 +64,6 @@ if (process.env.ISO_LIVE_VERIFY === '1') {
     console.log(`Developer Alpine release verified: ${size} bytes + SHA-256`);
   } finally { clearTimeout(timer); }
 }
+const verifiedIsoSource = require('node:fs').readFileSync('src/core/verified-iso-fetch.ts', 'utf8');
+assert.match(verifiedIsoSource, /fetchIsoResumable\(candidate, artifact, controller\.signal\)/, 'ISO downloads must be cancellable when all callers leave');
 console.log('ISO integrity fail-closed, response validation, and incremental hashing checks passed');
