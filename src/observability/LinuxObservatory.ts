@@ -20,7 +20,9 @@ export class LinuxObservatory {
 
   setGuestTelemetry(snapshot: GuestSystemTelemetry): void {
     if (this.source !== 'REAL') return;
-    if (!snapshot.kernel || !snapshot.architecture || !Number.isFinite(snapshot.uptimeSeconds)) throw new Error('invalid guest telemetry snapshot');
+    if (!snapshot.kernel || !snapshot.architecture || snapshot.kernel.length > 256 || snapshot.architecture.length > 64) throw new Error('invalid guest telemetry snapshot');
+    if (![snapshot.cpuPercent, snapshot.memoryBytes, snapshot.diskBytes, snapshot.uptimeSeconds, snapshot.loadAverage].every(Number.isFinite)) throw new Error('invalid guest telemetry snapshot');
+    if (snapshot.cpuPercent < 0 || snapshot.cpuPercent > 100 || snapshot.memoryBytes < 0 || snapshot.diskBytes < 0 || snapshot.uptimeSeconds < 0 || snapshot.loadAverage < 0) throw new Error('invalid guest telemetry snapshot');
     this.guest = { ...snapshot };
   }
 
@@ -28,6 +30,9 @@ export class LinuxObservatory {
   hasGuestTelemetry(): boolean { return this.guest !== null; }
 
   spawn(command: string, ppid = 2): ProcessTelemetry {
+    if (typeof command !== 'string' || command.length === 0 || command.length > 4096) throw new Error('invalid process command');
+    if (!Number.isSafeInteger(ppid) || ppid < 0 || ppid > 1_000_000_000) throw new Error('invalid parent pid');
+    if (this.processes.size >= 1000) throw new Error('process table limit reached');
     const process: ProcessTelemetry = { pid: this.nextPid++, ppid, user: 'root', state: 'R', cpuPercent: 0, memoryBytes: 1024 * 1024, command };
     this.processes.set(process.pid, process);
     return { ...process };

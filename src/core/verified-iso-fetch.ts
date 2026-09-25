@@ -75,7 +75,7 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
     } catch (error) {
       lastError = error;
       if (signal.aborted) throw error;
-      if (attempt < 2) await new Promise(resolve => setTimeout(resolve, 250 * 2 ** attempt));
+      if (attempt < 2) await new Promise<void>((resolve, reject) => { const timer = setTimeout(resolve, 250 * 2 ** attempt); const abort = () => { clearTimeout(timer); signal.removeEventListener('abort', abort); reject(signal.reason ?? new DOMException('Aborted', 'AbortError')); }; signal.addEventListener('abort', abort, { once: true }); });
     }
   }
   throw lastError instanceof Error ? lastError : new Error('ISO range request failed');

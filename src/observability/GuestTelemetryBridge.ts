@@ -41,17 +41,24 @@ export class GuestTelemetryBridge {
     }
     if (!Number.isFinite(totalTicks) || !Number.isFinite(idle) || totalTicks < 0 || idle < 0) return null;
     this.previousCpu = { total: totalTicks, idle };
-    const totalBytes = Number(total.match(/\d+/)?.[0] ?? 0) * 1024;
-    const availableBytes = Number(available.match(/\d+/)?.[0] ?? 0) * 1024;
-    const diskBytes = Number(disk.split(/\s+/)[1] ?? 0) * 1024;
+    const totalKb = Number(total.match(/\d+/)?.[0] ?? 0);
+    const availableKb = Number(available.match(/\d+/)?.[0] ?? 0);
+    const diskKb = Number(disk.split(/\s+/)[1] ?? 0);
+    const uptimeSeconds = Number(uptime.split(/\s+/)[0] || 0);
+    const loadAverage = Number(load.split(/\s+/)[0] || 0);
+    if (![totalKb, availableKb, diskKb, uptimeSeconds, loadAverage].every(Number.isSafeInteger) || totalKb < 0 || availableKb < 0 || diskKb < 0 || uptimeSeconds < 0 || loadAverage < 0 || availableKb > totalKb) return null;
+    const totalBytes = totalKb * 1024;
+    const availableBytes = availableKb * 1024;
+    const diskBytes = diskKb * 1024;
+    if (![totalBytes, availableBytes, diskBytes].every(Number.isSafeInteger)) return null;
     const snapshot: GuestTelemetrySnapshot = {
       kernel: unameParts[1] || 'unknown',
       architecture: unameParts[2] || 'unknown',
       cpuPercent,
       memoryBytes: Math.max(0, totalBytes - availableBytes),
       diskBytes: Math.max(0, diskBytes),
-      uptimeSeconds: Number(uptime.split(/\s+/)[0] || 0),
-      loadAverage: Number(load.split(/\s+/)[0] || 0),
+      uptimeSeconds,
+      loadAverage,
       sampledAt: Date.now(),
     };
     this.snapshot = snapshot;

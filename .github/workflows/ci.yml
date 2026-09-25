@@ -107,7 +107,7 @@ jobs:
           echo "current=true" >> "$GITHUB_OUTPUT"
 
       - name: Production smoke (main deployment gate)
-        if: ${{ github.ref == 'refs/heads/main' && github.event_name != 'pull_request' && steps.production_freshness.outputs.current == 'true' }}
+        if: ${{ github.ref == 'refs/heads/main' && github.event_name == 'push' && steps.production_freshness.outputs.current == 'true' }}
         env:
           PRODUCTION_BASE_URL: ${{ vars.PRODUCTION_BASE_URL || 'https://linuxterminal.me' }}
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
