@@ -29,9 +29,8 @@ const MAX_BODY_BYTES = 16384;
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const UPSTASH_TIMEOUT_MS = Math.max(1000, Number(process.env.UPSTASH_TIMEOUT_MS || 5000));
-const SIGNING_SECRET = process.env.CERTIFICATE_SIGNING_SECRET;
 const SIGNING_KEY_ID = process.env.CERTIFICATE_SIGNING_KEY_ID || 'current';
-const SIGNING_KEYS = (() => { const map = new Map<string, string>(); if (SIGNING_SECRET) map.set(SIGNING_KEY_ID, SIGNING_SECRET); for (const item of (process.env.CERTIFICATE_SIGNING_KEYS || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
+const SIGNING_KEYS = (() => { const map = new Map<string, string>(); for (const item of (process.env.CERTIFICATE_SIGNING_KEYS || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
 const ALLOWED_ORIGINS = new Set((process.env.CERTIFICATE_ALLOWED_ORIGINS || 'https://linuxterminal.me').split(',').map(value => value.trim()).filter(Boolean));
 const corsOrigin = (request: Request) => { const origin = request.headers.get('origin'); return origin && ALLOWED_ORIGINS.has(origin) ? origin : undefined; };
 
@@ -480,7 +479,8 @@ async function start(user: User, request: Request) {
     return json({ error: 'The free verified exam is temporarily unavailable because persistence or signing is not configured.' }, 503);
   }
 
-  const ip = safe((request.headers.get('x-nf-client-connection-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown').trim().slice(0, 128));
+  const ip = safe((request.headers.get('x-nf-client-connection-ip') || '').trim().slice(0, 128));
+  if (!ip) return json({ error: 'Unable to establish a trusted client identity.' }, 503);
   if (!(await rateLimit(`linuxterminal:rate:exam-start:ip:${ip}`, EXAM_RATE_LIMIT, EXAM_RATE_WINDOW_SECONDS))) return json({ error: 'Too many exam starts from this client. Please try again later.' }, 429);
   if (!(await rateLimit(`linuxterminal:rate:exam-start:user:${safe(String(user.id))}`, 5, 3600))) {
     return json({ error: 'Too many exam starts. Please try again later.' }, 429);
@@ -523,6 +523,7 @@ async function submit(user: User, body: unknown, request: Request) {
   }
 
   const ip = safe((request.headers.get('x-nf-client-connection-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown').trim().slice(0, 128));
+  if (!ip) return json({ error: 'Unable to establish a trusted client identity.' }, 503);
   if (!(await rateLimit(`linuxterminal:rate:exam-submit:ip:${ip}`, EXAM_RATE_LIMIT, EXAM_RATE_WINDOW_SECONDS))) return json({ error: 'Too many exam submissions from this client. Please try again later.' }, 429);
   if (!(await rateLimit(`linuxterminal:rate:exam-submit:user:${safe(String(user.id))}`, 10, 3600))) {
     return json({ error: 'Too many exam submissions. Please try again later.' }, 429);
@@ -627,8 +628,8 @@ async function submit(user: User, body: unknown, request: Request) {
 async function verify(id: string, request: Request) {
   if (!UPSTASH_URL || !UPSTASH_TOKEN) return json({ error: 'Certificate verification is temporarily unavailable.' }, 503, corsOrigin(request));
   {
-    const forwarded = request.headers.get('x-nf-client-connection-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown';
-    const client = safe(forwarded.trim().slice(0, 128));
+    const client = safe((request.headers.get('x-nf-client-connection-ip') || '').trim().slice(0, 128));
+    if (!client) return json({ error: 'Unable to establish a trusted client identity.' }, 503);
     if (!(await rateLimit(`linuxterminal:rate:certificate-verify:${client}`, VERIFY_RATE_LIMIT, VERIFY_RATE_WINDOW_SECONDS))) {
       return json({ error: 'Too many verification requests. Please try again later.' }, 429);
     }

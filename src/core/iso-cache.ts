@@ -1,4 +1,5 @@
 import type { PinnedArtifact } from './artifacts.ts';
+import { Sha256 } from './sha256.ts';
 
 const CACHE_NAME = 'linuxlab-iso-v1';
 const CACHE_VERSION = '3';
@@ -55,10 +56,13 @@ export async function readIsoChunkCache(artifact: PinnedArtifact, start: number,
     const cachedEnd = response.headers.get('x-linuxlab-chunk-end');
     const cachedTotal = response.headers.get('x-linuxlab-chunk-total');
     const cachedSha = response.headers.get('x-linuxlab-sha256');
+    const cachedChunkDigest = response.headers.get('x-linuxlab-chunk-digest');
     if (length !== null && Number(length) !== expectedLength) return null;
-    if (cachedStart !== String(start) || cachedEnd !== String(end) || cachedTotal !== String(artifact.size) || cachedSha !== artifact.sha256) return null;
+    if (cachedStart !== String(start) || cachedEnd !== String(end) || cachedTotal !== String(artifact.size) || cachedSha !== artifact.sha256 || !/^[a-f0-9]{64}$/i.test(cachedChunkDigest || '')) return null;
     const bytes = await response.arrayBuffer();
     if (bytes.byteLength !== expectedLength) return null;
+    const digest = new Sha256().update(new Uint8Array(bytes)).digestHex();
+    if (digest !== cachedChunkDigest!.toLowerCase()) { await cache.delete(key); return null; }
     const touched = new Response(bytes.slice(0), { status: 200, headers: {
       'content-type': 'application/octet-stream',
       'content-length': String(bytes.byteLength),
@@ -66,6 +70,7 @@ export async function readIsoChunkCache(artifact: PinnedArtifact, start: number,
       'x-linuxlab-chunk-end': String(end),
       'x-linuxlab-chunk-total': String(artifact.size),
       'x-linuxlab-sha256': artifact.sha256,
+      'x-linuxlab-chunk-digest': cachedChunkDigest!,
       'x-linuxlab-cache-touched': String(Date.now()),
     }});
     await cache.put(key, touched);

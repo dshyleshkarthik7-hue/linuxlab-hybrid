@@ -66,7 +66,7 @@ export class VMRuntimeResourceEnforcer {
   get commandTimeoutMs(): number { return this.policy.maxCommandMs; }
   sessionExpired(now = Date.now()): boolean { return now - this.state.startedAt >= this.policy.maxSessionMs; }
   remainingSessionMs(now = Date.now()): number { return Math.max(0, this.policy.maxSessionMs - (now - this.state.startedAt)); }
-  acceptSerialByte(byteCount = 1): boolean { if (byteCount < 0 || !Number.isFinite(byteCount)) return false; if (this.state.serialBytes + byteCount > this.policy.maxSerialBytes) return false; this.state.serialBytes += byteCount; return true; }
+  acceptSerialByte(byteCount = 1): boolean { if (!Number.isSafeInteger(byteCount) || byteCount < 0) return false; if (this.state.serialBytes + byteCount > this.policy.maxSerialBytes) return false; this.state.serialBytes += byteCount; return true; }
   acceptOutput(value: string): { value: string; truncated: boolean } { const remaining = Math.max(0, this.policy.maxOutputBytes - this.state.outputBytes); const bounded = boundedText(value, remaining); this.state.outputBytes += new TextEncoder().encode(bounded.value).byteLength; return bounded; }
   observeGuest(sample: GuestResourceSample, now = Date.now()): boolean {
     const sampledAt = sample.sampledAt ?? now;
