@@ -15,6 +15,7 @@ const CIRCUIT_FAILURE_LIMIT = Number(Netlify.env.get('TUTOR_CIRCUIT_FAILURE_LIMI
 const CIRCUIT_OPEN_SECONDS = Number(Netlify.env.get('TUTOR_CIRCUIT_OPEN_SECONDS') || 30);
 const GLOBAL_EFFECTIVE_LIMIT = Math.max(1, Math.min(GLOBAL_LIMIT, Math.floor(GLOBAL_TOKEN_BUDGET / MAX_OUTPUT_TOKENS)));
 const TIMEOUT_MS = 15000;
+const UPSTASH_TIMEOUT_MS = Math.max(1000, Number(Netlify.env.get('UPSTASH_TIMEOUT_MS') || 5000));
 const UPSTASH_URL = Netlify.env.get('UPSTASH_REDIS_REST_URL');
 const UPSTASH_TOKEN = Netlify.env.get('UPSTASH_REDIS_REST_TOKEN');
 const configuredOrigins = (Netlify.env.get('TUTOR_ALLOWED_ORIGINS') || 'https://linuxterminal.me')
@@ -103,6 +104,8 @@ return nextIp
 
 async function durableLimit(userId: string, ip: string): Promise<RateLimitResult> {
   if (!UPSTASH_URL || !UPSTASH_TOKEN) return { available: false, allowed: false };
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
   const safeUser = userId.replace(/[^a-zA-Z0-9:._-]/g, '_');
   const safeIp = ip.replace(/[^a-zA-Z0-9:._-]/g, '_');
   const userKey = `linuxterminal:tutor:user:${safeUser}`;
@@ -116,6 +119,7 @@ async function durableLimit(userId: string, ip: string): Promise<RateLimitResult
         'content-type': 'application/json',
       },
       body: JSON.stringify(['EVAL', RATE_LIMIT_SCRIPT, '3', userKey, ipKey, globalKey, String(LIMIT), String(WINDOW_SECONDS), String(GLOBAL_EFFECTIVE_LIMIT)]),
+      signal: controller.signal,
     });
     if (!response.ok) return { available: false, allowed: false };
     const data: unknown = await response.json();
@@ -126,17 +130,21 @@ async function durableLimit(userId: string, ip: string): Promise<RateLimitResult
     return { available: true, allowed: count >= 0, count: count >= 0 ? count : LIMIT };
   } catch {
     return { available: false, allowed: false };
+  } finally {
+    clearTimeout(timeout);
   }
 }
 
 async function circuitOpen(): Promise<boolean> {
   if (!UPSTASH_URL || !UPSTASH_TOKEN) return true;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
   try {
-    const response = await fetch(UPSTASH_URL, { method: 'POST', headers: { authorization: `Bearer ${UPSTASH_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify(['GET', 'linuxterminal:tutor:circuit:open']) });
+    const response = await fetch(UPSTASH_URL, { method: 'POST', signal: controller.signal, headers: { authorization: `Bearer ${UPSTASH_TOKEN}`, 'content-type': 'application/json' }, body: JSON.stringify(['GET', 'linuxterminal:tutor:circuit:open']) });
     if (!response.ok) return true;
     const data = await response.json() as { result?: unknown };
     return data.result === '1';
-  } catch { return true; }
+  } catch { return true; } finally { clearTimeout(timeout); }
 }
 async function recordCircuitFailure(): Promise<void> {
   if (!UPSTASH_URL || !UPSTASH_TOKEN) return;
