@@ -32,3 +32,13 @@ For browser VM changes, also run the CI smoke workflow or its equivalent environ
 ## Security
 
 Do not add host-shell execution, arbitrary local file access, secrets, or credentials to Engine A. Validate persisted user-controlled identifiers before storage.
+
+
+## Source-of-truth layout
+
+The repository intentionally separates static passthrough assets from application source:
+
+- `public/` contains files Vite copies verbatim into the production site. A file referenced by an absolute site path (for example `/home.css`) should have its canonical source in `public/`.
+- Top-level page directories such as `progress/` contain page-local HTML/CSS/JS entrypoints that are published as static routes.
+- `src/` contains bundled application source. Do not add duplicate static assets there unless they are imported by the application.
+- When the same filename exists in multiple locations, verify the generated `dist/` output and the page's actual references before editing; do not assume similarly named files are interchangeable.
