@@ -11,6 +11,9 @@ for (const file of required.filter(f => f.endsWith('.html'))) {
   assert.match(html, /<meta[^>]+name=["']viewport/i, `${file}: missing viewport`);
   assert.match(html, /<title>[^<]+<\/title>/i, `${file}: missing title`);
 }
+const netlify = readFileSync('netlify.toml', 'utf8');
+assert.match(netlify, /command\s*=\s*"npm run build"/);
+assert.doesNotMatch(netlify, /command\s*=\s*"npm run build && node scripts\/write-build-info\.mjs"/, 'Netlify must not overwrite generated build-info metadata');
 const generatedHeaders = readFileSync('scripts/generate-netlify-headers.mjs', 'utf8');
 for (const header of ['Cross-Origin-Embedder-Policy','Strict-Transport-Security','Permissions-Policy']) assert.match(generatedHeaders, new RegExp(header));
 const robots = readFileSync('public/robots.txt', 'utf8');

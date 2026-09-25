@@ -4,6 +4,7 @@ const RATE_WINDOW_SECONDS = 60;
 const MAX_LOG_FIELD_BYTES = 512;
 const UPSTASH_URL = Netlify.env.get('UPSTASH_REDIS_REST_URL');
 const UPSTASH_TOKEN = Netlify.env.get('UPSTASH_REDIS_REST_TOKEN');
+const UPSTASH_TIMEOUT_MS = Math.max(1000, Number(Netlify.env.get('UPSTASH_TIMEOUT_MS') || 5000));
 
 type EdgeContext = { ip?: string };
 
@@ -34,8 +35,11 @@ if count >= limit then return -1 end
 if count == 0 then redis.call('SET', KEYS[1], '1', 'EX', ttl); return 1 end
 return redis.call('INCR', KEYS[1])
 `;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
   try {
     const response = await fetch(UPSTASH_URL, {
+      signal: controller.signal,
       method: 'POST',
       headers: {
         authorization: `Bearer ${UPSTASH_TOKEN}`,
@@ -62,6 +66,8 @@ return redis.call('INCR', KEYS[1])
     return result < 0;
   } catch {
     return true;
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

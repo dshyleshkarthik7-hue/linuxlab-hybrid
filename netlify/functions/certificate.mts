@@ -377,10 +377,18 @@ async function auth(request: Request): Promise<User | null> {
   else return null;
 
   try {
-    const response = await fetch(new URL('/.netlify/identity/user', request.url), {
-      headers,
-      cache: 'no-store',
-    });
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
+    let response: Response;
+    try {
+      response = await fetch(new URL('/.netlify/identity/user', request.url), {
+        headers,
+        cache: 'no-store',
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeout);
+    }
     if (!response.ok) return null;
     const user = await response.json() as User;
     return typeof user.id === 'string' && user.id.trim() ? user : null;

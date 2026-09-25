@@ -147,13 +147,13 @@ async function circuitOpen(): Promise<boolean> {
   } catch { return true; } finally { clearTimeout(timeout); }
 }
 async function recordCircuitFailure(): Promise<void> {
-  const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
   if (!UPSTASH_URL || !UPSTASH_TOKEN) return;
+  const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
   try { await fetch(UPSTASH_URL, { method: 'POST', headers: { authorization: `Bearer ${UPSTASH_TOKEN}`, 'content-type': 'application/json' }, signal: controller.signal, body: JSON.stringify(['EVAL', "local failures = redis.call('INCR', KEYS[1]); if failures == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end; if failures >= tonumber(ARGV[2]) then redis.call('SET', KEYS[2], '1', 'EX', ARGV[3]) end; return failures", '2', 'linuxterminal:tutor:circuit:failures', 'linuxterminal:tutor:circuit:open', String(CIRCUIT_OPEN_SECONDS), String(CIRCUIT_FAILURE_LIMIT), String(CIRCUIT_OPEN_SECONDS)]) }); } catch {}
 }
 async function recordCircuitSuccess(): Promise<void> {
-  const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
   if (!UPSTASH_URL || !UPSTASH_TOKEN) return;
+  const controller = new AbortController(); const timeout = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
   try { await fetch(UPSTASH_URL, { method: 'POST', headers: { authorization: `Bearer ${UPSTASH_TOKEN}`, 'content-type': 'application/json' }, signal: controller.signal, body: JSON.stringify(['DEL', 'linuxterminal:tutor:circuit:failures']) }); } catch {}
 }
 

@@ -20,7 +20,7 @@
 
 [build]
   publish = "dist"
-  command = "npm run build && node scripts/write-build-info.mjs"
+  command = "npm run build"
 
 [[edge_functions]]
   path = "/api/iso/linux4"
