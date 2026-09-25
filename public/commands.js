@@ -22,6 +22,7 @@ const COMMANDS = [
 ];
 
 const DEDICATED_LESSONS = new Set(['pwd','ls','cd','mkdir','cat','cp','mv','rm','grep','find','sed','awk','chmod','chown','ps','top','df','du','tar','curl','ssh','ip','ping','git','head','tail']);
+const COMMAND_DESCRIPTIONS = { pwd:'Print the current working directory.',ls:'List files and directories.',cd:'Change the current working directory.',mkdir:'Create directories.',cat:'Read and combine file contents.',cp:'Copy files and directories.',mv:'Move or rename files and directories.',rm:'Remove files and directories.',grep:'Search text with patterns.',find:'Search for files and directories by conditions.',sed:'Edit and transform text streams.',awk:'Process structured text and fields.',chmod:'Change file permissions.',chown:'Change file ownership.',ps:'Inspect running processes.',top:'Monitor running processes and system activity.',df:'Check filesystem disk space.',du:'Measure directory and file usage.',tar:'Create and extract tar archives.',curl:'Transfer data with URLs.',ssh:'Connect to a remote host securely.',ip:'Inspect network interfaces and routes.',ping:'Test network reachability.',git:'Track and manage source code with Git.',head:'Show the beginning of a file.',tail:'Show the end of a file.'};
 const COMMAND_DESCRIPTIONS = {
   pwd: 'Print the current working directory.',
   ls: 'List files and directories.',
