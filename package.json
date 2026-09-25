@@ -61,7 +61,7 @@
     "test:p2-p3-contract": "node tests/p2-p3-contract.test.mjs"
   },
   "dependencies": {
-    "monaco-editor": "0.52.2",
+    "monaco-editor": "0.56.0",
     "mongodb": "6.20.0",
     "@xterm/xterm": "5.5.0",
     "@xterm/addon-fit": "0.11.0"
