@@ -113,7 +113,9 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   const artifact = artifactForIsoUrl(url.toString());
   const key = artifact.filename;
   const pending = inFlight.get(key);
-  if (pending) return raceWithCallerSignal(pending, signal);
+  if (pending) {
+    return waitForInFlight(key, pending, signal).finally(() => releaseInFlight(key, pending));
+  }
   const controller = new AbortController();
   const promise = (async () => {
     let lastError: unknown;
@@ -124,14 +126,21 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
     ];
     for (const candidate of candidates) {
       try { return await fetchIsoResumable(candidate, artifact, controller.signal); }
-      catch (error) { lastError = error; }
+      catch (error) { lastError = error; if (controller.signal.aborted) throw error; }
     }
     throw lastError instanceof Error ? lastError : new Error(`Artifact ${artifact.filename} could not be downloaded`);
   })();
   inFlight.set(key, promise);
   inFlightConsumers.set(key, 0);
   inFlightControllers.set(key, controller);
-  try { return await waitForInFlight(key, promise, signal); } finally { releaseInFlight(key, promise); }
+  void promise.finally(() => {
+    if (inFlight.get(key) === promise) {
+      inFlight.delete(key);
+      inFlightConsumers.delete(key);
+      inFlightControllers.delete(key);
+    }
+  }).catch(() => undefined);
+  return waitForInFlight(key, promise, signal).finally(() => releaseInFlight(key, promise));
 }
 
 async function waitForInFlight<T>(key: string, promise: Promise<T>, signal?: AbortSignal): Promise<T> {
@@ -143,13 +152,8 @@ function releaseInFlight(key: string, promise: Promise<ArrayBuffer>): void {
   const consumers = Math.max(0, (inFlightConsumers.get(key) ?? 1) - 1);
   if (consumers === 0 && inFlight.get(key) === promise) {
     inFlightControllers.get(key)?.abort(new DOMException('No ISO download consumers remain', 'AbortError'));
-    inFlightConsumers.delete(key);
-    inFlightControllers.delete(key);
-    inFlight.delete(key);
-  } else {
-    inFlightConsumers.set(key, consumers);
-    if (inFlight.get(key) !== promise) return;
   }
+  inFlightConsumers.set(key, consumers);
 }
 
 async function raceWithCallerSignal<T>(promise: Promise<T>, signal?: AbortSignal): Promise<T> {
