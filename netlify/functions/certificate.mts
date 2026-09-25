@@ -28,6 +28,7 @@ const CERT_INDEX_READY = new WeakSet<object>();
 const MAX_BODY_BYTES = 16384;
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
+const UPSTASH_TIMEOUT_MS = Math.max(1000, Number(process.env.UPSTASH_TIMEOUT_MS || 5000));
 const SIGNING_SECRET = process.env.CERTIFICATE_SIGNING_SECRET;
 const SIGNING_KEY_ID = process.env.CERTIFICATE_SIGNING_KEY_ID || 'current';
 const SIGNING_KEYS = (() => { const map = new Map<string, string>(); if (SIGNING_SECRET) map.set(SIGNING_KEY_ID, SIGNING_SECRET); for (const item of (process.env.CERTIFICATE_SIGNING_KEYS || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
@@ -390,15 +391,23 @@ async function auth(request: Request): Promise<User | null> {
 
 async function redis(command: unknown[]) {
   if (!UPSTASH_URL || !UPSTASH_TOKEN) throw new Error('Upstash is not configured');
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), UPSTASH_TIMEOUT_MS);
+  let response: Response;
+  try {
+    response = await fetch(UPSTASH_URL, {
 
-  const response = await fetch(UPSTASH_URL, {
     method: 'POST',
     headers: {
       authorization: `Bearer ${UPSTASH_TOKEN}`,
       'content-type': 'application/json',
     },
     body: JSON.stringify(command),
+    signal: controller.signal,
   });
+  } finally {
+    clearTimeout(timer);
+  }
   if (!response.ok) throw new Error('Upstash request failed');
 
   const payload = await response.json() as { result?: unknown; error?: unknown };
