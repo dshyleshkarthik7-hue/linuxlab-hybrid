@@ -1,12 +1,11 @@
-```powershell
 Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 $ProjectRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $IsoBuilder  = $PSScriptRoot
 
-$WorkRootWin = Join-Path $IsoBuilder "work"
-$OutputRoot  = Join-Path $ProjectRoot "public"
+$WorkRootWin = if ($env:LINUXLAB_ISO_WORK) { $env:LINUXLAB_ISO_WORK } else { Join-Path $IsoBuilder "work" }
+$OutputRoot  = if ($env:LINUXLAB_ISO_OUTPUT) { $env:LINUXLAB_ISO_OUTPUT } else { Join-Path $ProjectRoot "public" }
 
 $BashFile = Join-Path $IsoBuilder "build-linuxlab-gcc.sh"
 
@@ -118,7 +117,7 @@ if ($LASTEXITCODE -ne 0) {
 # Linux-native build directory
 # ------------------------------------------------------------
 
-$WslWork = "/tmp/linuxlab-gcc-build"
+$WslWork = if ($env:LINUXLAB_ISO_WSL_WORK) { $env:LINUXLAB_ISO_WSL_WORK } else { "/tmp/linuxlab-gcc-build" }
 
 Write-Host ""
 Write-Host "[3/5] Preparing Linux-native WSL build directory..."
@@ -182,4 +181,3 @@ Write-Host ""
 Write-Host "ISO : $Iso"
 Write-Host ("Size: {0:N1} MB" -f ($Size / 1MB))
 Write-Host ""
-```

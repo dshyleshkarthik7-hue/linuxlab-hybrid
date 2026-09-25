@@ -10,3 +10,9 @@ assert.match(script, /linuxlab-autologin/, 'browser VM must not block on an inte
 assert.match(script, /__LINUXLAB_READY__/, 'guest readiness must expose a deterministic marker');
 assert.match(script, /test -x \/init/, 'build must verify the initramfs entrypoint before creating the ISO');
 console.log('ISO builder contract passed');
+
+const powershell = readFileSync(new URL('../iso-builder/build-alpine-gcc.ps1', import.meta.url), 'utf8');
+assert.doesNotMatch(powershell, /^```(?:powershell)?/m, 'PowerShell builder must be executable source, not Markdown fenced text');
+assert.doesNotMatch(powershell, /```$/m, 'PowerShell builder must not contain a trailing Markdown fence');
+assert.match(powershell, /LINUXLAB_ISO_OUTPUT/, 'PowerShell builder must honor the launcher output override');
+assert.match(powershell, /LINUXLAB_ISO_WORK/, 'PowerShell builder must honor the launcher work override');
