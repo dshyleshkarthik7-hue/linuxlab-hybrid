@@ -18,7 +18,7 @@ jobs:
           TESTED_SHA: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -euo pipefail
-          current_main_sha="$(git ls-remote origin refs/heads/main | awk '{print $1}')"
+          current_main_sha="$(git ls-remote "https://github.com/${GITHUB_REPOSITORY}.git" refs/heads/main | awk '{print $1}')"
           if [[ "$current_main_sha" != "$TESTED_SHA" ]]; then
             echo "Main advanced from tested CI commit $TESTED_SHA to $current_main_sha; refusing stale production deploy."
             exit 1
