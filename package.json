@@ -56,7 +56,8 @@
     "test:profile-boot": "node tests/profile-boot.mjs",
     "test:ui-ux": "node tests/ui-ux-profile-contract.mjs",
     "test:config": "node scripts/production-config-contract.mjs",
-    "sbom": "npm sbom --sbom-format cyclonedx --sbom-type application > sbom.cdx.json"
+    "sbom": "npm sbom --sbom-format cyclonedx --sbom-type application > sbom.cdx.json",
+    "test:iso-builder": "bash -n iso-builder/build-linuxlab-gcc.sh && node tests/iso-builder-contract.test.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.52.2",

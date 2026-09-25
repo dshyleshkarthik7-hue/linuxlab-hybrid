@@ -56,8 +56,11 @@ jobs:
           name: dependency-audit-${{ github.sha }}
           path: dependency-audit.json
       - run: npm run lint
-      - name: Verify ISO builder boot contract
-        run: node tests/iso-builder-contract.test.mjs
+      - name: Verify ISO builder scripts
+        run: |
+          set -euo pipefail
+          bash -n iso-builder/build-linuxlab-gcc.sh
+          node tests/iso-builder-contract.test.mjs
       - name: Install Playwright browser matrix
         run: |
           set -euo pipefail

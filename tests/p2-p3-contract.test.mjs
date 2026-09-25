@@ -15,12 +15,18 @@ const generatedHeaders = readFileSync('scripts/generate-netlify-headers.mjs', 'u
 for (const header of ['Cross-Origin-Embedder-Policy','Strict-Transport-Security','Permissions-Policy']) assert.match(generatedHeaders, new RegExp(header));
 const robots = readFileSync('public/robots.txt', 'utf8');
 assert.match(robots, /^Sitemap:\s*https:\/\/linuxterminal\.me\/sitemap\.xml$/m);
-const workflows = ['.github/workflows/ci.yml','.github/workflows/deploy-cloudflare.yml','.github/workflows/production-smoke.yml'];
+const workflows = ['.github/workflows/ci.yml','.github/workflows/deploy-cloudflare.yml'];
 for (const workflow of workflows) {
   const yaml = readFileSync(workflow, 'utf8');
   assert.doesNotMatch(yaml, /\bworkflow_dispatch:\s*$/m, `${workflow}: manual production bypass is not permitted`);
 }
+const progress = readFileSync('progress/index.html', 'utf8');
+const progressScripts = [...progress.matchAll(/<script\b[^>]+src=["']([^"']*progress\.js)["'][^>]*>/gi)].map(match => match[1]);
+assert.deepEqual(progressScripts, ['./progress.js'], 'progress page must load exactly one page-local progress module');
+assert.equal(existsSync('src/home.css'), false, 'dead src/home.css must not return');
+assert.equal(existsSync('public/home.css'), true, 'public/home.css is the canonical static home stylesheet');
 const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
 assert.match(ci, /Production smoke \(main deployment gate\)/);
 assert.match(ci, /EXPECTED_DEPLOY_SHA:\s*\$\{\{ github\.sha \}\}/);
+assert.match(ci, /bash -n iso-builder\/build-linuxlab-gcc\.sh/, 'CI must execute the ISO builder shell syntax check');
 console.log('P2/P3 production contract checks passed');
