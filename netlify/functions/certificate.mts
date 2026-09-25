@@ -430,7 +430,7 @@ function constantTimeEqualHex(left: string, right: string): boolean {
   return difference === 0;
 }
 
-async function sign(value: string, secret = SIGNING_SECRET || '') {
+async function sign(value: string, secret = SIGNING_KEYS.get(SIGNING_KEY_ID) || '') {
   if (!secret) throw new Error('Certificate signing is not configured');
 
   const key = await crypto.subtle.importKey(
@@ -468,7 +468,7 @@ const publicCert = (value: Cert) => ({
 });
 
 async function start(user: User, request: Request) {
-  if (!UPSTASH_URL || !UPSTASH_TOKEN || !SIGNING_SECRET) {
+  if (!UPSTASH_URL || !UPSTASH_TOKEN || !SIGNING_KEYS.has(SIGNING_KEY_ID)) {
     return json({ error: 'The free verified exam is temporarily unavailable because persistence or signing is not configured.' }, 503);
   }
 
@@ -510,7 +510,7 @@ async function saveSubmissionResult(key: string, userId: string, response: Recor
 }
 
 async function submit(user: User, body: unknown, request: Request) {
-  if (!UPSTASH_URL || !UPSTASH_TOKEN || !SIGNING_SECRET) {
+  if (!UPSTASH_URL || !UPSTASH_TOKEN || !SIGNING_KEYS.has(SIGNING_KEY_ID)) {
     return json({ error: 'Verified exam is not configured.' }, 503);
   }
 
