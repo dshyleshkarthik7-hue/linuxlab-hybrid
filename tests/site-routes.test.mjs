@@ -18,8 +18,11 @@ assert.match(progress, /<script src="\/progress\.js"(?: defer)?><\/script>\s*<sc
 
 const commands = ['pwd','ls','cd','mkdir','cat','cp','mv','rm','grep','find','sed','awk','chmod','chown','ps','top','df','du','tar','curl','ssh','ip','ping','git','head','tail'];
 assert.equal(commands.length, 26);
-const commandCatalogJs = readFileSync(join(root, 'public/commands.js'), 'utf8');
-assert.equal([...commandCatalogJs.matchAll(/\['[^']+','[^']+'\]/g)].length, 200, 'Public command catalogue must contain exactly 200 entries');
+const commandDatabase = JSON.parse(readFileSync(join(root, 'data/commands/index.json'), 'utf8'));
+assert.equal(commandDatabase.records.length, 200, 'Phase 1 command database must preserve the current 200 command records');
+assert.equal(new Set(commandDatabase.records.map((command) => command.name)).size, 200, 'Command database names must be unique');
+const commandIndex = JSON.parse(readFileSync(join(root, 'public/command-index.json'), 'utf8'));
+assert.deepEqual(commandIndex.records, commandDatabase.records.map(({ id, name, category, summary, example, url, page }) => ({ id, name, category, summary, example, url, page })), 'Generated command index must match the canonical database');
 const sitemap = readFileSync(join(root, 'public/sitemap.xml'), 'utf8');
 for (const command of commands) {
   const file = `public/commands/${command}.html`;
@@ -30,6 +33,10 @@ for (const command of commands) {
   assert.ok(page.includes('data-flow=\"play\"') && page.includes('data-flow=\"pause\"') && page.includes('data-flow=\"reset\"'), `Animation controls missing: ${command}`);
   assert.ok(sitemap.includes(`https://linuxterminal.me/commands/${command}.html`), `Sitemap missing ${command}`);
   assert.ok(!page.includes('id=\"app\"'), `Command page must not depend on client-rendered app shell: ${command}`);
+}
+for (const command of commandDatabase.records.filter(({ page }) => page.status === 'complete')) {
+  assert.equal(command.url, `/commands/${command.name}.html`, `Database canonical URL mismatch: ${command.name}`);
+  assert.ok(existsSync(join(root, `public${command.url}`)), `Database points to missing command page: ${command.name}`);
 }
 const entry = readFileSync(join(root, 'commands-entry.html'), 'utf8');
 assert.match(entry, /200 Linux Commands/i, 'Commands route must remain the 200-command catalogue');
