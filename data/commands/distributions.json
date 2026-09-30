@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "kind": "linux-distribution-registry",
+  "records": [
+    {
+      "id": "alpine",
+      "name": "Alpine Linux",
+      "family": "alpine",
+      "packageManager": "apk",
+      "defaultShell": "BusyBox ash",
+      "implementationNotes": [
+        "BusyBox commonly supplies base userland commands."
+      ]
+    },
+    {
+      "id": "debian",
+      "name": "Debian",
+      "family": "debian",
+      "packageManager": "apt",
+      "defaultShell": "dash/bash",
+      "implementationNotes": [
+        "Core utilities and package tooling can vary by installed packages."
+      ]
+    },
+    {
+      "id": "ubuntu",
+      "name": "Ubuntu",
+      "family": "debian",
+      "packageManager": "apt",
+      "defaultShell": "bash",
+      "implementationNotes": [
+        "Ubuntu derives its base package model from Debian."
+      ]
+    },
+    {
+      "id": "lubuntu",
+      "name": "Lubuntu",
+      "family": "debian",
+      "packageManager": "apt",
+      "defaultShell": "bash",
+      "implementationNotes": [
+        "Lubuntu follows the Ubuntu/Debian package ecosystem."
+      ]
+    },
+    {
+      "id": "kali",
+      "name": "Kali Linux",
+      "family": "debian",
+      "packageManager": "apt",
+      "defaultShell": "bash",
+      "implementationNotes": [
+        "Kali uses Debian's package ecosystem with security-focused repositories and tooling."
+      ]
+    }
+  ]
+}

@@ -1,0 +1,181 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "LinuxTerminal command record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "id",
+    "name",
+    "aliases",
+    "category",
+    "summary",
+    "example",
+    "url",
+    "page",
+    "execution",
+    "availability",
+    "provenance"
+  ],
+  "properties": {
+    "id": {
+      "type": "string",
+      "pattern": "^linux\\.[a-z0-9][a-z0-9-]*$"
+    },
+    "name": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "aliases": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "minLength": 1,
+        "maxLength": 64
+      },
+      "uniqueItems": true
+    },
+    "category": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 64
+    },
+    "summary": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "example": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 300
+    },
+    "url": {
+      "type": "string",
+      "pattern": "^/commands/[^/]+/$"
+    },
+    "page": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "source"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "complete",
+            "planned"
+          ]
+        },
+        "source": {
+          "type": [
+            "string",
+            "null"
+          ]
+        }
+      }
+    },
+    "execution": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "simulator",
+        "vm",
+        "tryEnabled"
+      ],
+      "properties": {
+        "simulator": {
+          "enum": [
+            "supported",
+            "unsupported",
+            "unverified"
+          ]
+        },
+        "vm": {
+          "enum": [
+            "supported",
+            "unsupported",
+            "unverified"
+          ]
+        },
+        "tryEnabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "availability": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "alpine",
+        "debian",
+        "ubuntu",
+        "lubuntu",
+        "kali"
+      ],
+      "properties": {
+        "alpine": {
+          "enum": [
+            "available",
+            "not-default",
+            "unsupported",
+            "unverified"
+          ]
+        },
+        "debian": {
+          "enum": [
+            "available",
+            "not-default",
+            "unsupported",
+            "unverified"
+          ]
+        },
+        "ubuntu": {
+          "enum": [
+            "available",
+            "not-default",
+            "unsupported",
+            "unverified"
+          ]
+        },
+        "lubuntu": {
+          "enum": [
+            "available",
+            "not-default",
+            "unsupported",
+            "unverified"
+          ]
+        },
+        "kali": {
+          "enum": [
+            "available",
+            "not-default",
+            "unsupported",
+            "unverified"
+          ]
+        }
+      }
+    },
+    "provenance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "type",
+        "sourceOfIdentity",
+        "contentAuthoredBy"
+      ],
+      "properties": {
+        "type": {
+          "const": "first-party-record"
+        },
+        "sourceOfIdentity": {
+          "type": "string"
+        },
+        "contentAuthoredBy": {
+          "const": "LinuxTerminal"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,2406 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": "data/commands/index.json",
+  "records": [
+    {
+      "id": "linux.pwd",
+      "name": "pwd",
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "pwd",
+      "url": "/commands/pwd/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/pwd.html"
+      }
+    },
+    {
+      "id": "linux.ls",
+      "name": "ls",
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "ls",
+      "url": "/commands/ls/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/ls.html"
+      }
+    },
+    {
+      "id": "linux.cd",
+      "name": "cd",
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "cd",
+      "url": "/commands/cd/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/cd.html"
+      }
+    },
+    {
+      "id": "linux.tree",
+      "name": "tree",
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "tree",
+      "url": "/commands/tree/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.dirs",
+      "name": "dirs",
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "dirs",
+      "url": "/commands/dirs/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.pushd",
+      "name": "pushd",
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "pushd",
+      "url": "/commands/pushd/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.popd",
+      "name": "popd",
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "popd",
+      "url": "/commands/popd/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.realpath",
+      "name": "realpath",
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "realpath",
+      "url": "/commands/realpath/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.basename",
+      "name": "basename",
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "basename",
+      "url": "/commands/basename/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.dirname",
+      "name": "dirname",
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "dirname",
+      "url": "/commands/dirname/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.touch",
+      "name": "touch",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "touch",
+      "url": "/commands/touch/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.cat",
+      "name": "cat",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "cat",
+      "url": "/commands/cat/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/cat.html"
+      }
+    },
+    {
+      "id": "linux.cp",
+      "name": "cp",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "cp",
+      "url": "/commands/cp/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/cp.html"
+      }
+    },
+    {
+      "id": "linux.mv",
+      "name": "mv",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "mv",
+      "url": "/commands/mv/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/mv.html"
+      }
+    },
+    {
+      "id": "linux.rm",
+      "name": "rm",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "rm",
+      "url": "/commands/rm/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/rm.html"
+      }
+    },
+    {
+      "id": "linux.mkdir",
+      "name": "mkdir",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "mkdir",
+      "url": "/commands/mkdir/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/mkdir.html"
+      }
+    },
+    {
+      "id": "linux.rmdir",
+      "name": "rmdir",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "rmdir",
+      "url": "/commands/rmdir/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.ln",
+      "name": "ln",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "ln",
+      "url": "/commands/ln/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.readlink",
+      "name": "readlink",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "readlink",
+      "url": "/commands/readlink/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.file",
+      "name": "file",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "file",
+      "url": "/commands/file/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.stat",
+      "name": "stat",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "stat",
+      "url": "/commands/stat/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.truncate",
+      "name": "truncate",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "truncate",
+      "url": "/commands/truncate/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.install",
+      "name": "install",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "install",
+      "url": "/commands/install/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.mktemp",
+      "name": "mktemp",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "mktemp",
+      "url": "/commands/mktemp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.shred",
+      "name": "shred",
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "shred",
+      "url": "/commands/shred/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.head",
+      "name": "head",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "head",
+      "url": "/commands/head/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/head.html"
+      }
+    },
+    {
+      "id": "linux.tail",
+      "name": "tail",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "tail",
+      "url": "/commands/tail/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/tail.html"
+      }
+    },
+    {
+      "id": "linux.less",
+      "name": "less",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "less",
+      "url": "/commands/less/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.more",
+      "name": "more",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "more",
+      "url": "/commands/more/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.nl",
+      "name": "nl",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "nl",
+      "url": "/commands/nl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.wc",
+      "name": "wc",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "wc",
+      "url": "/commands/wc/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.cut",
+      "name": "cut",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "cut",
+      "url": "/commands/cut/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.paste",
+      "name": "paste",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "paste",
+      "url": "/commands/paste/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.join",
+      "name": "join",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "join",
+      "url": "/commands/join/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.expand",
+      "name": "expand",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "expand",
+      "url": "/commands/expand/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.unexpand",
+      "name": "unexpand",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "unexpand",
+      "url": "/commands/unexpand/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.fold",
+      "name": "fold",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "fold",
+      "url": "/commands/fold/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.fmt",
+      "name": "fmt",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "fmt",
+      "url": "/commands/fmt/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.column",
+      "name": "column",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "column",
+      "url": "/commands/column/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.tr",
+      "name": "tr",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "tr",
+      "url": "/commands/tr/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.rev",
+      "name": "rev",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "rev",
+      "url": "/commands/rev/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.sort",
+      "name": "sort",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "sort",
+      "url": "/commands/sort/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.uniq",
+      "name": "uniq",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "uniq",
+      "url": "/commands/uniq/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.comm",
+      "name": "comm",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "comm",
+      "url": "/commands/comm/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.diff",
+      "name": "diff",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "diff",
+      "url": "/commands/diff/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.cmp",
+      "name": "cmp",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "cmp",
+      "url": "/commands/cmp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.strings",
+      "name": "strings",
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "strings",
+      "url": "/commands/strings/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.grep",
+      "name": "grep",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "grep",
+      "url": "/commands/grep/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/grep.html"
+      }
+    },
+    {
+      "id": "linux.egrep",
+      "name": "egrep",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "egrep",
+      "url": "/commands/egrep/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.fgrep",
+      "name": "fgrep",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "fgrep",
+      "url": "/commands/fgrep/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.find",
+      "name": "find",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "find",
+      "url": "/commands/find/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/find.html"
+      }
+    },
+    {
+      "id": "linux.locate",
+      "name": "locate",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "locate",
+      "url": "/commands/locate/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.which",
+      "name": "which",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "which",
+      "url": "/commands/which/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.whereis",
+      "name": "whereis",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "whereis",
+      "url": "/commands/whereis/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.xargs",
+      "name": "xargs",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "xargs",
+      "url": "/commands/xargs/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.awk",
+      "name": "awk",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "awk",
+      "url": "/commands/awk/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/awk.html"
+      }
+    },
+    {
+      "id": "linux.sed",
+      "name": "sed",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "sed",
+      "url": "/commands/sed/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/sed.html"
+      }
+    },
+    {
+      "id": "linux.rg",
+      "name": "rg",
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "rg",
+      "url": "/commands/rg/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.echo",
+      "name": "echo",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "echo",
+      "url": "/commands/echo/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.printf",
+      "name": "printf",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "printf",
+      "url": "/commands/printf/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.true",
+      "name": "true",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "true",
+      "url": "/commands/true/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.false",
+      "name": "false",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "false",
+      "url": "/commands/false/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.test",
+      "name": "test",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "test",
+      "url": "/commands/test/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.alias",
+      "name": "alias",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "alias",
+      "url": "/commands/alias/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.unalias",
+      "name": "unalias",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "unalias",
+      "url": "/commands/unalias/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.history",
+      "name": "history",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "history",
+      "url": "/commands/history/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.help",
+      "name": "help",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "help",
+      "url": "/commands/help/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.type",
+      "name": "type",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "type",
+      "url": "/commands/type/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.command",
+      "name": "command",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "command",
+      "url": "/commands/command/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.builtin",
+      "name": "builtin",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "builtin",
+      "url": "/commands/builtin/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.source",
+      "name": "source",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "source",
+      "url": "/commands/source/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.read",
+      "name": "read",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "read",
+      "url": "/commands/read/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.set",
+      "name": "set",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "set",
+      "url": "/commands/set/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.unset",
+      "name": "unset",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "unset",
+      "url": "/commands/unset/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.export",
+      "name": "export",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "export",
+      "url": "/commands/export/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.env",
+      "name": "env",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "env",
+      "url": "/commands/env/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.printenv",
+      "name": "printenv",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "printenv",
+      "url": "/commands/printenv/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.getopts",
+      "name": "getopts",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "getopts",
+      "url": "/commands/getopts/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.shift",
+      "name": "shift",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "shift",
+      "url": "/commands/shift/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.wait",
+      "name": "wait",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "wait",
+      "url": "/commands/wait/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.exec",
+      "name": "exec",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "exec",
+      "url": "/commands/exec/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.eval",
+      "name": "eval",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "eval",
+      "url": "/commands/eval/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.jobs",
+      "name": "jobs",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "jobs",
+      "url": "/commands/jobs/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.fg",
+      "name": "fg",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "fg",
+      "url": "/commands/fg/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.bg",
+      "name": "bg",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "bg",
+      "url": "/commands/bg/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.disown",
+      "name": "disown",
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "disown",
+      "url": "/commands/disown/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.umask",
+      "name": "umask",
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "umask",
+      "url": "/commands/umask/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.chmod",
+      "name": "chmod",
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "chmod",
+      "url": "/commands/chmod/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/chmod.html"
+      }
+    },
+    {
+      "id": "linux.chown",
+      "name": "chown",
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "chown",
+      "url": "/commands/chown/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/chown.html"
+      }
+    },
+    {
+      "id": "linux.chgrp",
+      "name": "chgrp",
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "chgrp",
+      "url": "/commands/chgrp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.getfacl",
+      "name": "getfacl",
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "getfacl",
+      "url": "/commands/getfacl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.setfacl",
+      "name": "setfacl",
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "setfacl",
+      "url": "/commands/setfacl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.lsattr",
+      "name": "lsattr",
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "lsattr",
+      "url": "/commands/lsattr/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.chattr",
+      "name": "chattr",
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "chattr",
+      "url": "/commands/chattr/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.id",
+      "name": "id",
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "id",
+      "url": "/commands/id/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.whoami",
+      "name": "whoami",
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "whoami",
+      "url": "/commands/whoami/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.groups",
+      "name": "groups",
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "groups",
+      "url": "/commands/groups/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.who",
+      "name": "who",
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "who",
+      "url": "/commands/who/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.w",
+      "name": "w",
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "w",
+      "url": "/commands/w/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.users",
+      "name": "users",
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "users",
+      "url": "/commands/users/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.last",
+      "name": "last",
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "last",
+      "url": "/commands/last/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.lastlog",
+      "name": "lastlog",
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "lastlog",
+      "url": "/commands/lastlog/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.getent",
+      "name": "getent",
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "getent",
+      "url": "/commands/getent/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.passwd",
+      "name": "passwd",
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "passwd",
+      "url": "/commands/passwd/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.ps",
+      "name": "ps",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "ps",
+      "url": "/commands/ps/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/ps.html"
+      }
+    },
+    {
+      "id": "linux.top",
+      "name": "top",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "top",
+      "url": "/commands/top/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/top.html"
+      }
+    },
+    {
+      "id": "linux.htop",
+      "name": "htop",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "htop",
+      "url": "/commands/htop/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.pgrep",
+      "name": "pgrep",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "pgrep",
+      "url": "/commands/pgrep/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.pkill",
+      "name": "pkill",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "pkill",
+      "url": "/commands/pkill/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.kill",
+      "name": "kill",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "kill",
+      "url": "/commands/kill/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.killall",
+      "name": "killall",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "killall",
+      "url": "/commands/killall/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.nice",
+      "name": "nice",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "nice",
+      "url": "/commands/nice/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.renice",
+      "name": "renice",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "renice",
+      "url": "/commands/renice/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.nohup",
+      "name": "nohup",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "nohup",
+      "url": "/commands/nohup/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.time",
+      "name": "time",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "time",
+      "url": "/commands/time/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.strace",
+      "name": "strace",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "strace",
+      "url": "/commands/strace/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.lsof",
+      "name": "lsof",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "lsof",
+      "url": "/commands/lsof/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.pstree",
+      "name": "pstree",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "pstree",
+      "url": "/commands/pstree/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.pidof",
+      "name": "pidof",
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "pidof",
+      "url": "/commands/pidof/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.free",
+      "name": "free",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "free",
+      "url": "/commands/free/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.uname",
+      "name": "uname",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "uname",
+      "url": "/commands/uname/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.hostname",
+      "name": "hostname",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "hostname",
+      "url": "/commands/hostname/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.uptime",
+      "name": "uptime",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "uptime",
+      "url": "/commands/uptime/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.dmesg",
+      "name": "dmesg",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "dmesg",
+      "url": "/commands/dmesg/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.sysctl",
+      "name": "sysctl",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "sysctl",
+      "url": "/commands/sysctl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.lsb-release",
+      "name": "lsb_release",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "lsb_release",
+      "url": "/commands/lsb_release/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.arch",
+      "name": "arch",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "arch",
+      "url": "/commands/arch/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.nproc",
+      "name": "nproc",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "nproc",
+      "url": "/commands/nproc/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.lscpu",
+      "name": "lscpu",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "lscpu",
+      "url": "/commands/lscpu/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.lsmem",
+      "name": "lsmem",
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "lsmem",
+      "url": "/commands/lsmem/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.lsblk",
+      "name": "lsblk",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "lsblk",
+      "url": "/commands/lsblk/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.blkid",
+      "name": "blkid",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "blkid",
+      "url": "/commands/blkid/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.df",
+      "name": "df",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "df",
+      "url": "/commands/df/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/df.html"
+      }
+    },
+    {
+      "id": "linux.du",
+      "name": "du",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "du",
+      "url": "/commands/du/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/du.html"
+      }
+    },
+    {
+      "id": "linux.mount",
+      "name": "mount",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "mount",
+      "url": "/commands/mount/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.umount",
+      "name": "umount",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "umount",
+      "url": "/commands/umount/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.fdisk",
+      "name": "fdisk",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "fdisk",
+      "url": "/commands/fdisk/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.parted",
+      "name": "parted",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "parted",
+      "url": "/commands/parted/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.dd",
+      "name": "dd",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "dd",
+      "url": "/commands/dd/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.sync",
+      "name": "sync",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "sync",
+      "url": "/commands/sync/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.fsck",
+      "name": "fsck",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "fsck",
+      "url": "/commands/fsck/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.mkfs",
+      "name": "mkfs",
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "mkfs",
+      "url": "/commands/mkfs/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.tar",
+      "name": "tar",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "tar",
+      "url": "/commands/tar/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/tar.html"
+      }
+    },
+    {
+      "id": "linux.gzip",
+      "name": "gzip",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "gzip",
+      "url": "/commands/gzip/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.gunzip",
+      "name": "gunzip",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "gunzip",
+      "url": "/commands/gunzip/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.bzip2",
+      "name": "bzip2",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "bzip2",
+      "url": "/commands/bzip2/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.bunzip2",
+      "name": "bunzip2",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "bunzip2",
+      "url": "/commands/bunzip2/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.xz",
+      "name": "xz",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "xz",
+      "url": "/commands/xz/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.unxz",
+      "name": "unxz",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "unxz",
+      "url": "/commands/unxz/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.zip",
+      "name": "zip",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "zip",
+      "url": "/commands/zip/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.unzip",
+      "name": "unzip",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "unzip",
+      "url": "/commands/unzip/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.zcat",
+      "name": "zcat",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "zcat",
+      "url": "/commands/zcat/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.ar",
+      "name": "ar",
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "ar",
+      "url": "/commands/ar/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.ip",
+      "name": "ip",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "ip",
+      "url": "/commands/ip/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/ip.html"
+      }
+    },
+    {
+      "id": "linux.ifconfig",
+      "name": "ifconfig",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "ifconfig",
+      "url": "/commands/ifconfig/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.ping",
+      "name": "ping",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "ping",
+      "url": "/commands/ping/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/ping.html"
+      }
+    },
+    {
+      "id": "linux.ss",
+      "name": "ss",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "ss",
+      "url": "/commands/ss/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.netstat",
+      "name": "netstat",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "netstat",
+      "url": "/commands/netstat/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.route",
+      "name": "route",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "route",
+      "url": "/commands/route/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.arp",
+      "name": "arp",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "arp",
+      "url": "/commands/arp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.dig",
+      "name": "dig",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "dig",
+      "url": "/commands/dig/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.nslookup",
+      "name": "nslookup",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "nslookup",
+      "url": "/commands/nslookup/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.host",
+      "name": "host",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "host",
+      "url": "/commands/host/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.curl",
+      "name": "curl",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "curl",
+      "url": "/commands/curl/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/curl.html"
+      }
+    },
+    {
+      "id": "linux.wget",
+      "name": "wget",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "wget",
+      "url": "/commands/wget/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.ssh",
+      "name": "ssh",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "ssh",
+      "url": "/commands/ssh/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/ssh.html"
+      }
+    },
+    {
+      "id": "linux.scp",
+      "name": "scp",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "scp",
+      "url": "/commands/scp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.sftp",
+      "name": "sftp",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "sftp",
+      "url": "/commands/sftp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.nc",
+      "name": "nc",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "nc",
+      "url": "/commands/nc/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.telnet",
+      "name": "telnet",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "telnet",
+      "url": "/commands/telnet/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.traceroute",
+      "name": "traceroute",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "traceroute",
+      "url": "/commands/traceroute/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.mtr",
+      "name": "mtr",
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "mtr",
+      "url": "/commands/mtr/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.git",
+      "name": "git",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "git",
+      "url": "/commands/git/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/git.html"
+      }
+    },
+    {
+      "id": "linux.gcc",
+      "name": "gcc",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "gcc",
+      "url": "/commands/gcc/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.g",
+      "name": "g++",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "g++",
+      "url": "/commands/g%2B%2B/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.make",
+      "name": "make",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "make",
+      "url": "/commands/make/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.cmake",
+      "name": "cmake",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "cmake",
+      "url": "/commands/cmake/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.python3",
+      "name": "python3",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "python3",
+      "url": "/commands/python3/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.node",
+      "name": "node",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "node",
+      "url": "/commands/node/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.javac",
+      "name": "javac",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "javac",
+      "url": "/commands/javac/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.java",
+      "name": "java",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "java",
+      "url": "/commands/java/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.go",
+      "name": "go",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "go",
+      "url": "/commands/go/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.rustc",
+      "name": "rustc",
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "rustc",
+      "url": "/commands/rustc/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.apk",
+      "name": "apk",
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "apk",
+      "url": "/commands/apk/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.apt",
+      "name": "apt",
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "apt",
+      "url": "/commands/apt/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.apt-get",
+      "name": "apt-get",
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "apt-get",
+      "url": "/commands/apt-get/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.dnf",
+      "name": "dnf",
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "dnf",
+      "url": "/commands/dnf/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.yum",
+      "name": "yum",
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "yum",
+      "url": "/commands/yum/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.pacman",
+      "name": "pacman",
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "pacman",
+      "url": "/commands/pacman/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.rpm",
+      "name": "rpm",
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "rpm",
+      "url": "/commands/rpm/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.dpkg",
+      "name": "dpkg",
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "dpkg",
+      "url": "/commands/dpkg/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.snap",
+      "name": "snap",
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "snap",
+      "url": "/commands/snap/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.flatpak",
+      "name": "flatpak",
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "flatpak",
+      "url": "/commands/flatpak/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.systemctl",
+      "name": "systemctl",
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "systemctl",
+      "url": "/commands/systemctl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.service",
+      "name": "service",
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "service",
+      "url": "/commands/service/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.journalctl",
+      "name": "journalctl",
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "journalctl",
+      "url": "/commands/journalctl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.crontab",
+      "name": "crontab",
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "crontab",
+      "url": "/commands/crontab/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.at",
+      "name": "at",
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "at",
+      "url": "/commands/at/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.logger",
+      "name": "logger",
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "logger",
+      "url": "/commands/logger/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    },
+    {
+      "id": "linux.seq",
+      "name": "seq",
+      "category": "shell",
+      "summary": "Generate numeric sequences for shell practice",
+      "example": "seq 1 5",
+      "url": "/commands/seq/",
+      "page": {
+        "status": "planned",
+        "source": null
+      }
+    }
+  ]
+}

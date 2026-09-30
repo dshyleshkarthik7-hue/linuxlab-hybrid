@@ -1,0 +1,6012 @@
+{
+  "schemaVersion": 1,
+  "kind": "linux-command-database",
+  "phase": 1,
+  "target": {
+    "minimumEntries": 5000,
+    "currentEntries": 200
+  },
+  "canonicalBaseUrl": "https://linuxterminal.me",
+  "records": [
+    {
+      "id": "linux.pwd",
+      "name": "pwd",
+      "aliases": [],
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "pwd",
+      "url": "/commands/pwd/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/pwd.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.ls",
+      "name": "ls",
+      "aliases": [],
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "ls",
+      "url": "/commands/ls/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/ls.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.cd",
+      "name": "cd",
+      "aliases": [],
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "cd",
+      "url": "/commands/cd/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/cd.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.tree",
+      "name": "tree",
+      "aliases": [],
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "tree",
+      "url": "/commands/tree/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.dirs",
+      "name": "dirs",
+      "aliases": [],
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "dirs",
+      "url": "/commands/dirs/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.pushd",
+      "name": "pushd",
+      "aliases": [],
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "pushd",
+      "url": "/commands/pushd/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.popd",
+      "name": "popd",
+      "aliases": [],
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "popd",
+      "url": "/commands/popd/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.realpath",
+      "name": "realpath",
+      "aliases": [],
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "realpath",
+      "url": "/commands/realpath/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.basename",
+      "name": "basename",
+      "aliases": [],
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "basename",
+      "url": "/commands/basename/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.dirname",
+      "name": "dirname",
+      "aliases": [],
+      "category": "navigation",
+      "summary": "Navigate the filesystem",
+      "example": "dirname",
+      "url": "/commands/dirname/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.touch",
+      "name": "touch",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "touch",
+      "url": "/commands/touch/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.cat",
+      "name": "cat",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "cat",
+      "url": "/commands/cat/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/cat.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.cp",
+      "name": "cp",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "cp",
+      "url": "/commands/cp/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/cp.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.mv",
+      "name": "mv",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "mv",
+      "url": "/commands/mv/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/mv.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.rm",
+      "name": "rm",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "rm",
+      "url": "/commands/rm/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/rm.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.mkdir",
+      "name": "mkdir",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "mkdir",
+      "url": "/commands/mkdir/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/mkdir.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.rmdir",
+      "name": "rmdir",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "rmdir",
+      "url": "/commands/rmdir/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.ln",
+      "name": "ln",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "ln",
+      "url": "/commands/ln/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.readlink",
+      "name": "readlink",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "readlink",
+      "url": "/commands/readlink/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.file",
+      "name": "file",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "file",
+      "url": "/commands/file/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.stat",
+      "name": "stat",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "stat",
+      "url": "/commands/stat/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.truncate",
+      "name": "truncate",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "truncate",
+      "url": "/commands/truncate/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.install",
+      "name": "install",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "install",
+      "url": "/commands/install/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.mktemp",
+      "name": "mktemp",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "mktemp",
+      "url": "/commands/mktemp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.shred",
+      "name": "shred",
+      "aliases": [],
+      "category": "files",
+      "summary": "Create, inspect, copy, move, link, or remove files",
+      "example": "shred",
+      "url": "/commands/shred/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.head",
+      "name": "head",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "head",
+      "url": "/commands/head/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/head.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.tail",
+      "name": "tail",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "tail",
+      "url": "/commands/tail/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/tail.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.less",
+      "name": "less",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "less",
+      "url": "/commands/less/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.more",
+      "name": "more",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "more",
+      "url": "/commands/more/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.nl",
+      "name": "nl",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "nl",
+      "url": "/commands/nl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.wc",
+      "name": "wc",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "wc",
+      "url": "/commands/wc/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.cut",
+      "name": "cut",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "cut",
+      "url": "/commands/cut/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.paste",
+      "name": "paste",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "paste",
+      "url": "/commands/paste/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.join",
+      "name": "join",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "join",
+      "url": "/commands/join/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.expand",
+      "name": "expand",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "expand",
+      "url": "/commands/expand/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.unexpand",
+      "name": "unexpand",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "unexpand",
+      "url": "/commands/unexpand/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.fold",
+      "name": "fold",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "fold",
+      "url": "/commands/fold/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.fmt",
+      "name": "fmt",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "fmt",
+      "url": "/commands/fmt/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.column",
+      "name": "column",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "column",
+      "url": "/commands/column/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.tr",
+      "name": "tr",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "tr",
+      "url": "/commands/tr/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.rev",
+      "name": "rev",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "rev",
+      "url": "/commands/rev/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.sort",
+      "name": "sort",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "sort",
+      "url": "/commands/sort/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.uniq",
+      "name": "uniq",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "uniq",
+      "url": "/commands/uniq/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.comm",
+      "name": "comm",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "comm",
+      "url": "/commands/comm/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.diff",
+      "name": "diff",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "diff",
+      "url": "/commands/diff/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.cmp",
+      "name": "cmp",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "cmp",
+      "url": "/commands/cmp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.strings",
+      "name": "strings",
+      "aliases": [],
+      "category": "text",
+      "summary": "Read and transform text",
+      "example": "strings",
+      "url": "/commands/strings/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.grep",
+      "name": "grep",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "grep",
+      "url": "/commands/grep/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/grep.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.egrep",
+      "name": "egrep",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "egrep",
+      "url": "/commands/egrep/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.fgrep",
+      "name": "fgrep",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "fgrep",
+      "url": "/commands/fgrep/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.find",
+      "name": "find",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "find",
+      "url": "/commands/find/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/find.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.locate",
+      "name": "locate",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "locate",
+      "url": "/commands/locate/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.which",
+      "name": "which",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "which",
+      "url": "/commands/which/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.whereis",
+      "name": "whereis",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "whereis",
+      "url": "/commands/whereis/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.xargs",
+      "name": "xargs",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "xargs",
+      "url": "/commands/xargs/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.awk",
+      "name": "awk",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "awk",
+      "url": "/commands/awk/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/awk.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.sed",
+      "name": "sed",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "sed",
+      "url": "/commands/sed/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/sed.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.rg",
+      "name": "rg",
+      "aliases": [],
+      "category": "search",
+      "summary": "Search files, text, and commands",
+      "example": "rg",
+      "url": "/commands/rg/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.echo",
+      "name": "echo",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "echo",
+      "url": "/commands/echo/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.printf",
+      "name": "printf",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "printf",
+      "url": "/commands/printf/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.true",
+      "name": "true",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "true",
+      "url": "/commands/true/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.false",
+      "name": "false",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "false",
+      "url": "/commands/false/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.test",
+      "name": "test",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "test",
+      "url": "/commands/test/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.alias",
+      "name": "alias",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "alias",
+      "url": "/commands/alias/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.unalias",
+      "name": "unalias",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "unalias",
+      "url": "/commands/unalias/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.history",
+      "name": "history",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "history",
+      "url": "/commands/history/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.help",
+      "name": "help",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "help",
+      "url": "/commands/help/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.type",
+      "name": "type",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "type",
+      "url": "/commands/type/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.command",
+      "name": "command",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "command",
+      "url": "/commands/command/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.builtin",
+      "name": "builtin",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "builtin",
+      "url": "/commands/builtin/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.source",
+      "name": "source",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "source",
+      "url": "/commands/source/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.read",
+      "name": "read",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "read",
+      "url": "/commands/read/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.set",
+      "name": "set",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "set",
+      "url": "/commands/set/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.unset",
+      "name": "unset",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "unset",
+      "url": "/commands/unset/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.export",
+      "name": "export",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "export",
+      "url": "/commands/export/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.env",
+      "name": "env",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "env",
+      "url": "/commands/env/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.printenv",
+      "name": "printenv",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "printenv",
+      "url": "/commands/printenv/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.getopts",
+      "name": "getopts",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "getopts",
+      "url": "/commands/getopts/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.shift",
+      "name": "shift",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "shift",
+      "url": "/commands/shift/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.wait",
+      "name": "wait",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "wait",
+      "url": "/commands/wait/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.exec",
+      "name": "exec",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "exec",
+      "url": "/commands/exec/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.eval",
+      "name": "eval",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "eval",
+      "url": "/commands/eval/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.jobs",
+      "name": "jobs",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "jobs",
+      "url": "/commands/jobs/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.fg",
+      "name": "fg",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "fg",
+      "url": "/commands/fg/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.bg",
+      "name": "bg",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "bg",
+      "url": "/commands/bg/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.disown",
+      "name": "disown",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Use the shell and its built-ins",
+      "example": "disown",
+      "url": "/commands/disown/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.umask",
+      "name": "umask",
+      "aliases": [],
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "umask",
+      "url": "/commands/umask/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.chmod",
+      "name": "chmod",
+      "aliases": [],
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "chmod",
+      "url": "/commands/chmod/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/chmod.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.chown",
+      "name": "chown",
+      "aliases": [],
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "chown",
+      "url": "/commands/chown/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/chown.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.chgrp",
+      "name": "chgrp",
+      "aliases": [],
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "chgrp",
+      "url": "/commands/chgrp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.getfacl",
+      "name": "getfacl",
+      "aliases": [],
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "getfacl",
+      "url": "/commands/getfacl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.setfacl",
+      "name": "setfacl",
+      "aliases": [],
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "setfacl",
+      "url": "/commands/setfacl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.lsattr",
+      "name": "lsattr",
+      "aliases": [],
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "lsattr",
+      "url": "/commands/lsattr/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.chattr",
+      "name": "chattr",
+      "aliases": [],
+      "category": "permissions",
+      "summary": "Understand and change permissions",
+      "example": "chattr",
+      "url": "/commands/chattr/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.id",
+      "name": "id",
+      "aliases": [],
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "id",
+      "url": "/commands/id/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.whoami",
+      "name": "whoami",
+      "aliases": [],
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "whoami",
+      "url": "/commands/whoami/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.groups",
+      "name": "groups",
+      "aliases": [],
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "groups",
+      "url": "/commands/groups/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.who",
+      "name": "who",
+      "aliases": [],
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "who",
+      "url": "/commands/who/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.w",
+      "name": "w",
+      "aliases": [],
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "w",
+      "url": "/commands/w/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.users",
+      "name": "users",
+      "aliases": [],
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "users",
+      "url": "/commands/users/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.last",
+      "name": "last",
+      "aliases": [],
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "last",
+      "url": "/commands/last/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.lastlog",
+      "name": "lastlog",
+      "aliases": [],
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "lastlog",
+      "url": "/commands/lastlog/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.getent",
+      "name": "getent",
+      "aliases": [],
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "getent",
+      "url": "/commands/getent/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.passwd",
+      "name": "passwd",
+      "aliases": [],
+      "category": "users",
+      "summary": "Inspect users and groups",
+      "example": "passwd",
+      "url": "/commands/passwd/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.ps",
+      "name": "ps",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "ps",
+      "url": "/commands/ps/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/ps.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.top",
+      "name": "top",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "top",
+      "url": "/commands/top/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/top.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.htop",
+      "name": "htop",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "htop",
+      "url": "/commands/htop/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.pgrep",
+      "name": "pgrep",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "pgrep",
+      "url": "/commands/pgrep/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.pkill",
+      "name": "pkill",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "pkill",
+      "url": "/commands/pkill/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.kill",
+      "name": "kill",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "kill",
+      "url": "/commands/kill/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.killall",
+      "name": "killall",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "killall",
+      "url": "/commands/killall/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.nice",
+      "name": "nice",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "nice",
+      "url": "/commands/nice/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.renice",
+      "name": "renice",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "renice",
+      "url": "/commands/renice/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.nohup",
+      "name": "nohup",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "nohup",
+      "url": "/commands/nohup/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.time",
+      "name": "time",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "time",
+      "url": "/commands/time/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.strace",
+      "name": "strace",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "strace",
+      "url": "/commands/strace/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.lsof",
+      "name": "lsof",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "lsof",
+      "url": "/commands/lsof/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.pstree",
+      "name": "pstree",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "pstree",
+      "url": "/commands/pstree/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.pidof",
+      "name": "pidof",
+      "aliases": [],
+      "category": "processes",
+      "summary": "Inspect and control processes",
+      "example": "pidof",
+      "url": "/commands/pidof/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.free",
+      "name": "free",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "free",
+      "url": "/commands/free/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.uname",
+      "name": "uname",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "uname",
+      "url": "/commands/uname/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.hostname",
+      "name": "hostname",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "hostname",
+      "url": "/commands/hostname/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.uptime",
+      "name": "uptime",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "uptime",
+      "url": "/commands/uptime/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.dmesg",
+      "name": "dmesg",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "dmesg",
+      "url": "/commands/dmesg/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.sysctl",
+      "name": "sysctl",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "sysctl",
+      "url": "/commands/sysctl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.lsb-release",
+      "name": "lsb_release",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "lsb_release",
+      "url": "/commands/lsb_release/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.arch",
+      "name": "arch",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "arch",
+      "url": "/commands/arch/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.nproc",
+      "name": "nproc",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "nproc",
+      "url": "/commands/nproc/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.lscpu",
+      "name": "lscpu",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "lscpu",
+      "url": "/commands/lscpu/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.lsmem",
+      "name": "lsmem",
+      "aliases": [],
+      "category": "system",
+      "summary": "Inspect the running system",
+      "example": "lsmem",
+      "url": "/commands/lsmem/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.lsblk",
+      "name": "lsblk",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "lsblk",
+      "url": "/commands/lsblk/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.blkid",
+      "name": "blkid",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "blkid",
+      "url": "/commands/blkid/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.df",
+      "name": "df",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "df",
+      "url": "/commands/df/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/df.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.du",
+      "name": "du",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "du",
+      "url": "/commands/du/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/du.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.mount",
+      "name": "mount",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "mount",
+      "url": "/commands/mount/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.umount",
+      "name": "umount",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "umount",
+      "url": "/commands/umount/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.fdisk",
+      "name": "fdisk",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "fdisk",
+      "url": "/commands/fdisk/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.parted",
+      "name": "parted",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "parted",
+      "url": "/commands/parted/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.dd",
+      "name": "dd",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "dd",
+      "url": "/commands/dd/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.sync",
+      "name": "sync",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "sync",
+      "url": "/commands/sync/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.fsck",
+      "name": "fsck",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "fsck",
+      "url": "/commands/fsck/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.mkfs",
+      "name": "mkfs",
+      "aliases": [],
+      "category": "storage",
+      "summary": "Inspect disks and filesystems",
+      "example": "mkfs",
+      "url": "/commands/mkfs/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.tar",
+      "name": "tar",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "tar",
+      "url": "/commands/tar/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/tar.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.gzip",
+      "name": "gzip",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "gzip",
+      "url": "/commands/gzip/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.gunzip",
+      "name": "gunzip",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "gunzip",
+      "url": "/commands/gunzip/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.bzip2",
+      "name": "bzip2",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "bzip2",
+      "url": "/commands/bzip2/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.bunzip2",
+      "name": "bunzip2",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "bunzip2",
+      "url": "/commands/bunzip2/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.xz",
+      "name": "xz",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "xz",
+      "url": "/commands/xz/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.unxz",
+      "name": "unxz",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "unxz",
+      "url": "/commands/unxz/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.zip",
+      "name": "zip",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "zip",
+      "url": "/commands/zip/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.unzip",
+      "name": "unzip",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "unzip",
+      "url": "/commands/unzip/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.zcat",
+      "name": "zcat",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "zcat",
+      "url": "/commands/zcat/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.ar",
+      "name": "ar",
+      "aliases": [],
+      "category": "archives",
+      "summary": "Create and extract archives",
+      "example": "ar",
+      "url": "/commands/ar/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.ip",
+      "name": "ip",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "ip",
+      "url": "/commands/ip/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/ip.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.ifconfig",
+      "name": "ifconfig",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "ifconfig",
+      "url": "/commands/ifconfig/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.ping",
+      "name": "ping",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "ping",
+      "url": "/commands/ping/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/ping.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.ss",
+      "name": "ss",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "ss",
+      "url": "/commands/ss/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.netstat",
+      "name": "netstat",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "netstat",
+      "url": "/commands/netstat/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.route",
+      "name": "route",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "route",
+      "url": "/commands/route/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.arp",
+      "name": "arp",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "arp",
+      "url": "/commands/arp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.dig",
+      "name": "dig",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "dig",
+      "url": "/commands/dig/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.nslookup",
+      "name": "nslookup",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "nslookup",
+      "url": "/commands/nslookup/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.host",
+      "name": "host",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "host",
+      "url": "/commands/host/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.curl",
+      "name": "curl",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "curl",
+      "url": "/commands/curl/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/curl.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.wget",
+      "name": "wget",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "wget",
+      "url": "/commands/wget/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.ssh",
+      "name": "ssh",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "ssh",
+      "url": "/commands/ssh/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/ssh.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.scp",
+      "name": "scp",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "scp",
+      "url": "/commands/scp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.sftp",
+      "name": "sftp",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "sftp",
+      "url": "/commands/sftp/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.nc",
+      "name": "nc",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "nc",
+      "url": "/commands/nc/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.telnet",
+      "name": "telnet",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "telnet",
+      "url": "/commands/telnet/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.traceroute",
+      "name": "traceroute",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "traceroute",
+      "url": "/commands/traceroute/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.mtr",
+      "name": "mtr",
+      "aliases": [],
+      "category": "network",
+      "summary": "Inspect and test networking",
+      "example": "mtr",
+      "url": "/commands/mtr/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.git",
+      "name": "git",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "git",
+      "url": "/commands/git/",
+      "page": {
+        "status": "complete",
+        "source": "public/commands/git.html"
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.gcc",
+      "name": "gcc",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "gcc",
+      "url": "/commands/gcc/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.g",
+      "name": "g++",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "g++",
+      "url": "/commands/g%2B%2B/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.make",
+      "name": "make",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "make",
+      "url": "/commands/make/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.cmake",
+      "name": "cmake",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "cmake",
+      "url": "/commands/cmake/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.python3",
+      "name": "python3",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "python3",
+      "url": "/commands/python3/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.node",
+      "name": "node",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "node",
+      "url": "/commands/node/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.javac",
+      "name": "javac",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "javac",
+      "url": "/commands/javac/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.java",
+      "name": "java",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "java",
+      "url": "/commands/java/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.go",
+      "name": "go",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "go",
+      "url": "/commands/go/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.rustc",
+      "name": "rustc",
+      "aliases": [],
+      "category": "development",
+      "summary": "Build and develop software",
+      "example": "rustc",
+      "url": "/commands/rustc/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.apk",
+      "name": "apk",
+      "aliases": [],
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "apk",
+      "url": "/commands/apk/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.apt",
+      "name": "apt",
+      "aliases": [],
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "apt",
+      "url": "/commands/apt/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.apt-get",
+      "name": "apt-get",
+      "aliases": [],
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "apt-get",
+      "url": "/commands/apt-get/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.dnf",
+      "name": "dnf",
+      "aliases": [],
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "dnf",
+      "url": "/commands/dnf/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.yum",
+      "name": "yum",
+      "aliases": [],
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "yum",
+      "url": "/commands/yum/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.pacman",
+      "name": "pacman",
+      "aliases": [],
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "pacman",
+      "url": "/commands/pacman/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.rpm",
+      "name": "rpm",
+      "aliases": [],
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "rpm",
+      "url": "/commands/rpm/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.dpkg",
+      "name": "dpkg",
+      "aliases": [],
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "dpkg",
+      "url": "/commands/dpkg/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.snap",
+      "name": "snap",
+      "aliases": [],
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "snap",
+      "url": "/commands/snap/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.flatpak",
+      "name": "flatpak",
+      "aliases": [],
+      "category": "packages",
+      "summary": "Manage software packages",
+      "example": "flatpak",
+      "url": "/commands/flatpak/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.systemctl",
+      "name": "systemctl",
+      "aliases": [],
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "systemctl",
+      "url": "/commands/systemctl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.service",
+      "name": "service",
+      "aliases": [],
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "service",
+      "url": "/commands/service/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.journalctl",
+      "name": "journalctl",
+      "aliases": [],
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "journalctl",
+      "url": "/commands/journalctl/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.crontab",
+      "name": "crontab",
+      "aliases": [],
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "crontab",
+      "url": "/commands/crontab/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.at",
+      "name": "at",
+      "aliases": [],
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "at",
+      "url": "/commands/at/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.logger",
+      "name": "logger",
+      "aliases": [],
+      "category": "services",
+      "summary": "Inspect and manage services",
+      "example": "logger",
+      "url": "/commands/logger/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    },
+    {
+      "id": "linux.seq",
+      "name": "seq",
+      "aliases": [],
+      "category": "shell",
+      "summary": "Generate numeric sequences for shell practice",
+      "example": "seq 1 5",
+      "url": "/commands/seq/",
+      "page": {
+        "status": "planned",
+        "source": null
+      },
+      "execution": {
+        "simulator": "unverified",
+        "vm": "unverified",
+        "tryEnabled": false
+      },
+      "availability": {
+        "alpine": "unverified",
+        "debian": "unverified",
+        "ubuntu": "unverified",
+        "lubuntu": "unverified",
+        "kali": "unverified"
+      },
+      "provenance": {
+        "type": "first-party-record",
+        "sourceOfIdentity": "LinuxTerminal command catalog",
+        "contentAuthoredBy": "LinuxTerminal"
+      }
+    }
+  ]
+}
