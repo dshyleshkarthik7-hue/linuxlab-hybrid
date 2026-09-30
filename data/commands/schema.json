@@ -14,7 +14,8 @@
     "page",
     "execution",
     "availability",
-    "provenance"
+    "provenance",
+    "intelligence"
   ],
   "properties": {
     "id": {
@@ -52,7 +53,7 @@
     },
     "url": {
       "type": "string",
-      "pattern": "^/commands/[^/]+/$"
+      "pattern": "^/commands/[^/]+\\.html$"
     },
     "page": {
       "type": "object",
@@ -174,6 +175,87 @@
         },
         "contentAuthoredBy": {
           "const": "LinuxTerminal"
+        }
+      }
+    },
+    "intelligence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "status",
+        "version"
+      ],
+      "properties": {
+        "status": {
+          "enum": [
+            "complete",
+            "planned"
+          ]
+        },
+        "version": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "tagline": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 300
+        },
+        "syntax": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "options": {
+          "type": "array",
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "string"
+              }
+            ]
+          }
+        },
+        "internals": {
+          "type": "array",
+          "minItems": 2,
+          "maxItems": 8,
+          "items": {
+            "type": "string"
+          }
+        },
+        "mistakes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "concepts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "related": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "uniqueItems": true
+        },
+        "distroNotes": {
+          "type": "array",
+          "minItems": 5,
+          "maxItems": 5,
+          "items": {
+            "type": "string"
+          }
         }
       }
     }

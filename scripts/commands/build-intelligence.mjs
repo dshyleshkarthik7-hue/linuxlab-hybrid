@@ -1,0 +1,2 @@
+import { readFile, writeFile } from 'node:fs/promises';
+const d=JSON.parse(await readFile('data/commands/index.json','utf8'));const records=d.records.filter(c=>c.intelligence?.status==='complete');await writeFile('public/command-intelligence.json',JSON.stringify({schemaVersion:1,generatedFrom:'data/commands/index.json',records:Object.fromEntries(records.map(c=>[c.name,{id:c.id,name:c.name,url:c.url,...c.intelligence}]))},null,2)+'\n');console.log('[command-intelligence] generated '+records.length+' records');

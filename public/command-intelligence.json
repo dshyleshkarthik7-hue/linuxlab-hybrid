@@ -1,0 +1,1336 @@
+{
+  "schemaVersion": 1,
+  "generatedFrom": "data/commands/index.json",
+  "records": {
+    "pwd": {
+      "id": "linux.pwd",
+      "name": "pwd",
+      "url": "/commands/pwd.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Navigate the filesystem",
+      "syntax": "pwd [OPTIONS]",
+      "options": [
+        [
+          "-L",
+          "logical-path behavior where supported"
+        ],
+        [
+          "-P",
+          "physical-path behavior where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "cd",
+        "ls",
+        "realpath"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "ls": {
+      "id": "linux.ls",
+      "name": "ls",
+      "url": "/commands/ls.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Navigate the filesystem",
+      "syntax": "ls [OPTIONS]",
+      "options": [
+        [
+          "-L",
+          "logical-path behavior where supported"
+        ],
+        [
+          "-P",
+          "physical-path behavior where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "pwd",
+        "find",
+        "du"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "cd": {
+      "id": "linux.cd",
+      "name": "cd",
+      "url": "/commands/cd.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Navigate the filesystem",
+      "syntax": "cd [OPTIONS]",
+      "options": [
+        [
+          "-L",
+          "logical-path behavior where supported"
+        ],
+        [
+          "-P",
+          "physical-path behavior where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "pwd",
+        "pushd",
+        "popd"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "cat": {
+      "id": "linux.cat",
+      "name": "cat",
+      "url": "/commands/cat.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Create, inspect, copy, move, link, or remove files",
+      "syntax": "cat [OPTIONS]",
+      "options": [
+        [
+          "-r",
+          "recursive processing where supported"
+        ],
+        [
+          "-v",
+          "verbose reporting where supported"
+        ],
+        [
+          "-i",
+          "interactive confirmation where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "head",
+        "tail",
+        "grep"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "cp": {
+      "id": "linux.cp",
+      "name": "cp",
+      "url": "/commands/cp.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Create, inspect, copy, move, link, or remove files",
+      "syntax": "cp [OPTIONS]",
+      "options": [
+        [
+          "-r",
+          "recursive processing where supported"
+        ],
+        [
+          "-v",
+          "verbose reporting where supported"
+        ],
+        [
+          "-i",
+          "interactive confirmation where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "mv",
+        "rm",
+        "tar"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "mv": {
+      "id": "linux.mv",
+      "name": "mv",
+      "url": "/commands/mv.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Create, inspect, copy, move, link, or remove files",
+      "syntax": "mv [OPTIONS]",
+      "options": [
+        [
+          "-r",
+          "recursive processing where supported"
+        ],
+        [
+          "-v",
+          "verbose reporting where supported"
+        ],
+        [
+          "-i",
+          "interactive confirmation where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "cp",
+        "rm",
+        "mkdir"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "rm": {
+      "id": "linux.rm",
+      "name": "rm",
+      "url": "/commands/rm.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Create, inspect, copy, move, link, or remove files",
+      "syntax": "rm [OPTIONS]",
+      "options": [
+        [
+          "-r",
+          "recursive processing where supported"
+        ],
+        [
+          "-v",
+          "verbose reporting where supported"
+        ],
+        [
+          "-i",
+          "interactive confirmation where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "rmdir",
+        "find",
+        "mv"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "mkdir": {
+      "id": "linux.mkdir",
+      "name": "mkdir",
+      "url": "/commands/mkdir.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Create, inspect, copy, move, link, or remove files",
+      "syntax": "mkdir [OPTIONS]",
+      "options": [
+        [
+          "-r",
+          "recursive processing where supported"
+        ],
+        [
+          "-v",
+          "verbose reporting where supported"
+        ],
+        [
+          "-i",
+          "interactive confirmation where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "rmdir",
+        "cp",
+        "mv"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "head": {
+      "id": "linux.head",
+      "name": "head",
+      "url": "/commands/head.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Read and transform text",
+      "syntax": "head [OPTIONS]",
+      "options": [
+        [
+          "-n",
+          "include line or record numbers where supported"
+        ],
+        [
+          "-i",
+          "case-insensitive matching where supported"
+        ],
+        [
+          "-v",
+          "invert or suppress selected matches where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "tail",
+        "cat",
+        "grep"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "tail": {
+      "id": "linux.tail",
+      "name": "tail",
+      "url": "/commands/tail.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Read and transform text",
+      "syntax": "tail [OPTIONS]",
+      "options": [
+        [
+          "-n",
+          "include line or record numbers where supported"
+        ],
+        [
+          "-i",
+          "case-insensitive matching where supported"
+        ],
+        [
+          "-v",
+          "invert or suppress selected matches where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "head",
+        "cat",
+        "grep"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "grep": {
+      "id": "linux.grep",
+      "name": "grep",
+      "url": "/commands/grep.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Search files, text, and commands",
+      "syntax": "grep [OPTIONS]",
+      "options": [
+        [
+          "-n",
+          "include line or record numbers where supported"
+        ],
+        [
+          "-i",
+          "case-insensitive matching where supported"
+        ],
+        [
+          "-v",
+          "invert or suppress selected matches where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "sed",
+        "awk",
+        "find",
+        "head",
+        "tail"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "find": {
+      "id": "linux.find",
+      "name": "find",
+      "url": "/commands/find.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Search files, text, and commands",
+      "syntax": "find [OPTIONS]",
+      "options": [
+        [
+          "-n",
+          "include line or record numbers where supported"
+        ],
+        [
+          "-i",
+          "case-insensitive matching where supported"
+        ],
+        [
+          "-v",
+          "invert or suppress selected matches where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "grep",
+        "ls",
+        "xargs"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "awk": {
+      "id": "linux.awk",
+      "name": "awk",
+      "url": "/commands/awk.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Search files, text, and commands",
+      "syntax": "awk [OPTIONS]",
+      "options": [
+        [
+          "-n",
+          "include line or record numbers where supported"
+        ],
+        [
+          "-i",
+          "case-insensitive matching where supported"
+        ],
+        [
+          "-v",
+          "invert or suppress selected matches where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "grep",
+        "sed",
+        "cut"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "sed": {
+      "id": "linux.sed",
+      "name": "sed",
+      "url": "/commands/sed.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Search files, text, and commands",
+      "syntax": "sed [OPTIONS]",
+      "options": [
+        [
+          "-n",
+          "include line or record numbers where supported"
+        ],
+        [
+          "-i",
+          "case-insensitive matching where supported"
+        ],
+        [
+          "-v",
+          "invert or suppress selected matches where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "grep",
+        "awk",
+        "head"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "chmod": {
+      "id": "linux.chmod",
+      "name": "chmod",
+      "url": "/commands/chmod.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Understand and change permissions",
+      "syntax": "chmod [OPTIONS]",
+      "options": [
+        [
+          "-r",
+          "recursive processing where supported"
+        ],
+        [
+          "-v",
+          "verbose reporting where supported"
+        ],
+        [
+          "-i",
+          "interactive confirmation where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "chown",
+        "umask",
+        "ls"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "chown": {
+      "id": "linux.chown",
+      "name": "chown",
+      "url": "/commands/chown.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Understand and change permissions",
+      "syntax": "chown [OPTIONS]",
+      "options": [
+        [
+          "-r",
+          "recursive processing where supported"
+        ],
+        [
+          "-v",
+          "verbose reporting where supported"
+        ],
+        [
+          "-i",
+          "interactive confirmation where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "chmod",
+        "chgrp",
+        "ls"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "ps": {
+      "id": "linux.ps",
+      "name": "ps",
+      "url": "/commands/ps.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Inspect and control processes",
+      "syntax": "ps [OPTIONS]",
+      "options": [
+        [
+          "-p",
+          "select processes or PIDs where supported"
+        ],
+        [
+          "-o",
+          "select output fields where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "top",
+        "pgrep",
+        "kill"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "top": {
+      "id": "linux.top",
+      "name": "top",
+      "url": "/commands/top.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Inspect and control processes",
+      "syntax": "top [OPTIONS]",
+      "options": [
+        [
+          "-p",
+          "select processes or PIDs where supported"
+        ],
+        [
+          "-o",
+          "select output fields where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "ps",
+        "free",
+        "uptime"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "df": {
+      "id": "linux.df",
+      "name": "df",
+      "url": "/commands/df.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Inspect disks and filesystems",
+      "syntax": "df [OPTIONS]",
+      "options": [
+        [
+          "-r",
+          "recursive processing where supported"
+        ],
+        [
+          "-v",
+          "verbose reporting where supported"
+        ],
+        [
+          "-i",
+          "interactive confirmation where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "du",
+        "mount",
+        "ls"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "du": {
+      "id": "linux.du",
+      "name": "du",
+      "url": "/commands/du.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Inspect disks and filesystems",
+      "syntax": "du [OPTIONS]",
+      "options": [
+        [
+          "-r",
+          "recursive processing where supported"
+        ],
+        [
+          "-v",
+          "verbose reporting where supported"
+        ],
+        [
+          "-i",
+          "interactive confirmation where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "df",
+        "find",
+        "ls"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "tar": {
+      "id": "linux.tar",
+      "name": "tar",
+      "url": "/commands/tar.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Create and extract archives",
+      "syntax": "tar [OPTIONS]",
+      "options": [
+        [
+          "-f",
+          "select an archive file where supported"
+        ],
+        [
+          "-v",
+          "verbose operation"
+        ],
+        [
+          "-C",
+          "select a working directory where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "gzip",
+        "cp",
+        "find"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "ip": {
+      "id": "linux.ip",
+      "name": "ip",
+      "url": "/commands/ip.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Inspect and test networking",
+      "syntax": "ip [OPTIONS]",
+      "options": [
+        [
+          "-4",
+          "select IPv4 where supported"
+        ],
+        [
+          "-6",
+          "select IPv6 where supported"
+        ],
+        [
+          "-v",
+          "increase diagnostics where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "ss",
+        "ping",
+        "route"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "ping": {
+      "id": "linux.ping",
+      "name": "ping",
+      "url": "/commands/ping.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Inspect and test networking",
+      "syntax": "ping [OPTIONS]",
+      "options": [
+        [
+          "-4",
+          "select IPv4 where supported"
+        ],
+        [
+          "-6",
+          "select IPv6 where supported"
+        ],
+        [
+          "-v",
+          "increase diagnostics where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "ip",
+        "ss",
+        "traceroute"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "curl": {
+      "id": "linux.curl",
+      "name": "curl",
+      "url": "/commands/curl.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Inspect and test networking",
+      "syntax": "curl [OPTIONS]",
+      "options": [
+        [
+          "-4",
+          "select IPv4 where supported"
+        ],
+        [
+          "-6",
+          "select IPv6 where supported"
+        ],
+        [
+          "-v",
+          "increase diagnostics where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "wget",
+        "ssh",
+        "ping"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "ssh": {
+      "id": "linux.ssh",
+      "name": "ssh",
+      "url": "/commands/ssh.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Inspect and test networking",
+      "syntax": "ssh [OPTIONS]",
+      "options": [
+        [
+          "-4",
+          "select IPv4 where supported"
+        ],
+        [
+          "-6",
+          "select IPv6 where supported"
+        ],
+        [
+          "-v",
+          "increase diagnostics where supported"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "scp",
+        "sftp",
+        "curl"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    },
+    "git": {
+      "id": "linux.git",
+      "name": "git",
+      "url": "/commands/git.html",
+      "status": "complete",
+      "version": 1,
+      "tagline": "Build and develop software",
+      "syntax": "git [OPTIONS]",
+      "options": [
+        [
+          "--help",
+          "show command help"
+        ],
+        [
+          "--version",
+          "show installed version"
+        ]
+      ],
+      "internals": [
+        "Parse the command line and validate its arguments.",
+        "Resolve the requested files, processes, network objects, or other resources.",
+        "Perform the command-specific operation using the operating system or installed implementation.",
+        "Format results for standard output/error and return an exit status."
+      ],
+      "mistakes": [
+        "Check the installed command's help or manual because implementations and options can differ.",
+        "Use a narrow, reversible test case before applying a command broadly.",
+        "Remember that shell quoting and expansion happen before most external commands receive arguments."
+      ],
+      "concepts": [
+        "Command-line parsing",
+        "Standard input/output",
+        "Exit status",
+        "Operating-system interfaces"
+      ],
+      "related": [
+        "diff",
+        "ssh",
+        "tar"
+      ],
+      "distroNotes": [
+        "Alpine often uses BusyBox for minimal base utilities; installed packages may provide fuller implementations.",
+        "Debian command implementations depend on the package installed on the system.",
+        "Ubuntu follows the Debian-family package ecosystem, with implementation/version differences possible.",
+        "Lubuntu follows the Ubuntu command and package ecosystem.",
+        "Kali follows the Debian-family ecosystem with security-focused package selections."
+      ]
+    }
+  }
+}
