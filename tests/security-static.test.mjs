@@ -37,11 +37,6 @@ assert.match(cloudflare, /"CDN-Cache-Control": "no-store"/);
 assert.match(cloudflare, /cache: "no-store"/);
 assert.match(cloudflare, /"Vary": "Origin"/);
 assert.match(cloudflareConfig, /"enabled": false/);
-const linux4IsoEdgeConfig = await readFile('netlify/edge-functions/linux4-iso.ts', 'utf8');
-assert.match(linux4IsoEdgeConfig, /path:\s*'\/api\/iso\/linux4'/);
-assert.match(linux4IsoEdgeConfig, /export default async function/);
-assert.match(netlify, /path\s*=\s*"\/api\/iso\/linux4"/);
-assert.match(netlify, /function\s*=\s*"linux4-iso"/);
 assert.match(netlify, /path = "\/api\/v86-firmware\/\*"/);
 assert.match(netlify, /function = "v86-firmware"/);
 assert.doesNotMatch(netlify, /sed -i/);
@@ -88,4 +83,4 @@ console.log('Static emulator SEO/security guardrails passed');
 
 assert.match(await readFile('netlify/edge-functions/tutor.ts','utf8'), /Tutor provider is temporarily unavailable/);
 const isoWorker = await readFile('cloudflare/iso-worker.ts', 'utf8');
-assert.match(isoWorker, /\^\(\[a-z0-9-\]\+\)--linuxterminal\\\.netlify\\\.app\$/i);
+assert.match(isoWorker, /\^\(\[a-z0-9-\]\+\)--linuxterminal\\\.netlify\\\.app\$/i);\nassert.doesNotMatch(netlify, /path\\s*=\\s*"\\/api\\/iso\\/linux4"/);
