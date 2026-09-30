@@ -16,7 +16,7 @@
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/alpine-virt-3.24.1-x86.iso?download=true",
         "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/V2.00/alpine-virt-3.24.1-x86.iso"
       ],
-      "delivery": "Netlify Edge Function -> Hugging Face Bucket -> GitHub Release"
+      "delivery": "Cloudflare Worker -> Hugging Face Bucket -> GitHub Release"
     },
     {
       "version": "v1.0.0",
@@ -32,7 +32,7 @@
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/alpine.iso?download=true",
         "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso"
       ],
-      "delivery": "Netlify Edge Function -> Hugging Face Bucket -> GitHub Release"
+      "delivery": "Cloudflare Worker -> Hugging Face Bucket -> GitHub Release"
     },
     {
       "version": "v3.00",
@@ -48,7 +48,7 @@
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/linux4.iso?download=true",
         "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso"
       ],
-      "delivery": "Netlify Edge Function -> Hugging Face Bucket -> GitHub Release"
+      "delivery": "Cloudflare Worker -> Hugging Face Bucket -> GitHub Release"
     },
     {
       "version": "v86-firmware-1",
