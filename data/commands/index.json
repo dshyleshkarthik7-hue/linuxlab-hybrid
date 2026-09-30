@@ -4,7 +4,7 @@
   "phase": 1,
   "target": {
     "minimumEntries": 5000,
-    "currentEntries": 5000
+    "currentEntries": 6166
   },
   "canonicalBaseUrl": "https://linuxterminal.me",
   "records": [
@@ -7982,6 +7982,6 @@
         "ref": "aa24e6f324bd81bf597097df5bb990775ce100bf"
       }
     ],
-    "identityPolicy": "source command names are expanded and deduplicated by the build; LinuxTerminal authors page prose"
+    "identityPolicy": "Merged pinned Linux inventories; identities only. All explanatory prose is authored by LinuxTerminal."
   }
 }
