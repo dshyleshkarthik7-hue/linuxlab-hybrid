@@ -69,7 +69,14 @@ class LinuxLabApp {
     requestAnimationFrame(() => { void this.startApp(); });
   }
 
-  private async startApp(): Promise<void> { this.initSimulatorTerminal(); this.bindEvents(); void this.restoreWorkspace(); }
+  private async startApp(): Promise<void> { this.initSimulatorTerminal(); this.bindEvents(); this.prefillFromCommandPage(); void this.restoreWorkspace(); }
+
+  private prefillFromCommandPage(): void {
+    const value = new URLSearchParams(window.location.search).get('try')?.trim() ?? '';
+    if (!/^[A-Za-z0-9._+ -]{1,180}$/.test(value) || !value) return;
+    this.currentInputBuffer = value;
+    this.simTerm.write(value);
+  }
 
   private async ensureMonaco(): Promise<void> {
     if (this.editor) return;
