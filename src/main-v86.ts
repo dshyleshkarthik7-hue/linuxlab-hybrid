@@ -442,6 +442,12 @@ export class V86LinuxTerminal {
   }
   private handleVisibility = (): void => { if (document.visibilityState === 'visible') this.fit(); };
 
+  private prefillCommandFromPage(): void {
+    const value = new URLSearchParams(window.location.search).get('try')?.trim() ?? '';
+    if (!/^[A-Za-z0-9._+ -]{1,180}$/.test(value) || !value || !this.shellReady) return;
+    this.term.write(value);
+  }
+
   private async dispose(): Promise<void> {
     if (this.bootTimeout !== null) { window.clearTimeout(this.bootTimeout); this.bootTimeout = null; }
     if (this.sessionTimer !== null) { window.clearTimeout(this.sessionTimer); this.sessionTimer = null; }

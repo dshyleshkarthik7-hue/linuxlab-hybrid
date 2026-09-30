@@ -1,5 +1,9 @@
 import {readFile,writeFile} from 'node:fs/promises';
-const db=JSON.parse(await readFile('data/commands/index.json','utf8'));
+import path from 'node:path';
+import {fileURLToPath} from 'node:url';
+
+const root=path.resolve(fileURLToPath(new URL('../..',import.meta.url)));
+const db=JSON.parse(await readFile(path.join(root,'data/commands/index.json'),'utf8'));
 const family=(n,c)=>{const s=n.toLowerCase();
 if(/^(ls|cd|pwd|pushd|popd|dirs|tree|find|locate|which|whereis|readlink|realpath|basename|dirname)$/.test(s))return'filesystem-navigation';
 if(/^(cp|mv|rm|rmdir|mkdir|install|touch|ln|chmod|chown|chgrp|umask|stat|file)$/.test(s))return'filesystem-management';
@@ -37,7 +41,13 @@ const meta={
 'runtime':{tag:'Execute or inspect programs through a language runtime.',concepts:['interpreter','runtime','modules','environment','standard library'],steps:['The runtime parses its invocation and program arguments.','The program is loaded or compiled to an executable representation.','Runtime services and libraries execute the program.','The process emits output and exits with a status.']},
 'authentication-security':{tag:'Inspect or manage authentication, credentials, keys, or security metadata.',concepts:['credentials','permissions','keys','identity','trust boundaries'],steps:['The command validates arguments and execution context.','It reads protected configuration or credential material when required.','The kernel, PAM, cryptographic library, or security subsystem performs the operation.','The command reports success or a deliberately limited error.']},
 'system-tool':{tag:'Understand a Linux utility by observing its inputs, interfaces, output, and exit status.',concepts:['arguments','environment','stdin/stdout','system calls','exit status'],steps:['The shell parses and expands the command line.','The program validates arguments and establishes its execution context.','It calls relevant Linux or library interfaces for its task.','Output and diagnostics are emitted and an exit status is returned.]}};
-const related=(r)=>{const f=family(r.name,r.category);return db.records.filter(x=>x.name!==r.name&&family(x.name,x.category)===f).slice(0,5).map(x=>x.name)};
+const recordsByFamily=new Map();
+for(const record of db.records){
+  const f=family(record.name,record.category);
+  const bucket=recordsByFamily.get(f);
+  if(bucket) bucket.push(record); else recordsByFamily.set(f,[record]);
+}
+const related=(r)=>{const f=family(r.name,r.category);return (recordsByFamily.get(f)??[]).filter(x=>x.name!==r.name).slice(0,5).map(x=>x.name)};
 const records=db.records.map(r=>{const f=family(r.name,r.category),m=meta[f]||meta['system-tool'];return {...r,intelligence:{status:'complete',version:2,tagline:m.tag+' Command focus: '+r.name+'.',syntax:r.name+' [OPTIONS] [ARGUMENTS]',options:[['--help','Display implementation-specific usage information, when supported.'],['--version','Display implementation/version information, when supported.']],internals:m.steps,mistakes:['Do not assume '+r.name+' has identical options across BusyBox, GNU, BSD, or other implementations.','Use '+r.name+' --help and the local manual before scripting implementation-specific behavior.','Verify paths, identities, network targets, or devices before using '+r.name+' on real system data.','Remember that shell quoting and expansion happen before '+r.name+' receives its arguments.'],concepts:m.concepts,related:related(r),distroNotes:['Alpine commonly favors small BusyBox implementations; a fuller package may provide different '+r.name+' behavior.','Debian package selection determines whether '+r.name+' is installed and which implementation/version supplies it.','Ubuntu uses the Debian-family package ecosystem; installed versions and optional packages can change behavior.','Lubuntu follows the Ubuntu package ecosystem while its desktop-oriented install may omit server/developer tools.','Kali follows the Debian family with a security-focused package selection; availability depends on installed packages.'],lesson:{family:f,learningPath:['Identify the installed implementation with command -v '+r.name+'.','Read '+r.name+' --help and the local manual before relying on flags.','Run a small, reversible example and inspect stdout, stderr, and the exit status.','Compare behavior across the distributions you actually support.']}}});
 const out={schemaVersion:2,generatedFrom:'data/commands/index.json',records:Object.fromEntries(records.map(c=>[c.name,{id:c.id,name:c.name,url:c.url,...c.intelligence}]))};
-await writeFile('public/command-intelligence.json',JSON.stringify(out,null,2)+'\n');console.log('[command-intelligence] generated '+records.length+' deep lesson records');
+await writeFile(path.join(root,'public/command-intelligence.json'),JSON.stringify(out,null,2)+'\n');console.log('[command-intelligence] generated '+records.length+' deep lesson records');
