@@ -1,12 +1,1 @@
-import { readFile, writeFile } from 'node:fs/promises';
-import path from 'node:path';
-import { fileURLToPath } from 'node:url';
-
-const root = path.resolve(fileURLToPath(new URL('../..', import.meta.url)));
-const source = path.join(root, 'data/commands/index.json');
-const output = path.join(root, 'public/command-index.json');
-const database = JSON.parse(await readFile(source, 'utf8'));
-const records = database.records;
-const index = { schemaVersion: database.schemaVersion, generatedFrom: 'data/commands/index.json', records: records.map(({ id, name, category, summary, example, url, page, intelligence }) => ({ id, name, category, summary, example, url, page })) };
-await writeFile(output, JSON.stringify(index, null, 2) + '\\n');
-console.log('[command-database] generated public/command-index.json from the canonical database.');
+import {readFile,writeFile} from 'node:fs/promises';import path from 'node:path';import {fileURLToPath} from 'node:url';const root=path.resolve(fileURLToPath(new URL('../..',import.meta.url)));const d=JSON.parse(await readFile(path.join(root,'data/commands/index.json'),'utf8'));const i=JSON.parse(await readFile(path.join(root,'data/commands/inventory.json'),'utf8'));const seen=new Set(d.records.map(r=>r.name));const slug=s=>s.toLowerCase().replace(/\+/g,'-plus-').replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'').slice(0,80)||'command';const used=new Set(d.records.map(r=>r.url));for(const x of i.records){if(seen.has(x.name))continue;let b=slug(x.name),s=b,n=2,u='/commands/'+s+'.html';while(used.has(u)){s=b+'-'+n++;u='/commands/'+s+'.html'}used.add(u);d.records.push({id:'linux.'+s,name:x.name,aliases:[],category:'system-tools',summary:'Reference for the Linux command '+x.name+'. Syntax and behavior depend on the installed implementation.',example:x.name+' --help',url:u,page:{status:'planned',source:null},execution:{simulator:'unverified',vm:'unverified',tryEnabled:false},availability:{alpine:'unverified',debian:'unverified',ubuntu:'unverified',lubuntu:'unverified',kali:'unverified'},provenance:{type:'first-party-record',sourceOfIdentity:'Merged Linux command inventories; identity normalized by LinuxTerminal',contentAuthoredBy:'LinuxTerminal'},intelligence:{status:'planned',version:1}})}d.target={...d.target,currentEntries:d.records.length};await writeFile(path.join(root,'public/command-records.json'),JSON.stringify({schemaVersion:1,records:d.records},null,2)+'\n');await writeFile(path.join(root,'public/command-index.json'),JSON.stringify({schemaVersion:1,generatedFrom:['data/commands/index.json','data/commands/inventory.json'],records:d.records},null,2)+'\n');

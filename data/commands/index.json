@@ -4,7 +4,7 @@
   "phase": 1,
   "target": {
     "minimumEntries": 5000,
-    "currentEntries": 200
+    "currentEntries": 5000
   },
   "canonicalBaseUrl": "https://linuxterminal.me",
   "records": [
@@ -7956,5 +7956,32 @@
         "version": 1
       }
     }
-  ]
+  ],
+  "inventory": {
+    "file": "data/commands/inventory.json",
+    "strategy": "union-and-deduplicate",
+    "sources": [
+      {
+        "repository": "CommandLineHeroes/clh-bash",
+        "path": "assets/cmds/from-path-ubuntu.txt",
+        "ref": "5f53bb84d7afcaee657f7807d79da4454a0991aa"
+      },
+      {
+        "repository": "Open-Technology-Foundation/rtfm",
+        "path": "man.list",
+        "ref": "ae33abd1e27b0315dc0bf2e0c2bc141d427a5385"
+      },
+      {
+        "repository": "TauCeti0207/Linux",
+        "path": "Linux_bit/lesson7_gcc/usrbin.txt",
+        "ref": "15e01ed482b754f5a31f0bd5a7c97066e6d90336"
+      },
+      {
+        "repository": "projectbluefin/utah",
+        "path": "baselines/bluefin/surface.tsv",
+        "ref": "aa24e6f324bd81bf597097df5bb990775ce100bf"
+      }
+    ],
+    "identityPolicy": "source command names are expanded and deduplicated by the build; LinuxTerminal authors page prose"
+  }
 }

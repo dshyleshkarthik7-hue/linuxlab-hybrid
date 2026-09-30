@@ -1,0 +1,128 @@
+{
+  "schemaVersion": 1,
+  "kind": "linux-command-inventory",
+  "generatedFrom": [
+    {
+      "repository": "CommandLineHeroes/clh-bash",
+      "path": "assets/cmds/from-path-ubuntu.txt",
+      "ref": "5f53bb84d7afcaee657f7807d79da4454a0991aa"
+    },
+    {
+      "repository": "Open-Technology-Foundation/rtfm",
+      "path": "man.list",
+      "ref": "ae33abd1e27b0315dc0bf2e0c2bc141d427a5385"
+    },
+    {
+      "repository": "TauCeti0207/Linux",
+      "path": "Linux_bit/lesson7_gcc/usrbin.txt",
+      "ref": "15e01ed482b754f5a31f0bd5a7c97066e6d90336"
+    },
+    {
+      "repository": "projectbluefin/utah",
+      "path": "baselines/bluefin/surface.tsv",
+      "ref": "aa24e6f324bd81bf597097df5bb990775ce100bf"
+    }
+  ],
+  "identityPolicy": "source command names are expanded and deduplicated by the build; LinuxTerminal authors page prose",
+  "records": [
+    {
+      "name": "bash"
+    },
+    {
+      "name": "sh"
+    },
+    {
+      "name": "dash"
+    },
+    {
+      "name": "zsh"
+    },
+    {
+      "name": "fish"
+    },
+    {
+      "name": "ksh"
+    },
+    {
+      "name": "tcsh"
+    },
+    {
+      "name": "busybox"
+    },
+    {
+      "name": "systemctl"
+    },
+    {
+      "name": "journalctl"
+    },
+    {
+      "name": "ip"
+    },
+    {
+      "name": "ss"
+    },
+    {
+      "name": "ping"
+    },
+    {
+      "name": "curl"
+    },
+    {
+      "name": "wget"
+    },
+    {
+      "name": "ssh"
+    },
+    {
+      "name": "scp"
+    },
+    {
+      "name": "sftp"
+    },
+    {
+      "name": "grep"
+    },
+    {
+      "name": "sed"
+    },
+    {
+      "name": "awk"
+    },
+    {
+      "name": "find"
+    },
+    {
+      "name": "xargs"
+    },
+    {
+      "name": "tar"
+    },
+    {
+      "name": "gzip"
+    },
+    {
+      "name": "xz"
+    },
+    {
+      "name": "zip"
+    },
+    {
+      "name": "unzip"
+    },
+    {
+      "name": "git"
+    },
+    {
+      "name": "gcc"
+    },
+    {
+      "name": "make"
+    },
+    {
+      "name": "gdb"
+    },
+    {
+      "name": "python3"
+    }
+  ]
+}
