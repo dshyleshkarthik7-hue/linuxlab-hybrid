@@ -66,7 +66,7 @@
   "dependencies": {
     "monaco-editor": "0.57.0",
     "mongodb": "6.20.0",
-    "@xterm/xterm": "5.5.0",
+    "@xterm/xterm": "6.0.0",
     "@xterm/addon-fit": "0.11.0"
   },
   "devDependencies": {
