@@ -462,9 +462,3 @@ export class V86LinuxTerminal {
     this.enforcer = null;
   }
 }
-  private prefillCommandFromPage(): void {
-    const value = new URLSearchParams(window.location.search).get('try')?.trim() ?? '';
-    if (!/^[A-Za-z0-9._+ -]{1,180}$/.test(value) || !value || !this.shellReady) return;
-    this.term.write(value);
-  }
-
