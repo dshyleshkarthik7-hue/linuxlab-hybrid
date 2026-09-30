@@ -26,6 +26,9 @@
   path = "/api/tutor"
   function = "tutor"
 [[edge_functions]]
+  path = "/api/iso/linux4"
+  function = "linux4-iso"
+[[edge_functions]]
   path = "/api/csp-report"
   function = "csp-report"
 [[edge_functions]]
