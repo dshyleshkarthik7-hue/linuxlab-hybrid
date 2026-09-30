@@ -15,7 +15,7 @@
       "category": "navigation",
       "summary": "Navigate the filesystem",
       "example": "pwd",
-      "url": "/commands/pwd/",
+      "url": "/commands/pwd.html",
       "page": {
         "status": "complete",
         "source": "public/commands/pwd.html"
@@ -45,7 +45,7 @@
       "category": "navigation",
       "summary": "Navigate the filesystem",
       "example": "ls",
-      "url": "/commands/ls/",
+      "url": "/commands/ls.html",
       "page": {
         "status": "complete",
         "source": "public/commands/ls.html"
@@ -75,7 +75,7 @@
       "category": "navigation",
       "summary": "Navigate the filesystem",
       "example": "cd",
-      "url": "/commands/cd/",
+      "url": "/commands/cd.html",
       "page": {
         "status": "complete",
         "source": "public/commands/cd.html"
@@ -105,7 +105,7 @@
       "category": "navigation",
       "summary": "Navigate the filesystem",
       "example": "tree",
-      "url": "/commands/tree/",
+      "url": "/commands/tree.html",
       "page": {
         "status": "planned",
         "source": null
@@ -135,7 +135,7 @@
       "category": "navigation",
       "summary": "Navigate the filesystem",
       "example": "dirs",
-      "url": "/commands/dirs/",
+      "url": "/commands/dirs.html",
       "page": {
         "status": "planned",
         "source": null
@@ -165,7 +165,7 @@
       "category": "navigation",
       "summary": "Navigate the filesystem",
       "example": "pushd",
-      "url": "/commands/pushd/",
+      "url": "/commands/pushd.html",
       "page": {
         "status": "planned",
         "source": null
@@ -195,7 +195,7 @@
       "category": "navigation",
       "summary": "Navigate the filesystem",
       "example": "popd",
-      "url": "/commands/popd/",
+      "url": "/commands/popd.html",
       "page": {
         "status": "planned",
         "source": null
@@ -225,7 +225,7 @@
       "category": "navigation",
       "summary": "Navigate the filesystem",
       "example": "realpath",
-      "url": "/commands/realpath/",
+      "url": "/commands/realpath.html",
       "page": {
         "status": "planned",
         "source": null
@@ -255,7 +255,7 @@
       "category": "navigation",
       "summary": "Navigate the filesystem",
       "example": "basename",
-      "url": "/commands/basename/",
+      "url": "/commands/basename.html",
       "page": {
         "status": "planned",
         "source": null
@@ -285,7 +285,7 @@
       "category": "navigation",
       "summary": "Navigate the filesystem",
       "example": "dirname",
-      "url": "/commands/dirname/",
+      "url": "/commands/dirname.html",
       "page": {
         "status": "planned",
         "source": null
@@ -315,7 +315,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "touch",
-      "url": "/commands/touch/",
+      "url": "/commands/touch.html",
       "page": {
         "status": "planned",
         "source": null
@@ -345,7 +345,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "cat",
-      "url": "/commands/cat/",
+      "url": "/commands/cat.html",
       "page": {
         "status": "complete",
         "source": "public/commands/cat.html"
@@ -375,7 +375,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "cp",
-      "url": "/commands/cp/",
+      "url": "/commands/cp.html",
       "page": {
         "status": "complete",
         "source": "public/commands/cp.html"
@@ -405,7 +405,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "mv",
-      "url": "/commands/mv/",
+      "url": "/commands/mv.html",
       "page": {
         "status": "complete",
         "source": "public/commands/mv.html"
@@ -435,7 +435,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "rm",
-      "url": "/commands/rm/",
+      "url": "/commands/rm.html",
       "page": {
         "status": "complete",
         "source": "public/commands/rm.html"
@@ -465,7 +465,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "mkdir",
-      "url": "/commands/mkdir/",
+      "url": "/commands/mkdir.html",
       "page": {
         "status": "complete",
         "source": "public/commands/mkdir.html"
@@ -495,7 +495,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "rmdir",
-      "url": "/commands/rmdir/",
+      "url": "/commands/rmdir.html",
       "page": {
         "status": "planned",
         "source": null
@@ -525,7 +525,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "ln",
-      "url": "/commands/ln/",
+      "url": "/commands/ln.html",
       "page": {
         "status": "planned",
         "source": null
@@ -555,7 +555,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "readlink",
-      "url": "/commands/readlink/",
+      "url": "/commands/readlink.html",
       "page": {
         "status": "planned",
         "source": null
@@ -585,7 +585,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "file",
-      "url": "/commands/file/",
+      "url": "/commands/file.html",
       "page": {
         "status": "planned",
         "source": null
@@ -615,7 +615,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "stat",
-      "url": "/commands/stat/",
+      "url": "/commands/stat.html",
       "page": {
         "status": "planned",
         "source": null
@@ -645,7 +645,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "truncate",
-      "url": "/commands/truncate/",
+      "url": "/commands/truncate.html",
       "page": {
         "status": "planned",
         "source": null
@@ -675,7 +675,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "install",
-      "url": "/commands/install/",
+      "url": "/commands/install.html",
       "page": {
         "status": "planned",
         "source": null
@@ -705,7 +705,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "mktemp",
-      "url": "/commands/mktemp/",
+      "url": "/commands/mktemp.html",
       "page": {
         "status": "planned",
         "source": null
@@ -735,7 +735,7 @@
       "category": "files",
       "summary": "Create, inspect, copy, move, link, or remove files",
       "example": "shred",
-      "url": "/commands/shred/",
+      "url": "/commands/shred.html",
       "page": {
         "status": "planned",
         "source": null
@@ -765,7 +765,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "head",
-      "url": "/commands/head/",
+      "url": "/commands/head.html",
       "page": {
         "status": "complete",
         "source": "public/commands/head.html"
@@ -795,7 +795,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "tail",
-      "url": "/commands/tail/",
+      "url": "/commands/tail.html",
       "page": {
         "status": "complete",
         "source": "public/commands/tail.html"
@@ -825,7 +825,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "less",
-      "url": "/commands/less/",
+      "url": "/commands/less.html",
       "page": {
         "status": "planned",
         "source": null
@@ -855,7 +855,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "more",
-      "url": "/commands/more/",
+      "url": "/commands/more.html",
       "page": {
         "status": "planned",
         "source": null
@@ -885,7 +885,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "nl",
-      "url": "/commands/nl/",
+      "url": "/commands/nl.html",
       "page": {
         "status": "planned",
         "source": null
@@ -915,7 +915,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "wc",
-      "url": "/commands/wc/",
+      "url": "/commands/wc.html",
       "page": {
         "status": "planned",
         "source": null
@@ -945,7 +945,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "cut",
-      "url": "/commands/cut/",
+      "url": "/commands/cut.html",
       "page": {
         "status": "planned",
         "source": null
@@ -975,7 +975,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "paste",
-      "url": "/commands/paste/",
+      "url": "/commands/paste.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1005,7 +1005,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "join",
-      "url": "/commands/join/",
+      "url": "/commands/join.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1035,7 +1035,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "expand",
-      "url": "/commands/expand/",
+      "url": "/commands/expand.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1065,7 +1065,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "unexpand",
-      "url": "/commands/unexpand/",
+      "url": "/commands/unexpand.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1095,7 +1095,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "fold",
-      "url": "/commands/fold/",
+      "url": "/commands/fold.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1125,7 +1125,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "fmt",
-      "url": "/commands/fmt/",
+      "url": "/commands/fmt.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1155,7 +1155,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "column",
-      "url": "/commands/column/",
+      "url": "/commands/column.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1185,7 +1185,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "tr",
-      "url": "/commands/tr/",
+      "url": "/commands/tr.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1215,7 +1215,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "rev",
-      "url": "/commands/rev/",
+      "url": "/commands/rev.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1245,7 +1245,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "sort",
-      "url": "/commands/sort/",
+      "url": "/commands/sort.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1275,7 +1275,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "uniq",
-      "url": "/commands/uniq/",
+      "url": "/commands/uniq.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1305,7 +1305,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "comm",
-      "url": "/commands/comm/",
+      "url": "/commands/comm.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1335,7 +1335,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "diff",
-      "url": "/commands/diff/",
+      "url": "/commands/diff.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1365,7 +1365,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "cmp",
-      "url": "/commands/cmp/",
+      "url": "/commands/cmp.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1395,7 +1395,7 @@
       "category": "text",
       "summary": "Read and transform text",
       "example": "strings",
-      "url": "/commands/strings/",
+      "url": "/commands/strings.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1425,7 +1425,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "grep",
-      "url": "/commands/grep/",
+      "url": "/commands/grep.html",
       "page": {
         "status": "complete",
         "source": "public/commands/grep.html"
@@ -1455,7 +1455,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "egrep",
-      "url": "/commands/egrep/",
+      "url": "/commands/egrep.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1485,7 +1485,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "fgrep",
-      "url": "/commands/fgrep/",
+      "url": "/commands/fgrep.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1515,7 +1515,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "find",
-      "url": "/commands/find/",
+      "url": "/commands/find.html",
       "page": {
         "status": "complete",
         "source": "public/commands/find.html"
@@ -1545,7 +1545,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "locate",
-      "url": "/commands/locate/",
+      "url": "/commands/locate.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1575,7 +1575,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "which",
-      "url": "/commands/which/",
+      "url": "/commands/which.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1605,7 +1605,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "whereis",
-      "url": "/commands/whereis/",
+      "url": "/commands/whereis.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1635,7 +1635,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "xargs",
-      "url": "/commands/xargs/",
+      "url": "/commands/xargs.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1665,7 +1665,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "awk",
-      "url": "/commands/awk/",
+      "url": "/commands/awk.html",
       "page": {
         "status": "complete",
         "source": "public/commands/awk.html"
@@ -1695,7 +1695,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "sed",
-      "url": "/commands/sed/",
+      "url": "/commands/sed.html",
       "page": {
         "status": "complete",
         "source": "public/commands/sed.html"
@@ -1725,7 +1725,7 @@
       "category": "search",
       "summary": "Search files, text, and commands",
       "example": "rg",
-      "url": "/commands/rg/",
+      "url": "/commands/rg.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1755,7 +1755,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "echo",
-      "url": "/commands/echo/",
+      "url": "/commands/echo.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1785,7 +1785,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "printf",
-      "url": "/commands/printf/",
+      "url": "/commands/printf.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1815,7 +1815,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "true",
-      "url": "/commands/true/",
+      "url": "/commands/true.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1845,7 +1845,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "false",
-      "url": "/commands/false/",
+      "url": "/commands/false.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1875,7 +1875,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "test",
-      "url": "/commands/test/",
+      "url": "/commands/test.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1905,7 +1905,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "alias",
-      "url": "/commands/alias/",
+      "url": "/commands/alias.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1935,7 +1935,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "unalias",
-      "url": "/commands/unalias/",
+      "url": "/commands/unalias.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1965,7 +1965,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "history",
-      "url": "/commands/history/",
+      "url": "/commands/history.html",
       "page": {
         "status": "planned",
         "source": null
@@ -1995,7 +1995,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "help",
-      "url": "/commands/help/",
+      "url": "/commands/help.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2025,7 +2025,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "type",
-      "url": "/commands/type/",
+      "url": "/commands/type.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2055,7 +2055,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "command",
-      "url": "/commands/command/",
+      "url": "/commands/command.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2085,7 +2085,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "builtin",
-      "url": "/commands/builtin/",
+      "url": "/commands/builtin.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2115,7 +2115,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "source",
-      "url": "/commands/source/",
+      "url": "/commands/source.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2145,7 +2145,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "read",
-      "url": "/commands/read/",
+      "url": "/commands/read.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2175,7 +2175,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "set",
-      "url": "/commands/set/",
+      "url": "/commands/set.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2205,7 +2205,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "unset",
-      "url": "/commands/unset/",
+      "url": "/commands/unset.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2235,7 +2235,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "export",
-      "url": "/commands/export/",
+      "url": "/commands/export.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2265,7 +2265,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "env",
-      "url": "/commands/env/",
+      "url": "/commands/env.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2295,7 +2295,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "printenv",
-      "url": "/commands/printenv/",
+      "url": "/commands/printenv.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2325,7 +2325,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "getopts",
-      "url": "/commands/getopts/",
+      "url": "/commands/getopts.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2355,7 +2355,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "shift",
-      "url": "/commands/shift/",
+      "url": "/commands/shift.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2385,7 +2385,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "wait",
-      "url": "/commands/wait/",
+      "url": "/commands/wait.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2415,7 +2415,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "exec",
-      "url": "/commands/exec/",
+      "url": "/commands/exec.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2445,7 +2445,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "eval",
-      "url": "/commands/eval/",
+      "url": "/commands/eval.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2475,7 +2475,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "jobs",
-      "url": "/commands/jobs/",
+      "url": "/commands/jobs.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2505,7 +2505,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "fg",
-      "url": "/commands/fg/",
+      "url": "/commands/fg.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2535,7 +2535,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "bg",
-      "url": "/commands/bg/",
+      "url": "/commands/bg.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2565,7 +2565,7 @@
       "category": "shell",
       "summary": "Use the shell and its built-ins",
       "example": "disown",
-      "url": "/commands/disown/",
+      "url": "/commands/disown.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2595,7 +2595,7 @@
       "category": "permissions",
       "summary": "Understand and change permissions",
       "example": "umask",
-      "url": "/commands/umask/",
+      "url": "/commands/umask.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2625,7 +2625,7 @@
       "category": "permissions",
       "summary": "Understand and change permissions",
       "example": "chmod",
-      "url": "/commands/chmod/",
+      "url": "/commands/chmod.html",
       "page": {
         "status": "complete",
         "source": "public/commands/chmod.html"
@@ -2655,7 +2655,7 @@
       "category": "permissions",
       "summary": "Understand and change permissions",
       "example": "chown",
-      "url": "/commands/chown/",
+      "url": "/commands/chown.html",
       "page": {
         "status": "complete",
         "source": "public/commands/chown.html"
@@ -2685,7 +2685,7 @@
       "category": "permissions",
       "summary": "Understand and change permissions",
       "example": "chgrp",
-      "url": "/commands/chgrp/",
+      "url": "/commands/chgrp.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2715,7 +2715,7 @@
       "category": "permissions",
       "summary": "Understand and change permissions",
       "example": "getfacl",
-      "url": "/commands/getfacl/",
+      "url": "/commands/getfacl.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2745,7 +2745,7 @@
       "category": "permissions",
       "summary": "Understand and change permissions",
       "example": "setfacl",
-      "url": "/commands/setfacl/",
+      "url": "/commands/setfacl.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2775,7 +2775,7 @@
       "category": "permissions",
       "summary": "Understand and change permissions",
       "example": "lsattr",
-      "url": "/commands/lsattr/",
+      "url": "/commands/lsattr.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2805,7 +2805,7 @@
       "category": "permissions",
       "summary": "Understand and change permissions",
       "example": "chattr",
-      "url": "/commands/chattr/",
+      "url": "/commands/chattr.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2835,7 +2835,7 @@
       "category": "users",
       "summary": "Inspect users and groups",
       "example": "id",
-      "url": "/commands/id/",
+      "url": "/commands/id.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2865,7 +2865,7 @@
       "category": "users",
       "summary": "Inspect users and groups",
       "example": "whoami",
-      "url": "/commands/whoami/",
+      "url": "/commands/whoami.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2895,7 +2895,7 @@
       "category": "users",
       "summary": "Inspect users and groups",
       "example": "groups",
-      "url": "/commands/groups/",
+      "url": "/commands/groups.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2925,7 +2925,7 @@
       "category": "users",
       "summary": "Inspect users and groups",
       "example": "who",
-      "url": "/commands/who/",
+      "url": "/commands/who.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2955,7 +2955,7 @@
       "category": "users",
       "summary": "Inspect users and groups",
       "example": "w",
-      "url": "/commands/w/",
+      "url": "/commands/w.html",
       "page": {
         "status": "planned",
         "source": null
@@ -2985,7 +2985,7 @@
       "category": "users",
       "summary": "Inspect users and groups",
       "example": "users",
-      "url": "/commands/users/",
+      "url": "/commands/users.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3015,7 +3015,7 @@
       "category": "users",
       "summary": "Inspect users and groups",
       "example": "last",
-      "url": "/commands/last/",
+      "url": "/commands/last.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3045,7 +3045,7 @@
       "category": "users",
       "summary": "Inspect users and groups",
       "example": "lastlog",
-      "url": "/commands/lastlog/",
+      "url": "/commands/lastlog.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3075,7 +3075,7 @@
       "category": "users",
       "summary": "Inspect users and groups",
       "example": "getent",
-      "url": "/commands/getent/",
+      "url": "/commands/getent.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3105,7 +3105,7 @@
       "category": "users",
       "summary": "Inspect users and groups",
       "example": "passwd",
-      "url": "/commands/passwd/",
+      "url": "/commands/passwd.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3135,7 +3135,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "ps",
-      "url": "/commands/ps/",
+      "url": "/commands/ps.html",
       "page": {
         "status": "complete",
         "source": "public/commands/ps.html"
@@ -3165,7 +3165,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "top",
-      "url": "/commands/top/",
+      "url": "/commands/top.html",
       "page": {
         "status": "complete",
         "source": "public/commands/top.html"
@@ -3195,7 +3195,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "htop",
-      "url": "/commands/htop/",
+      "url": "/commands/htop.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3225,7 +3225,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "pgrep",
-      "url": "/commands/pgrep/",
+      "url": "/commands/pgrep.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3255,7 +3255,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "pkill",
-      "url": "/commands/pkill/",
+      "url": "/commands/pkill.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3285,7 +3285,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "kill",
-      "url": "/commands/kill/",
+      "url": "/commands/kill.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3315,7 +3315,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "killall",
-      "url": "/commands/killall/",
+      "url": "/commands/killall.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3345,7 +3345,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "nice",
-      "url": "/commands/nice/",
+      "url": "/commands/nice.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3375,7 +3375,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "renice",
-      "url": "/commands/renice/",
+      "url": "/commands/renice.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3405,7 +3405,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "nohup",
-      "url": "/commands/nohup/",
+      "url": "/commands/nohup.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3435,7 +3435,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "time",
-      "url": "/commands/time/",
+      "url": "/commands/time.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3465,7 +3465,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "strace",
-      "url": "/commands/strace/",
+      "url": "/commands/strace.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3495,7 +3495,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "lsof",
-      "url": "/commands/lsof/",
+      "url": "/commands/lsof.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3525,7 +3525,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "pstree",
-      "url": "/commands/pstree/",
+      "url": "/commands/pstree.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3555,7 +3555,7 @@
       "category": "processes",
       "summary": "Inspect and control processes",
       "example": "pidof",
-      "url": "/commands/pidof/",
+      "url": "/commands/pidof.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3585,7 +3585,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "free",
-      "url": "/commands/free/",
+      "url": "/commands/free.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3615,7 +3615,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "uname",
-      "url": "/commands/uname/",
+      "url": "/commands/uname.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3645,7 +3645,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "hostname",
-      "url": "/commands/hostname/",
+      "url": "/commands/hostname.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3675,7 +3675,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "uptime",
-      "url": "/commands/uptime/",
+      "url": "/commands/uptime.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3705,7 +3705,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "dmesg",
-      "url": "/commands/dmesg/",
+      "url": "/commands/dmesg.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3735,7 +3735,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "sysctl",
-      "url": "/commands/sysctl/",
+      "url": "/commands/sysctl.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3765,7 +3765,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "lsb_release",
-      "url": "/commands/lsb_release/",
+      "url": "/commands/lsb_release.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3795,7 +3795,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "arch",
-      "url": "/commands/arch/",
+      "url": "/commands/arch.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3825,7 +3825,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "nproc",
-      "url": "/commands/nproc/",
+      "url": "/commands/nproc.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3855,7 +3855,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "lscpu",
-      "url": "/commands/lscpu/",
+      "url": "/commands/lscpu.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3885,7 +3885,7 @@
       "category": "system",
       "summary": "Inspect the running system",
       "example": "lsmem",
-      "url": "/commands/lsmem/",
+      "url": "/commands/lsmem.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3915,7 +3915,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "lsblk",
-      "url": "/commands/lsblk/",
+      "url": "/commands/lsblk.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3945,7 +3945,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "blkid",
-      "url": "/commands/blkid/",
+      "url": "/commands/blkid.html",
       "page": {
         "status": "planned",
         "source": null
@@ -3975,7 +3975,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "df",
-      "url": "/commands/df/",
+      "url": "/commands/df.html",
       "page": {
         "status": "complete",
         "source": "public/commands/df.html"
@@ -4005,7 +4005,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "du",
-      "url": "/commands/du/",
+      "url": "/commands/du.html",
       "page": {
         "status": "complete",
         "source": "public/commands/du.html"
@@ -4035,7 +4035,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "mount",
-      "url": "/commands/mount/",
+      "url": "/commands/mount.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4065,7 +4065,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "umount",
-      "url": "/commands/umount/",
+      "url": "/commands/umount.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4095,7 +4095,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "fdisk",
-      "url": "/commands/fdisk/",
+      "url": "/commands/fdisk.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4125,7 +4125,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "parted",
-      "url": "/commands/parted/",
+      "url": "/commands/parted.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4155,7 +4155,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "dd",
-      "url": "/commands/dd/",
+      "url": "/commands/dd.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4185,7 +4185,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "sync",
-      "url": "/commands/sync/",
+      "url": "/commands/sync.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4215,7 +4215,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "fsck",
-      "url": "/commands/fsck/",
+      "url": "/commands/fsck.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4245,7 +4245,7 @@
       "category": "storage",
       "summary": "Inspect disks and filesystems",
       "example": "mkfs",
-      "url": "/commands/mkfs/",
+      "url": "/commands/mkfs.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4275,7 +4275,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "tar",
-      "url": "/commands/tar/",
+      "url": "/commands/tar.html",
       "page": {
         "status": "complete",
         "source": "public/commands/tar.html"
@@ -4305,7 +4305,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "gzip",
-      "url": "/commands/gzip/",
+      "url": "/commands/gzip.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4335,7 +4335,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "gunzip",
-      "url": "/commands/gunzip/",
+      "url": "/commands/gunzip.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4365,7 +4365,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "bzip2",
-      "url": "/commands/bzip2/",
+      "url": "/commands/bzip2.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4395,7 +4395,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "bunzip2",
-      "url": "/commands/bunzip2/",
+      "url": "/commands/bunzip2.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4425,7 +4425,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "xz",
-      "url": "/commands/xz/",
+      "url": "/commands/xz.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4455,7 +4455,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "unxz",
-      "url": "/commands/unxz/",
+      "url": "/commands/unxz.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4485,7 +4485,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "zip",
-      "url": "/commands/zip/",
+      "url": "/commands/zip.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4515,7 +4515,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "unzip",
-      "url": "/commands/unzip/",
+      "url": "/commands/unzip.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4545,7 +4545,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "zcat",
-      "url": "/commands/zcat/",
+      "url": "/commands/zcat.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4575,7 +4575,7 @@
       "category": "archives",
       "summary": "Create and extract archives",
       "example": "ar",
-      "url": "/commands/ar/",
+      "url": "/commands/ar.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4605,7 +4605,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "ip",
-      "url": "/commands/ip/",
+      "url": "/commands/ip.html",
       "page": {
         "status": "complete",
         "source": "public/commands/ip.html"
@@ -4635,7 +4635,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "ifconfig",
-      "url": "/commands/ifconfig/",
+      "url": "/commands/ifconfig.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4665,7 +4665,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "ping",
-      "url": "/commands/ping/",
+      "url": "/commands/ping.html",
       "page": {
         "status": "complete",
         "source": "public/commands/ping.html"
@@ -4695,7 +4695,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "ss",
-      "url": "/commands/ss/",
+      "url": "/commands/ss.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4725,7 +4725,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "netstat",
-      "url": "/commands/netstat/",
+      "url": "/commands/netstat.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4755,7 +4755,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "route",
-      "url": "/commands/route/",
+      "url": "/commands/route.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4785,7 +4785,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "arp",
-      "url": "/commands/arp/",
+      "url": "/commands/arp.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4815,7 +4815,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "dig",
-      "url": "/commands/dig/",
+      "url": "/commands/dig.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4845,7 +4845,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "nslookup",
-      "url": "/commands/nslookup/",
+      "url": "/commands/nslookup.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4875,7 +4875,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "host",
-      "url": "/commands/host/",
+      "url": "/commands/host.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4905,7 +4905,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "curl",
-      "url": "/commands/curl/",
+      "url": "/commands/curl.html",
       "page": {
         "status": "complete",
         "source": "public/commands/curl.html"
@@ -4935,7 +4935,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "wget",
-      "url": "/commands/wget/",
+      "url": "/commands/wget.html",
       "page": {
         "status": "planned",
         "source": null
@@ -4965,7 +4965,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "ssh",
-      "url": "/commands/ssh/",
+      "url": "/commands/ssh.html",
       "page": {
         "status": "complete",
         "source": "public/commands/ssh.html"
@@ -4995,7 +4995,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "scp",
-      "url": "/commands/scp/",
+      "url": "/commands/scp.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5025,7 +5025,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "sftp",
-      "url": "/commands/sftp/",
+      "url": "/commands/sftp.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5055,7 +5055,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "nc",
-      "url": "/commands/nc/",
+      "url": "/commands/nc.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5085,7 +5085,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "telnet",
-      "url": "/commands/telnet/",
+      "url": "/commands/telnet.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5115,7 +5115,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "traceroute",
-      "url": "/commands/traceroute/",
+      "url": "/commands/traceroute.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5145,7 +5145,7 @@
       "category": "network",
       "summary": "Inspect and test networking",
       "example": "mtr",
-      "url": "/commands/mtr/",
+      "url": "/commands/mtr.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5175,7 +5175,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "git",
-      "url": "/commands/git/",
+      "url": "/commands/git.html",
       "page": {
         "status": "complete",
         "source": "public/commands/git.html"
@@ -5205,7 +5205,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "gcc",
-      "url": "/commands/gcc/",
+      "url": "/commands/gcc.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5235,7 +5235,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "g++",
-      "url": "/commands/g%2B%2B/",
+      "url": "/commands/g%2B%2B.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5265,7 +5265,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "make",
-      "url": "/commands/make/",
+      "url": "/commands/make.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5295,7 +5295,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "cmake",
-      "url": "/commands/cmake/",
+      "url": "/commands/cmake.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5325,7 +5325,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "python3",
-      "url": "/commands/python3/",
+      "url": "/commands/python3.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5355,7 +5355,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "node",
-      "url": "/commands/node/",
+      "url": "/commands/node.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5385,7 +5385,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "javac",
-      "url": "/commands/javac/",
+      "url": "/commands/javac.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5415,7 +5415,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "java",
-      "url": "/commands/java/",
+      "url": "/commands/java.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5445,7 +5445,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "go",
-      "url": "/commands/go/",
+      "url": "/commands/go.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5475,7 +5475,7 @@
       "category": "development",
       "summary": "Build and develop software",
       "example": "rustc",
-      "url": "/commands/rustc/",
+      "url": "/commands/rustc.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5505,7 +5505,7 @@
       "category": "packages",
       "summary": "Manage software packages",
       "example": "apk",
-      "url": "/commands/apk/",
+      "url": "/commands/apk.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5535,7 +5535,7 @@
       "category": "packages",
       "summary": "Manage software packages",
       "example": "apt",
-      "url": "/commands/apt/",
+      "url": "/commands/apt.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5565,7 +5565,7 @@
       "category": "packages",
       "summary": "Manage software packages",
       "example": "apt-get",
-      "url": "/commands/apt-get/",
+      "url": "/commands/apt-get.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5595,7 +5595,7 @@
       "category": "packages",
       "summary": "Manage software packages",
       "example": "dnf",
-      "url": "/commands/dnf/",
+      "url": "/commands/dnf.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5625,7 +5625,7 @@
       "category": "packages",
       "summary": "Manage software packages",
       "example": "yum",
-      "url": "/commands/yum/",
+      "url": "/commands/yum.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5655,7 +5655,7 @@
       "category": "packages",
       "summary": "Manage software packages",
       "example": "pacman",
-      "url": "/commands/pacman/",
+      "url": "/commands/pacman.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5685,7 +5685,7 @@
       "category": "packages",
       "summary": "Manage software packages",
       "example": "rpm",
-      "url": "/commands/rpm/",
+      "url": "/commands/rpm.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5715,7 +5715,7 @@
       "category": "packages",
       "summary": "Manage software packages",
       "example": "dpkg",
-      "url": "/commands/dpkg/",
+      "url": "/commands/dpkg.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5745,7 +5745,7 @@
       "category": "packages",
       "summary": "Manage software packages",
       "example": "snap",
-      "url": "/commands/snap/",
+      "url": "/commands/snap.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5775,7 +5775,7 @@
       "category": "packages",
       "summary": "Manage software packages",
       "example": "flatpak",
-      "url": "/commands/flatpak/",
+      "url": "/commands/flatpak.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5805,7 +5805,7 @@
       "category": "services",
       "summary": "Inspect and manage services",
       "example": "systemctl",
-      "url": "/commands/systemctl/",
+      "url": "/commands/systemctl.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5835,7 +5835,7 @@
       "category": "services",
       "summary": "Inspect and manage services",
       "example": "service",
-      "url": "/commands/service/",
+      "url": "/commands/service.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5865,7 +5865,7 @@
       "category": "services",
       "summary": "Inspect and manage services",
       "example": "journalctl",
-      "url": "/commands/journalctl/",
+      "url": "/commands/journalctl.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5895,7 +5895,7 @@
       "category": "services",
       "summary": "Inspect and manage services",
       "example": "crontab",
-      "url": "/commands/crontab/",
+      "url": "/commands/crontab.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5925,7 +5925,7 @@
       "category": "services",
       "summary": "Inspect and manage services",
       "example": "at",
-      "url": "/commands/at/",
+      "url": "/commands/at.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5955,7 +5955,7 @@
       "category": "services",
       "summary": "Inspect and manage services",
       "example": "logger",
-      "url": "/commands/logger/",
+      "url": "/commands/logger.html",
       "page": {
         "status": "planned",
         "source": null
@@ -5985,7 +5985,7 @@
       "category": "shell",
       "summary": "Generate numeric sequences for shell practice",
       "example": "seq 1 5",
-      "url": "/commands/seq/",
+      "url": "/commands/seq.html",
       "page": {
         "status": "planned",
         "source": null
