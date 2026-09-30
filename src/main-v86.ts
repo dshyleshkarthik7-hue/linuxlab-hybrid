@@ -290,6 +290,7 @@ export class V86LinuxTerminal {
       this.shellReady = serialReady;
     }
     if (!this.shellReady) throw new Error('Linux shell readiness was not observed');
+    this.prefillCommandFromPage();
     if (!this.guestIdentity || this.guestIdentity.kind !== this.profile.expectedGuest) throw new Error(`Verified ${this.profile.expectedGuest} artifact identity was not established`);
     this.markReadyIfIdentityVerified();
     if (!this.ready) throw new Error('Guest boot did not reach the verified ready state');
@@ -455,3 +456,9 @@ export class V86LinuxTerminal {
     this.enforcer = null;
   }
 }
+  private prefillCommandFromPage(): void {
+    const value = new URLSearchParams(window.location.search).get('try')?.trim() ?? '';
+    if (!/^[A-Za-z0-9._+ -]{1,180}$/.test(value) || !value || !this.shellReady) return;
+    this.term.write(value);
+  }
+
