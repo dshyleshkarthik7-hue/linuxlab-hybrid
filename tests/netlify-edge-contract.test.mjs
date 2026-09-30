@@ -26,7 +26,7 @@ assert.ok(linux4, 'linux4 artifact must be present in the manifest');
 assert.ok(linux4.fallbackUrls?.some((url) => url.startsWith('https://huggingface.co/buckets/')), 'linux4 must pin a Hugging Face bucket fallback');
 assert.ok(linux4.fallbackUrls?.some((url) => url.startsWith('https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/')), 'linux4 must pin a GitHub release fallback');
 assert.match(cloudflare, /allowedPreview/);
-assert.doesNotMatch(iso, /hostname\.endsWith\('\.netlify\.app'\)/);
+assert.doesNotMatch(cloudflare, /hostname\.endsWith\('\.netlify\.app'\)/);
 
 assert.match(firmware, /SEABIOS_ARTIFACT/);
 assert.match(firmware, /VGABIOS_ARTIFACT/);
