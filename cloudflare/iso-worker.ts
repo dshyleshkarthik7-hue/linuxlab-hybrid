@@ -68,16 +68,30 @@ function getImage(url: URL): Image | null {
   return IMAGES[image];
 }
 
+function queryRange(url: URL): { start: string | null; end: string | null } {
+  return {
+    start: url.searchParams.get("chunkStart"),
+    end: url.searchParams.get("chunkEnd"),
+  };
+}
+
 function getChunk(url: URL, size: number, rangeHeader?: string | null) {
-  const rawStart = url.searchParams.get("chunkStart");
-  const rawEnd = url.searchParams.get("chunkEnd");
+  const { start: rawStart, end: rawEnd } = queryRange(url);
+  const rangeMatch = /^bytes=(\d+)-(\d*)$/.exec(rangeHeader || "");
+  if ((rawStart !== null) !== (rawEnd !== null)) throw new Error("Both chunkStart and chunkEnd are required");
+  if (rawStart !== null && rawEnd !== null && rangeMatch) {
+    const queryStart = Number(rawStart);
+    const queryEnd = rawEnd === "" ? size - 1 : Number(rawEnd);
+    const headerStart = Number(rangeMatch[1]);
+    const headerEnd = rangeMatch[2] === "" ? size - 1 : Number(rangeMatch[2]);
+    if (queryStart !== headerStart || queryEnd !== headerEnd) throw new Error("Conflicting range parameters");
+  }
   let startText = rawStart;
   let endText = rawEnd;
   if (startText === null || endText === null) {
-    const match = /^bytes=(\d+)-(\d*)$/.exec(rangeHeader || "");
-    if (!match) throw new Error("chunkStart/chunkEnd or a single HTTP Range header is required");
-    startText = match[1];
-    endText = match[2] === "" ? String(size - 1) : match[2];
+    if (!rangeMatch) throw new Error("chunkStart/chunkEnd or a single HTTP Range header is required");
+    startText = rangeMatch[1];
+    endText = rangeMatch[2] === "" ? String(size - 1) : rangeMatch[2];
   }
   if (!/^\d+$/.test(startText) || !/^\d+$/.test(endText)) throw new Error("Invalid chunk boundary");
   const start = Number(startText);
