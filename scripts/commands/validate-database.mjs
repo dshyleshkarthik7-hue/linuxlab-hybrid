@@ -17,10 +17,14 @@ for (const command of records) {
   if (names.has(command.name)) fail('duplicate command name: ' + command.name); names.add(command.name);
   if (urls.has(command.url)) fail('duplicate canonical URL: ' + command.url); urls.add(command.url);
   if (!command.summary || !command.example) fail('missing summary/example: ' + command.name);
+  if (!command.intelligence || !['complete','planned'].includes(command.intelligence.status)) fail('invalid intelligence status: ' + command.name);
+  if (command.intelligence.status === 'complete' && (!command.intelligence.syntax || !Array.isArray(command.intelligence.internals) || command.intelligence.internals.length < 2 || !Array.isArray(command.intelligence.distroNotes) || command.intelligence.distroNotes.length !== 5)) fail('incomplete Phase 2 intelligence: ' + command.name);
   if (!['complete','planned'].includes(command.page?.status)) fail('invalid page status: ' + command.name);
   for (const distro of distros) if (!['available','not-default','unsupported','unverified'].includes(command.availability?.[distro])) fail('invalid '+distro+' availability: '+command.name);
 }
 const complete = records.filter((command) => command.page.status === 'complete');
+const intelligent = records.filter((command) => command.intelligence.status === 'complete');
 if (complete.length !== 26) fail('expected 26 migrated dedicated lessons, found ' + complete.length);
+if (intelligent.length !== 26) fail('expected 26 Phase 2 intelligence records, found ' + intelligent.length);
 if (new Set(complete.map((command) => command.name)).size !== 26) fail('migrated lesson names are not unique');
 console.log('[command-database] validated ' + records.length + ' records; ' + complete.length + ' dedicated pages are migrated.');
