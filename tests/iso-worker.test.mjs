@@ -13,7 +13,9 @@ assert.match(worker, /const range\s*=\s*\`bytes=\$\{chunk\.start\}-\$\{chunk\.en
 assert.match(worker, /Range:\s*range/);
 assert.match(worker, /(upstream\.status !== 206|response\.status !== 206)/);
 assert.match(worker, /requestedEnd >= size/);
-assert(worker.includes('const match = /^bytes=(\\d+)-(\\d*)$/.exec(rangeHeader || "");'));
+assert.match(worker, /const rangeMatch = \/\^bytes=\\(\\d\+\)-\\(\\d\*\)\$\/\.exec\(rangeHeader \|\| ""\);/);
+assert.match(worker, /Conflicting range parameters/);
+assert.match(worker, /queryStart !== headerStart \|\| queryEnd !== headerEnd/);
 assert.match(worker, /chunkStart\/chunkEnd or a single HTTP Range header is required/);
 assert.match(worker, /request\.headers\.get\("Range"\)/);
 assert.match(worker, /return new Response\(request\.method === "HEAD" \? null : upstream\.body, \{\s*status: 206/);
