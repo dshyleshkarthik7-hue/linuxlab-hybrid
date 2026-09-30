@@ -67,6 +67,8 @@ export class V86LinuxTerminal {
   private activeView: 'terminal' | 'screen' = 'terminal';
   private readonly handleResize = (): void => this.fit();
   private readonly handleOrientationChange = (): void => { window.setTimeout(() => this.fit(), 50); };
+  private lastTelemetryAt: number | null = null;
+  private observedCpuSeconds = 0;
 
   constructor(containerId = 'v86-terminal-container') {
     if (!TerminalCtor || !FitAddonCtor) throw new Error('Terminal runtime failed to load');
@@ -143,6 +145,8 @@ export class V86LinuxTerminal {
     this.initializationFailure = null;
     this.serial = '';
     this.lastSerialAt = 0;
+    this.lastTelemetryAt = null;
+    this.observedCpuSeconds = 0;
     this.bootStage = 'starting';
     this.setHealth('booting');
     this.setIntegrityState('unverified');
@@ -192,7 +196,23 @@ export class V86LinuxTerminal {
       this.sessionTimer = window.setTimeout(() => this.fail('VM session resource limit reached'), policy.remainingSessionMs());
       this.telemetryDispose = attachGuestTelemetry(vm, {
         onTelemetry: (sample) => {
-          if (id === this.bootId) this.monitor(`Guest activity • ${sample.kernel} ${sample.architecture} • ${sample.cpuPercent.toFixed(1)}% CPU`);
+          if (id !== this.bootId || !this.enforcer) return;
+          const previousAt = this.lastTelemetryAt;
+          if (previousAt !== null && sample.sampledAt > previousAt) {
+            this.observedCpuSeconds += (sample.sampledAt - previousAt) / 1000 * (sample.cpuPercent / 100);
+          }
+          this.lastTelemetryAt = sample.sampledAt;
+          const withinPolicy = this.enforcer.observeGuest({
+            cpuSeconds: this.observedCpuSeconds,
+            memoryBytes: sample.memoryBytes,
+            filesystemBytes: sample.diskBytes,
+            sampledAt: sample.sampledAt,
+          });
+          if (!withinPolicy) {
+            this.fail('Guest resource policy exceeded');
+            return;
+          }
+          this.monitor(`Guest activity • ${sample.kernel} ${sample.architecture} • ${sample.cpuPercent.toFixed(1)}% CPU`);
         },
         onIdentity: (identity) => { if (id === this.bootId) this.acceptGuestIdentity(identity); },
       });
@@ -455,10 +475,10 @@ export class V86LinuxTerminal {
     this.enforcer?.stop();
     this.enforcer = null;
   }
-}
   private prefillCommandFromPage(): void {
     const value = new URLSearchParams(window.location.search).get('try')?.trim() ?? '';
     if (!/^[A-Za-z0-9._+ -]{1,180}$/.test(value) || !value || !this.shellReady) return;
     this.term.write(value);
   }
+}
 

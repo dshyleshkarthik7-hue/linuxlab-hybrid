@@ -43,10 +43,10 @@ export class GuestTelemetryBridge {
     this.previousCpu = { total: totalTicks, idle };
     const totalKb = Number(total.match(/\d+/)?.[0] ?? 0);
     const availableKb = Number(available.match(/\d+/)?.[0] ?? 0);
-    const diskKb = Number(disk.split(/\s+/)[1] ?? 0);
+    const diskKb = Number(disk.split(/\s+/)[2] ?? 0);
     const uptimeSeconds = Number(uptime.split(/\s+/)[0] || 0);
     const loadAverage = Number(load.split(/\s+/)[0] || 0);
-    if (![totalKb, availableKb, diskKb, uptimeSeconds, loadAverage].every(Number.isSafeInteger) || totalKb < 0 || availableKb < 0 || diskKb < 0 || uptimeSeconds < 0 || loadAverage < 0 || availableKb > totalKb) return null;
+    if (![totalKb, availableKb, diskKb].every(Number.isSafeInteger) || ![uptimeSeconds, loadAverage].every(Number.isFinite) || totalKb < 0 || availableKb < 0 || diskKb < 0 || uptimeSeconds < 0 || loadAverage < 0 || availableKb > totalKb) return null;
     const totalBytes = totalKb * 1024;
     const availableBytes = availableKb * 1024;
     const diskBytes = diskKb * 1024;

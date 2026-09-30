@@ -90,6 +90,7 @@ export async function writeIsoChunkCache(artifact: PinnedArtifact, start: number
         'x-linuxlab-chunk-end': String(end),
         'x-linuxlab-chunk-total': String(artifact.size),
         'x-linuxlab-sha256': artifact.sha256,
+        'x-linuxlab-chunk-digest': new Sha256().update(new Uint8Array(bytes)).digestHex(),
         'x-linuxlab-cache-touched': String(Date.now()),
       },
     });

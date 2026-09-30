@@ -12,7 +12,7 @@ assert.equal(snapshot.architecture, 'x86_64');
 assert.equal(snapshot.uptimeSeconds, 120.5);
 assert.equal(snapshot.loadAverage, 0.42);
 assert.equal(snapshot.memoryBytes, 134217728);
-assert.equal(snapshot.diskBytes, 8256000 * 1024);
+assert.equal(snapshot.diskBytes, 1420000 * 1024);
 assert.equal(snapshot.cpuPercent, 50);
 for (const malformed of ['', '__LT_TELEMETRY__\n', '__LT_TELEMETRY__\nnot cpu\n__LT_END__\n', '__LT_TELEMETRY__\n' + 'x'.repeat(100_000)]) assert.doesNotThrow(() => bridge.feed(malformed));
 

@@ -922,6 +922,8 @@ export default async (request: Request) => {
     const url = new URL(request.url);
     if (request.method === 'GET') return verify(url.searchParams.get('id') || '', request);
     if (request.method !== 'POST') return json({ error: 'method not allowed' }, 405, corsOrigin(request));
+    const origin = request.headers.get('origin');
+    if (origin && !corsOrigin(request)) return json({ error: 'Origin not allowed.' }, 403, undefined, { vary: 'Origin' });
 
     const user = await auth(request);
     if (!user) return json({ error: 'Sign in to take the free verified exam.' }, 401);

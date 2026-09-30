@@ -267,7 +267,7 @@ export default async (request: Request, context: unknown) => {
     await recordCircuitSuccess();
     const safeAnswer = answer.replace(CONTROL_CHARS, '').trim().slice(0, MAX_OUTPUT_CHARS);
     if (!safeAnswer) return json({ error: 'Tutor provider returned an empty response.' }, 503, origin);
-    return json({ answer: safeAnswer, model: MODEL, provider: 'nscale', outputFormat: 'plain-text' }, 200, origin);
+    return json({ answer: safeAnswer, model: MODEL, provider: 'huggingface-router', outputFormat: 'plain-text' }, 200, origin);
   } catch (error) {
     await recordCircuitFailure();
     console.error('Tutor request failed', error instanceof Error ? error.message : String(error));
