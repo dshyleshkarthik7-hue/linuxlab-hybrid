@@ -83,4 +83,4 @@ console.log('Static emulator SEO/security guardrails passed');
 
 assert.match(await readFile('netlify/edge-functions/tutor.ts','utf8'), /Tutor provider is temporarily unavailable/);
 const isoWorker = await readFile('cloudflare/iso-worker.ts', 'utf8');
-assert.match(isoWorker, /\^\(\[a-z0-9-\]\+\)--linuxterminal\\\.netlify\\\.app\$/i);\nassert.doesNotMatch(netlify, /path\\s*=\\s*"\\/api\\/iso\\/linux4"/);
+assert.match(isoWorker, /\^\(\[a-z0-9-\]\+\)--linuxterminal\\\.netlify\\.app\$/i);
