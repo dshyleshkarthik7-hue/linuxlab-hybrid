@@ -16,3 +16,18 @@ for (const card of document.querySelectorAll('.flow-card')) {
     if (dot) { dot.getBoundingClientRect(); }
   });
 }
+
+
+const intelligenceMount = document.createElement('div');
+const commandName = document.querySelector('.command-intro h1')?.textContent?.trim();
+if (commandName) {
+  intelligenceMount.dataset.commandIntelligence = '';
+  intelligenceMount.dataset.command = commandName;
+  document.querySelector('.command-page')?.appendChild(intelligenceMount);
+  const link = document.createElement('link');
+  link.rel = 'stylesheet'; link.href = '/command-intelligence.css';
+  document.head.appendChild(link);
+  const script = document.createElement('script');
+  script.src = '/command-intelligence.js'; script.defer = true;
+  document.body.appendChild(script);
+}
