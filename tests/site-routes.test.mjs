@@ -25,6 +25,7 @@ assert.equal(commandDatabase.records.filter((command) => command.intelligence?.s
 assert.ok(existsSync(join(root, 'public/command-intelligence.json')), 'Phase 2 intelligence index missing');
 assert.ok(existsSync(join(root, 'public/command-intelligence.js')), 'Phase 2 intelligence renderer missing');
 assert.ok(existsSync(join(root, 'public/command-intelligence.css')), 'Phase 2 intelligence stylesheet missing');
+assert.ok(existsSync(join(root, 'public/commands/custom/index.html')), 'Phase 3 custom command guide missing');
 const commandIndex = JSON.parse(readFileSync(join(root, 'public/command-index.json'), 'utf8'));
 assert.deepEqual(commandIndex.records, commandDatabase.records.map(({ id, name, category, summary, example, url, page }) => ({ id, name, category, summary, example, url, page })), 'Generated command index must match the canonical database');
 const sitemap = readFileSync(join(root, 'public/sitemap.xml'), 'utf8');
