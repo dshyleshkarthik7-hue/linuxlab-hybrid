@@ -14,7 +14,7 @@ const challenges = readFileSync(join(root, 'challenges/index.html'), 'utf8');
 assert.ok(challenges.includes('/challenges/challenges.js') && challenges.includes('/challenges/challenges.css'), 'Challenge assets missing');
 const progress = readFileSync(join(root, 'progress/index.html'), 'utf8');
 assert.ok(/<link[^>]+href="(?:\.\/)?progress\.css"/.test(progress) && progress.includes('/progress.js'), 'Progress assets missing');
-assert.match(progress, /<script src="\/progress\.js"(?: defer)?><\/script>\s*<script type="module" src="\.\/progress\.js"><\/script>/, 'Progress ledger must load before progress UI module');
+assert.match(progress, /<script src="\/progress\.js" defer><\/script>\s*<script type="module" src="\.\/progress\.js"><\/script>/, 'Progress ledger must load before progress UI module');
 
 const commands = ['pwd','ls','cd','mkdir','cat','cp','mv','rm','grep','find','sed','awk','chmod','chown','ps','top','df','du','tar','curl','ssh','ip','ping','git','head','tail'];
 assert.equal(commands.length, 26);
@@ -29,6 +29,8 @@ assert.ok(existsSync(join(root, 'public/commands/custom/index.html')), 'Phase 3 
 const commandIndex = JSON.parse(readFileSync(join(root, 'public/command-index.json'), 'utf8'));
 assert.deepEqual(commandIndex.records, commandDatabase.records.map(({ id, name, category, summary, example, url, page }) => ({ id, name, category, summary, example, url, page })), 'Generated command index must match the canonical database');
 const sitemap = readFileSync(join(root, 'public/sitemap.xml'), 'utf8');
+const expectedSitemapRoutes = ['/', '/beginner/', '/intermediate/', '/expert/', '/real-linux/', '/developer-alpine/', '/open-source-iso/', '/commands/', '/learn/', '/learn/linux-basics/', '/learn/terminal-navigation/', '/learn/files-and-directories/', '/learn/text-processing/', '/learn/permissions/', '/learn/processes/', '/learn/shell-scripting/', '/challenges/', '/quiz/', '/curriculum/', '/about/', '/contact/', '/certificate/', '/linux-careers/'];
+for (const route of expectedSitemapRoutes) assert.ok(sitemap.includes(`https://linuxterminal.me${route}`), `Sitemap missing ${route}`);
 for (const command of commands) {
   const file = `public/commands/${command}.html`;
   assert.ok(existsSync(join(root, file)), `Missing command page: ${file}`);

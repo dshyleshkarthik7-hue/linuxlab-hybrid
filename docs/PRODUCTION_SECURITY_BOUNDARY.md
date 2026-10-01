@@ -27,10 +27,10 @@ Changing an artifact requires changing its pinned digest and passing the integri
 
 ## Release gate
 
-Production status is blocked if any of these invariants fail:
+**Production status remains BLOCKED for hostile-workload sandbox claims until an independently enforced server-side CPU/process/filesystem isolation boundary exists and fixed source-artifact verification is demonstrated in the deployed release.** The current browser lab may be deployed only as an educational browser environment. Production status is blocked if any of these invariants fail:
 
-1. fixed artifact digest verification
-2. browser-side full ISO verification
+1. fixed artifact digest verification from repository-controlled source metadata
+2. browser-side full ISO verification against that fixed digest
 3. firmware digest verification
 4. v86 network device remains disabled
 5. real-guest boot/readiness tests pass
