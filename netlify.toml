@@ -8,16 +8,6 @@
   # Keep secret scanning enabled for actual credentials while excluding this identifier value.
   SECRETS_SCAN_OMIT_KEYS = "CERTIFICATE_SIGNING_KEY_ID"
 
-[[headers]]
-  for = "/*"
-  [headers.values]
-    Strict-Transport-Security = "max-age=31536000; includeSubDomains"
-    X-Content-Type-Options = "nosniff"
-    Referrer-Policy = "strict-origin-when-cross-origin"
-    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-    Cross-Origin-Opener-Policy = "same-origin"
-    Cross-Origin-Resource-Policy = "same-origin"
-
 [build]
   publish = "dist"
   command = "npm run build"
