@@ -26,6 +26,7 @@ const REVOKED_CERTIFICATE_IDS = new Set((process.env.REVOKED_CERTIFICATE_IDS || 
 const VERIFY_RATE_WINDOW_SECONDS = 60;
 const CERT_TTL = 60 * 60 * 24 * 365 * 5;
 const CERT_INDEX_READY = new WeakSet<object>();
+const REVOCATION_INDEX_READY = new WeakSet<object>();
 const MAX_BODY_BYTES = 16384;
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -746,6 +747,16 @@ async function stableCertificateId(attemptId: string): Promise<string> {
   return `LT-LNX-${new Date().getUTCFullYear()}-${hex.slice(0, 32)}`;
 }
 
+async function certificateIsDurablyRevoked(id: string): Promise<boolean> {
+  if (!MONGODB_URI) return false;
+  const collection = (await certificatesCollection()).db(MONGODB_DB).collection('certificate_revocations');
+  if (!REVOCATION_INDEX_READY.has(collection)) {
+    await collection.createIndex({ certificateId: 1 }, { unique: true, name: 'certificate_revocations_certificateId_unique' });
+    REVOCATION_INDEX_READY.add(collection);
+  }
+  return Boolean(await collection.findOne({ certificateId: id }, { projection: { _id: 1 } }));
+}
+
 async function saveSubmissionResult(key: string, userId: string, response: Record<string, unknown>) {
   await redis(['SET', `${key}:result`, JSON.stringify({ userId, response } satisfies SubmissionResult), 'EX', ATTEMPT_TTL]);
 }
@@ -873,7 +884,7 @@ async function verify(id: string, request: Request) {
   const collection = await certificatesCollection();
   const certificate = await collection.findOne({ _id: id }) as unknown as Cert | null;
   if (!certificate) return json({ error: 'Certificate not found.' }, 404);
-  if (REVOKED_CERTIFICATE_IDS.has(id)) return json({ error: 'Certificate has been revoked.' }, 410, corsOrigin(request));
+  if (REVOKED_CERTIFICATE_IDS.has(id) || await certificateIsDurablyRevoked(id)) return json({ error: 'Certificate has been revoked.' }, 410, corsOrigin(request));
   const { signature, keyId, ...unsigned } = certificate;
   const kid = typeof keyId === 'string' && keyId ? keyId : SIGNING_KEY_ID;
   const secret = SIGNING_KEYS.get(kid);
