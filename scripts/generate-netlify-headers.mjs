@@ -40,6 +40,7 @@ const connectSrc = ["'self'", 'https://linuxterminal.me', 'https://www.linuxterm
 
 const security = `Strict-Transport-Security: max-age=31536000; includeSubDomains
 X-Content-Type-Options: nosniff
+Cross-Origin-Resource-Policy: same-origin
 Referrer-Policy: strict-origin-when-cross-origin
 Cross-Origin-Opener-Policy: same-origin
 Cross-Origin-Embedder-Policy: credentialless
