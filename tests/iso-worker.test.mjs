@@ -38,6 +38,10 @@ assert(manifest.artifacts.some((artifact) => artifact.fallbackUrls?.some((url) =
 assert.match(worker, /new URL\(candidate\)\.origin !== url\.origin/);
 assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"5"/);
 assert.doesNotMatch(worker, /const ALLOWED_ORIGINS = new Set/);
+assert.match(worker, /ISO_RATE_LIMITER/);
+assert.match(worker, /CF-Connecting-IP/);
+assert.match(worker, /ISO rate limit exceeded/);
+assert.match(worker, /if \(!isAllowedOrigin\(origin\)\)/);
 
 assert.match(worker, /await\s+fetch\(/);
 assert.match(worker, /ISO origin (?:unavailable|temporarily unavailable)/);
