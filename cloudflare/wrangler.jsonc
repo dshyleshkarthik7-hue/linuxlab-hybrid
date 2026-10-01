@@ -9,5 +9,15 @@
   "workers_dev": true,
   "cache": {
     "enabled": false
-  }
+  },
+  "ratelimits": [
+    {
+      "name": "ISO_RATE_LIMITER",
+      "namespace_id": "20261001",
+      "simple": {
+        "limit": 120,
+        "period": 60
+      }
+    }
+  ]
 }
