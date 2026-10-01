@@ -9,7 +9,7 @@ The repository enforces what can be enforced in source. Account-level controls r
 - Use separate staging and production Netlify/Cloudflare projects and credentials.
 - Enable GitHub secret scanning and push protection.
 - Configure MongoDB backups/PITR and perform quarterly restore drills; record RPO/RTO.
-- Rotate certificate signing keys with overlapping verification keys and test recovery quarterly. Use `REVOKED_CERTIFICATE_IDS` for emergency revocation until a durable revocation store is introduced.
+- Rotate certificate signing keys with overlapping verification keys and test recovery quarterly. Certificate revocation is persisted in MongoDB (`certificate_revocations`); `REVOKED_CERTIFICATE_IDS` remains an emergency environment-variable override. Test revocation and historical-key verification during every rotation drill.
 - Perform an independent security assessment before enabling any claim of hostile-code sandboxing.
 - Record successful dependency-outage, database-restore, signing-key, and rollback drills.
 

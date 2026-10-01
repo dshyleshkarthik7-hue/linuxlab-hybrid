@@ -69,5 +69,8 @@ assert.match(certificate, /const id = await stableCertificateId\(value\.attemptI
 assert.match(certificate, /cache-control.*no-store/i);
 
 assert.match(certificate, /REVOKED_CERTIFICATE_IDS/);
+assert.match(certificate, /certificate_revocations/);
+assert.match(certificate, /certificateId: 1/);
+assert.match(certificate, /certificateIsDurablyRevoked/);
 assert.match(certificate, /rate:exam-start:ip/);
 assert.match(certificate, /rate:exam-submit:ip/);
