@@ -48,6 +48,9 @@ function isAllowedOrigin(origin: string | null): boolean {
   }
 }
 
+interface RateLimitBinding { limit(input: { key: string }): Promise<{ success: boolean }>; }
+interface Env { ISO_RATE_LIMITER: RateLimitBinding; }
+
 function corsHeaders(request: Request): Headers {
   const headers = new Headers({
     "Vary": "Origin",
@@ -111,14 +114,19 @@ function errorResponse(message: string, status: number, headers: Headers): Respo
 }
 
 export default {
-  async fetch(request: Request): Promise<Response> {
+  async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
     const headers = corsHeaders(request);
+    const origin = request.headers.get("Origin");
+    if (!isAllowedOrigin(origin)) return new Response("Origin not allowed", { status: 403, headers });
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers });
     if (request.method !== "GET" && request.method !== "HEAD") {
       headers.set("Allow", "GET, HEAD, OPTIONS");
       return new Response("Method Not Allowed", { status: 405, headers });
     }
+    const clientKey = request.headers.get("CF-Connecting-IP") || "unknown";
+    const rate = await env.ISO_RATE_LIMITER.limit({ key: clientKey });
+    if (!rate.success) return errorResponse("ISO rate limit exceeded", 429, headers);
     const image = getImage(url);
     if (!image) return new Response("Unknown image. Use image=developer, image=virt, or image=linux4.", { status: 404, headers });
     let chunk;
