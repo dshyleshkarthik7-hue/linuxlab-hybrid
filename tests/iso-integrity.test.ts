@@ -65,6 +65,11 @@ if (process.env.ISO_LIVE_VERIFY === '1') {
     console.log(`Developer Alpine release verified: ${size} bytes + SHA-256`);
   } finally { clearTimeout(timer); }
 }
+const isoCacheSource = readFileSync('src/core/iso-cache.ts', 'utf8');
+assert.match(isoCacheSource, /x-linuxlab-chunk-digest/);
+assert.match(isoCacheSource, /new Sha256\(\)\.update\(new Uint8Array\(bytes\)\)\.digestHex\(\)/);
+assert.match(isoCacheSource, /cachedChunkDigest/);
+
 const verifiedIsoSource = readFileSync('src/core/verified-iso-fetch.ts', 'utf8');
 assert.match(verifiedIsoSource, /fetchIsoResumable\(candidate, artifact, controller\.signal\)/, 'ISO downloads must be cancellable when all callers leave');
 console.log('ISO integrity fail-closed, response validation, and incremental hashing checks passed');

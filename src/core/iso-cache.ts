@@ -81,6 +81,7 @@ export async function readIsoChunkCache(artifact: PinnedArtifact, start: number,
 export async function writeIsoChunkCache(artifact: PinnedArtifact, start: number, end: number, bytes: ArrayBuffer): Promise<void> {
   if (!available() || !cacheable(artifact) || bytes.byteLength !== end - start + 1 || bytes.byteLength > MAX_CACHE_BYTES) return;
   try {
+    const chunkDigest = new Sha256().update(new Uint8Array(bytes)).digestHex();
     const response = new Response(bytes.slice(0), {
       status: 200,
       headers: {
@@ -90,6 +91,7 @@ export async function writeIsoChunkCache(artifact: PinnedArtifact, start: number
         'x-linuxlab-chunk-end': String(end),
         'x-linuxlab-chunk-total': String(artifact.size),
         'x-linuxlab-sha256': artifact.sha256,
+        'x-linuxlab-chunk-digest': chunkDigest,
         'x-linuxlab-cache-touched': String(Date.now()),
       },
     });
