@@ -29,5 +29,6 @@ for (const [name, filename] of requiredArtifacts) {
 assert.match(vm, /net_device:\s*\{\s*type:\s*'none'\s*\}/, 'v86 production profile must keep networking disabled');
 assert.match(vm, /fetchVerifiedIso\(/, 'v86 must verify the complete ISO before boot');
 assert.match(boundary, /not equivalent to a server-side microVM/i, 'security boundary must not overclaim browser isolation');
+assert.match(boundary, /PRODUCTION.*BLOCKED|BLOCKED.*production/is, 'production boundary must remain explicitly blocked pending real isolation');
 assert.equal(packageJson.scripts.lint, 'tsc --noEmit && node tests/security-static.test.mjs');
 console.log('release security contract: ok');
