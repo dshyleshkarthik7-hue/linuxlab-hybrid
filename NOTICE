@@ -15,3 +15,6 @@ Upstream project pages:
 - https://github.com/xtermjs/xterm.js
 - https://github.com/microsoft/monaco-editor
 - https://www.seabios.org/
+
+
+Dependency attribution is also recorded in package-lock.json via each package's SPDX/license metadata. Before commercial redistribution, preserve the applicable upstream notices and license texts for every shipped third-party asset and dependency.
