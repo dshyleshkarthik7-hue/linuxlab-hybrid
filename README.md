@@ -16,6 +16,8 @@ Before deployment, read [`THREAT_MODEL.md`](./THREAT_MODEL.md). The browser simu
 - 500-question practice quiz: https://linuxterminal.me/quiz/
 - Free verified exam and certificate: https://linuxterminal.me/certificate/
 - Public certificate verification: https://linuxterminal.me/verify/
+- Privacy policy: https://linuxterminal.me/privacy/
+- Terms of use: https://linuxterminal.me/terms/
 - Real Linux lab: https://linuxterminal.me/real-linux/
 
 ## Learning model
@@ -102,7 +104,7 @@ npm ci
 npm run dev
 ```
 
-Build with `npm run build`.
+Build with `npm run build`. The ISO builder is cross-platform at the launcher level: Linux/macOS/WSL use the Bash builder; Windows uses PowerShell/WSL.
 
 Run the full CI-oriented checks with `npm run check`. Production smoke testing uses `npm run test:production -- https://linuxterminal.me`.
 
