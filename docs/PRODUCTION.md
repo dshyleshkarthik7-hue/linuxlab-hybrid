@@ -48,7 +48,7 @@ Certificate issuance is authenticated and graded server-side. Certificate record
 
 Keep the previous signing key in the keyring for as long as certificates signed with it must remain verifiable; follow `docs/PHASE2-OPERATIONS.md` for rotation. Certificate verification is public and read-only. Keep certificate identifiers unguessable and treat verification traffic as untrusted public traffic. Revocation is persisted in MongoDB (`certificate_revocations`) with a unique `certificateId` index; `REVOKED_CERTIFICATE_IDS` is reserved for emergency overrides. The verifier rate-limits public traffic before querying MongoDB.
 
-Certificate records currently use a five-year Redis TTL. This is an explicit retention policy, not a security guarantee. Review it against the site's privacy policy and legal/data-retention requirements before launch, and shorten it if the product does not require five years of public verification.
+Certificate records currently use a five-year MongoDB TTL index. This is an explicit retention policy, not a security guarantee. Review it against the site's privacy policy and legal/data-retention requirements before launch, and shorten it if the product does not require five years of public verification.
 
 ## Production smoke test
 
