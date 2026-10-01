@@ -125,7 +125,15 @@ export default {
       return new Response("Method Not Allowed", { status: 405, headers });
     }
     const clientKey = request.headers.get("CF-Connecting-IP") || "unknown";
-    const rate = await env.ISO_RATE_LIMITER.limit({ key: clientKey });
+    if (!env?.ISO_RATE_LIMITER || typeof env.ISO_RATE_LIMITER.limit !== "function") {
+      return errorResponse("ISO rate limiting is not configured", 503, headers);
+    }
+    let rate: { success: boolean };
+    try {
+      rate = await env.ISO_RATE_LIMITER.limit({ key: clientKey });
+    } catch {
+      return errorResponse("ISO rate limiting is temporarily unavailable", 503, headers);
+    }
     if (!rate.success) return errorResponse("ISO rate limit exceeded", 429, headers);
     const image = getImage(url);
     if (!image) return new Response("Unknown image. Use image=developer, image=virt, or image=linux4.", { status: 404, headers });
