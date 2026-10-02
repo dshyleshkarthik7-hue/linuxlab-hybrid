@@ -32,7 +32,7 @@ Crawlable tutorials cover Linux basics, terminal navigation, files and directori
 
 ### Command reference
 
-The canonical catalog contains 6,161-command catalog. Important commands have dedicated URLs such as `/commands/cd/`, `/commands/pwd/`, `/commands/ls/`, `/commands/grep/`, `/commands/chmod/` and `/commands/gcc/`.
+The canonical catalog contains 6,161 commands. Important commands have dedicated URLs such as `/commands/cd/`, `/commands/pwd/`, `/commands/ls/`, `/commands/grep/`, `/commands/chmod/` and `/commands/gcc/`.
 
 Each lesson explains purpose, starter syntax, behavior and safe practice. A reference page does not imply that every command is implemented by the educational simulator.
 
