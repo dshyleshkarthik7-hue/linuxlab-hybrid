@@ -168,11 +168,12 @@ export class V86LinuxTerminal {
       // ArrayBuffer. This removes the large pre-boot allocation that caused timeouts.
       const developerAsyncImage = this.profile.expectedGuest === 'alpine' && this.profile.policy === 'developer'
         ? {
-            url: 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/developer',
+            url: `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/developer-0-${artifact.size - 1}-${artifact.sha256}`,
             async: true,
             size: artifact.size,
             use_parts: true,
             fixed_chunk_size: 32 * 1024 * 1024,
+            max_concurrent_requests: 4,
           }
         : null;
       if (!developerAsyncImage) {
