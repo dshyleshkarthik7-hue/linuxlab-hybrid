@@ -51,5 +51,5 @@ jobs:
           grep -qi '^HTTP/.* 206' "$headers_file"
           grep -qi '^Content-Range: bytes 0-0/' "$headers_file"
           grep -qi '^Content-Length: 1' "$headers_file"
-          grep -qi '^X-LinuxLab-Worker-Protocol: 5' "$headers_file"
+          grep -qi '^X-LinuxLab-Worker-Protocol: 7' "$headers_file"
           test "$(wc -c < "$response_file" | tr -d ' ')" = 1
