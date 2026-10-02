@@ -68,8 +68,19 @@ function corsHeaders(request: Request): Headers {
 
 function getImage(url: URL): Image | null {
   const image = url.searchParams.get("image");
-  if (image !== "developer" && image !== "virt" && image !== "linux4") return null;
-  return IMAGES[image];
+  if (image === "developer" || image === "virt" || image === "linux4") return IMAGES[image];
+  const partMatch = /^\/(developer|virt|linux4)-(\d+)-(\d+)$/.exec(url.pathname);
+  if (partMatch) return IMAGES[partMatch[1] as ImageName];
+  return null;
+}
+
+function pathPart(url: URL): { start: number; end: number } | null {
+  const match = /^\/(?:developer|virt|linux4)-(\d+)-(\d+)$/.exec(url.pathname);
+  if (!match) return null;
+  const start = Number(match[1]);
+  const end = Number(match[2]);
+  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end)) return null;
+  return { start, end };
 }
 
 function queryRange(url: URL): { start: string | null; end: string | null } {
@@ -135,7 +146,10 @@ export default {
     const image = getImage(url);
     if (!image) return new Response("Unknown image. Use image=developer, image=virt, or image=linux4.", { status: 404, headers });
     let chunk;
-    try { chunk = getChunk(url, image.size, request.headers.get("Range")); }
+    try {
+      const part = pathPart(url);
+      chunk = part ? getChunk(new URL(url), image.size, `bytes=${part.start}-${part.end}`) : getChunk(url, image.size, request.headers.get("Range"));
+    }
     catch {
       headers.set("Content-Range", `bytes */${image.size}`);
       return new Response("Invalid chunk", { status: 416, headers });
