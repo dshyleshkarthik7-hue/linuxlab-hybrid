@@ -193,20 +193,16 @@ export default {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
         try {
-          let current = new URL(origin);
-          for (let redirect = 0; redirect < 5; redirect += 1) {
-            if (!isTrustedUpstream(current.href) || current.origin === url.origin) break;
-            const response = await fetch(new Request(current.href, {
-              method: "GET",
-              headers: { Accept: "application/octet-stream", "User-Agent": "LinuxTerminal-ISO-Worker/5.0", "Accept-Encoding": "identity", Range: range },
-            }), { signal: controller.signal, cache: "default", redirect: "manual" });
-            if (response.status === 206) { upstream = response; break; }
-            if (response.status < 300 || response.status >= 400) { upstream = response; break; }
-            const location = response.headers.get("Location");
-            if (!location) break;
-            current = new URL(location, current);
-          }
-          if (upstream?.status === 206) break;
+          const candidate = new URL(origin);
+          if (!isTrustedUpstream(candidate.href) || candidate.origin === url.origin) continue;
+          const response = await fetch(new Request(candidate.href, {
+            method: "GET",
+            headers: { Accept: "application/octet-stream", "User-Agent": "LinuxTerminal-ISO-Worker/5.0", "Accept-Encoding": "identity", Range: range },
+          }), { signal: controller.signal, cache: "default", redirect: "follow" });
+          // Redirects are followed by the platform, but the final URL must remain
+          // on our explicit upstream allowlist and never point back to this Worker.
+          if (!isTrustedUpstream(response.url) || new URL(response.url).origin === url.origin) continue;
+          if (response.status === 206) { upstream = response; break; }
         } catch {
           if (controller.signal.aborted) continue;
         } finally { clearTimeout(timeout); }
