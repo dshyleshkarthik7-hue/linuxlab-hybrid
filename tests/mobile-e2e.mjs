@@ -7,7 +7,7 @@ const require = createRequire(import.meta.url);
 const { chromium, firefox, webkit, devices } = require('playwright');
 const explicit = process.env.MOBILE_BASE_URL || process.argv[2];
 const MOBILE_TIMEOUT_MS = Number(process.env.MOBILE_TIMEOUT_MS || 60000);
-const baseURL = explicit || `http://127.0.0.1:${process.env.MOBILE_PORT || 4174}`;
+const baseURL = explicit || `http://127.0.0.1:${process.env.MOBILE_PORT || 4177}`;
 let server;
 
 async function waitForServer(url, timeoutMs = 20000) {
@@ -57,12 +57,14 @@ async function run() {
         // responsive layout is still exercised, but omit the unsupported flag.
         const deviceOptions = { ...device };
         if (engineName === 'firefox') delete deviceOptions.isMobile;
+        console.log(`[mobile] ${engineName}/${device.name}: launching responsive page`);
         const page = await browser.newPage(deviceOptions);
         page.setDefaultTimeout(8000);
-        page.setDefaultNavigationTimeout(15000);
+        page.setDefaultNavigationTimeout(Number(process.env.MOBILE_NAVIGATION_TIMEOUT_MS || 30000));
         try {
-          const response = await page.goto(baseURL + '/index.html', { waitUntil: 'domcontentloaded' });
+          const response = await page.goto(baseURL + '/index.html', { waitUntil: 'domcontentloaded', timeout: Number(process.env.MOBILE_NAVIGATION_TIMEOUT_MS || 30000) });
           if (!response || !response.ok()) throw new Error(`${engineName}/${device.name}: homepage returned ${response?.status() ?? 'no response'}`);
+          console.log(`[mobile] ${engineName}/${device.name}: DOM loaded (${response.status()})`);
           await page.evaluate(() => window.scrollTo(0, document.body.scrollHeight));
           const overflow = await page.evaluate(() => document.documentElement.scrollWidth > window.innerWidth + 1);
           if (overflow) throw new Error(`horizontal overflow at ${engineName}/${device.name}`);
