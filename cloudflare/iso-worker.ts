@@ -127,9 +127,12 @@ function getChunk(url: URL, size: number, rangeHeader?: string | null) {
   return { start, end };
 }
 
-function cacheKey(request: Request, origin: string): Request {
+function cacheKey(request: Request, origin: string, chunk: { start: number; end: number }): Request {
   const url = new URL(request.url);
-  // Keep CORS variants isolated while preserving immutable chunk identity.
+  // Normalize both query and HTTP Range requests to the same immutable chunk key.
+  // This prevents two different Range headers from colliding in Cloudflare cache.
+  url.searchParams.set("chunkStart", String(chunk.start));
+  url.searchParams.set("chunkEnd", String(chunk.end));
   url.searchParams.set("__cors_origin", origin);
   return new Request(url.toString(), { method: "GET" });
 }
@@ -166,7 +169,7 @@ export default {
     const expectedLength = chunk.end - chunk.start + 1;
     const range = `bytes=${chunk.start}-${chunk.end}`;
     const originKey = origin!;
-    const key = cacheKey(request, originKey);
+    const key = cacheKey(request, originKey, chunk);
     const cache = caches.default;
     const cached = await cache.match(key);
     if (cached) return cached;
@@ -183,7 +186,7 @@ export default {
     if (!rate.success) return errorResponse("ISO rate limit exceeded", 429, headers);
     try {
       let upstream: Response | null = null;
-      const origins = [image.url, ...image.fallbacks].filter((candidate) => {
+      const origins = [...image.fallbacks, image.url].filter((candidate) => {
         try { return new URL(candidate).origin !== url.origin; } catch { return false; }
       });
       for (const origin of origins) {
