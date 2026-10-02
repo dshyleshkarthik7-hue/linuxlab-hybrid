@@ -17,7 +17,17 @@ for (const file of ['commands-entry.html','commands.css','commands.js','beginner
   assert.ok(existsSync(join(root, file)), `Built dist is missing ${file}`);
 }
 const catalog = readFileSync(join(root, 'commands.js'), 'utf8');
-assert.equal([...catalog.matchAll(/\['[^']+','[^']+'\]/g)].length, 200, 'Built command catalogue must contain exactly 200 entries');
+assert.match(catalog, /fetch\(['"]\/command-index\.json['"]/i, 'Built command catalogue must load the generated command index');
+
+const commandIndexPath = join(root, 'command-index.json');
+assert.ok(existsSync(commandIndexPath), 'Built command catalogue index is missing');
+const commandIndex = JSON.parse(readFileSync(commandIndexPath, 'utf8'));
+assert.ok(Array.isArray(commandIndex.records), 'Built command catalogue index must contain records');
+assert.ok(commandIndex.records.length >= 200, `Built command catalogue index must contain at least 200 records; found ${commandIndex.records.length}`);
+const canonicalCatalog = commandIndex.records.slice(0, 200);
+assert.equal(canonicalCatalog.length, 200, 'Built command catalogue must preserve the canonical 200-command curriculum');
+assert.equal(new Set(canonicalCatalog.map(command => command.name)).size, 200, 'Canonical 200-command curriculum must contain unique command names');
+assert.ok(canonicalCatalog.every(command => typeof command.name === 'string' && typeof command.example === 'string'), 'Canonical command records must contain names and examples');
 const beginner = readFileSync(join(root, 'beginner/index.html'), 'utf8');
 assert.match(beginner, /200 Linux Commands/i, 'Built beginner page must retain the 200-command catalogue');
 
