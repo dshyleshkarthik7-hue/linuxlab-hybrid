@@ -1,5 +1,4 @@
 const MODEL = Netlify.env.get('HF_MODEL') || 'Qwen/Qwen3-4B-Instruct-2507:nscale';
-const FALLBACK_MODEL = Netlify.env.get('HF_FALLBACK_MODEL') || 'Qwen/Qwen3-4B-Thinking-2507:nscale';
 const MODEL_PIN_RE = /^[A-Za-z0-9._-]+\/[A-Za-z0-9._-]+@[0-9a-f]{7,64}$/i;
 const MAX_OUTPUT_TOKENS = 300;
 const MAX_CONTEXT_CHARS = 5000;
