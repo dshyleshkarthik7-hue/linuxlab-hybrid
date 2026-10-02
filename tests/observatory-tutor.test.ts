@@ -1,5 +1,6 @@
 import { strict as assert } from 'node:assert';
 import { P1Runtime } from '../src/product/P1Runtime.ts';
+import { LinuxObservatory } from '../src/observability/LinuxObservatory.ts';
 
 const runtime = new P1Runtime('intermediate');
 const ok = await runtime.execute('echo hello');
@@ -13,7 +14,7 @@ assert.equal(telemetry.failedCommandCount, 0);
 const bad = await runtime.execute('does-not-exist');
 assert.notEqual(bad.result.exitCode, 0);
 assert.equal(runtime.observatory.system().failedCommandCount, 1);
-const real = new (runtime.observatory.constructor as any)('REAL');
+const real = new LinuxObservatory('REAL');
 assert.throws(() => real.system(), /REAL telemetry unavailable/);
 assert.throws(() => real.setGuestTelemetry({ kernel: '', architecture: 'x86_64', cpuPercent: 0, memoryBytes: 0, diskBytes: 0, uptimeSeconds: 0, loadAverage: 0 }), /invalid guest telemetry/);
 real.setGuestTelemetry({ kernel: '6.6', architecture: 'x86_64', cpuPercent: 12, memoryBytes: 1024, diskBytes: 2048, uptimeSeconds: 3, loadAverage: 0.5 });
