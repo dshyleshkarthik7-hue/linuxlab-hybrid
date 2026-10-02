@@ -13,6 +13,7 @@
       "url": "https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=virt",
       "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/V2.00",
       "fallbackUrls": [
+        "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/assets/552238914",
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/alpine-virt-3.24.1-x86.iso?download=true",
         "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/V2.00/alpine-virt-3.24.1-x86.iso"
       ],
@@ -29,6 +30,7 @@
       "url": "https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=developer",
       "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v1.0.0",
       "fallbackUrls": [
+        "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/assets/533942157",
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/alpine.iso?download=true",
         "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v1.0.0/alpine.iso"
       ],
@@ -45,6 +47,7 @@
       "url": "https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=linux4",
       "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v3.00",
       "fallbackUrls": [
+        "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/assets/552821427",
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/linux4.iso?download=true",
         "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso"
       ],
