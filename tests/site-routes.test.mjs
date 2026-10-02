@@ -7,7 +7,7 @@ for (const file of required) assert.ok(existsSync(join(root, file)), `Missing pr
 const html = readFileSync(join(root, 'index.html'), 'utf8');
 for (const route of ['/beginner/','/learn/','/challenges/','/quiz/','/progress/','/certificate/']) assert.ok(html.includes(`href=\"${route}\"`), `Homepage missing route: ${route}`);
 const beginner = readFileSync(join(root, 'beginner/index.html'), 'utf8');
-for (const marker of ['200 Commands','id=\"commands\"','id=\"command-catalog-body\"']) assert.ok(beginner.includes(marker), `Beginner page lost 200-command catalogue marker: ${marker}`);
+for (const marker of ['6,161 Commands','id=\"commands\"','id=\"command-catalog-body\"']) assert.ok(beginner.includes(marker), `Beginner page lost 6,161-command catalogue marker: ${marker}`);
 const learn = readFileSync(join(root, 'learn/index.html'), 'utf8');
 assert.ok(learn.includes('/learn/learn.css') && learn.includes('/progress.js'), 'Tutorial assets missing');
 const challenges = readFileSync(join(root, 'challenges/index.html'), 'utf8');
@@ -19,8 +19,8 @@ assert.match(progress, /<script src="\/progress\.js" defer><\/script>\s*<script 
 const commands = ['pwd','ls','cd','mkdir','cat','cp','mv','rm','grep','find','sed','awk','chmod','chown','ps','top','df','du','tar','curl','ssh','ip','ping','git','head','tail'];
 assert.equal(commands.length, 26);
 const commandDatabase = JSON.parse(readFileSync(join(root, 'data/commands/index.json'), 'utf8'));
-assert.equal(commandDatabase.records.length, 200, 'Phase 1 command database must preserve the current 200 command records');
-assert.equal(new Set(commandDatabase.records.map((command) => command.name)).size, 200, 'Command database names must be unique');
+assert.equal(commandDatabase.records.length, 6161, 'Canonical command database must contain 6,161 records');
+assert.equal(new Set(commandDatabase.records.map((command) => command.name)).size, 6161, 'Command database names must be unique');
 assert.equal(commandDatabase.records.filter((command) => command.intelligence?.status === 'complete').length, 26, 'Phase 2 must cover all 26 dedicated lessons');
 assert.ok(existsSync(join(root, 'public/command-intelligence.json')), 'Phase 2 intelligence index missing');
 assert.ok(existsSync(join(root, 'public/command-intelligence.js')), 'Phase 2 intelligence renderer missing');
@@ -46,7 +46,7 @@ for (const command of commandDatabase.records.filter(({ page }) => page.status =
   assert.ok(existsSync(join(root, `public${command.url}`)), `Database points to missing command page: ${command.name}`);
 }
 const entry = readFileSync(join(root, 'commands-entry.html'), 'utf8');
-assert.match(entry, /200 Linux Commands/i, 'Commands route must remain the 200-command catalogue');
+assert.match(entry, /200 Linux Commands/i, 'Commands route must remain the 6,161-command catalogue');
 assert.ok(entry.includes('id=\"list\"') && entry.includes('id=\"search\"') && entry.includes('id=\"category\"') && entry.includes('id=\"count\"'), 'Commands catalogue controls missing');
 for (const command of commands) assert.ok(entry.includes(`/commands/${command}.html`), `Commands catalogue missing dedicated lesson ${command}`);
 const netlify = readFileSync(join(root, 'netlify.toml'), 'utf8');
@@ -57,4 +57,4 @@ for (const command of commands) {
   const canonical = `to = \"/commands/${command}.html`;
   assert.ok(netlify.includes(from) && netlify.includes(canonical), `Legacy redirect missing for ${command}`);
 }
-console.log(`site routes: ${required.length} core assets + 200-command catalogue + ${commands.length} static command lessons verified`);
+console.log(`site routes: ${required.length} core assets + 6,161-command catalogue + ${commands.length} static command lessons verified`);
