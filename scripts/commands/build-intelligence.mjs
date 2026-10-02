@@ -48,6 +48,47 @@ for(const record of db.records){
   if(bucket) bucket.push(record); else recordsByFamily.set(f,[record]);
 }
 const related=(r)=>{const f=family(r.name,r.category);return (recordsByFamily.get(f)??[]).filter(x=>x.name!==r.name).slice(0,5).map(x=>x.name)};
-const records=db.records.map(r=>{const f=family(r.name,r.category),m=meta[f]||meta["system-tool"];return {...r,intelligence:{status:"complete",version:2,tagline:m.tag+" Command focus: "+r.name+".",syntax:r.name+" [OPTIONS] [ARGUMENTS]",options:[["--help","Display implementation-specific usage information, when supported."],["--version","Display implementation/version information, when supported."]],internals:m.steps,mistakes:["Do not assume "+r.name+" has identical options across BusyBox, GNU, BSD, or other implementations.","Use "+r.name+" --help and the local manual before scripting implementation-specific behavior.","Verify paths, identities, network targets, or devices before using "+r.name+" on real system data.","Remember that shell quoting and expansion happen before "+r.name+" receives its arguments."],concepts:m.concepts,related:related(r),distroNotes:["Alpine commonly favors small BusyBox implementations; a fuller package may provide different "+r.name+" behavior.","Debian package selection determines whether "+r.name+" is installed and which implementation/version supplies it.","Ubuntu uses the Debian-family package ecosystem; installed versions and optional packages can change behavior.","Lubuntu follows the Ubuntu package ecosystem while its desktop-oriented install may omit server/developer tools.","Kali follows the Debian family with a security-focused package selection; availability depends on installed packages."],lesson:{family:f,learningPath:["Identify the installed implementation with command -v "+r.name+".","Read "+r.name+" --help and the local manual before relying on flags.","Run a small, reversible example and inspect stdout, stderr, and the exit status.","Compare behavior across the distributions you actually support."]}}});
+const records=db.records.map((r)=> {
+  const f=family(r.name,r.category);
+  const m=meta[f]||meta["system-tool"];
+  return {
+    ...r,
+    intelligence:{
+      status:"complete",
+      version:2,
+      tagline:m.tag+" Command focus: "+r.name+".",
+      syntax:r.name+" [OPTIONS] [ARGUMENTS]",
+      options:[
+        ["--help","Display implementation-specific usage information, when supported."],
+        ["--version","Display implementation/version information, when supported."]
+      ],
+      internals:m.steps,
+      mistakes:[
+        "Do not assume "+r.name+" has identical options across BusyBox, GNU, BSD, or other implementations.",
+        "Use "+r.name+" --help and the local manual before scripting implementation-specific behavior.",
+        "Verify paths, identities, network targets, or devices before using "+r.name+" on real system data.",
+        "Remember that shell quoting and expansion happen before "+r.name+" receives its arguments."
+      ],
+      concepts:m.concepts,
+      related:related(r),
+      distroNotes:[
+        "Alpine commonly favors small BusyBox implementations; a fuller package may provide different "+r.name+" behavior.",
+        "Debian package selection determines whether "+r.name+" is installed and which implementation/version supplies it.",
+        "Ubuntu uses the Debian-family package ecosystem; installed versions and optional packages can change behavior.",
+        "Lubuntu follows the Ubuntu package ecosystem while its desktop-oriented install may omit server/developer tools.",
+        "Kali follows the Debian family with a security-focused package selection; availability depends on installed packages."
+      ],
+      lesson:{
+        family:f,
+        learningPath:[
+          "Identify the installed implementation with command -v "+r.name+".",
+          "Read "+r.name+" --help and the local manual before relying on flags.",
+          "Run a small, reversible example and inspect stdout, stderr, and the exit status.",
+          "Compare behavior across the distributions you actually support."
+        ]
+      }
+    }
+  };
+});
 const out={schemaVersion:2,generatedFrom:"data/commands/index.json",records:Object.fromEntries(records.map(c=>[c.name,{id:c.id,name:c.name,url:c.url,...c.intelligence}]))};
 await writeFile(path.join(root,"public/command-intelligence.json"),JSON.stringify(out,null,2)+"\n");console.log("[command-intelligence] generated "+records.length+" deep lesson records");
