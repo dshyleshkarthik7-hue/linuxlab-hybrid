@@ -9,6 +9,7 @@ const TRUSTED_RELEASE_PREFIX = 'https://github.com/dshyleshkarthik7-hue/linuxlab
 const TRUSTED_HF_PREFIX = 'https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/';
 const TRUSTED_ISO_WORKER_PREFIX = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/';
 const TRUSTED_MANIFEST_PREFIX = 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/';
+const TRUSTED_RELEASE_ASSET_API_PREFIX = 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/assets/';
 
 const trustedUrl = (value: string, prefix: string) => {
   try {
@@ -34,7 +35,7 @@ export function assertTrustedArtifact(artifact: PinnedArtifact): void {
   if (!Number.isSafeInteger(artifact.size) || artifact.size <= 0) throw new Error(`Artifact ${artifact.filename} has no trusted exact size configured`);
   if (!trustedUrl(artifact.url, TRUSTED_RELEASE_PREFIX) && !trustedUrl(artifact.url, TRUSTED_HF_PREFIX) && !trustedUrl(artifact.url, TRUSTED_ISO_WORKER_PREFIX)) throw new Error(`Artifact ${artifact.filename} is not from a trusted release host or ISO origin`);
   for (const fallback of artifact.fallbackUrls ?? []) {
-    if (!trustedUrl(fallback, TRUSTED_RELEASE_PREFIX) && !trustedUrl(fallback, TRUSTED_HF_PREFIX) && !trustedUrl(fallback, TRUSTED_ISO_WORKER_PREFIX)) throw new Error(`Artifact ${artifact.filename} has an untrusted fallback origin`);
+    if (!trustedUrl(fallback, TRUSTED_RELEASE_PREFIX) && !trustedUrl(fallback, TRUSTED_HF_PREFIX) && !trustedUrl(fallback, TRUSTED_ISO_WORKER_PREFIX) && !trustedUrl(fallback, TRUSTED_RELEASE_ASSET_API_PREFIX)) throw new Error(`Artifact ${artifact.filename} has an untrusted fallback origin`);
   }
   if (!trustedUrl(artifact.releaseManifestUrl, TRUSTED_MANIFEST_PREFIX)) throw new Error(`Artifact ${artifact.filename} has an untrusted release manifest URL`);
 }

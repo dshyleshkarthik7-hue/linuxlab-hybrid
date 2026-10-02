@@ -7,7 +7,7 @@ const HUGGINGFACE_BUCKET_ORIGIN = "https://huggingface.co/buckets/";
 const ISO_CACHE_TTL = 31536000;
 
 function isTrustedUpstream(value: string): boolean {
-  try { const url = new URL(value); if (url.protocol !== "https:") return false; return url.hostname === "huggingface.co" || url.hostname.endsWith(".hf.co") || url.hostname === "github.com" || url.hostname === "objects.githubusercontent.com" || url.hostname === "release-assets.githubusercontent.com"; } catch { return false; }
+  try { const url = new URL(value); if (url.protocol !== "https:") return false; return url.hostname === "huggingface.co" || url.hostname.endsWith(".hf.co") || url.hostname === "github.com" || url.hostname === "api.github.com" || url.hostname === "objects.githubusercontent.com" || url.hostname === "release-assets.githubusercontent.com"; } catch { return false; }
 }
 
 
