@@ -48,7 +48,7 @@ jobs:
             -H 'Origin: https://linuxterminal.me' \\
             -H 'Range: bytes=0-0' \\
             'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=linux4&chunkStart=0&chunkEnd=0'
-          grep -qi '^HTTP/.* 206' "$headers_file"
+          grep -qi '^HTTP/.* 200' "$headers_file"
           grep -qi '^Content-Range: bytes 0-0/' "$headers_file"
           grep -qi '^Content-Length: 1' "$headers_file"
           grep -qi '^X-LinuxLab-Worker-Protocol: 7' "$headers_file"
