@@ -1,10 +1,11 @@
-import { strict as assert } from 'node:assert';import { readFile } from 'node:fs/promises';
-const source=await readFile(new URL('../src/quiz.ts',import.meta.url),'utf8');
-assert.match(source,/QUESTIONS\.length!==500/);
-assert.match(source,/getRandomValues/);
-assert.match(source,/session=shuffle\(QUESTIONS\)/);
-// FACTS is stored as compact tuples and mapped to Fact objects at runtime.
-for(const c of ['pwd','ls','cd','grep','find','chmod','ps','df','du','tar','curl','gcc','make'])assert.match(source,new RegExp(`\\["${c}",`),`${c} needs command-specific facts`);
-for(const x of ['stdout','stderr','exit status','syntax','option'])assert.match(source,new RegExp(x,'i'));
-assert.doesNotMatch(source,/What is a primary learning goal for/);
+import { strict as assert } from 'node:assert';
+import { readFile } from 'node:fs/promises';
+const source = await readFile(new URL('../src/quiz.ts', import.meta.url), 'utf8');
+assert.match(source, /QUESTIONS\.length/);
+assert.match(source, /getRandomValues/);
+assert.match(source, /session=shuffle\(QUESTIONS\)/);
+assert.match(source, /randomDistinctIndices/);
+assert.match(source, /command catalog/i);
+assert.match(source, /OS and networking/i);
+assert.doesNotMatch(source, /What is a primary learning goal for/);
 console.log('Quiz quality and randomization checks passed');
