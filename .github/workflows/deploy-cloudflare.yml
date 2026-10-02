@@ -43,10 +43,10 @@ jobs:
           set -euo pipefail
           response_file="$(mktemp)"
           headers_file="$(mktemp)"
-          curl --fail --silent --show-error --retry 3 --retry-delay 2 \\
-            -D "$headers_file" -o "$response_file" \\
-            -H 'Origin: https://linuxterminal.me' \\
-            -H 'Range: bytes=0-0' \\
+          curl --fail --silent --show-error --retry 3 --retry-delay 2 \
+            -D "$headers_file" -o "$response_file" \
+            -H 'Origin: https://linuxterminal.me' \
+            -H 'Range: bytes=0-0' \
             'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=linux4&chunkStart=0&chunkEnd=0'
           grep -qi '^HTTP/.* 200' "$headers_file"
           grep -qi '^Content-Range: bytes 0-0/' "$headers_file"
