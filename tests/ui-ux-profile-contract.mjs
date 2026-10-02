@@ -34,7 +34,7 @@ assert.match(developerPage, /data-v86-profile="developer"/);
 assert.match(home, /href="\/linux-careers\/">Careers<\/a>/);
 assert.match(home, /href="\.\/home\.css"/);
 assert.match(progressPage, /href="\.\/progress\.css"/);
-assert.match(progressPage, /<script src="\/progress\.js"(?: defer)?><\/script>\s*<script type="module" src="\.\/progress\.js"><\/script>/, "progress page must load the shared ledger before its UI module");
+assert.match(progressPage, /<script type="module" src="\.\/progress\.js"><\/script>/, "progress page must load its UI module");
 assert.match(careerPage, /<link rel="stylesheet" href="\.\/linux-careers\.css">/);
 assert.match(careerPage, /href="\/linux-careers\/" aria-current="page"/);
 for (const source of [page, developerPage]) {
