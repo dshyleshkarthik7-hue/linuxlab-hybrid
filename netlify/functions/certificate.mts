@@ -1,5 +1,5 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
-import catalog from '../../data/commands/index.json' with { type: 'json' };
+import catalog from '../../data/commands/canonical.json' with { type: 'json' };
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB = process.env.MONGODB_DB || 'linuxlab';
