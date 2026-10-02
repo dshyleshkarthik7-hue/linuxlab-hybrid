@@ -11,7 +11,7 @@ Before deployment, read [`THREAT_MODEL.md`](./THREAT_MODEL.md). The browser simu
 - Homepage: https://linuxterminal.me/
 - Tutorials: https://linuxterminal.me/learn/
 - Beginner path: https://linuxterminal.me/beginner/
-- 200+ command reference: https://linuxterminal.me/commands/
+- 6,161-command canonical reference: https://linuxterminal.me/commands/
 - 100 challenges: https://linuxterminal.me/challenges/
 - 500-question practice quiz: https://linuxterminal.me/quiz/
 - Free verified exam and certificate: https://linuxterminal.me/certificate/
@@ -32,23 +32,23 @@ Crawlable tutorials cover Linux basics, terminal navigation, files and directori
 
 ### Command reference
 
-The canonical catalog contains 200+ crawlable command lessons. Important commands have dedicated URLs such as `/commands/cd/`, `/commands/pwd/`, `/commands/ls/`, `/commands/grep/`, `/commands/chmod/` and `/commands/gcc/`.
+The canonical catalog contains 6,161-command catalog. Important commands have dedicated URLs such as `/commands/cd/`, `/commands/pwd/`, `/commands/ls/`, `/commands/grep/`, `/commands/chmod/` and `/commands/gcc/`.
 
 Each lesson explains purpose, starter syntax, behavior and safe practice. A reference page does not imply that every command is implemented by the educational simulator.
 
 ### Challenges
 
-There are 100 challenges across 50 core commands. Every command has a prediction-and-verification task and a reasoning/change task. Learners are asked to predict stdout, stderr and exit status before running a command, then explain the observed evidence.
+There are 30 challenge sets covering all 6,161 unique canonical commands, plus operating-system and networking questions. Every command has a prediction-and-verification task and a reasoning/change task. Learners are asked to predict stdout, stderr and exit status before running a command, then explain the observed evidence.
 
 ### 500-question practice quiz
 
-The practice bank contains 500 command-specific questions generated from 50 curated command fact records. It tests purpose, syntax, options, expected results, failure conditions, command selection, stdout/stderr, exit status and safe experimentation. Question order and answer-choice order are randomized for every session and reset.
+Each practice session selects 500 questions from a generated bank built from the complete 6,161-command catalog plus operating-system and networking questions. It tests purpose, syntax, options, expected results, failure conditions, command selection, stdout/stderr, exit status and safe experimentation. Question order and answer-choice order are randomized for every session and reset.
 
 The practice quiz is browser-local and is not treated as a credential.
 
 ## Free verified assessment and certificate
 
-The verified assessment is free. A signed-in user starts a server-created exam attempt. The server chooses and randomizes 30 questions from a bank of at least 70 and randomizes their choices, stores the answer key in Upstash Redis, grades the submitted answers server-side, and requires 80% to pass.
+The verified assessment is free. A signed-in user starts a server-created exam attempt. The server chooses and randomizes 30 questions from a generated bank containing more than 12,000 command questions plus OS/networking questions and randomizes their choices, stores the answer key in Upstash Redis, grades the submitted answers server-side, and requires 80% to pass.
 
 A passing attempt creates a unique certificate ID and a server-signed record containing the exact score, percentage, issue date and assessment version. The public verification page checks the stored record and signature.
 
@@ -67,7 +67,7 @@ Never commit secrets.
 
 ## AI Tutor
 
-The protected Tutor edge function defaults to `Qwen/Qwen3-8B:nscale` through `HF_MODEL`. `HF_TOKEN` stays server-side. Learner context is treated as untrusted data, requests are authenticated, and Upstash rate limiting fails closed when unavailable. A deterministic teaching fallback is used if the model is unavailable.
+The protected Tutor edge function defaults to `Qwen/Qwen3-4B-Instruct-2507:nscale` through `HF_MODEL`. `HF_TOKEN` stays server-side. Learner context is treated as untrusted data, requests are authenticated, and Upstash rate limiting fails closed when unavailable. A deterministic teaching fallback is used if the model is unavailable.
 
 Tutor variables:
 
