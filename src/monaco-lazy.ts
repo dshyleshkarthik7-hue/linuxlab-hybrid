@@ -7,7 +7,7 @@ type WorkerConstructor = new () => Worker;
 export async function loadMonaco(): Promise<MonacoEditorModule> {
   const [monacoModule, editorWorker] = await Promise.all([
     import('monaco-editor'),
-    import('monaco-editor/esm/vs/editor/editor.worker.js?worker'),
+    import('monaco-editor/esm/vs/editor/editor.worker?worker'),
   ]);
 
   const editorWorkerConstructor: WorkerConstructor = editorWorker.default;
