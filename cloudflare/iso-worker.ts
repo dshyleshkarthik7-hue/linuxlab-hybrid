@@ -70,8 +70,10 @@ function getImage(url: URL): Image | null {
   const image = url.searchParams.get("image");
   if (image === "developer" || image === "virt" || image === "linux4") return IMAGES[image];
   const partMatch = /^\/(developer|virt|linux4)-(\d+)-(\d+)-([a-f0-9]{64})$/.exec(url.pathname);
-  if (partMatch) const image = IMAGES[partMatch[1] as ImageName];
-  return image && partMatch[4] === image.sha256 ? image : null;
+  if (partMatch) {
+    const image = IMAGES[partMatch[1] as ImageName];
+    return image && partMatch[4] === image.sha256 ? image : null;
+  }
   return null;
 }
 
