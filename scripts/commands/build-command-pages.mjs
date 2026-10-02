@@ -24,12 +24,24 @@ for (const command of data.records) {
 <title>${escapeHtml(command.name + " command — Linux tutorial | LinuxTerminal.me")}</title>
 <meta name="description" content="${escapeHtml(command.summary || "Linux command reference")}">
 <link rel="canonical" href="https://linuxterminal.me${command.url}">
+<meta name="robots" content="index,follow,max-image-preview:large">
+<meta property="og:type" content="article">
+<meta property="og:title" content="${escapeHtml(command.name)} command — Linux tutorial | LinuxTerminal.me">
+<meta property="og:description" content="${escapeHtml(command.summary || "Linux command reference")}">
+<meta property="og:url" content="https://linuxterminal.me${command.url}">
+<meta property="og:site_name" content="LinuxTerminal.me">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="${escapeHtml(command.name)} command — Linux tutorial | LinuxTerminal.me">
+<meta name="twitter:description" content="${escapeHtml(command.summary || "Linux command reference")}">
+<script type="application/ld+json">${JSON.stringify({"@context":"https://schema.org","@type":"TechArticle","headline":command.name+" command — Linux tutorial","description":command.summary || "Linux command reference","url":"https://linuxterminal.me"+command.url,"author":{"@type":"Organization","name":"LinuxTerminal.me","url":"https://linuxterminal.me/"},"isPartOf":{"@type":"WebSite","name":"LinuxTerminal.me","url":"https://linuxterminal.me/"}})}</script>
 <link rel="stylesheet" href="/commands.css">
 </head>
 <body class="detail-page">
 <main id="main-content" class="command-page">
-<h1>${escapeHtml(command.name)}</h1>
+<nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">›</span><a href="/commands/">Linux commands</a><span aria-hidden="true">›</span><span>${escapeHtml(command.name)}</span></nav>
+<h1>${escapeHtml(command.name)} command</h1>
 <p>${escapeHtml(command.summary)}</p>
+<section><h2>What is ${escapeHtml(command.name)}?</h2><p>${escapeHtml(command.summary)} Use this page to understand the command, compare its availability and try it in LinuxTerminal’s browser practice environment.</p></section>
 <section>
 <h2>Internal execution process</h2>
 <ol>
