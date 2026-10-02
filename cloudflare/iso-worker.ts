@@ -55,8 +55,8 @@ function corsHeaders(request: Request): Headers {
   const headers = new Headers({
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
-    "Cache-Control": "no-store",
-    "CDN-Cache-Control": "no-store",
+    "Cache-Control": "public, max-age=31536000, immutable",
+    "CDN-Cache-Control": "public, max-age=31536000, immutable",
     "Access-Control-Allow-Headers": "Range, If-Range, If-None-Match, If-Modified-Since",
     "Access-Control-Expose-Headers": "Accept-Ranges, Content-Length, Content-Range, Content-Type, ETag, X-LinuxLab-SHA256, X-LinuxLab-Chunk-Start, X-LinuxLab-Chunk-End, X-LinuxLab-Chunk-Total, X-LinuxLab-Artifact-Size, X-LinuxLab-Worker-Protocol",
   });
@@ -108,8 +108,8 @@ function getChunk(url: URL, size: number, rangeHeader?: string | null) {
 
 function errorResponse(message: string, status: number, headers: Headers): Response {
   const responseHeaders = new Headers(headers);
-  responseHeaders.set("Cache-Control", "no-store");
-  responseHeaders.set("CDN-Cache-Control", "no-store");
+  responseHeaders.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+  responseHeaders.set("CDN-Cache-Control", "public, max-age=60, stale-while-revalidate=300");
   return new Response(message, { status, headers: responseHeaders });
 }
 
@@ -160,7 +160,7 @@ export default {
             const response = await fetch(new Request(current.href, {
               method: "GET",
               headers: { Accept: "application/octet-stream", "User-Agent": "LinuxTerminal-ISO-Worker/5.0", "Accept-Encoding": "identity", Range: range },
-            }), { signal: controller.signal, cache: "no-store", redirect: "manual" });
+            }), { signal: controller.signal, cache: "default", redirect: "manual" });
             if (response.status === 206) { upstream = response; break; }
             if (response.status < 300 || response.status >= 400) { upstream = response; break; }
             const location = response.headers.get("Location");
@@ -181,8 +181,8 @@ export default {
       // CORS is origin-specific. Public edge caching by URL can otherwise replay a
       // response generated for linuxterminal.me to a Netlify Preview origin.
       // Keep the worker response private and let the browser manage its own range cache.
-      headers.set("Cache-Control", "no-store");
-      headers.set("CDN-Cache-Control", "no-store");
+      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      headers.set("CDN-Cache-Control", "public, max-age=31536000, immutable");
       headers.set("X-LinuxLab-SHA256", image.sha256);
       headers.set("X-LinuxLab-Artifact-Size", String(image.size));
       headers.set("X-LinuxLab-Worker-Protocol", WORKER_PROTOCOL_VERSION);
