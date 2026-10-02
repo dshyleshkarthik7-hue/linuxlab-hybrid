@@ -27,7 +27,7 @@ assert.match(worker, /isoEntries\.map/);
 assert.match(worker, /X-LinuxLab-SHA256/);
 assert.match(worker, /X-LinuxLab-Artifact-Size/);
 assert.match(worker, /X-LinuxLab-Worker-Protocol/);
-assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"6"/g);
+assert.match(worker, /WORKER_PROTOCOL_VERSION\s*=\s*"7"/);
 assert.match(worker, /"Cache-Control":\s*"no-store"/);
 assert.match(worker, /"CDN-Cache-Control":\s*"no-store"/);
 assert.match(worker, /cache:\s*"no-store"/);
