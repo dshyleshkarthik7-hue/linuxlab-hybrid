@@ -45,3 +45,10 @@ assert.match(config, /compatibility_date/);
 assert.match(config, /observability/);
 
 console.log('Cloudflare ISO worker contract passed');
+
+assert.match(worker, /invalid chunk metadata/);
+assert.match(worker, /invalid artifact length/);
+
+assert.match(worker, /endsWith\("\.huggingface\.co"\)/);
+assert.match(worker, /endsWith\("\.xethub\.hf\.co"\)/);
+assert.match(worker, /github-production-release-asset-/);

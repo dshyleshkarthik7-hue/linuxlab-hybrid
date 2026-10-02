@@ -8,7 +8,26 @@ const ISO_CACHE_TTL = 31536000;
 const MAX_FULL_UPSTREAM_BYTES = 64 * 1024 * 1024;
 
 function isTrustedUpstream(value: string): boolean {
-  try { const url = new URL(value); if (url.protocol !== "https:") return false; return url.hostname === "huggingface.co" || url.hostname.endsWith(".hf.co") || url.hostname === "github.com" || url.hostname === "api.github.com" || url.hostname === "objects.githubusercontent.com" || url.hostname === "release-assets.githubusercontent.com"; } catch { return false; }
+  try {
+    const url = new URL(value);
+    if (url.protocol !== "https:") return false;
+    const hostname = url.hostname.toLowerCase();
+    return (
+      hostname === "huggingface.co" ||
+      hostname.endsWith(".huggingface.co") ||
+      hostname === "hf.co" ||
+      hostname.endsWith(".hf.co") ||
+      hostname === "xethub.hf.co" ||
+      hostname.endsWith(".xethub.hf.co") ||
+      hostname === "github.com" ||
+      hostname === "api.github.com" ||
+      hostname === "objects.githubusercontent.com" ||
+      hostname === "release-assets.githubusercontent.com" ||
+      (hostname.endsWith(".amazonaws.com") && hostname.startsWith("github-production-release-asset-"))
+    );
+  } catch {
+    return false;
+  }
 }
 
 
@@ -206,8 +225,26 @@ export default {
             response.body?.cancel();
             throw new Error("Untrusted ISO redirect target");
           }
-          if (response.status === 206) return response;
-          if (response.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES) return response;
+          const expectedContentRange = `bytes ${chunk.start}-${chunk.end}/${image.size}`;
+          const expectedLength = chunk.end - chunk.start + 1;
+          if (response.status === 206) {
+            if (response.headers.get("content-range") !== expectedContentRange ||
+                response.headers.get("content-length") !== String(expectedLength)) {
+              response.body?.cancel();
+              throw new Error("ISO origin returned invalid chunk metadata");
+            }
+            return response;
+          }
+          if (response.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES) {
+            // A full-body fallback is only considered valid after its exact artifact
+            // size has been checked; otherwise Promise.any() could select a truncated
+            // response and prevent a healthy origin from winning the race.
+            const fullBody = new Uint8Array(await response.arrayBuffer());
+            if (fullBody.byteLength !== image.size) {
+              throw new Error("ISO origin returned invalid artifact length");
+            }
+            return new Response(fullBody, { status: 200, headers: response.headers });
+          }
           response.body?.cancel();
           throw new Error(`ISO origin returned status ${response.status}`);
         } finally {
