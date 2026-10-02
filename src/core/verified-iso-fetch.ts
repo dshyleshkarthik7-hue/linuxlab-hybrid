@@ -7,9 +7,9 @@ const inFlightConsumers = new Map<string, number>();
 const inFlightControllers = new Map<string, AbortController>();
 export const TRUSTED_ISO_ORIGIN = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
 export const ISO_DELIVERY_PATH = '/api/iso/linux4';
-const RANGE_FETCH_TIMEOUT_MS = 90_000;
-const RANGE_CHUNK_BYTES = 16 * 1024 * 1024;
-const RANGE_CONCURRENCY = 2;
+const RANGE_FETCH_TIMEOUT_MS = 180_000;
+const RANGE_CHUNK_BYTES = 32 * 1024 * 1024;
+const RANGE_CONCURRENCY = 4;
 const TRUSTED_HF_PREFIX = 'https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/';
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
