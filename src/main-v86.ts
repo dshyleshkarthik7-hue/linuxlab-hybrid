@@ -173,7 +173,6 @@ export class V86LinuxTerminal {
             size: artifact.size,
             use_parts: true,
             fixed_chunk_size: 32 * 1024 * 1024,
-            max_concurrent_requests: 4,
           }
         : null;
       if (!developerAsyncImage) {
