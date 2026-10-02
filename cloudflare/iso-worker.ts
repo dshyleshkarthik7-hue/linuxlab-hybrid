@@ -209,8 +209,11 @@ export default {
           // the 692 MiB developer image in memory. The response is sliced below to
           // preserve the Worker chunk contract.
           if (response.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES) {
-            const contentLength = response.headers.get("content-length");
-            if (contentLength === String(image.size)) { upstream = response; break; }
+            // Do not require Content-Length here: CDN/object responses may use
+            // chunked transfer encoding. The exact artifact size is validated
+            // after buffering the small artifact below.
+            upstream = response;
+            break;
           }
         } catch {
           if (controller.signal.aborted) continue;
@@ -223,7 +226,7 @@ export default {
       let body: ReadableStream<Uint8Array> | null = upstream.body;
       if (upstream.status === 206) {
         if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) return errorResponse("ISO origin returned invalid chunk metadata", 502, headers);
-      } else if (upstream.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES && contentLength === String(image.size)) {
+      } else if (upstream.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES) {
         const fullBody = new Uint8Array(await upstream.arrayBuffer());
         if (fullBody.byteLength !== image.size) return errorResponse("ISO origin returned invalid artifact length", 502, headers);
         body = new Blob([fullBody.slice(chunk.start, chunk.end + 1)]).stream();
