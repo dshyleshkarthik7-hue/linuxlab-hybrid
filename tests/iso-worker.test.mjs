@@ -17,6 +17,8 @@ assert.match(worker, /status === 206/);
 assert.match(worker, /upstream\.status === 200/);
 assert.match(worker, /upstream\.status === 200 && image\.size <= MAX_FULL_UPSTREAM_BYTES/);
 assert.match(worker, /MAX_FULL_UPSTREAM_BYTES = 64 \* 1024 \* 1024/);
+assert.match(worker, /Promise\.all\(origins\.map\(async \(origin\) =>/);
+assert.match(worker, /Fallbacks are raced concurrently/);
 assert.match(worker, /fullBody\.slice\(chunk\.start, chunk\.end \+ 1\)/);
 assert.doesNotMatch(worker, /"Cache-Control": "no-store"/);
 assert.doesNotMatch(worker, /"CDN-Cache-Control": "no-store"/);
