@@ -372,7 +372,7 @@ export class V86LinuxTerminal {
 
   private scheduleBootWatchdog(id: number, timeoutMs: number): void {
     if (this.bootTimeout !== null) window.clearTimeout(this.bootTimeout);
-    this.bootTimeout = window.setTimeout(() => { if (!this.ready && id === this.bootId) this.fail('guest boot timeout'); }, timeoutMs);
+    const downloadGrace = Math.max(60_000, Math.floor(timeoutMs * 1.5)); this.bootTimeout = window.setTimeout(() => { if (!this.ready && id === this.bootId) this.fail('guest boot timeout'); }, downloadGrace);
   }
 
   private fail(message: string, cause?: Error): void {
