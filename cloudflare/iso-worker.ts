@@ -5,6 +5,7 @@ const UPSTREAM_TIMEOUT_MS = 30_000;
 const WORKER_PROTOCOL_VERSION = "7";
 const HUGGINGFACE_BUCKET_ORIGIN = "https://huggingface.co/buckets/";
 const ISO_CACHE_TTL = 31536000;
+const MAX_FULL_UPSTREAM_BYTES = 64 * 1024 * 1024;
 
 function isTrustedUpstream(value: string): boolean {
   try { const url = new URL(value); if (url.protocol !== "https:") return false; return url.hostname === "huggingface.co" || url.hostname.endsWith(".hf.co") || url.hostname === "github.com" || url.hostname === "api.github.com" || url.hostname === "objects.githubusercontent.com" || url.hostname === "release-assets.githubusercontent.com"; } catch { return false; }
@@ -203,16 +204,32 @@ export default {
           // on our explicit upstream allowlist and never point back to this Worker.
           if (!isTrustedUpstream(response.url) || new URL(response.url).origin === url.origin) continue;
           if (response.status === 206) { upstream = response; break; }
+          // Some release/object hosts ignore Range and return the complete artifact.
+          // Only accept that behavior for small artifacts so the Worker never buffers
+          // the 692 MiB developer image in memory. The response is sliced below to
+          // preserve the Worker chunk contract.
+          if (response.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES) {
+            const contentLength = response.headers.get("content-length");
+            if (contentLength === String(image.size)) { upstream = response; break; }
+          }
         } catch {
           if (controller.signal.aborted) continue;
         } finally { clearTimeout(timeout); }
       }
       if (!upstream) return errorResponse("ISO origin temporarily unavailable", 504, headers);
-      if (upstream.status !== 206) return errorResponse(`ISO origin unavailable (${upstream.status})`, 502, headers);
       const contentRange = upstream.headers.get("content-range");
       const contentLength = upstream.headers.get("content-length");
       const expectedContentRange = `bytes ${chunk.start}-${chunk.end}/${image.size}`;
-      if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) return errorResponse("ISO origin returned invalid chunk metadata", 502, headers);
+      let body: ReadableStream<Uint8Array> | null = upstream.body;
+      if (upstream.status === 206) {
+        if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) return errorResponse("ISO origin returned invalid chunk metadata", 502, headers);
+      } else if (upstream.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES && contentLength === String(image.size)) {
+        const fullBody = new Uint8Array(await upstream.arrayBuffer());
+        if (fullBody.byteLength !== image.size) return errorResponse("ISO origin returned invalid artifact length", 502, headers);
+        body = new Blob([fullBody.slice(chunk.start, chunk.end + 1)]).stream();
+      } else {
+        return errorResponse(`ISO origin unavailable (${upstream.status})`, 502, headers);
+      }
       // Each chunk URL is immutable because its coordinates and artifact digest are
       // part of the request contract. Return the chunk as a standalone 200 object so
       // Cloudflare can cache it without having to cache a 206 Range response.
@@ -232,7 +249,7 @@ export default {
       headers.set("Content-Length", String(expectedLength));
       headers.set("Accept-Ranges", "bytes");
       headers.set("ETag", `"${image.sha256}-${chunk.start}-${chunk.end}"`);
-      const response = new Response(request.method === "HEAD" ? null : upstream.body, { status: 200, headers });
+      const response = new Response(request.method === "HEAD" ? null : body, { status: 200, headers });
       if (request.method === "GET") {
         const cacheable = response.clone();
         ctx.waitUntil(cache.put(key, cacheable));
