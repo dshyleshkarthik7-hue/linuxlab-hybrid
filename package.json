@@ -33,7 +33,7 @@
     "test:real-guest": "node tests/real-guest-alpine.mjs",
     "test:coverage": "node tests/coverage-threshold.mjs",
     "test:security": "npm audit --audit-level=high",
-    "test:ci": "npm run test:config && npm run test:unit && npm run test:security-gate && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate",
+    "test:ci": "npm run test:config && npm run test:unit && npm run test:6000-commands && npm run test:security-gate && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate",
     "lint": "tsc --noEmit && node tests/security-static.test.mjs",
     "build:iso": "node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
@@ -59,9 +59,10 @@
     "test:iso-builder": "bash -n iso-builder/build-linuxlab-gcc.sh && node tests/iso-builder-contract.test.mjs",
     "test:p2-p3-contract": "node tests/p2-p3-contract.test.mjs",
     "test:command-database": "node scripts/commands/validate-database.mjs",
-    "test": "npm run test:engine && npm run test:catalog && npm run test:command-database && npm run test:result && npm run test:vnext && npm run test:adversarial && npm run test:session && npm run test:p1 && npm run test:catalog-executable && npm run test:observatory && npm run test:iso && npm run test:iso-worker && npm run test:content-contract && npm run test:telemetry && npm run test:static-security && npm run test:vm-policy && npm run test:tutorials && npm run test:quiz-quality && npm run test:certificate-contract && npm run test:csp-contract && npm run test:sha256 && npm run test:release-security && npm run test:site-routes && npm run test:p2-p3-contract",
+    "test": "npm run test:engine && npm run test:catalog && npm run test:6000-commands && npm run test:command-database && npm run test:result && npm run test:vnext && npm run test:adversarial && npm run test:session && npm run test:p1 && npm run test:catalog-executable && npm run test:observatory && npm run test:iso && npm run test:iso-worker && npm run test:content-contract && npm run test:telemetry && npm run test:static-security && npm run test:vm-policy && npm run test:tutorials && npm run test:quiz-quality && npm run test:certificate-contract && npm run test:csp-contract && npm run test:sha256 && npm run test:release-security && npm run test:site-routes && npm run test:p2-p3-contract",
     "test:command-pages": "node scripts/commands/validate-generated-pages.mjs",
-    "test:build-syntax": "node --check scripts/commands/build-database.mjs && node --check scripts/commands/build-intelligence.mjs && node --check scripts/commands/build-command-pages.mjs && node --check scripts/fetch-v86-firmware.mjs && node --check scripts/generate-static-redirects.mjs && node --check scripts/generate-netlify-headers.mjs && node --check scripts/generate-build-info.mjs"
+    "test:build-syntax": "node --check scripts/commands/build-database.mjs && node --check scripts/commands/build-intelligence.mjs && node --check scripts/commands/build-command-pages.mjs && node --check scripts/fetch-v86-firmware.mjs && node --check scripts/generate-static-redirects.mjs && node --check scripts/generate-netlify-headers.mjs && node --check scripts/generate-build-info.mjs",
+    "test:6000-commands": "node tests/command-count.test.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
