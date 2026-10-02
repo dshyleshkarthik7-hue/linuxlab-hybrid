@@ -91,12 +91,29 @@ function shuffle<T>(values: readonly T[]): T[] {
   for (let i = result.length - 1; i > 0; i -= 1) {
     const random = new Uint32Array(1);
     crypto.getRandomValues(random);
-    const j = random[0] % (i + 1);
-    [result[i], result[j]] = [result[j], result[i]];
+    const k = random[0] % (i + 1);
+    [result[i], result[k]] = [result[k], result[i]];
   }
   return result;
 }
 
+async function stableUserShuffle<T>(values: readonly T[], userId: string): Promise<T[]> {
+  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${EXAM_VERSION}|${userId}`)));
+  let seed = (digest[0] | (digest[1] << 8) | (digest[2] << 16) | (digest[3] << 24)) >>> 0;
+  if (seed === 0) seed = 0x9e3779b9;
+  const result = [...values];
+  const next = () => {
+    seed ^= seed << 13; seed >>>= 0;
+    seed ^= seed >>> 17; seed >>>= 0;
+    seed ^= seed << 5; seed >>>= 0;
+    return seed;
+  };
+  for (let i = result.length - 1; i > 0; i -= 1) {
+    const k = next() % (i + 1);
+    [result[i], result[k]] = [result[k], result[i]];
+  }
+  return result;
+}
 const json = (value: Record<string, unknown>, status = 200, requestOrigin?: string, extra?: Record<string, string>) => {
   const headers = new Headers({
     'content-type': 'application/json; charset=utf-8',
@@ -233,7 +250,7 @@ async function start(user: User, request: Request) {
   }
 
   if (BANK.length < MIN_QUESTION_BANK_SIZE) return json({ error: 'The verified exam question bank is not sufficiently large.' }, 503);
-  const selected = shuffle(BANK)
+  const selected = (await stableUserShuffle(BANK, String(user.id)))
     .slice(0, QUESTION_COUNT)
     .map((question) => ({ ...question, c: shuffle(question.c) }));
   const id = crypto.randomUUID();
