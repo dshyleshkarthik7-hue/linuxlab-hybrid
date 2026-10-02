@@ -7,14 +7,9 @@ type WorkerConstructor = new () => Worker;
 export async function loadMonaco(): Promise<MonacoEditorModule> {
   const monacoModule = await import('monaco-editor');
 
-  const editorWorkerUrl = new URL(
-    'monaco-editor/esm/vs/editor/editor.worker.js',
-    import.meta.url,
-  );
-
   const editorWorkerConstructor: WorkerConstructor = class extends Worker {
     constructor() {
-      super(editorWorkerUrl, { type: 'module' });
+      super(new URL('./monaco-editor.worker.ts', import.meta.url), { type: 'module' });
     }
   };
 
