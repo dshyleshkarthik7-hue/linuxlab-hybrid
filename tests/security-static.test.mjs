@@ -17,7 +17,7 @@ assert.match(runtime, /const LOW_MEMORY_THRESHOLD_GB = 16/);
 assert.match(runtime, /deviceMemory < LOW_MEMORY_THRESHOLD_GB/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(csp, /frame-ancestors 'none'/);
-for (const header of ['X-Content-Type-Options','Referrer-Policy','Permissions-Policy','Cross-Origin-Opener-Policy','Cross-Origin-Resource-Policy']) assert.match(netlify, new RegExp(header), `global security header missing: ${header}`);
+for (const header of ['X-Content-Type-Options','Referrer-Policy','Permissions-Policy','Cross-Origin-Opener-Policy','Cross-Origin-Resource-Policy']) assert.match(csp, new RegExp(header), `global security header missing from generated headers: ${header}`);
 assert.match(csp, /const loginCsp = `[^`]*style-src 'self' 'unsafe-inline'/);
 assert.match(csp, /const commonCsp = `[^`]*style-src 'self'/);
 const commonCsp = csp.match(/const commonCsp = `([^`]*)`/)?.[1] || '';
