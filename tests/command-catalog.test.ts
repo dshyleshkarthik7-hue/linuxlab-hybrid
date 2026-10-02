@@ -17,4 +17,4 @@ assert.equal(findCommand('pwd')?.category, 'navigation');
 assert.equal(findCommand('chmod')?.category, 'permissions');
 assert.equal(findCommand('strace')?.category, 'processes');
 assert.equal(findCommand('nonexistent'), undefined);
-console.log('200-command curriculum and derived sitemap catalog checks passed');
+console.log('200-command authored curriculum and derived sitemap catalog checks passed');
