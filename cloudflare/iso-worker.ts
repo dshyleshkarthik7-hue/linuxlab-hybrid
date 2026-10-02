@@ -4,6 +4,7 @@ const MAX_CHUNK_BYTES = 32 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
 const WORKER_PROTOCOL_VERSION = "6";
 const HUGGINGFACE_BUCKET_ORIGIN = "https://huggingface.co/buckets/";
+const ISO_CACHE_TTL = 31536000;
 
 function isTrustedUpstream(value: string): boolean {
   try { const url = new URL(value); if (url.protocol !== "https:") return false; return url.hostname === "huggingface.co" || url.hostname.endsWith(".hf.co") || url.hostname === "github.com" || url.hostname === "objects.githubusercontent.com" || url.hostname === "release-assets.githubusercontent.com"; } catch { return false; }
@@ -106,6 +107,13 @@ function getChunk(url: URL, size: number, rangeHeader?: string | null) {
   return { start, end };
 }
 
+function cacheKey(request: Request, origin: string): Request {
+  const url = new URL(request.url);
+  // Keep CORS variants isolated while preserving immutable chunk identity.
+  url.searchParams.set("__cors_origin", origin);
+  return new Request(url.toString(), { method: "GET" });
+}
+
 function errorResponse(message: string, status: number, headers: Headers): Response {
   const responseHeaders = new Headers(headers);
   responseHeaders.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
@@ -124,6 +132,21 @@ export default {
       headers.set("Allow", "GET, HEAD, OPTIONS");
       return new Response("Method Not Allowed", { status: 405, headers });
     }
+    const image = getImage(url);
+    if (!image) return new Response("Unknown image. Use image=developer, image=virt, or image=linux4.", { status: 404, headers });
+    let chunk;
+    try { chunk = getChunk(url, image.size, request.headers.get("Range")); }
+    catch {
+      headers.set("Content-Range", `bytes */${image.size}`);
+      return new Response("Invalid chunk", { status: 416, headers });
+    }
+    const expectedLength = chunk.end - chunk.start + 1;
+    const range = `bytes=${chunk.start}-${chunk.end}`;
+    const originKey = origin!;
+    const key = cacheKey(request, originKey);
+    const cache = caches.default;
+    const cached = await cache.match(key);
+    if (cached) return cached;
     const clientKey = request.headers.get("CF-Connecting-IP") || "unknown";
     if (!env?.ISO_RATE_LIMITER || typeof env.ISO_RATE_LIMITER.limit !== "function") {
       return errorResponse("ISO rate limiting is not configured", 503, headers);
@@ -135,16 +158,6 @@ export default {
       return errorResponse("ISO rate limiting is temporarily unavailable", 503, headers);
     }
     if (!rate.success) return errorResponse("ISO rate limit exceeded", 429, headers);
-    const image = getImage(url);
-    if (!image) return new Response("Unknown image. Use image=developer, image=virt, or image=linux4.", { status: 404, headers });
-    let chunk;
-    try { chunk = getChunk(url, image.size, request.headers.get("Range")); }
-    catch {
-      headers.set("Content-Range", `bytes */${image.size}`);
-      return new Response("Invalid chunk", { status: 416, headers });
-    }
-    const expectedLength = chunk.end - chunk.start + 1;
-    const range = `bytes=${chunk.start}-${chunk.end}`;
     try {
       let upstream: Response | null = null;
       const origins = [image.url, ...image.fallbacks].filter((candidate) => {
@@ -197,7 +210,12 @@ export default {
       headers.set("Content-Length", String(expectedLength));
       headers.set("Accept-Ranges", "bytes");
       headers.set("ETag", `"${image.sha256}-${chunk.start}-${chunk.end}"`);
-      return new Response(request.method === "HEAD" ? null : upstream.body, { status: 200, headers });
+      const response = new Response(request.method === "HEAD" ? null : upstream.body, { status: 200, headers });
+      if (request.method === "GET") {
+        const cacheable = response.clone();
+        void cache.put(key, cacheable);
+      }
+      return response;
     } catch {
       return errorResponse("ISO origin temporarily unavailable", 504, headers);
     }
