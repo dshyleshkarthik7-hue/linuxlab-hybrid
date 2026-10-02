@@ -96,6 +96,9 @@ const staticRoutes = [
   "/contact/",
   "/certificate/",
   "/linux-careers/",
+  "/terms/",
+  "/privacy/",
+  "/verify/",
 ];
 
 const sitemapRoutes = [
