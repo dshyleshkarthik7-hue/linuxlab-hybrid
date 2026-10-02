@@ -122,7 +122,7 @@ function errorResponse(message: string, status: number, headers: Headers): Respo
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const headers = corsHeaders(request);
     const origin = request.headers.get("Origin");
@@ -213,7 +213,7 @@ export default {
       const response = new Response(request.method === "HEAD" ? null : upstream.body, { status: 200, headers });
       if (request.method === "GET") {
         const cacheable = response.clone();
-        void cache.put(key, cacheable);
+        ctx.waitUntil(cache.put(key, cacheable));
       }
       return response;
     } catch {
