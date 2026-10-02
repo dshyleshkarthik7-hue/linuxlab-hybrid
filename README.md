@@ -12,7 +12,7 @@ Before deployment, read [`THREAT_MODEL.md`](./THREAT_MODEL.md). The browser simu
 - Tutorials: https://linuxterminal.me/learn/
 - Beginner path: https://linuxterminal.me/beginner/
 - 6,161-command canonical reference: https://linuxterminal.me/commands/
-- 100 challenges: https://linuxterminal.me/challenges/
+- 30 challenge sets: https://linuxterminal.me/challenges/
 - 500-question practice quiz: https://linuxterminal.me/quiz/
 - Free verified exam and certificate: https://linuxterminal.me/certificate/
 - Public certificate verification: https://linuxterminal.me/verify/
@@ -72,7 +72,7 @@ The protected Tutor edge function defaults to `Qwen/Qwen3-4B-Instruct-2507:nscal
 Tutor variables:
 
 - `HF_TOKEN`
-- `HF_MODEL` (optional; defaults to `Qwen/Qwen3-8B:nscale`)
+- `HF_MODEL` (optional; defaults to `Qwen/Qwen3-4B-Instruct-2507:nscale`)
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
 - `TUTOR_ALLOWED_ORIGINS` (optional)
