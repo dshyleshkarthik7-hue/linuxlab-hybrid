@@ -36,6 +36,12 @@ function isAllowedOrigin(origin: string | null): boolean {
       parsed.origin === "https://linuxterminal.me" ||
       parsed.origin === "https://www.linuxterminal.me";
 
+    const isLocalDevelopmentOrigin =
+      parsed.origin === "http://127.0.0.1:4173" ||
+      parsed.origin === "http://127.0.0.1:4174" ||
+      parsed.origin === "http://localhost:4173" ||
+      parsed.origin === "http://localhost:4174";
+
     // Netlify preview deploys use the immutable deploy-id prefix. Support the
     // current site name (linuxterminalm) and the previous site name
     // (linuxterminal) while keeping the hostname allowlist scoped to Netlify.
@@ -43,7 +49,7 @@ function isAllowedOrigin(origin: string | null): boolean {
       /^([a-z0-9-]+)--linuxterminalm\.netlify\.app$/i.test(parsed.hostname) ||
       /^([a-z0-9-]+)--linuxterminal\.netlify\.app$/i.test(parsed.hostname);
 
-    return isProductionOrigin || isNetlifyPreview;
+    return isProductionOrigin || isLocalDevelopmentOrigin || isNetlifyPreview;
   } catch {
     return false;
   }
