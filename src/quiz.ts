@@ -1,22 +1,166 @@
-import { COMMAND_LESSONS } from './commands/commandCatalog.ts';
+type CommandRecord = {
+  name: string;
+  summary?: string;
+  example?: string;
+  category?: string;
+};
 
-type Fact={command:string;purpose:string;syntax:string;option:string;success:string;failure:string};
-type Question={id:string;command:string;category:string;difficulty:'foundation'|'practical'|'reasoning';q:string;a:string;d:string[]};
+type Question = {
+  id: string;
+  command: string;
+  category: string;
+  difficulty: 'foundation' | 'practical' | 'reasoning';
+  q: string;
+  a: string;
+  d: string[];
+};
 
-type Fact={command:string;purpose:string;syntax:string;option:string;success:string;failure:string};type Question={id:string;command:string;category:string;difficulty:'foundation'|'practical'|'reasoning';q:string;a:string;d:string[]};
-const COMMANDS:readonly any[]=[];const QUESTIONS:Question[]=[];const COMMON=[
-{id:'os-kernel',command:'operating-systems',category:'os',q:'Which component manages core Linux resources such as processes and memory?',a:'the Linux kernel',d:['the shell prompt','the terminal emulator','the browser cache']},
-{id:'os-process',command:'operating-systems',category:'os',q:'What is a process?',a:'a running instance of a program',d:['a filesystem path','a DNS record','a terminal color']},
-{id:'net-dns',command:'networking',category:'networking',q:'Which system maps hostnames to IP addresses?',a:'DNS',d:['SSH','DHCP only','ARP only']},
-{id:'net-route',command:'networking',category:'networking',q:'What does a routing table describe?',a:'where packets should be sent next',d:['file permissions','process environment variables','archive compression']},
-{id:'net-port',command:'networking',category:'networking',q:'What does a TCP/UDP port identify?',a:'a transport-layer endpoint associated with a service',d:['a filesystem inode','a CPU core','a shell alias']}
+const QUESTIONS: Question[] = [];
+const COMMON: Question[] = [
+  { id: 'os-kernel', command: 'operating-systems', category: 'os', difficulty: 'reasoning', q: 'Which component manages core Linux resources such as processes and memory?', a: 'the Linux kernel', d: ['the shell prompt', 'the terminal emulator', 'the browser cache'] },
+  { id: 'os-process', command: 'operating-systems', category: 'os', difficulty: 'reasoning', q: 'What is a process?', a: 'a running instance of a program', d: ['a filesystem path', 'a DNS record', 'a terminal color'] },
+  { id: 'net-dns', command: 'networking', category: 'networking', difficulty: 'reasoning', q: 'Which system maps hostnames to IP addresses?', a: 'DNS', d: ['SSH', 'DHCP only', 'ARP only'] },
+  { id: 'net-route', command: 'networking', category: 'networking', difficulty: 'reasoning', q: 'What does a routing table describe?', a: 'where packets should be sent next', d: ['file permissions', 'process environment variables', 'archive compression'] },
+  { id: 'net-port', command: 'networking', category: 'networking', difficulty: 'reasoning', q: 'What does a TCP/UDP port identify?', a: 'a transport-layer endpoint associated with a service', d: ['a filesystem inode', 'a CPU core', 'a shell alias'] }
 ];
-async function load(){const r=await fetch('/command-records.json',{cache:'force-cache'});if(!r.ok)throw new Error('Command catalog unavailable');const j=await r.json();COMMANDS.push(...j.records);for(const x of COMMANDS){const name=String(x.name),purpose=String(x.summary||'Linux command'),example=String(x.example||name+' --help');const category=String(x.category||'linux');QUESTIONS.push({id:name+'-identify',command:name,category,difficulty:'foundation',q:'Which command is represented by this catalog entry: '+purpose+'?',a:name,d:COMMANDS.filter(y=>y!==x).slice(0,3).map(y=>String(y.name))});QUESTIONS.push({id:name+'-example',command:name,category,difficulty:'practical',q:'Which example belongs to '+name+'?',a:example,d:COMMANDS.filter(y=>y!==x).slice(0,3).map(y=>String(y.name)+' --help')})}QUESTIONS.push(...COMMON.map(x=>({...x,difficulty:'reasoning' as const})));if(QUESTIONS.length<12000)throw new Error('Quiz bank was not generated from the full catalog');}
-function shuffle<T>(items:readonly T[]):T[]{const out=[...items];for(let i=out.length-1;i>0;i--){const r=new Uint32Array(1);crypto.getRandomValues(r);const j=r[0]%(i+1);[out[i],out[j]]=[out[j],out[i]]}return out}
-let session:Question[]=[],index=0,score=0,answered=false;const SESSION_SIZE=500;
-const q=document.querySelector<HTMLElement>('#question'),o=document.querySelector<HTMLElement>('#options'),f=document.querySelector<HTMLElement>('#feedback'),n=document.querySelector<HTMLButtonElement>('#next'),p=document.querySelector<HTMLElement>('#progress'),s=document.querySelector<HTMLElement>('#score'),c=document.querySelector<HTMLElement>('#context'),r=document.querySelector<HTMLElement>('#result');
-function render(){answered=false;const x=session[index];if(!x||!q||!o||!f||!n||!p||!s||!c)return;p.textContent=`Question ${index+1} / ${session.length}`;s.textContent=`Score: ${score}`;q.textContent=x.q;c.textContent=`${x.command} • ${x.category} • ${x.difficulty}`;f.textContent='';n.hidden=true;o.replaceChildren();for(const answer of shuffle([x.a,...x.d])){const b=document.createElement('button');b.className='option';b.type='button';b.textContent=answer;b.onclick=()=>{if(answered)return;answered=true;for(const z of o.querySelectorAll('button'))z.disabled=true;if(answer===x.a){b.classList.add('correct');score++}else b.classList.add('wrong');s.textContent=`Score: ${score}`;f.textContent=answer===x.a?'✓ Correct.':`Not quite. Correct answer: ${x.a}`;n.hidden=false};o.appendChild(b)}}
-function finish(){const pct=(score/session.length*100).toFixed(0);if(q)q.textContent='Practice assessment complete';if(c)c.textContent='';if(o)o.replaceChildren();if(f)f.textContent='';if(r)r.textContent=`Exact score: ${score} / ${session.length} • ${pct}% • The question bank covers the full canonical command catalog plus OS and networking.`;if(n)n.hidden=true}
-n?.addEventListener('click',()=>{if(index<session.length-1){index++;render()}else finish()});
-document.querySelector<HTMLButtonElement>('#reset')?.addEventListener('click',()=>{session=shuffle(QUESTIONS).slice(0,SESSION_SIZE);index=0;score=0;render()});
-load().then(()=>{session=shuffle(QUESTIONS).slice(0,SESSION_SIZE);render()}).catch(e=>{if(q)q.textContent=e instanceof Error?e.message:'Quiz unavailable'});
+
+function shuffle<T>(items: readonly T[]): T[] {
+  const out = [...items];
+  for (let i = out.length - 1; i > 0; i--) {
+    const random = new Uint32Array(1);
+    crypto.getRandomValues(random);
+    const j = random[0] % (i + 1);
+    [out[i], out[j]] = [out[j], out[i]];
+  }
+  return out;
+}
+
+async function load(): Promise<void> {
+  const response = await fetch('/command-records.json', { cache: 'force-cache' });
+  if (!response.ok) throw new Error('Command catalog unavailable');
+
+  const payload = await response.json() as { records?: CommandRecord[] };
+  const records = Array.isArray(payload.records) ? payload.records : [];
+  if (records.length < 6000) throw new Error('Quiz catalog is incomplete');
+
+  const distractorNames = records.map(record => String(record.name));
+  for (const record of records) {
+    const name = String(record.name);
+    const purpose = String(record.summary || 'Linux command');
+    const example = String(record.example || name + ' --help');
+    const category = String(record.category || 'linux');
+    const distractors = shuffle(distractorNames.filter(candidate => candidate !== name)).slice(0, 3);
+
+    QUESTIONS.push({
+      id: name + '-identify',
+      command: name,
+      category,
+      difficulty: 'foundation',
+      q: 'Which command is represented by this catalog entry: ' + purpose + '?',
+      a: name,
+      d: distractors
+    });
+
+    QUESTIONS.push({
+      id: name + '-example',
+      command: name,
+      category,
+      difficulty: 'practical',
+      q: 'Which example belongs to ' + name + '?',
+      a: example,
+      d: distractors.map(candidate => candidate + ' --help')
+    });
+  }
+
+  QUESTIONS.push(...COMMON);
+
+  if (QUESTIONS.length < 12000) {
+    throw new Error('Quiz bank was not generated from the full catalog');
+  }
+}
+
+let session: Question[] = [];
+let index = 0;
+let score = 0;
+let answered = false;
+const SESSION_SIZE = 500;
+
+const q = document.querySelector<HTMLElement>('#question');
+const o = document.querySelector<HTMLElement>('#options');
+const f = document.querySelector<HTMLElement>('#feedback');
+const n = document.querySelector<HTMLButtonElement>('#next');
+const p = document.querySelector<HTMLElement>('#progress');
+const s = document.querySelector<HTMLElement>('#score');
+const c = document.querySelector<HTMLElement>('#context');
+const r = document.querySelector<HTMLElement>('#result');
+
+function render(): void {
+  answered = false;
+  const question = session[index];
+  if (!question || !q || !o || !f || !n || !p || !s || !c) return;
+
+  p.textContent = `Question ${index + 1} / ${session.length}`;
+  s.textContent = `Score: ${score}`;
+  q.textContent = question.q;
+  c.textContent = `${question.command} • ${question.category} • ${question.difficulty}`;
+  f.textContent = '';
+  n.hidden = true;
+  o.replaceChildren();
+
+  for (const answer of shuffle([question.a, ...question.d])) {
+    const button = document.createElement('button');
+    button.className = 'option';
+    button.type = 'button';
+    button.textContent = answer;
+    button.onclick = () => {
+      if (answered) return;
+      answered = true;
+      for (const other of o.querySelectorAll('button')) other.disabled = true;
+      if (answer === question.a) {
+        button.classList.add('correct');
+        score++;
+      } else {
+        button.classList.add('wrong');
+      }
+      s.textContent = `Score: ${score}`;
+      f.textContent = answer === question.a ? '✓ Correct.' : `Not quite. Correct answer: ${question.a}`;
+      n.hidden = false;
+    };
+    o.appendChild(button);
+  }
+}
+
+function finish(): void {
+  const pct = session.length ? (score / session.length * 100).toFixed(0) : '0';
+  if (q) q.textContent = 'Practice assessment complete';
+  if (c) c.textContent = '';
+  if (o) o.replaceChildren();
+  if (f) f.textContent = '';
+  if (r) r.textContent = `Exact score: ${score} / ${session.length} • ${pct}% • The question bank covers the full canonical command catalog plus OS and networking.`;
+  if (n) n.hidden = true;
+}
+
+n?.addEventListener('click', () => {
+  if (index < session.length - 1) {
+    index++;
+    render();
+  } else {
+    finish();
+  }
+});
+
+document.querySelector<HTMLButtonElement>('#reset')?.addEventListener('click', () => {
+  session = shuffle(QUESTIONS).slice(0, SESSION_SIZE);
+  index = 0;
+  score = 0;
+  render();
+});
+
+load()
+  .then(() => {
+    session = shuffle(QUESTIONS).slice(0, SESSION_SIZE);
+    render();
+  })
+  .catch(error => {
+    if (q) q.textContent = error instanceof Error ? error.message : 'Quiz unavailable';
+  });
