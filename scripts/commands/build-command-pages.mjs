@@ -22,7 +22,7 @@ for (const command of data.records) {
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(command.name + " command — Linux tutorial | LinuxTerminal.me")}</title>
-<meta name="description" content="${escapeHtml(command.summary)}">
+<meta name="description" content="${escapeHtml(command.summary || "Linux command reference")}">
 <link rel="canonical" href="https://linuxterminal.me${command.url}">
 <link rel="stylesheet" href="/commands.css">
 </head>
@@ -42,14 +42,14 @@ for (const command of data.records) {
 <section>
 <h2>Distro matrix</h2>
 <table><tbody>
-${Object.entries(command.availability)
+${Object.entries(command.availability || {})
   .map(([name, availability]) => `<tr><th>${escapeHtml(name)}</th><td>${escapeHtml(availability)}</td></tr>`)
   .join("")}
 </tbody></table>
 </section>
 <section>
 <h2>Simulator / VM</h2>
-<p>Simulator: ${escapeHtml(command.execution.simulator)}; VM: ${escapeHtml(command.execution.vm)}</p>
+<p>Simulator: ${escapeHtml(command.execution?.simulator || "unverified")}; VM: ${escapeHtml(command.execution?.vm || "unverified")}</p>
 </section>
 <a href="/simulator/?try=${encodeURIComponent(command.name)}">Try this command</a>
 <script src="/command-pages.js" defer></script>

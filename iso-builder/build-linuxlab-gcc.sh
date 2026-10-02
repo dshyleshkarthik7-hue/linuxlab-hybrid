@@ -116,9 +116,12 @@ if [[ ! -s "$ALPINE_ISO" ]]; then curl -fL --retry 5 --retry-delay 2 -o "$ALPINE
 [[ -s "$ALPINE_ISO" ]] || die "Alpine boot ISO download failed."
 verify_download "$ALPINE_ISO" "$ALPINE_ISO_SUM_URL" "alpine-standard-3.24.1-x86.iso"
 rm -rf "$BASE_ISO" "$ISO_TREE"; mkdir -p "$BASE_ISO" "$ISO_TREE"
-xorriso -osirrox on -indev "$ALPINE_ISO" -extract / "$BASE_ISO"
+xorriso -osirrox on -indev "$ALPINE_ISO" -extract /boot "$BASE_ISO/boot"
 [[ -d "$BASE_ISO/boot" ]] || die "Alpine boot media has no /boot."
-cp -a "$BASE_ISO"/. "$ISO_TREE"/
+# The final Developer image is an application/learning guest, not the full
+# Alpine installer/live ISO. Keep only bootloader/kernel assets and replace
+# the initramfs with the purpose-built GCC rootfs below.
+cp -a "$BASE_ISO/boot" "$ISO_TREE/"
 log "Creating isolated custom initramfs"
 rm -f "$INITRAMFS" "$INITRAMFS.cpio"
 (

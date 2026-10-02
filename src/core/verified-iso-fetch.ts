@@ -7,9 +7,9 @@ const inFlightConsumers = new Map<string, number>();
 const inFlightControllers = new Map<string, AbortController>();
 export const TRUSTED_ISO_ORIGIN = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
 export const ISO_DELIVERY_PATH = '/api/iso/linux4';
-const RANGE_FETCH_TIMEOUT_MS = 90_000;
-const RANGE_CHUNK_BYTES = 16 * 1024 * 1024;
-const RANGE_CONCURRENCY = 2;
+const RANGE_FETCH_TIMEOUT_MS = 180_000;
+const RANGE_CHUNK_BYTES = 32 * 1024 * 1024;
+const RANGE_CONCURRENCY = 4;
 const TRUSTED_HF_PREFIX = 'https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/';
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
@@ -43,11 +43,17 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
   const chunkUrl = new URL(url, window.location.origin);
   chunkUrl.searchParams.set('chunkStart', String(start));
   chunkUrl.searchParams.set('chunkEnd', String(end));
+  const isWorker = chunkUrl.origin === TRUSTED_ISO_ORIGIN;
   const range = `bytes=${start}-${end}`;
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      const response = await fetch(chunkUrl, { cache: 'default', headers: { Range: range }, signal: requestSignal(signal, RANGE_FETCH_TIMEOUT_MS) });
+      // The Cloudflare Worker exposes each immutable chunk as a cacheable 200
+      // object. Do not send an HTTP Range to the Worker: Workers Cache would
+      // interpret that Range against the chunk body instead of the full ISO.
+      // Direct fallback origins still receive the real byte range.
+      const headers: HeadersInit = isWorker ? {} : { Range: range };
+      const response = await fetch(chunkUrl, { cache: 'default', headers, signal: requestSignal(signal, RANGE_FETCH_TIMEOUT_MS) });
       const chunkStart = response.headers.get('x-linuxlab-chunk-start');
       const chunkEnd = response.headers.get('x-linuxlab-chunk-end');
       const chunkTotal = response.headers.get('x-linuxlab-chunk-total');
@@ -121,8 +127,8 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
     let lastError: unknown;
     const image = url.searchParams.get('image') || (artifact.filename === 'linux4.iso' ? 'linux4' : artifact.filename === 'alpine.iso' ? 'developer' : 'virt');
     const candidates = [
-      artifact.url,
       `${TRUSTED_ISO_ORIGIN}/?image=${image}`,
+      ...artifact.fallbackUrls ?? [],
     ];
     for (const candidate of candidates) {
       try { return await fetchIsoResumable(candidate, artifact, controller.signal); }

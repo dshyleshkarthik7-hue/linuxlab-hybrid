@@ -16,3 +16,6 @@ assert.doesNotMatch(powershell, /^```(?:powershell)?/m, 'PowerShell builder must
 assert.doesNotMatch(powershell, /```$/m, 'PowerShell builder must not contain a trailing Markdown fence');
 assert.match(powershell, /LINUXLAB_ISO_OUTPUT/, 'PowerShell builder must honor the launcher output override');
 assert.match(powershell, /LINUXLAB_ISO_WORK/, 'PowerShell builder must honor the launcher work override');
+assert.match(script, /-extract \/boot/);
+assert.match(script, /cp -a "\$BASE_ISO\/boot" "\$ISO_TREE\//);
+assert.match(script, /application\/learning guest|full Alpine installer\/live ISO/);

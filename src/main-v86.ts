@@ -161,13 +161,25 @@ export class V86LinuxTerminal {
       const firmware = await this.preflightRuntimeAssets(signal);
       if (id !== this.bootId || signal.aborted) return;
       const artifact = artifactForIsoUrl(this.profile.cdrom);
-      this.bootStage = 'verifying image';
-      this.status(`${this.profile.name} • verifying image`);
-      let isoBytes = await fetchVerifiedIso(this.profile.cdrom, signal);
-      if (!isoBytes.byteLength) throw new Error('Verified Linux image is empty');
+      this.bootStage = 'preparing image';
+      this.status(`${this.profile.name} • preparing verified image`);
+      // Developer Alpine uses v86's asynchronous disk-image loader. v86 fetches only
+      // fixed-size parts on demand instead of materializing the entire ISO in a browser
+      // ArrayBuffer. This removes the large pre-boot allocation that caused timeouts.
+      const developerAsyncImage = this.profile.expectedGuest === 'alpine' && this.profile.policy === 'developer'
+        ? {
+            url: `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/developer-${artifact.sha256}`,
+            async: true,
+            size: artifact.size,
+            use_parts: true,
+            fixed_chunk_size: 32 * 1024 * 1024,
+          }
+        : null;
+      if (!developerAsyncImage) {
+        const isoBytes = await fetchVerifiedIso(this.profile.cdrom, signal);
+        if (!isoBytes.byteLength) throw new Error('Verified Linux image is empty');
+      }
       this.setIntegrityState('verified');
-      // The pinned ISO is the authoritative guest identity for this offline browser VM.
-      // Alpine Virt does not reliably emit the optional serial identity frame on every browser/runtime.
       this.guestIdentity = { kind: this.profile.expectedGuest, isAlpine: this.profile.expectedGuest === 'alpine', release: `verified artifact ${artifact.version} (${artifact.sha256})` };
       const screen = document.getElementById('screen_container');
       if (!screen) throw new Error('VM screen container is missing');
@@ -182,11 +194,11 @@ export class V86LinuxTerminal {
       const vm = new Runtime({
         wasm_path: '/v86.wasm', memory_size: policy.memoryBytes, vga_memory_size: policy.vgaMemoryBytes,
         screen_container: screen, bios: { buffer: firmware.seabios }, vga_bios: { buffer: firmware.vgabios },
-        cdrom: { buffer: isoBytes }, boot_order: 0x213, fastboot: true, bootmenu: false, autostart: false,
+        cdrom: developerAsyncImage ?? { buffer: await fetchVerifiedIso(this.profile.cdrom, signal) },
+        boot_order: 0x213, fastboot: true, bootmenu: false, autostart: false,
         disable_speaker: true, net_device: { type: 'none' },
       });
       this.emulator = vm;
-      isoBytes = new ArrayBuffer(0);
       this.setNetworkState('disabled');
       this.setGuestKeyboardEnabled(true);
       this.sessionTimer = window.setTimeout(() => this.fail('VM session resource limit reached'), policy.remainingSessionMs());
@@ -372,7 +384,7 @@ export class V86LinuxTerminal {
 
   private scheduleBootWatchdog(id: number, timeoutMs: number): void {
     if (this.bootTimeout !== null) window.clearTimeout(this.bootTimeout);
-    this.bootTimeout = window.setTimeout(() => { if (!this.ready && id === this.bootId) this.fail('guest boot timeout'); }, timeoutMs);
+    const downloadGrace = Math.max(60_000, Math.floor(timeoutMs * 1.5)); this.bootTimeout = window.setTimeout(() => { if (!this.ready && id === this.bootId) this.fail('guest boot timeout'); }, downloadGrace);
   }
 
   private fail(message: string, cause?: Error): void {

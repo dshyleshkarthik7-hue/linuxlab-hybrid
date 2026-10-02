@@ -1,9 +1,10 @@
 import manifest from '../artifacts/manifest.json' with { type: 'json' };
 
-const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
+const MAX_CHUNK_BYTES = 32 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
-const WORKER_PROTOCOL_VERSION = "5";
+const WORKER_PROTOCOL_VERSION = "7";
 const HUGGINGFACE_BUCKET_ORIGIN = "https://huggingface.co/buckets/";
+const ISO_CACHE_TTL = 31536000;
 
 function isTrustedUpstream(value: string): boolean {
   try { const url = new URL(value); if (url.protocol !== "https:") return false; return url.hostname === "huggingface.co" || url.hostname.endsWith(".hf.co") || url.hostname === "github.com" || url.hostname === "objects.githubusercontent.com" || url.hostname === "release-assets.githubusercontent.com"; } catch { return false; }
@@ -35,6 +36,12 @@ function isAllowedOrigin(origin: string | null): boolean {
       parsed.origin === "https://linuxterminal.me" ||
       parsed.origin === "https://www.linuxterminal.me";
 
+    const isLocalDevelopmentOrigin =
+      parsed.origin === "http://127.0.0.1:4173" ||
+      parsed.origin === "http://127.0.0.1:4174" ||
+      parsed.origin === "http://localhost:4173" ||
+      parsed.origin === "http://localhost:4174";
+
     // Netlify preview deploys use the immutable deploy-id prefix. Support the
     // current site name (linuxterminalm) and the previous site name
     // (linuxterminal) while keeping the hostname allowlist scoped to Netlify.
@@ -42,7 +49,7 @@ function isAllowedOrigin(origin: string | null): boolean {
       /^([a-z0-9-]+)--linuxterminalm\.netlify\.app$/i.test(parsed.hostname) ||
       /^([a-z0-9-]+)--linuxterminal\.netlify\.app$/i.test(parsed.hostname);
 
-    return isProductionOrigin || isNetlifyPreview;
+    return isProductionOrigin || isLocalDevelopmentOrigin || isNetlifyPreview;
   } catch {
     return false;
   }
@@ -55,8 +62,8 @@ function corsHeaders(request: Request): Headers {
   const headers = new Headers({
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
-    "Cache-Control": "no-store",
-    "CDN-Cache-Control": "no-store",
+    "Cache-Control": "public, max-age=31536000, immutable",
+    "CDN-Cache-Control": "public, max-age=31536000, immutable",
     "Access-Control-Allow-Headers": "Range, If-Range, If-None-Match, If-Modified-Since",
     "Access-Control-Expose-Headers": "Accept-Ranges, Content-Length, Content-Range, Content-Type, ETag, X-LinuxLab-SHA256, X-LinuxLab-Chunk-Start, X-LinuxLab-Chunk-End, X-LinuxLab-Chunk-Total, X-LinuxLab-Artifact-Size, X-LinuxLab-Worker-Protocol",
   });
@@ -67,8 +74,22 @@ function corsHeaders(request: Request): Headers {
 
 function getImage(url: URL): Image | null {
   const image = url.searchParams.get("image");
-  if (image !== "developer" && image !== "virt" && image !== "linux4") return null;
-  return IMAGES[image];
+  if (image === "developer" || image === "virt" || image === "linux4") return IMAGES[image];
+  const partMatch = /^\/(developer|virt|linux4)-(\d+)-(\d+)-([a-f0-9]{64})$/.exec(url.pathname);
+  if (partMatch) {
+    const image = IMAGES[partMatch[1] as ImageName];
+    return image && partMatch[4] === image.sha256 ? image : null;
+  }
+  return null;
+}
+
+function pathPart(url: URL): { start: number; end: number } | null {
+  const match = /^\/(?:developer|virt|linux4)-(\d+)-(\d+)-([a-f0-9]{64})$/.exec(url.pathname);
+  if (!match) return null;
+  const start = Number(match[1]);
+  const end = Number(match[2]);
+  if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end)) return null;
+  return { start, end };
 }
 
 function queryRange(url: URL): { start: string | null; end: string | null } {
@@ -106,15 +127,22 @@ function getChunk(url: URL, size: number, rangeHeader?: string | null) {
   return { start, end };
 }
 
+function cacheKey(request: Request, origin: string): Request {
+  const url = new URL(request.url);
+  // Keep CORS variants isolated while preserving immutable chunk identity.
+  url.searchParams.set("__cors_origin", origin);
+  return new Request(url.toString(), { method: "GET" });
+}
+
 function errorResponse(message: string, status: number, headers: Headers): Response {
   const responseHeaders = new Headers(headers);
-  responseHeaders.set("Cache-Control", "no-store");
-  responseHeaders.set("CDN-Cache-Control", "no-store");
+  responseHeaders.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+  responseHeaders.set("CDN-Cache-Control", "public, max-age=60, stale-while-revalidate=300");
   return new Response(message, { status, headers: responseHeaders });
 }
 
 export default {
-  async fetch(request: Request, env: Env): Promise<Response> {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
     const headers = corsHeaders(request);
     const origin = request.headers.get("Origin");
@@ -124,6 +152,24 @@ export default {
       headers.set("Allow", "GET, HEAD, OPTIONS");
       return new Response("Method Not Allowed", { status: 405, headers });
     }
+    const image = getImage(url);
+    if (!image) return new Response("Unknown image. Use image=developer, image=virt, or image=linux4.", { status: 404, headers });
+    let chunk;
+    try {
+      const part = pathPart(url);
+      chunk = part ? getChunk(new URL(url), image.size, `bytes=${part.start}-${part.end}`) : getChunk(url, image.size, request.headers.get("Range"));
+    }
+    catch {
+      headers.set("Content-Range", `bytes */${image.size}`);
+      return new Response("Invalid chunk", { status: 416, headers });
+    }
+    const expectedLength = chunk.end - chunk.start + 1;
+    const range = `bytes=${chunk.start}-${chunk.end}`;
+    const originKey = origin!;
+    const key = cacheKey(request, originKey);
+    const cache = caches.default;
+    const cached = await cache.match(key);
+    if (cached) return cached;
     const clientKey = request.headers.get("CF-Connecting-IP") || "unknown";
     if (!env?.ISO_RATE_LIMITER || typeof env.ISO_RATE_LIMITER.limit !== "function") {
       return errorResponse("ISO rate limiting is not configured", 503, headers);
@@ -135,16 +181,6 @@ export default {
       return errorResponse("ISO rate limiting is temporarily unavailable", 503, headers);
     }
     if (!rate.success) return errorResponse("ISO rate limit exceeded", 429, headers);
-    const image = getImage(url);
-    if (!image) return new Response("Unknown image. Use image=developer, image=virt, or image=linux4.", { status: 404, headers });
-    let chunk;
-    try { chunk = getChunk(url, image.size, request.headers.get("Range")); }
-    catch {
-      headers.set("Content-Range", `bytes */${image.size}`);
-      return new Response("Invalid chunk", { status: 416, headers });
-    }
-    const expectedLength = chunk.end - chunk.start + 1;
-    const range = `bytes=${chunk.start}-${chunk.end}`;
     try {
       let upstream: Response | null = null;
       const origins = [image.url, ...image.fallbacks].filter((candidate) => {
@@ -160,7 +196,7 @@ export default {
             const response = await fetch(new Request(current.href, {
               method: "GET",
               headers: { Accept: "application/octet-stream", "User-Agent": "LinuxTerminal-ISO-Worker/5.0", "Accept-Encoding": "identity", Range: range },
-            }), { signal: controller.signal, cache: "no-store", redirect: "manual" });
+            }), { signal: controller.signal, cache: "default", redirect: "manual" });
             if (response.status === 206) { upstream = response; break; }
             if (response.status < 300 || response.status >= 400) { upstream = response; break; }
             const location = response.headers.get("Location");
@@ -178,11 +214,13 @@ export default {
       const contentLength = upstream.headers.get("content-length");
       const expectedContentRange = `bytes ${chunk.start}-${chunk.end}/${image.size}`;
       if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) return errorResponse("ISO origin returned invalid chunk metadata", 502, headers);
-      // CORS is origin-specific. Public edge caching by URL can otherwise replay a
-      // response generated for linuxterminal.me to a Netlify Preview origin.
-      // Keep the worker response private and let the browser manage its own range cache.
-      headers.set("Cache-Control", "no-store");
-      headers.set("CDN-Cache-Control", "no-store");
+      // Each chunk URL is immutable because its coordinates and artifact digest are
+      // part of the request contract. Return the chunk as a standalone 200 object so
+      // Cloudflare can cache it without having to cache a 206 Range response.
+      // CORS varies by Origin, so the cache key is explicitly varied by Origin below.
+      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      headers.set("CDN-Cache-Control", "public, max-age=31536000, immutable");
+      headers.set("Vary", "Origin");
       headers.set("X-LinuxLab-SHA256", image.sha256);
       headers.set("X-LinuxLab-Artifact-Size", String(image.size));
       headers.set("X-LinuxLab-Worker-Protocol", WORKER_PROTOCOL_VERSION);
@@ -192,11 +230,15 @@ export default {
       headers.set("Content-Type", upstream.headers.get("content-type") || "application/octet-stream");
       // The browser-side verifier requires the range contract on the worker response,
       // not only on the upstream response. Forward the already-validated Content-Range.
-      headers.set("Content-Range", expectedContentRange);
       headers.set("Content-Length", String(expectedLength));
       headers.set("Accept-Ranges", "bytes");
       headers.set("ETag", `"${image.sha256}-${chunk.start}-${chunk.end}"`);
-      return new Response(request.method === "HEAD" ? null : upstream.body, { status: 206, headers });
+      const response = new Response(request.method === "HEAD" ? null : upstream.body, { status: 200, headers });
+      if (request.method === "GET") {
+        const cacheable = response.clone();
+        ctx.waitUntil(cache.put(key, cacheable));
+      }
+      return response;
     } catch {
       return errorResponse("ISO origin temporarily unavailable", 504, headers);
     }

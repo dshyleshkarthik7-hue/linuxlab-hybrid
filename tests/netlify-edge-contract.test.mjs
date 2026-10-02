@@ -13,7 +13,7 @@ assert.match(config, /path = "\/api\/v86-firmware\/\*"/);
 assert.match(config, /function = "v86-firmware"/);
 assert.doesNotMatch(config, /from = "\/api\/v86-firmware\/(?:seabios|vgabios)\.bin"\s*\n\s*to = "\/api\/v86-firmware\/(?:seabios|vgabios)\.bin"/);
 
-assert.match(cloudflare, /MAX_CHUNK_BYTES\s*=\s*48\s*\*\s*1024\s*\*\s*1024/);
+assert.match(cloudflare, /MAX_CHUNK_BYTES\s*=\s*32\s*\*\s*1024\s*\*\s*1024/);
 assert.match(cloudflare, /queryRange/);
 assert.match(cloudflare, /Conflicting range parameters/);
 assert.match(cloudflare, /contentRange !== expectedContentRange/);
