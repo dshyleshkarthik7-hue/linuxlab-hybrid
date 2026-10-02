@@ -78,5 +78,10 @@
   "engines": {
     "node": ">=22.0.0",
     "npm": ">=10.8.0"
+  },
+  "overrides": {
+    "monaco-editor": {
+      "dompurify": "3.4.16"
+    }
   }
 }
