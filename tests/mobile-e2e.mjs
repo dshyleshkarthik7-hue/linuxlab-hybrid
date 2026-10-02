@@ -35,7 +35,7 @@ function stopServer() {
 
 async function run() {
   if (!explicit) {
-    const port = process.env.MOBILE_PORT || '4174';
+    const port = process.env.MOBILE_PORT || '4177';
     const viteBin = resolve('node_modules', '.bin', process.platform === 'win32' ? 'vite.cmd' : 'vite');
     server = spawn(viteBin, ['preview', '--host', '127.0.0.1', '--port', port, '--strictPort'], {
       stdio: ['ignore', 'pipe', 'pipe'],
