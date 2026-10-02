@@ -8,7 +8,7 @@
   },
   "workers_dev": true,
   "cache": {
-    "enabled": false
+    "enabled": true
   },
   "ratelimits": [
     {
