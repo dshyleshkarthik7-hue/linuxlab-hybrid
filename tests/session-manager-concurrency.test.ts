@@ -19,4 +19,16 @@ await assert.rejects(() => Promise.all([
 
 await Promise.all([session.stop(), session.stop(), session.destroy()]);
 assert.equal(session.getState(), 'STOPPED');
+const timeoutSession = new SessionManager({ cpuMs: 5, memoryBytes: 1024, diskBytes: 1024, processCount: 8, timeoutMs: 60_000 });
+await timeoutSession.start(async () => {});
+await assert.rejects(() => timeoutSession.execute(async () => { await new Promise(resolve => setTimeout(resolve, 25)); }), /CPU time limit exceeded/);
+await timeoutSession.stop();
+await timeoutSession.destroy();
+const restartSession = new SessionManager({ cpuMs: 1000, memoryBytes: 1024, diskBytes: 1024, processCount: 8, timeoutMs: 60_000 });
+await restartSession.restart(async () => {}, async () => {});
+assert.equal(restartSession.getState(), 'READY');
+await restartSession.destroy();
+const failedStart = new SessionManager();
+await assert.rejects(() => failedStart.start(async () => { throw new Error('start failure'); }), /start failure/);
+assert.equal(failedStart.getState(), 'STOPPED');
 console.log('SessionManager concurrency checks passed');
