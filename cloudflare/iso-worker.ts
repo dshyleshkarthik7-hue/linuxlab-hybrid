@@ -2,7 +2,7 @@ import manifest from '../artifacts/manifest.json' with { type: 'json' };
 
 const MAX_CHUNK_BYTES = 32 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
-const WORKER_PROTOCOL_VERSION = "6";
+const WORKER_PROTOCOL_VERSION = "7";
 const HUGGINGFACE_BUCKET_ORIGIN = "https://huggingface.co/buckets/";
 const ISO_CACHE_TTL = 31536000;
 
@@ -69,13 +69,14 @@ function corsHeaders(request: Request): Headers {
 function getImage(url: URL): Image | null {
   const image = url.searchParams.get("image");
   if (image === "developer" || image === "virt" || image === "linux4") return IMAGES[image];
-  const partMatch = /^\/(developer|virt|linux4)-(\d+)-(\d+)$/.exec(url.pathname);
-  if (partMatch) return IMAGES[partMatch[1] as ImageName];
+  const partMatch = /^\/(developer|virt|linux4)-(\d+)-(\d+)-([a-f0-9]{64})$/.exec(url.pathname);
+  if (partMatch) const image = IMAGES[partMatch[1] as ImageName];
+  return image && partMatch[4] === image.sha256 ? image : null;
   return null;
 }
 
 function pathPart(url: URL): { start: number; end: number } | null {
-  const match = /^\/(?:developer|virt|linux4)-(\d+)-(\d+)$/.exec(url.pathname);
+  const match = /^\/(?:developer|virt|linux4)-(\d+)-(\d+)-([a-f0-9]{64})$/.exec(url.pathname);
   if (!match) return null;
   const start = Number(match[1]);
   const end = Number(match[2]);
