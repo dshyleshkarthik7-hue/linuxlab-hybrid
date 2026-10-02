@@ -35,6 +35,18 @@ function shuffle<T>(items: readonly T[]): T[] {
   return out;
 }
 
+function randomDistinctIndices(length: number, excluded: number, count: number): number[] {
+  const selected: number[] = [];
+  while (selected.length < count) {
+    const random = new Uint32Array(1);
+    crypto.getRandomValues(random);
+    const candidate = random[0] % length;
+    if (candidate === excluded || selected.includes(candidate)) continue;
+    selected.push(candidate);
+  }
+  return selected;
+}
+
 async function load(): Promise<void> {
   const response = await fetch('/command-records.json', { cache: 'force-cache' });
   if (!response.ok) throw new Error('Command catalog unavailable');
@@ -44,12 +56,13 @@ async function load(): Promise<void> {
   if (records.length < 6000) throw new Error('Quiz catalog is incomplete');
 
   const distractorNames = records.map(record => String(record.name));
-  for (const record of records) {
+  for (let index = 0; index < records.length; index++) {
+    const record = records[index];
     const name = String(record.name);
     const purpose = String(record.summary || 'Linux command');
     const example = String(record.example || name + ' --help');
     const category = String(record.category || 'linux');
-    const distractors = shuffle(distractorNames.filter(candidate => candidate !== name)).slice(0, 3);
+    const distractors = randomDistinctIndices(records.length, index, 3).map(i => distractorNames[i]);
 
     QUESTIONS.push({
       id: name + '-identify',
