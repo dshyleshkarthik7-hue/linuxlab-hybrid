@@ -1,8 +1,8 @@
 import manifest from '../artifacts/manifest.json' with { type: 'json' };
 
-const MAX_CHUNK_BYTES = 48 * 1024 * 1024;
+const MAX_CHUNK_BYTES = 32 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
-const WORKER_PROTOCOL_VERSION = "5";
+const WORKER_PROTOCOL_VERSION = "6";
 const HUGGINGFACE_BUCKET_ORIGIN = "https://huggingface.co/buckets/";
 
 function isTrustedUpstream(value: string): boolean {
@@ -178,11 +178,13 @@ export default {
       const contentLength = upstream.headers.get("content-length");
       const expectedContentRange = `bytes ${chunk.start}-${chunk.end}/${image.size}`;
       if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) return errorResponse("ISO origin returned invalid chunk metadata", 502, headers);
-      // CORS is origin-specific. Public edge caching by URL can otherwise replay a
-      // response generated for linuxterminal.me to a Netlify Preview origin.
-      // Keep the worker response private and let the browser manage its own range cache.
+      // Each chunk URL is immutable because its coordinates and artifact digest are
+      // part of the request contract. Return the chunk as a standalone 200 object so
+      // Cloudflare can cache it without having to cache a 206 Range response.
+      // CORS varies by Origin, so the cache key is explicitly varied by Origin below.
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
       headers.set("CDN-Cache-Control", "public, max-age=31536000, immutable");
+      headers.set("Vary", "Origin");
       headers.set("X-LinuxLab-SHA256", image.sha256);
       headers.set("X-LinuxLab-Artifact-Size", String(image.size));
       headers.set("X-LinuxLab-Worker-Protocol", WORKER_PROTOCOL_VERSION);
@@ -192,11 +194,10 @@ export default {
       headers.set("Content-Type", upstream.headers.get("content-type") || "application/octet-stream");
       // The browser-side verifier requires the range contract on the worker response,
       // not only on the upstream response. Forward the already-validated Content-Range.
-      headers.set("Content-Range", expectedContentRange);
       headers.set("Content-Length", String(expectedLength));
       headers.set("Accept-Ranges", "bytes");
       headers.set("ETag", `"${image.sha256}-${chunk.start}-${chunk.end}"`);
-      return new Response(request.method === "HEAD" ? null : upstream.body, { status: 206, headers });
+      return new Response(request.method === "HEAD" ? null : upstream.body, { status: 200, headers });
     } catch {
       return errorResponse("ISO origin temporarily unavailable", 504, headers);
     }
