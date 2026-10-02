@@ -46,7 +46,7 @@ for (const command of commandDatabase.records.filter(({ page }) => page.status =
   assert.ok(existsSync(join(root, `public${command.url}`)), `Database points to missing command page: ${command.name}`);
 }
 const entry = readFileSync(join(root, 'commands-entry.html'), 'utf8');
-assert.match(entry, /200 Linux Commands/i, 'Commands route must remain the 6,161-command catalogue');
+assert.match(entry, /6,161 Linux Commands/i, 'Commands route must remain the 6,161-command catalogue');
 assert.ok(entry.includes('id=\"list\"') && entry.includes('id=\"search\"') && entry.includes('id=\"category\"') && entry.includes('id=\"count\"'), 'Commands catalogue controls missing');
 for (const command of commands) assert.ok(entry.includes(`/commands/${command}.html`), `Commands catalogue missing dedicated lesson ${command}`);
 const netlify = readFileSync(join(root, 'netlify.toml'), 'utf8');
