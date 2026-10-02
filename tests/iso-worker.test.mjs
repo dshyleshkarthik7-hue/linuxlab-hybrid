@@ -13,7 +13,7 @@ assert.match(worker, /Range:\\s*range/);
 assert.match(worker, /requestedEnd >= size/);
 assert.match(worker, /Conflicting range parameters/);
 assert.match(worker, /status: 200/);
-assert.doesNotMatch(worker, /status: 206/);
+assert.match(worker, /upstream\\.status === 206/);
 assert.doesNotMatch(worker, /"Cache-Control":\\s*"no-store"/);
 assert.doesNotMatch(worker, /"CDN-Cache-Control":\\s*"no-store"/);
 assert.doesNotMatch(worker, /cache:\\s*"no-store"/);
