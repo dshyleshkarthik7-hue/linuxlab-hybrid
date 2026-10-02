@@ -8,7 +8,10 @@ const origin = baseURL.replace(/\/$/, '');
 const timeoutMs = Number(process.env.PRODUCTION_SMOKE_TIMEOUT_MS || 30000);
 const retryMs = Number(process.env.PRODUCTION_SMOKE_RETRY_MS || 2000);
 const retries = Number(process.env.PRODUCTION_SMOKE_RETRIES || 5);
-const isoPath='/api/iso/linux4';
+const isoBaseURL = (process.env.ISO_BASE_URL || 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev').replace(/\\/$/, '');
+const isoPath='/?image=linux4&chunkStart=0&chunkEnd=0';
+const expectedIsoSize=7731200;
+const expectedIsoProtocol='7';
 const expectedDeploySha=process.env.EXPECTED_DEPLOY_SHA||'';
 const deployWaitMs=Number(process.env.PRODUCTION_DEPLOY_WAIT_MS||180000);
 
@@ -36,13 +39,13 @@ const requiredHeaders = {
   'strict-transport-security': /max-age=31536000/i,
   'x-content-type-options': /^nosniff$/i,
   'referrer-policy': /^strict-origin-when-cross-origin$/i,
-  'permissions-policy': /camera=\(\), microphone=\(\), geolocation=\(\)/i,
+  'permissions-policy': /camera=\\(\\), microphone=\\(\\), geolocation=\\(\\)/i,
   'cross-origin-opener-policy': /^same-origin$/i,
   'cross-origin-resource-policy': /^same-origin$/i,
   'content-security-policy': /frame-ancestors 'none'/i,
 };
 for (const [name, pattern] of Object.entries(requiredHeaders)) assert.match(homeResponse.headers.get(name) || '', pattern, `production response missing/invalid ${name}`);
-assert.match(homeResponse.headers.get('content-security-policy') || '', /connect-src[^;]*linuxterminal-iso\.dshyleshkarthik7\.workers\.dev/, 'production CSP must allow the canonical ISO worker');
+assert.match(homeResponse.headers.get('content-security-policy') || '', /connect-src[^;]*linuxterminal-iso\\.dshyleshkarthik7\\.workers\\.dev/, 'production CSP must allow the canonical ISO worker');
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage();
 try {
@@ -56,41 +59,36 @@ const sitemapResponse = await get(`${origin}/sitemap.xml`);
 assert.equal(sitemapResponse.ok, true, `/sitemap.xml returned ${sitemapResponse.status}`);
 assert.match(sitemapResponse.headers.get('content-type') || '', /xml/i);
 const sitemap = await sitemapResponse.text();
-const sitemapPaths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map(match => new URL(match[1]).pathname + new URL(match[1]).search);
+const sitemapPaths = [...sitemap.matchAll(/<loc>([^<]+)<\\/loc>/gi)].map(match => new URL(match[1]).pathname + new URL(match[1]).search);
 assert.ok(sitemapPaths.length >= 30, `sitemap found only ${sitemapPaths.length} URLs`);
 
 const manifest = JSON.parse(await readFile('artifacts/manifest.json', 'utf8'));
 const firmwarePins = manifest.artifacts.filter((artifact) => artifact.release === 'v86-firmware-1');
 assert.equal(firmwarePins.length, 2, 'firmware manifest must contain exactly two v86 firmware assets');
 for (const pin of firmwarePins) {
-  const firmware = await get(`${origin}/api/v86-firmware/${pin.filename}`);
-  assert.equal(firmware.status, 200, `/api/v86-firmware/${pin.filename} returned ${firmware.status}`);
-  assert.equal(Number(firmware.headers.get('x-content-size')), pin.size, 'verified firmware size header must match manifest');
+  const firmware = await get(pin.url);
+  assert.equal(firmware.status, 200, `${pin.url} returned ${firmware.status}`);
   const bytes = new Uint8Array(await firmware.arrayBuffer());
   assert.equal(bytes.byteLength, pin.size);
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   const actual = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
-  assert.equal(actual, pin.sha256, `/api/v86-firmware/${pin.filename} SHA-256 mismatch`);
+  assert.equal(actual, pin.sha256, `${pin.filename} SHA-256 mismatch`);
 }
 
-const bareIso = await get(`${origin}${isoPath}`);
-assert.equal(bareIso.status, 416, `bare developer ISO request returned ${bareIso.status}`);
-assert.equal(bareIso.headers.get('content-range'), 'bytes */7731200');
-
-const isoUrl = `${origin}${isoPath}?chunkStart=0&chunkEnd=0`;
-const iso = await get(isoUrl, { headers: { Range: 'bytes=0-0' } });
-assert.equal(iso.status, 206, `Linux4 ISO probe returned ${iso.status}`);
+const iso = await get(`${isoBaseURL}${isoPath}`, { headers: { Origin: origin, Range: 'bytes=0-0' } });
+assert.equal(iso.status, 200, `Linux4 ISO probe returned ${iso.status}`);
+assert.equal(iso.headers.get('x-linuxlab-worker-protocol'), expectedIsoProtocol);
 assert.equal(iso.headers.get('x-linuxlab-chunk-start'), '0');
 assert.equal(iso.headers.get('x-linuxlab-chunk-end'), '0');
-assert.equal(iso.headers.get('x-linuxlab-chunk-total'), '7731200');
+assert.equal(iso.headers.get('x-linuxlab-chunk-total'), String(expectedIsoSize));
 assert.equal(iso.headers.get('content-length'), '1');
 assert.equal(iso.headers.get('accept-ranges'), 'bytes');
-assert.equal(iso.headers.get('content-range'), 'bytes 0-0/7731200');
+assert.equal(iso.headers.get('content-range'), `bytes 0-0/${expectedIsoSize}`);
 assert.equal((await iso.arrayBuffer()).byteLength, 1);
 
-const outOfBounds = await get(`${origin}${isoPath}?chunkStart=7731200&chunkEnd=7731200`);
+const outOfBounds = await get(`${isoBaseURL}/?image=linux4&chunkStart=${expectedIsoSize}&chunkEnd=${expectedIsoSize}`, { headers: { Origin: origin } });
 assert.equal(outOfBounds.status, 416);
-const unknown = await get(`${origin}${isoPath}?image=unknown&chunkStart=0&chunkEnd=0`);
+const unknown = await get(`${isoBaseURL}/?image=unknown&chunkStart=0&chunkEnd=0`, { headers: { Origin: origin } });
 assert.equal(unknown.status, 404);
 
 console.log(`Production deployment smoke checks passed: ISO endpoint + ${sitemapPaths.length} sitemap URLs`);
