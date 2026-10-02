@@ -30,7 +30,7 @@ const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
 const cloudflareConfig = await readFile('cloudflare/wrangler.jsonc', 'utf8');
 assert.match(cloudflare, /MAX_CHUNK_BYTES/);
 assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
-assert.match(cloudflare, /upstream\.status !== 206/);
+assert.match(cloudflare, /upstream\.status === 200 && image\.size <= MAX_FULL_UPSTREAM_BYTES/);
 assert.match(cloudflare, /status === 206/);
 assert.doesNotMatch(cloudflare, /"Cache-Control": "no-store"/);
 assert.doesNotMatch(cloudflare, /"CDN-Cache-Control": "no-store"/);
