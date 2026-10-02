@@ -8,7 +8,7 @@ const origin = baseURL.replace(/\/$/, '');
 const timeoutMs = Number(process.env.PRODUCTION_SMOKE_TIMEOUT_MS || 30000);
 const retryMs = Number(process.env.PRODUCTION_SMOKE_RETRY_MS || 2000);
 const retries = Number(process.env.PRODUCTION_SMOKE_RETRIES || 5);
-const isoBaseURL = (process.env.ISO_BASE_URL || 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev').replace(/\\/$/, '');
+const isoBaseURL = (process.env.ISO_BASE_URL || 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev').replace(/\/$/, '');
 const isoPath='/?image=linux4&chunkStart=0&chunkEnd=0';
 const expectedIsoSize=7731200;
 const expectedIsoProtocol='7';
@@ -39,7 +39,7 @@ const requiredHeaders = {
   'strict-transport-security': /max-age=31536000/i,
   'x-content-type-options': /^nosniff$/i,
   'referrer-policy': /^strict-origin-when-cross-origin$/i,
-  'permissions-policy': /camera=\\(\\), microphone=\\(\\), geolocation=\\(\\)/i,
+  'permissions-policy': /camera=\(\), microphone=\(\), geolocation=\(\)/i,
   'cross-origin-opener-policy': /^same-origin$/i,
   'cross-origin-resource-policy': /^same-origin$/i,
   'content-security-policy': /frame-ancestors 'none'/i,
@@ -59,7 +59,7 @@ const sitemapResponse = await get(`${origin}/sitemap.xml`);
 assert.equal(sitemapResponse.ok, true, `/sitemap.xml returned ${sitemapResponse.status}`);
 assert.match(sitemapResponse.headers.get('content-type') || '', /xml/i);
 const sitemap = await sitemapResponse.text();
-const sitemapPaths = [...sitemap.matchAll(/<loc>([^<]+)<\\/loc>/gi)].map(match => new URL(match[1]).pathname + new URL(match[1]).search);
+const sitemapPaths = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/gi)].map(match => new URL(match[1]).pathname + new URL(match[1]).search);
 assert.ok(sitemapPaths.length >= 30, `sitemap found only ${sitemapPaths.length} URLs`);
 
 const manifest = JSON.parse(await readFile('artifacts/manifest.json', 'utf8'));
