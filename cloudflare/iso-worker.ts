@@ -186,39 +186,40 @@ export default {
     }
     if (!rate.success) return errorResponse("ISO rate limit exceeded", 429, headers);
     try {
-      let upstream: Response | null = null;
       const origins = [...image.fallbacks, image.url].filter((candidate) => {
         try { return new URL(candidate).origin !== url.origin; } catch { return false; }
       });
-      for (const origin of origins) {
+      const upstreamCandidates = await Promise.all(origins.map(async (origin) => {
         const controller = new AbortController();
         const timeout = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
         try {
           const candidate = new URL(origin);
-          if (!isTrustedUpstream(candidate.href) || candidate.origin === url.origin) continue;
+          if (!isTrustedUpstream(candidate.href) || candidate.origin === url.origin) return null;
           const response = await fetch(new Request(candidate.href, {
             method: "GET",
             headers: { Accept: "application/octet-stream", "User-Agent": "LinuxTerminal-ISO-Worker/5.0", "Accept-Encoding": "identity", Range: range },
           }), { signal: controller.signal, cache: "default", redirect: "follow" });
-          // Redirects are followed by the platform, but the final URL must remain
-          // on our explicit upstream allowlist and never point back to this Worker.
-          if (!isTrustedUpstream(response.url) || new URL(response.url).origin === url.origin) continue;
-          if (response.status === 206) { upstream = response; break; }
+          // Validate the final redirect target before accepting its body.
+          if (!isTrustedUpstream(response.url) || new URL(response.url).origin === url.origin) {
+            response.body?.cancel();
+            return null;
+          }
+          if (response.status === 206) return response;
           // Some release/object hosts ignore Range and return the complete artifact.
           // Only accept that behavior for small artifacts so the Worker never buffers
-          // the 692 MiB developer image in memory. The response is sliced below to
-          // preserve the Worker chunk contract.
-          if (response.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES) {
-            // Do not require Content-Length here: CDN/object responses may use
-            // chunked transfer encoding. The exact artifact size is validated
-            // after buffering the small artifact below.
-            upstream = response;
-            break;
-          }
+          // the 692 MiB developer image in memory. The exact size is validated below.
+          if (response.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES) return response;
+          response.body?.cancel();
+          return null;
         } catch {
-          if (controller.signal.aborted) continue;
-        } finally { clearTimeout(timeout); }
-      }
+          return null;
+        } finally {
+          clearTimeout(timeout);
+        }
+      }));
+      // Fallbacks are raced concurrently so one slow/unreachable CDN cannot consume
+      // the Worker execution window before a healthy origin is attempted.
+      const upstream = upstreamCandidates.find((candidate): candidate is Response => candidate !== null) ?? null;
       if (!upstream) return errorResponse("ISO origin temporarily unavailable", 504, headers);
       const contentRange = upstream.headers.get("content-range");
       const contentLength = upstream.headers.get("content-length");
