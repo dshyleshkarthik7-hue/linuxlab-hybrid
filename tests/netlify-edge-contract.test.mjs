@@ -36,6 +36,7 @@ assert.match(cloudflare, /firmware/);
 assert.match(cloudflare, /X-LinuxLab-Artifact-Size/);
 assert.match(cloudflare, /crypto\\.subtle\\.digest\\('SHA-256'/);
 assert.match(cloudflare, /firmwareKey/);
+assert.match(cloudflare, /__cors_origin/);
 assert.doesNotMatch(cloudflare, /v86-firmware/);
 
 console.log('Netlify/Cloudflare delivery contract passed');
