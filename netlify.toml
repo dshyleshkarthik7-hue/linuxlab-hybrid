@@ -18,9 +18,6 @@
 [[edge_functions]]
   path = "/api/csp-report"
   function = "csp-report"
-[[edge_functions]]
-  path = "/api/v86-firmware/*"
-  function = "v86-firmware"
 [[redirects]]
   from = "/commands"
   to = "/commands-entry.html"
@@ -67,14 +64,6 @@
   from = "/certification/"
   to = "/certificate/"
   status = 301
-[[redirects]]
-  from = "/seabios.bin"
-  to = "/api/v86-firmware/seabios.bin"
-  status = 200
-[[redirects]]
-  from = "/vgabios.bin"
-  to = "/api/v86-firmware/vgabios.bin"
-  status = 200
 [[redirects]]
   from = "/real-linux/"
   to = "/index-v86.html"
