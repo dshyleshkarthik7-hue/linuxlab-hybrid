@@ -75,7 +75,7 @@ try {
     '/learn/terminal-navigation/', '/learn/files-and-directories/', '/learn/text-processing/',
     '/learn/permissions/', '/learn/processes/', '/learn/shell-scripting/', '/learn/operating-systems/',
     '/learn/networking-basics/', '/commands/', '/challenges/', '/quiz/', '/progress/',
-    '/certificate/', '/verify/', '/about/', '/contact/', '/privacy/', '/terms/', '/linux-careers/',
+    '/certificate/', '/verify/', '/about/', '/contact/', '/privacy/', '/terms/', '/linux-careers/', '/real-linux/', '/developer-alpine/', '/open-source-iso/', '/curriculum/', '/404.html',
   ];
   for (const [width, height] of [[320, 568], [390, 844], [768, 1024], [1024, 768], [1440, 900], [2560, 1440]]) {
     await context.setViewportSize({ width, height });
