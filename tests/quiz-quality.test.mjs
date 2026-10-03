@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 const source = await readFile(new URL('../src/quiz.ts', import.meta.url), 'utf8');
 assert.match(source, /QUESTIONS\.length/);
 assert.match(source, /getRandomValues/);
-assert.match(source, /session=shuffle\(QUESTIONS\)/);
+assert.match(source, /session\s*=\s*shuffle\(QUESTIONS\)/);
 assert.match(source, /randomDistinctIndices/);
 assert.match(source, /namesByCategory/);
 assert.match(source, /examplesByCategory/);
