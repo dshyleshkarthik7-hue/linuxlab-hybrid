@@ -3,7 +3,6 @@ import { readFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 
 const cloudflare = await readFile(new URL('../cloudflare/iso-worker.ts', import.meta.url), 'utf8');
-const firmware = await readFile(new URL('../netlify/edge-functions/v86-firmware.ts', import.meta.url), 'utf8');
 const config = await readFile(new URL('../netlify.toml', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../artifacts/manifest.json', import.meta.url), 'utf8'));
 
@@ -28,10 +27,9 @@ assert.ok(linux4.fallbackUrls?.some((url) => url.startsWith('https://github.com/
 assert.match(cloudflare, /isNetlifyPreview/);
 assert.doesNotMatch(cloudflare, /hostname\.endsWith\('\.netlify\.app'\)/);
 
-assert.match(firmware, /SEABIOS_ARTIFACT/);
-assert.match(firmware, /VGABIOS_ARTIFACT/);
-assert.match(firmware, /UPSTREAM_TIMEOUT_MS\s*=\s*30_000/);
-assert.match(firmware, /SHA-256/);
-assert.match(firmware, /Content-Length/);
+assert.doesNotMatch(config, /api\/v86-firmware/);
+assert.match(cloudflare, /firmware/);
+assert.match(cloudflare, /X-LinuxLab-Artifact-Size/);
+assert.match(cloudflare, /crypto\.subtle\.digest\('SHA-256'/);
 
-console.log('Netlify Edge production contract passed');
+
