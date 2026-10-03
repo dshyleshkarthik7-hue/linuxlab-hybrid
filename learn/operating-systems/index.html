@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linux Operating Systems Tutorial: Kernel, Init, Services &amp; Filesystems | LinuxTerminal</title>
+<meta name="description" content="Learn how a Linux operating system fits together: kernel, processes, init, services, filesystems, devices, users and packages, with practical browser exercises.">
+<meta name="keywords" content="Linux operating system tutorial,Linux kernel init system,processes services filesystems,OS basics,Linux beginners">
+<link rel="canonical" href="https://linuxterminal.me/learn/operating-systems/">
+<link rel="stylesheet" href="/learn/tutorials.css">
+</head>
+<body>
+<header><nav><a class="brand" href="/">&gt;_ <span>Linux</span>Terminal</a><a href="/learn/">Learn</a><a href="/commands/">Commands</a><a href="/challenges/">Challenges</a><a href="/quiz/">Quiz</a><a href="/progress/">Progress</a></nav></header>
+<main>
+<div class="breadcrumbs"><a href="/learn/">Learn</a> / Operating systems</div>
+<section class="hero"><p class="meta">TUTORIAL 9 • BEGINNER → INTERMEDIATE</p><h1>Understand the Linux operating system</h1><p class="lead">Move from memorizing commands to understanding the system they control. The kernel, processes, filesystems, devices, users, services and packages form a set of cooperating layers.</p></section>
+<section class="lesson"><h2>Build the mental model</h2>
+<table><thead><tr><th>Layer</th><th>Question to ask</th><th>Useful observation</th></tr></thead><tbody>
+<tr><td>Kernel</td><td>Who manages CPU, memory and devices?</td><td><code>uname -a</code></td></tr>
+<tr><td>Processes</td><td>Which programs are running?</td><td><code>ps</code></td></tr>
+<tr><td>Filesystem</td><td>Where is data organized?</td><td><code>pwd</code>, <code>ls</code>, <code>df</code></td></tr>
+<tr><td>Users</td><td>Who owns or can access something?</td><td><code>id</code>, <code>ls -l</code></td></tr>
+<tr><td>Packages</td><td>How is software installed and updated?</td><td>Use your distribution's package manager</td></tr>
+</tbody></table>
+<div class="tip"><strong>Key idea:</strong> A command is usually an interface to one layer. When troubleshooting, identify the layer first instead of trying random commands.</div></section>
+<section class="lesson"><h2>Boot, init and services</h2>
+<p>Boot begins with firmware and a bootloader, then the kernel starts and hands control to an init system or another userspace entry point. On many Linux distributions, a service manager starts long-running services and tracks their state.</p>
+<pre>uname -a
+ps
+cat /proc/1/comm
+cat /etc/os-release</pre>
+<p>These commands are observations, not universal assumptions: <code>PID 1</code>, the init implementation and available files differ between distributions and containers.</p>
+<div class="warning"><strong>Practice safely:</strong> Observe services before changing them. On a real machine, stopping a service can interrupt other users or applications.</div></section>
+<section class="lesson"><h2>Filesystems are more than folders</h2>
+<p>Linux presents devices, pseudo-filesystems and ordinary storage through a common filesystem interface. <code>/proc</code> exposes kernel and process information, while <code>/sys</code> exposes hardware and kernel state. They are not ordinary folders of permanent files.</p>
+<pre>findmnt
+df -h
+ls /proc | head
+ls /sys | head</pre>
+<p>In the browser lab, available mounts and files depend on the selected guest image. Use the output you actually observe as evidence.</p></section>
+<section class="lesson"><h2>Practice loop</h2><ol><li>Predict what layer a command will inspect.</li><li>Run one small observation.</li><li>Compare stdout, stderr and exit status with your prediction.</li><li>Explain what the evidence proves and what it does not prove.</li></ol>
+<div class="actions"><a class="button" href="/real-linux/">Open real Linux</a><a class="button secondary" href="/commands/">Browse commands</a><a class="button secondary" href="/learn/processes/">Learn processes</a></div></section>
+<section class="next"><a href="/learn/networking-basics/">Next tutorial → Networking fundamentals</a></section>
+</main><footer>LinuxTerminal — understand the system, then practice the command.</footer>
+</body></html>
