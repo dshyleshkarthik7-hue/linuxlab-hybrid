@@ -75,7 +75,6 @@ for (const pin of firmwarePins) {
   assert.equal(actual, pin.sha256, `${pin.filename} SHA-256 mismatch`);
 }
 
-const manifest = JSON.parse(await readFile('artifacts/manifest.json', 'utf8'));
 const isoArtifacts = manifest.artifacts.filter((artifact) => artifact.image);
 assert.equal(isoArtifacts.length, 3, 'production smoke must cover all three ISO profiles');
 for (const artifact of isoArtifacts) {
