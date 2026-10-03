@@ -60,3 +60,7 @@ assert.match(worker, /isLocalDevelopmentOrigin/);
 assert.match(worker, /if \(isLocalDevelopmentOrigin\) return true/);
 assert.equal(manifest.artifacts.find((artifact) => artifact.image === 'linux4').fallbackUrls[0], 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso');
 assert.match(manifest.artifacts.find((artifact) => artifact.image === 'linux4').fallbackUrls[0], /^https:\/\/github\.com\/dshyleshkarthik7-hue\/linuxlab-hybrid\/releases\/download\/v3\.00\/linux4\.iso$/);
+
+assert.match(worker, /getFirmware/);
+assert.match(worker, /\?firmware=/);
+assert.match(worker, /X-LinuxLab-Artifact-Size/);
