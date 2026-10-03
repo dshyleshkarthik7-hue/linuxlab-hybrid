@@ -70,6 +70,49 @@ const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
 const p = await context.newPage();
 try {
+  const uiRoutes = [
+    '/', '/beginner/', '/intermediate/', '/expert/', '/learn/', '/learn/linux-basics/',
+    '/learn/terminal-navigation/', '/learn/files-and-directories/', '/learn/text-processing/',
+    '/learn/permissions/', '/learn/processes/', '/learn/shell-scripting/', '/learn/operating-systems/',
+    '/learn/networking-basics/', '/commands/', '/challenges/', '/quiz/', '/progress/',
+    '/certificate/', '/verify/', '/about/', '/contact/', '/privacy/', '/terms/', '/linux-careers/',
+  ];
+  for (const [width, height] of [[320, 568], [390, 844], [768, 1024], [1024, 768], [1440, 900], [2560, 1440]]) {
+    await context.setViewportSize({ width, height });
+    for (const route of uiRoutes) {
+      const errors = [];
+      const consoleHandler = message => { if (message.type() === 'error') errors.push(message.text()); };
+      const pageErrorHandler = error => errors.push(error.message);
+      p.on('console', consoleHandler);
+      p.on('pageerror', pageErrorHandler);
+      const response = await p.goto(base + route, { waitUntil: 'domcontentloaded', timeout: 15000 });
+      assert.ok(response?.ok(), route + ' returned ' + (response?.status() ?? 'no response') + ' at ' + width + 'px');
+      const result = await p.evaluate(() => ({
+        lang: document.documentElement.lang,
+        title: document.title,
+        h1: document.querySelectorAll('h1').length,
+        overflow: document.documentElement.scrollWidth > window.innerWidth + 1,
+        badImages: [...document.images].filter(img => { const r = img.getBoundingClientRect(); return r.width > 0 && r.height > 0 && !img.alt; }).length,
+        unlabeled: [...document.querySelectorAll('input,select,textarea')].filter(el => {
+          const r = el.getBoundingClientRect();
+          return r.width > 0 && r.height > 0 && !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby') &&
+            !(el.id && document.querySelector('label[for="' + CSS.escape(el.id) + '"]')) && !el.closest('label');
+        }).length,
+        emptyControls: [...document.querySelectorAll('button,a,[role="button"]')].filter(el => {
+          const r = el.getBoundingClientRect();
+          return r.width > 0 && r.height > 0 && !(el.textContent || '').trim() && !el.getAttribute('aria-label') && !el.getAttribute('title');
+        }).length,
+      }));
+      assert.ok(result.lang && result.title && result.h1 === 1, route + ' metadata/heading contract failed');
+      assert.equal(result.overflow, false, route + ' horizontally overflows at ' + width + 'px');
+      assert.equal(result.badImages, 0, route + ' has visible images without alt text');
+      assert.equal(result.unlabeled, 0, route + ' has unlabeled form controls');
+      assert.equal(result.emptyControls, 0, route + ' has inaccessible empty controls');
+      assert.equal(errors.length, 0, route + ' produced browser errors: ' + errors.join(' | '));
+      p.off('console', consoleHandler);
+      p.off('pageerror', pageErrorHandler);
+    }
+  }
   const response = await p.goto(base + '/index-v86.html', { waitUntil: 'domcontentloaded', timeout: 15000 });
   assert.ok(response?.ok(), 'v86 page must load');
   assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true, 'v86 UI must not horizontally overflow on mobile');
