@@ -29,7 +29,7 @@ assert.ok(existsSync(join(root, 'public/commands/custom/index.html')), 'Phase 3 
 const commandIndex = JSON.parse(readFileSync(join(root, 'public/command-index.json'), 'utf8'));
 assert.deepEqual(commandIndex.records, commandDatabase.records.map(({ id, name, category, summary, example, url, page }) => ({ id, name, category, summary, example, url, page })), 'Generated command index must match the canonical database');
 const sitemap = readFileSync(join(root, 'public/sitemap.xml'), 'utf8');
-const expectedSitemapRoutes = ['/', '/beginner/', '/intermediate/', '/expert/', '/real-linux/', '/developer-alpine/', '/open-source-iso/', '/commands/', '/learn/', '/learn/linux-basics/', '/learn/terminal-navigation/', '/learn/files-and-directories/', '/learn/text-processing/', '/learn/permissions/', '/learn/processes/', '/learn/shell-scripting/', '/challenges/', '/quiz/', '/curriculum/', '/about/', '/contact/', '/certificate/', '/linux-careers/'];
+const expectedSitemapRoutes = ['/', '/beginner/', '/intermediate/', '/expert/', '/real-linux/', '/developer-alpine/', '/open-source-iso/', '/commands/', '/learn/', '/learn/linux-basics/', '/learn/terminal-navigation/', '/learn/files-and-directories/', '/learn/text-processing/', '/learn/permissions/', '/learn/processes/', '/learn/shell-scripting/', '/learn/operating-systems/', '/learn/networking-basics/', '/challenges/', '/quiz/', '/curriculum/', '/about/', '/contact/', '/certificate/', '/linux-careers/'];
 for (const route of expectedSitemapRoutes) assert.ok(sitemap.includes(`https://linuxterminal.me${route}`), `Sitemap missing ${route}`);
 for (const command of commands) {
   const file = `public/commands/${command}.html`;
