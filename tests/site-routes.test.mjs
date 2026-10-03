@@ -46,7 +46,8 @@ for (const command of commandDatabase.records.filter(({ page }) => page.status =
   assert.ok(existsSync(join(root, `public${command.url}`)), `Database points to missing command page: ${command.name}`);
 }
 const entry = readFileSync(join(root, 'commands-entry.html'), 'utf8');
-assert.match(entry, /200 Linux Commands/i, 'Commands route must remain the 200-command catalogue');
+assert.match(entry, /6,161 Linux Commands|6,161-command/i, 'Commands route must identify the current canonical command reference');
+assert.match(entry, /canonical 6,161-command catalog|complete catalogue/i, 'Commands route must describe the full canonical catalogue');
 assert.ok(entry.includes('id=\"list\"') && entry.includes('id=\"search\"') && entry.includes('id=\"category\"') && entry.includes('id=\"count\"'), 'Commands catalogue controls missing');
 for (const command of commands) assert.ok(entry.includes(`/commands/${command}.html`), `Commands catalogue missing dedicated lesson ${command}`);
 const netlify = readFileSync(join(root, 'netlify.toml'), 'utf8');
@@ -57,4 +58,4 @@ for (const command of commands) {
   const canonical = `to = \"/commands/${command}.html`;
   assert.ok(netlify.includes(from) && netlify.includes(canonical), `Legacy redirect missing for ${command}`);
 }
-console.log(`site routes: ${required.length} core assets + 200-command catalogue + ${commands.length} static command lessons verified`);
+console.log(`site routes: ${required.length} core assets + canonical command reference + ${commands.length} static command lessons verified`);
