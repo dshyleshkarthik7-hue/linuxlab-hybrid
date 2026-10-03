@@ -11,7 +11,7 @@ Before deployment, read [`THREAT_MODEL.md`](./THREAT_MODEL.md). The browser simu
 - Homepage: https://linuxterminal.me/
 - Tutorials: https://linuxterminal.me/learn/
 - Beginner path: https://linuxterminal.me/beginner/
-- 6,161-command canonical reference: https://linuxterminal.me/commands/
+- canonical command reference (currently 6,161 entries): https://linuxterminal.me/commands/
 - 30 challenge sets: https://linuxterminal.me/challenges/
 - 500-question practice quiz: https://linuxterminal.me/quiz/
 - Free verified exam and certificate: https://linuxterminal.me/certificate/
@@ -38,17 +38,17 @@ Each lesson explains purpose, starter syntax, behavior and safe practice. A refe
 
 ### Challenges
 
-There are 30 challenge sets covering all 6,161 unique canonical commands, plus operating-system and networking questions. Every command has a prediction-and-verification task and a reasoning/change task. Learners are asked to predict stdout, stderr and exit status before running a command, then explain the observed evidence.
+There are 30 challenge sets covering the complete canonical command catalog, plus operating-system and networking questions. Every command has a prediction-and-verification task and a reasoning/change task. Learners are asked to predict stdout, stderr and exit status before running a command, then explain the observed evidence.
 
 ### 500-question practice quiz
 
-Each practice session selects 500 questions from a generated bank built from the complete 6,161-command catalog plus operating-system and networking questions. It tests purpose, syntax, options, expected results, failure conditions, command selection, stdout/stderr, exit status and safe experimentation. Question order and answer-choice order are randomized for every session and reset.
+Each practice session selects 500 questions from a generated bank built from the complete canonical command catalog plus operating-system and networking questions. It tests purpose, syntax, options, expected results, failure conditions, command selection, stdout/stderr, exit status and safe experimentation. Question order and answer-choice order are randomized for every session and reset.
 
 The practice quiz is browser-local and is not treated as a credential.
 
 ## Free verified assessment and certificate
 
-The verified assessment is free. A signed-in user starts a server-created exam attempt. The server chooses and randomizes 30 questions from a generated bank containing more than 12,000 command questions plus OS/networking questions and randomizes their choices, stores the answer key in Upstash Redis, grades the submitted answers server-side, and requires 80% to pass.
+The verified assessment is free. A signed-in user starts a server-created exam attempt. The server chooses and randomizes 30 questions from a generated bank containing a generated bank of command questions plus OS/networking questions and randomizes their choices, stores the answer key in Upstash Redis, grades the submitted answers server-side, and requires 80% to pass.
 
 A passing attempt creates a unique certificate ID and a server-signed record containing the exact score, percentage, issue date and assessment version. The public verification page checks the stored record and signature.
 
