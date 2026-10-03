@@ -368,7 +368,7 @@ export class V86LinuxTerminal {
 
   private async preflightRuntimeAssets(signal: AbortSignal): Promise<{ seabios: ArrayBuffer; vgabios: ArrayBuffer }> {
     const load = async (artifact: typeof SEABIOS_ARTIFACT): Promise<ArrayBuffer> => {
-      const response = await fetch(`${FIRMWARE_BASE}/${artifact.filename}`, { cache: 'no-store', signal });
+      const response = await fetch(`${FIRMWARE_BASE}/?firmware=${encodeURIComponent(artifact.filename)}`, { cache: 'no-store', signal });
       if (!response.ok) throw new Error(`Required VM firmware failed to load: ${artifact.filename} (${response.status})`);
       const bytes = await response.arrayBuffer();
       if (bytes.byteLength !== artifact.size) throw new Error(`Required VM firmware failed size verification: ${artifact.filename}`);
