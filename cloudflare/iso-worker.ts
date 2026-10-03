@@ -188,6 +188,17 @@ export default {
       headers.set("Allow", "GET, HEAD, OPTIONS");
       return new Response("Method Not Allowed", { status: 405, headers });
     }
+    const clientKey = request.headers.get("CF-Connecting-IP") || "unknown";
+    if (!env?.ISO_RATE_LIMITER || typeof env.ISO_RATE_LIMITER.limit !== "function") {
+      return errorResponse("ISO rate limiting is not configured", 503, headers);
+    }
+    let rate: { success: boolean };
+    try {
+      rate = await env.ISO_RATE_LIMITER.limit({ key: clientKey });
+    } catch {
+      return errorResponse("ISO rate limiting is temporarily unavailable", 503, headers);
+    }
+    if (!rate.success) return errorResponse("ISO rate limit exceeded", 429, headers);
     const firmware = getFirmware(url);
     if (firmware) {
       const keyUrl = new URL(request.url);
@@ -243,17 +254,6 @@ export default {
     // Apply abuse controls before the cache lookup. A cache hit still consumes
     // public edge bandwidth, so returning it before rate limiting would let a
     // client bypass the worker's configured request budget.
-    const clientKey = request.headers.get("CF-Connecting-IP") || "unknown";
-    if (!env?.ISO_RATE_LIMITER || typeof env.ISO_RATE_LIMITER.limit !== "function") {
-      return errorResponse("ISO rate limiting is not configured", 503, headers);
-    }
-    let rate: { success: boolean };
-    try {
-      rate = await env.ISO_RATE_LIMITER.limit({ key: clientKey });
-    } catch {
-      return errorResponse("ISO rate limiting is temporarily unavailable", 503, headers);
-    }
-    if (!rate.success) return errorResponse("ISO rate limit exceeded", 429, headers);
     const cache = caches.default;
     const cached = await cache.match(key);
     if (cached) return cached;
