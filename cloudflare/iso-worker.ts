@@ -45,6 +45,12 @@ const IMAGES = Object.fromEntries(
 ) as Record<'developer' | 'virt' | 'linux4', Image>;
 
 type ImageName = keyof typeof IMAGES;
+type Firmware = { url: string; sha256: string; size: number; filename: string; };
+const FIRMWARES = Object.fromEntries(
+  (manifest.artifacts as ManifestArtifact[]).filter((artifact) => artifact.release === 'v86-firmware-1').map((artifact) => [artifact.filename, {
+    url: artifact.url, sha256: artifact.sha256, size: artifact.size, filename: artifact.filename,
+  }]),
+) as Record<string, Firmware>;
 
 function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
@@ -91,6 +97,12 @@ function corsHeaders(request: Request): Headers {
   const origin = request.headers.get("Origin");
   if (isAllowedOrigin(origin)) headers.set("Access-Control-Allow-Origin", origin!);
   return headers;
+}
+
+function getFirmware(url: URL): Firmware | null {
+  const name = url.searchParams.get('firmware');
+  if (!name || !/^((sea|vga)bios)\\.bin$/.test(name)) return null;
+  return FIRMWARES[name] ?? null;
 }
 
 function getImage(url: URL): Image | null {
@@ -175,6 +187,42 @@ export default {
     if (request.method !== "GET" && request.method !== "HEAD") {
       headers.set("Allow", "GET, HEAD, OPTIONS");
       return new Response("Method Not Allowed", { status: 405, headers });
+    }
+    const firmware = getFirmware(url);
+    if (firmware) {
+      const keyUrl = new URL(request.url);
+      keyUrl.search = `?firmware=${encodeURIComponent(firmware.filename)}`;
+      const firmwareKey = new Request(keyUrl.toString(), { method: 'GET' });
+      const cachedFirmware = await caches.default.match(firmwareKey);
+      if (cachedFirmware) return request.method === 'HEAD' ? new Response(null, { status: 200, headers: cachedFirmware.headers }) : cachedFirmware;
+      const candidates = [firmware.url].filter((candidate) => {
+        try { return new URL(candidate).origin !== url.origin && isTrustedUpstream(candidate); } catch { return false; }
+      });
+      const upstreams = candidates.map(async (candidate) => {
+        const controller = new AbortController();
+        const timer = setTimeout(() => controller.abort(), UPSTREAM_TIMEOUT_MS);
+        try {
+          const response = await fetch(candidate, { signal: controller.signal, redirect: 'follow', headers: { Accept: 'application/octet-stream', 'User-Agent': 'LinuxTerminal-ISO-Worker/7.0', 'Accept-Encoding': 'identity' } });
+          if (!response.ok || !isTrustedUpstream(response.url)) throw new Error('Firmware upstream unavailable');
+          const bytes = new Uint8Array(await response.arrayBuffer());
+          if (bytes.byteLength !== firmware.size) throw new Error('Firmware size mismatch');
+          const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', bytes))].map((byte) => byte.toString(16).padStart(2, '0')).join('');
+          if (digest !== firmware.sha256) throw new Error('Firmware digest mismatch');
+          return bytes;
+        } finally { clearTimeout(timer); }
+      });
+      const bytes = await Promise.any(upstreams).catch(() => null);
+      if (!bytes) return errorResponse('Firmware temporarily unavailable', 504, headers);
+      headers.set('Cache-Control', 'public, max-age=31536000, immutable');
+      headers.set('CDN-Cache-Control', 'public, max-age=31536000, immutable');
+      headers.set('Content-Type', 'application/octet-stream');
+      headers.set('Content-Length', String(firmware.size));
+      headers.set('X-LinuxLab-SHA256', firmware.sha256);
+      headers.set('X-LinuxLab-Artifact-Size', String(firmware.size));
+      headers.set('X-LinuxLab-Worker-Protocol', WORKER_PROTOCOL_VERSION);
+      const response = new Response(request.method === 'HEAD' ? null : bytes, { status: 200, headers });
+      if (request.method === 'GET') ctx.waitUntil(caches.default.put(firmwareKey, response.clone()));
+      return response;
     }
     const image = getImage(url);
     if (!image) return new Response("Unknown image. Use image=developer, image=virt, or image=linux4.", { status: 404, headers });
