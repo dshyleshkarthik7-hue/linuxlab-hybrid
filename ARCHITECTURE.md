@@ -31,7 +31,7 @@ Lifecycle:
 
 The VM is temporary and should not be treated as a secure place for passwords, keys, tokens, or private data. It is not a host-kernel security boundary; browser/runtime limits are defense-in-depth and guest telemetry is observational. See `THREAT_MODEL.md`.
 
-The Cloudflare ISO worker at `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/` is the production ISO transport relay. Netlify hosts the application; it does not expose `/api/iso`. The browser requests the explicitly trusted external worker and performs the authoritative full-image SHA-256 verification before boot. Any future guest-network feature requires explicit VM device configuration, a controlled backend, and end-to-end tests.
+The Cloudflare ISO worker at `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/` is the production ISO and v86-firmware transport relay. Netlify hosts the static application and does not carry high-volume ISO or firmware traffic. The browser requests the explicitly trusted external worker and performs the authoritative full-image SHA-256 verification before boot. Any future guest-network feature requires explicit VM device configuration, a controlled backend, and end-to-end tests.
 
 ## State ownership
 
