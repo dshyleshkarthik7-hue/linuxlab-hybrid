@@ -28,7 +28,7 @@ assert.match(cloudflare, /crypto\.subtle\.digest\('SHA-256'/);
 
 assert.match(cloudflare, /firmwareKey/);
 assert.match(cloudflare, /__cors_origin/);
-assert.doesNotMatch(cloudflare, /v86-firmware/);
+assert.match(cloudflare, /getFirmware/);
 
 assert.match(cloudflare, /firmwareKey/);
 assert.match(cloudflare, /__cors_origin/);
