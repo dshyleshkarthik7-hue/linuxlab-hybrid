@@ -22,7 +22,7 @@ Tutor intentionally fails closed with HTTP 503 when distributed rate limiting is
 
 The Tutor calls Hugging Face's OpenAI-compatible router from the Netlify Edge Function. The default model is `Qwen/Qwen3-4B-Instruct-2507:nscale`; set `HF_MODEL` explicitly in production so the deployed model choice is visible in configuration.
 
-The browser never calls Hugging Face directly. Tutor requests require Netlify Identity authentication, use bounded request/context sizes, and apply distributed user+IP rate limiting before calling the model provider.
+The browser never calls Hugging Face directly. High-volume ISO and firmware delivery is handled by the Cloudflare worker rather than Netlify. Tutor requests require Netlify Identity authentication, use bounded request/context sizes, and apply distributed user+IP rate limiting before calling the model provider.
 
 If the provider is unavailable, Tutor returns a small rule-based teaching fallback. This keeps the learning feature useful without exposing the provider token.
 
