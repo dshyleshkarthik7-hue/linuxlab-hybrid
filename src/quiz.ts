@@ -55,40 +55,81 @@ async function load(): Promise<void> {
   const records = Array.isArray(payload.records) ? payload.records : [];
   if (records.length < 6000) throw new Error('Quiz catalog is incomplete');
 
-  const distractorNames = records.map(record => String(record.name));
-  for (let index = 0; index < records.length; index++) {
-    const record = records[index];
-    const name = String(record.name);
-    const purpose = String(record.summary || 'Linux command');
-    const example = String(record.example || name + ' --help');
-    const category = String(record.category || 'linux');
-    const distractors = randomDistinctIndices(records.length, index, 3).map(i => distractorNames[i]);
+  const namesByCategory = new Map<string, string[]>();
+  const examplesByCategory = new Map<string, string[]>();
+  for (const record of records) {
+    const name = String(record.name).trim();
+    const category = String(record.category || 'linux').trim() || 'linux';
+    if (!name) continue;
+    const names = namesByCategory.get(category) ?? [];
+    names.push(name);
+    namesByCategory.set(category, names);
+    const example = String(record.example || '').trim();
+    if (example) {
+      const examples = examplesByCategory.get(category) ?? [];
+      examples.push(example);
+      examplesByCategory.set(category, examples);
+    }
+  }
+
+  const unique = (values: string[]) => [...new Set(values)];
+  const pickDistractors = (pool: string[], answer: string, count: number, fallback: string[]): string[] => {
+    const candidates = unique([...pool, ...fallback]).filter(value => value && value !== answer);
+    if (candidates.length < count) throw new Error('Quiz catalog does not contain enough unique distractors');
+    const picked: string[] = [];
+    const indices = randomDistinctIndices(candidates.length, -1, Math.min(count, candidates.length));
+    for (const i of indices) {
+      const value = candidates[i];
+      if (!picked.includes(value)) picked.push(value);
+      if (picked.length === count) break;
+    }
+    if (picked.length !== count) throw new Error('Quiz distractor generation failed');
+    return picked;
+  };
+
+  const allNames = unique(records.map(record => String(record.name).trim()).filter(Boolean));
+  const allExamples = unique(records.map(record => String(record.example || '').trim()).filter(Boolean));
+  const seenIds = new Set<string>();
+
+  for (const record of records) {
+    const name = String(record.name).trim();
+    const purpose = String(record.summary || 'Linux command').trim() || 'Linux command';
+    const example = String(record.example || '').trim() || name + ' --help';
+    const category = String(record.category || 'linux').trim() || 'linux';
+    const categoryNames = namesByCategory.get(category) ?? [];
+    const categoryExamples = examplesByCategory.get(category) ?? [];
+    const idBase = name + '-' + category;
+    const identifyId = idBase + '-identify';
+    const exampleId = idBase + '-example';
+    if (seenIds.has(identifyId) || seenIds.has(exampleId)) throw new Error('Quiz catalog contains duplicate question IDs');
+    seenIds.add(identifyId);
+    seenIds.add(exampleId);
 
     QUESTIONS.push({
-      id: name + '-identify',
+      id: identifyId,
       command: name,
       category,
       difficulty: 'foundation',
       q: 'Which command is represented by this catalog entry: ' + purpose + '?',
       a: name,
-      d: distractors
+      d: pickDistractors(categoryNames, name, 3, allNames)
     });
 
     QUESTIONS.push({
-      id: name + '-example',
+      id: exampleId,
       command: name,
       category,
       difficulty: 'practical',
       q: 'Which example belongs to ' + name + '?',
       a: example,
-      d: distractors.map(candidate => candidate + ' --help')
+      d: pickDistractors(categoryExamples, example, 3, allExamples)
     });
   }
 
   QUESTIONS.push(...COMMON);
 
-  if (QUESTIONS.length < 12000) {
-    throw new Error('Quiz bank was not generated from the full catalog');
+  if (QUESTIONS.length < 12000 || new Set(QUESTIONS.map(question => question.id)).size !== QUESTIONS.length) {
+    throw new Error('Quiz bank was not generated uniquely from the full catalog');
   }
 }
 

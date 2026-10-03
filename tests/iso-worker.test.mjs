@@ -34,6 +34,9 @@ assert.match(worker, /url\.searchParams\.set\("chunkStart", String\(chunk\.start
 assert.match(worker, /url\.searchParams\.set\("chunkEnd", String\(chunk\.end\)\)/);
 assert.match(worker, /await cache\.match\(key\)/);
 assert.match(worker, /ctx\.waitUntil\(cache\.put\(key, cacheable\)\)/);
+const limiterIndex = worker.indexOf('await env.ISO_RATE_LIMITER.limit({ key: clientKey })');
+const cacheIndex = worker.indexOf('const cached = await cache.match(key)');
+assert.ok(limiterIndex >= 0 && cacheIndex >= 0 && limiterIndex < cacheIndex, 'ISO rate limiting must run before cache lookup');
 assert.match(worker, /developer\|virt\|linux4/);
 assert.match(worker, /a-f0-9/);
 assert.match(worker, /manifest\.json/);

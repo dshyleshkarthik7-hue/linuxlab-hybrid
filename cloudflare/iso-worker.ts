@@ -190,9 +190,9 @@ export default {
     const range = `bytes=${chunk.start}-${chunk.end}`;
     const originKey = origin!;
     const key = cacheKey(request, originKey, chunk);
-    const cache = caches.default;
-    const cached = await cache.match(key);
-    if (cached) return cached;
+    // Apply abuse controls before the cache lookup. A cache hit still consumes
+    // public edge bandwidth, so returning it before rate limiting would let a
+    // client bypass the worker's configured request budget.
     const clientKey = request.headers.get("CF-Connecting-IP") || "unknown";
     if (!env?.ISO_RATE_LIMITER || typeof env.ISO_RATE_LIMITER.limit !== "function") {
       return errorResponse("ISO rate limiting is not configured", 503, headers);
@@ -204,6 +204,9 @@ export default {
       return errorResponse("ISO rate limiting is temporarily unavailable", 503, headers);
     }
     if (!rate.success) return errorResponse("ISO rate limit exceeded", 429, headers);
+    const cache = caches.default;
+    const cached = await cache.match(key);
+    if (cached) return cached;
     try {
       const origins = [...image.fallbacks, image.url].filter((candidate) => {
         try { return new URL(candidate).origin !== url.origin; } catch { return false; }
