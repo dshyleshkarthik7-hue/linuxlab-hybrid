@@ -58,5 +58,5 @@ assert.match(worker, /github-production-release-asset-/);
 
 assert.match(worker, /isLocalDevelopmentOrigin/);
 assert.match(worker, /if \(isLocalDevelopmentOrigin\) return true/);
-assert.doesNotMatch(manifest.artifacts.find((artifact) => artifact.image === 'linux4').fallbackUrls[0], /api\\.github\\.com.*releases\\/assets/);
-assert.match(manifest.artifacts.find((artifact) => artifact.image === 'linux4').fallbackUrls[0], /github\\.com.*releases\\/download\\/v3\\.00\\/linux4\\.iso/);
+assert.equal(manifest.artifacts.find((artifact) => artifact.image === 'linux4').fallbackUrls[0], 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso');
+assert.match(manifest.artifacts.find((artifact) => artifact.image === 'linux4').fallbackUrls[0], /^https:\/\/github\.com\/dshyleshkarthik7-hue\/linuxlab-hybrid\/releases\/download\/v3\.00\/linux4\.iso$/);
