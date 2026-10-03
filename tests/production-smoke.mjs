@@ -66,13 +66,16 @@ const manifest = JSON.parse(await readFile('artifacts/manifest.json', 'utf8'));
 const firmwarePins = manifest.artifacts.filter((artifact) => artifact.release === 'v86-firmware-1');
 assert.equal(firmwarePins.length, 2, 'firmware manifest must contain exactly two v86 firmware assets');
 for (const pin of firmwarePins) {
-  const firmware = await get(pin.url);
-  assert.equal(firmware.status, 200, `${pin.url} returned ${firmware.status}`);
+  const firmware = await get(`${isoBaseURL}/?firmware=${encodeURIComponent(pin.filename)}`, { headers: { Origin: origin } });
+  assert.equal(firmware.status, 200, `firmware worker returned ${firmware.status} for ${pin.filename}`);
+  assert.equal(firmware.headers.get('x-linuxlab-sha256'), pin.sha256);
+  assert.equal(firmware.headers.get('x-linuxlab-artifact-size'), String(pin.size));
+  assert.equal(firmware.headers.get('content-length'), String(pin.size));
   const bytes = new Uint8Array(await firmware.arrayBuffer());
   assert.equal(bytes.byteLength, pin.size);
   const digest = await crypto.subtle.digest('SHA-256', bytes);
   const actual = [...new Uint8Array(digest)].map(byte => byte.toString(16).padStart(2, '0')).join('');
-  assert.equal(actual, pin.sha256, `${pin.filename} SHA-256 mismatch`);
+  assert.equal(actual, pin.sha256, `${pin.filename} worker SHA-256 mismatch`);
 }
 
 const isoArtifacts = manifest.artifacts.filter((artifact) => artifact.image);
