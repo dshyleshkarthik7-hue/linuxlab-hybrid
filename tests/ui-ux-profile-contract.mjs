@@ -26,6 +26,10 @@ for (const [id, artifact, size, memory] of profiles) {
   assert.match(policy, new RegExp(id + ': \\{ memoryMiB: ' + memory));
 }
 assert.match(runtime, /Developer Alpine v1\.0\.0/);
+assert.match(runtime, /use_parts: true/);
+assert.match(runtime, /fixed_chunk_size: 32 \* 1024 \* 1024/);
+assert.match(runtime, /size: artifact\.size/);
+assert.match(runtime, /developer-\$\{artifact\.sha256\}/);
 assert.match(runtime, /Alpine Virt 3\.24\.1/);
 assert.match(runtime, /expectedGuest: 'alpine' \| 'buildroot'/);
 assert.match(page, /data-v86-profile="linux4"/);
@@ -85,4 +89,6 @@ try {
   await browser.close();
   if (preview) preview.kill('SIGTERM');
 }
-console.log('Three-ISO artifact/profile contracts and keyboard/mobile UI checks passed');
+assert.match(page, /Developer Alpine/);
+assert.match(developerPage, /Developer Alpine/);
+console.log('Three-ISO artifact/profile contracts and responsive keyboard/mobile UI checks passed');
