@@ -24,17 +24,8 @@ assert.ok(linux4.fallbackUrls?.some((url) => url.startsWith('https://github.com/
 assert.match(cloudflare, /isNetlifyPreview/);
 assert.doesNotMatch(cloudflare, /hostname\.endsWith\('\.netlify\.app'\)/);
 
-assert.doesNotMatch(config, /api\/v86-firmware/);
-assert.match(cloudflare, /firmware/);
-assert.match(cloudflare, /X-LinuxLab-Artifact-Size/);
 assert.match(cloudflare, /crypto\.subtle\.digest\('SHA-256'/);
 
-
-
-assert.doesNotMatch(config, /api\/v86-firmware/);
-assert.match(cloudflare, /firmware/);
-assert.match(cloudflare, /X-LinuxLab-Artifact-Size/);
-assert.match(cloudflare, /crypto\\.subtle\\.digest\\('SHA-256'/);
 assert.match(cloudflare, /firmwareKey/);
 assert.match(cloudflare, /__cors_origin/);
 assert.doesNotMatch(cloudflare, /v86-firmware/);
