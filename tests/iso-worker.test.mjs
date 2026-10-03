@@ -64,3 +64,9 @@ assert.match(manifest.artifacts.find((artifact) => artifact.image === 'linux4').
 assert.match(worker, /getFirmware/);
 assert.match(worker, /\?firmware=/);
 assert.match(worker, /X-LinuxLab-Artifact-Size/);
+
+const rateIndex = worker.indexOf('ISO_RATE_LIMITER.limit');
+const firmwareIndex = worker.indexOf('const firmware = getFirmware(url);');
+const imageIndex = worker.indexOf('const image = getImage(url);');
+assert.ok(rateIndex >= 0 && rateIndex < firmwareIndex, 'ISO rate limiting must run before firmware handling');
+assert.ok(rateIndex < imageIndex, 'ISO rate limiting must run before image handling');
