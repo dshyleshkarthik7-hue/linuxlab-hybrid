@@ -3,7 +3,8 @@ import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
 
 const root = resolve(new URL('..', import.meta.url).pathname);
-const pages = ['learn/index.html','learn/linux-basics/index.html','learn/terminal-navigation/index.html','learn/files-and-directories/index.html','learn/text-processing/index.html','learn/permissions/index.html','learn/processes/index.html','learn/shell-scripting/index.html','learn/operating-systems/index.html','learn/networking-basics/index.html'];
+const indexHtml = await readFile(resolve(root, 'learn/index.html'), 'utf8');
+const pages = ['learn/linux-basics/index.html','learn/terminal-navigation/index.html','learn/files-and-directories/index.html','learn/text-processing/index.html','learn/permissions/index.html','learn/processes/index.html','learn/shell-scripting/index.html','learn/operating-systems/index.html','learn/networking-basics/index.html'];
 const htmlByPage = await Promise.all(pages.map(async page => [page, await readFile(resolve(root, page), 'utf8')]));
 for (const [page, html] of htmlByPage) {
   assert.match(html, /<title>[^<]+<\/title>/i, `${page} needs a title`);
@@ -22,6 +23,9 @@ const css = await readFile(resolve(root, 'learn/tutorials.css'), 'utf8');
 assert.match(css, /\.grid\{/);
 assert.match(css, /@media/);
 assert.match(css, /prefers-reduced-motion/i, 'Tutorial CSS must respect reduced-motion preferences');
-const index = htmlByPage.find(([page]) => page === 'learn/index.html')[1];
-for (const route of ['/learn/operating-systems/', '/learn/networking-basics/']) assert.ok(index.includes(`href="${route}"`), `Tutorial index missing ${route}`);
+assert.match(indexHtml, /<h1>[^<]+<\/h1>/i, 'Tutorial index needs a visible heading');
+assert.match(indexHtml, /class="grid"/i, 'Tutorial index needs a structured lesson grid');
+assert.match(indexHtml, /<pre>/i, 'Tutorial index needs practical examples');
+assert.match(indexHtml, /class="hero-actions"/i, 'Tutorial index needs clear primary actions');
+for (const route of ['/learn/operating-systems/', '/learn/networking-basics/']) assert.ok(indexHtml.includes(`href="${route}"`), `Tutorial index missing ${route}`);
 console.log(`Tutorial content contract passed (${pages.length} pages)`);
