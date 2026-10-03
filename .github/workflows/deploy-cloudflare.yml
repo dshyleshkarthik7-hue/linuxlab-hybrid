@@ -52,4 +52,8 @@ jobs:
           grep -qi '^Content-Range: bytes 0-0/' "$headers_file"
           grep -qi '^Content-Length: 1' "$headers_file"
           grep -qi '^X-LinuxLab-Worker-Protocol: 7' "$headers_file"
+          grep -qi '^X-LinuxLab-Chunk-Start: 0' "$headers_file"
+          grep -qi '^X-LinuxLab-Chunk-End: 0' "$headers_file"
+          grep -qi '^X-LinuxLab-Chunk-Total: 7731200' "$headers_file"
+          grep -qi '^X-LinuxLab-SHA256: a8ea434ab3b177c55f01275dcc1d35f52cfbee9bd44a32e74765c975b58bcc73' "$headers_file"
           test "$(wc -c < "$response_file" | tr -d ' ')" = 1
