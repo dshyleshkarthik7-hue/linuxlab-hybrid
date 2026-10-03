@@ -65,6 +65,11 @@ assert.match(worker, /getFirmware/);
 assert.match(worker, /\?firmware=/);
 assert.match(worker, /X-LinuxLab-Artifact-Size/);
 
+const firmwareRateIndex = worker.indexOf('const firmware = getFirmware(url);');
+assert.ok(firmwareRateIndex > 0, 'firmware route must remain explicit');
+assert.match(worker, /firmwareOriginKey/);
+assert.match(worker, /__cors_origin/);
+
 const rateIndex = worker.indexOf('ISO_RATE_LIMITER.limit');
 const firmwareIndex = worker.indexOf('const firmware = getFirmware(url);');
 const imageIndex = worker.indexOf('const image = getImage(url);');
