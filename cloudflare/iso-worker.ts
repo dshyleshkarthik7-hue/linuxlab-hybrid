@@ -191,7 +191,7 @@ export default {
     const firmware = getFirmware(url);
     if (firmware) {
       const keyUrl = new URL(request.url);
-      keyUrl.search = `?firmware=${encodeURIComponent(firmware.filename)}`;
+      keyUrl.search = `?firmware=${encodeURIComponent(firmware.filename)}&__cors_origin=${encodeURIComponent(originKey)}`;
       const firmwareKey = new Request(keyUrl.toString(), { method: 'GET' });
       const cachedFirmware = await caches.default.match(firmwareKey);
       if (cachedFirmware) return request.method === 'HEAD' ? new Response(null, { status: 200, headers: cachedFirmware.headers }) : cachedFirmware;
