@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Linux Networking Tutorial: IP, DNS, Routes, Ports and HTTP | LinuxTerminal</title>
+<meta name="description" content="Learn Linux networking fundamentals: interfaces, IP addresses, routes, DNS, ports, TCP and HTTP, with safe observation-focused exercises.">
+<meta name="keywords" content="Linux networking tutorial,ip addr,ip route,DNS,TCP UDP ports,HTTP,Linux network basics">
+<link rel="canonical" href="https://linuxterminal.me/learn/networking-basics/">
+<link rel="stylesheet" href="/learn/tutorials.css">
+</head>
+<body>
+<header><nav><a class="brand" href="/">&gt;_ <span>Linux</span>Terminal</a><a href="/learn/">Learn</a><a href="/commands/">Commands</a><a href="/challenges/">Challenges</a><a href="/quiz/">Quiz</a><a href="/progress/">Progress</a></nav></header>
+<main>
+<div class="breadcrumbs"><a href="/learn/">Learn</a> / Networking basics</div>
+<section class="hero"><p class="meta">TUTORIAL 10 • BEGINNER → INTERMEDIATE</p><h1>Learn Linux networking fundamentals</h1><p class="lead">Understand the path from a network interface to an application: address, route, name resolution, transport connection and application protocol. The browser Linux lab intentionally disables guest networking, so these lessons teach the concepts without requiring network access.</p></section>
+<section class="lesson"><h2>The five questions</h2>
+<table><thead><tr><th>Question</th><th>Concept</th><th>Typical Linux observation</th></tr></thead><tbody>
+<tr><td>Which interface exists?</td><td>Link/interface</td><td><code>ip link</code></td></tr>
+<tr><td>What address is assigned?</td><td>IP addressing</td><td><code>ip addr</code></td></tr>
+<tr><td>Where does traffic go?</td><td>Routing</td><td><code>ip route</code></td></tr>
+<tr><td>What name maps to an address?</td><td>DNS/name resolution</td><td><code>getent hosts example.com</code></td></tr>
+<tr><td>Which application endpoint responds?</td><td>Ports/protocols</td><td><code>ss -lnt</code> or <code>ss -lntp</code></td></tr>
+</tbody></table>
+<div class="tip"><strong>Debugging habit:</strong> Work from the lower layer upward. An application cannot be healthy if the required interface, route or name resolution is already broken.</div></section>
+<section class="lesson"><h2>IP addresses and routes</h2>
+<pre>ip link
+ip addr
+ip route</pre>
+<p>An interface is a network attachment. An IP address identifies an endpoint on a network. A route tells the kernel where packets for a destination should be sent. A default route is the fallback for destinations without a more specific route.</p>
+<p>Do not assume a particular interface name such as <code>eth0</code>; modern Linux systems commonly use predictable names and virtual environments may expose different devices.</p></section>
+<section class="lesson"><h2>DNS, TCP and HTTP</h2>
+<p>DNS answers a naming question. TCP provides a reliable byte stream between endpoints. HTTP defines how web clients and servers exchange application messages. These are different layers and can fail independently.</p>
+<pre>getent hosts example.com
+curl -I https://example.com</pre>
+<p>On LinuxTerminal's real browser guest, networking is disabled by design. Use the simulator for conceptual command practice and use an ordinary Linux system you control when a lesson requires live network traffic.</p>
+<div class="warning"><strong>Safety boundary:</strong> These exercises are for systems and networks you are authorized to use. Prefer observation and documentation over probing systems you do not control.</div></section>
+<section class="lesson"><h2>Practice loop</h2><ol><li>State the exact networking question you want to answer.</li><li>Choose the lowest-level observation that can answer it.</li><li>Change one variable at a time.</li><li>Record the evidence and distinguish “not observed” from “does not exist.”</li></ol>
+<div class="actions"><a class="button" href="/commands/ip.html">Study ip</a><a class="button secondary" href="/commands/ping.html">Study ping</a><a class="button secondary" href="/challenges/">Practice challenges</a></div></section>
+<section class="next"><a href="/learn/shell-scripting/">Next tutorial → Shell scripting</a></section>
+</main><footer>LinuxTerminal — networking fundamentals with an observation-first approach.</footer>
+</body></html>
