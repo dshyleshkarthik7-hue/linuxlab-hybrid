@@ -3,7 +3,7 @@
   "kind": "linux-command-database",
   "phase": 1,
   "target": {
-    "minimumEntries": 5000,
+    "minimumEntries": 6000,
     "currentEntries": 6161,
     "uniqueEntries": 6161,
     "authoredRecords": 200,

@@ -1,13 +1,19 @@
 {
-  "name": "LinuxTerminal — Learn Linux in Your Browser",
+  "name": "LinuxTerminal.me — Learn Linux Online",
   "short_name": "LinuxTerminal",
-  "description": "Interactive Linux learning platform with a quick preview, POSIX simulator, and real browser-based Alpine Linux lab",
+  "description": "Learn Linux online with 6,161 command lessons, browser practice, tutorials, quizzes, challenges and temporary real Linux labs.",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#1e1e1e",
-  "theme_color": "#0e639c",
+  "background_color": "#030712",
+  "theme_color": "#030712",
   "orientation": "any",
   "icons": [
+    {
+      "src": "/logo.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
     {
       "src": "/favicon.ico",
       "sizes": "48x48",
