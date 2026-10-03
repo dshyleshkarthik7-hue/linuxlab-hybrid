@@ -13,7 +13,7 @@ The browser VM runtime is owned by:
 - `src/main-v86.ts` — VM lifecycle and guest readiness
 - `src/v86-entry.ts` — static runtime loading
 - `src/core/ISOIntegrity.ts` — pinned ISO metadata and verification
-- `src/core/verified-iso-fetch.ts` — same-origin verified ISO delivery
+- `src/core/verified-iso-fetch.ts` — Cloudflare-worker ISO delivery
 - `cloudflare/iso-worker.ts` — range-validated external ISO transport
 
 The runtime is considered initialized only after the v86 lifecycle readiness checks complete. Guest identity and telemetry remain untrusted observations.
@@ -38,7 +38,7 @@ Configure these Netlify Production environment variables:
 
 ```text
 HF_TOKEN=<server-side Hugging Face token>
-HF_MODEL=Qwen/Qwen3-8B:nscale
+HF_MODEL=Qwen/Qwen3-4B-Instruct-2507:nscale
 UPSTASH_REDIS_REST_URL=<Upstash REST endpoint>
 UPSTASH_REDIS_REST_TOKEN=<Upstash REST token>
 TUTOR_ALLOWED_ORIGINS=https://linuxterminal.me
