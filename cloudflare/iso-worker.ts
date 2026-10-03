@@ -50,17 +50,18 @@ function isAllowedOrigin(origin: string | null): boolean {
   if (!origin) return false;
   try {
     const parsed = new URL(origin);
-    if (parsed.protocol !== "https:") return false;
-
-    const isProductionOrigin =
-      parsed.origin === "https://linuxterminal.me" ||
-      parsed.origin === "https://www.linuxterminal.me";
 
     const isLocalDevelopmentOrigin =
       parsed.origin === "http://127.0.0.1:4173" ||
       parsed.origin === "http://127.0.0.1:4174" ||
       parsed.origin === "http://localhost:4173" ||
       parsed.origin === "http://localhost:4174";
+    if (isLocalDevelopmentOrigin) return true;
+    if (parsed.protocol !== "https:") return false;
+
+    const isProductionOrigin =
+      parsed.origin === "https://linuxterminal.me" ||
+      parsed.origin === "https://www.linuxterminal.me";
 
     // Netlify preview deploys use the immutable deploy-id prefix. Support the
     // current site name (linuxterminalm) and the previous site name

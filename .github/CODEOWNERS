@@ -1,4 +1,6 @@
-# Independent review is a release requirement. Replace with the actual second maintainer/team before production.
+# CODEOWNERS reflects the current maintainer ownership.
+# Release review is enforced by the repository ruleset (required approval,
+# last-push approval, resolved threads, and the required verify check).
 /src/ @dshyleshkarthik7-hue
 /netlify/ @dshyleshkarthik7-hue
 /iso-builder/ @dshyleshkarthik7-hue
