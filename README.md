@@ -28,7 +28,7 @@ The site is deliberately transparent: a browser simulator is an educational mode
 
 ### Tutorials
 
-Crawlable tutorials cover Linux basics, terminal navigation, files and directories, permissions, processes, shell scripting and text processing. They lead learners toward command lessons and practical exercises.
+Crawlable tutorials cover Linux basics, terminal navigation, files and directories, text processing, permissions, processes, shell scripting, operating-system fundamentals and networking fundamentals. Each lesson uses an observation-first learning loop: understand the model, predict the result, run one small experiment, inspect evidence, and explain what changed.
 
 ### Command reference
 
@@ -89,9 +89,9 @@ Guest telemetry is UX-only and is not used as proof of isolation or host safety.
 
 The site publishes robots.txt, a generated sitemap, canonical URLs, page-specific descriptions, crawlable tutorials, dedicated command lessons, challenge pages, quiz pages and public certificate verification. The sitemap is generated from the same command catalog used by the command reference so URLs remain aligned.
 
-## Networking and cybersecurity roadmap
+## Operating-system and networking learning
 
-Networking and cybersecurity learning will be added later as extensions of the Linux command curriculum. The current site does not claim to be a complete networking or cybersecurity lab.
+The tutorial path now includes dedicated operating-system and networking fundamentals. Networking lessons explain interfaces, addressing, routing, DNS, ports, TCP and HTTP. The browser real-Linux guest intentionally has networking disabled; live network experiments should be performed on a Linux system and network the learner is authorized to use. The platform is an education environment, not a general-purpose network testing service.
 
 ## Development
 
@@ -120,6 +120,10 @@ See `LICENSE` and `NOTICE`.
 The former Docker-backed `container-terminal` service has been removed from this repository. There is no publicly deployable WebSocket/Docker terminal backend in the current tree; therefore its historical authentication, Origin, quota, identity, image-pinning, Docker-host, and lockfile findings are intentionally resolved by removal rather than by exposing an unsafe service. Do not reintroduce such a backend without authentication, Origin allowlisting, per-user/IP quotas, immutable image and dependency pins, isolated Docker privileges, and host-level sandboxing.
 
 
+## ISO profiles and delivery
+
+LinuxTerminal exposes three x86 images: **Linux 4** (7.4 MiB-class ultralight primary image), **Alpine Virt 3.24.1** (about 49 MiB), and **Developer Alpine v1.0.0** (about 660 MiB, optional). All are pinned by exact size and SHA-256 digest. The large Developer Alpine image is loaded by v86 in fixed 32 MiB parts so the browser does not first allocate the entire image as one pre-boot buffer. The transport worker validates every requested part and the runtime must only use the manifest-pinned artifact. This improves resumability and memory behavior; it does not turn the browser VM into a host-kernel security boundary.
+
 ## Data minimization
 Learning progress does not collect or retain a learner's birthday or other unnecessary date-of-birth information.
 
@@ -128,7 +132,7 @@ Production deployment requires the GitHub `production` environment, required rev
 
 
 ### Current deployment architecture
-The browser VM uses the explicitly trusted Cloudflare ISO worker at `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/`; there is intentionally no Netlify `/api/iso` Edge Function. The repository's architecture and deployment documentation are authoritative for this split.
+The browser VM uses the explicitly trusted Cloudflare ISO worker at `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/`; there is intentionally no Netlify `/api/iso` Edge Function. ISO and firmware delivery are designed to avoid consuming Netlify bandwidth. Netlify remains the static application host and currently retains the authenticated Tutor/CSP/certificate application services; those services are not part of the high-volume ISO delivery path.
 
 
 ## Security and credential trust
