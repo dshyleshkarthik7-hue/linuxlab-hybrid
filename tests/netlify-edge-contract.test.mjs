@@ -8,9 +8,6 @@ const manifest = JSON.parse(await readFile(new URL('../artifacts/manifest.json',
 
 assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), false, 'duplicate Netlify ISO worker must not be present');
 assert.doesNotMatch(config, /path = "\/api\/iso\/linux4"/);
-assert.match(config, /path = "\/api\/v86-firmware\/\*"/);
-assert.match(config, /function = "v86-firmware"/);
-assert.doesNotMatch(config, /from = "\/api\/v86-firmware\/(?:seabios|vgabios)\.bin"\s*\n\s*to = "\/api\/v86-firmware\/(?:seabios|vgabios)\.bin"/);
 
 assert.match(cloudflare, /MAX_CHUNK_BYTES\s*=\s*32\s*\*\s*1024\s*\*\s*1024/);
 assert.match(cloudflare, /queryRange/);
@@ -33,3 +30,12 @@ assert.match(cloudflare, /X-LinuxLab-Artifact-Size/);
 assert.match(cloudflare, /crypto\.subtle\.digest\('SHA-256'/);
 
 
+
+assert.doesNotMatch(config, /api\/v86-firmware/);
+assert.match(cloudflare, /firmware/);
+assert.match(cloudflare, /X-LinuxLab-Artifact-Size/);
+assert.match(cloudflare, /crypto\\.subtle\\.digest\\('SHA-256'/);
+assert.match(cloudflare, /firmwareKey/);
+assert.doesNotMatch(cloudflare, /v86-firmware/);
+
+console.log('Netlify/Cloudflare delivery contract passed');
