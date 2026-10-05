@@ -24,7 +24,7 @@ loadCommands().then((commands) => {
       const pill = document.createElement('span'); pill.className = 'pill'; pill.textContent = item.category.toUpperCase();
       const title = document.createElement('h2'); const code = document.createElement('code'); code.textContent = item.name; title.appendChild(code);
       const desc = document.createElement('p'); desc.className = 'muted'; desc.textContent = item.summary;
-      const link = document.createElement('a'); link.className = 'cta'; link.href = item.page.status === 'complete' ? item.url : '/beginner/#commands'; link.textContent = item.page.status === 'complete' ? 'Open command page →' : 'Reference entry →';
+      const link = document.createElement('a'); link.className = 'cta'; link.href = item.url; link.textContent = 'Open command page →';
       card.append(pill, title, desc, link); list.appendChild(card);
     }
     if (count) count.textContent = filtered.length + ' of ' + commands.length + ' commands';
