@@ -3,7 +3,8 @@ import path from "node:path";
 import {fileURLToPath} from "node:url";
 
 const root=path.resolve(fileURLToPath(new URL("../..",import.meta.url)));
-const db=JSON.parse(await readFile(path.join(root,"data/commands/index.json"),"utf8"));
+const canonical=JSON.parse(await readFile(path.join(root,"data/commands/canonical.json"),"utf8"));
+const db=canonical;
 const family=(n,c)=>{const s=n.toLowerCase();
 if(/^(ls|cd|pwd|pushd|popd|dirs|tree|find|locate|which|whereis|readlink|realpath|basename|dirname)$/.test(s))return"filesystem-navigation";
 if(/^(cp|mv|rm|rmdir|mkdir|install|touch|ln|chmod|chown|chgrp|umask|stat|file)$/.test(s))return"filesystem-management";
@@ -90,5 +91,5 @@ const records=db.records.map((r)=> {
     }
   };
 });
-const out={schemaVersion:2,generatedFrom:"data/commands/index.json",records:Object.fromEntries(records.map(c=>[c.name,{id:c.id,name:c.name,url:c.url,...c.intelligence}]))};
+const out={schemaVersion:2,generatedFrom:"data/commands/canonical.json",records:Object.fromEntries(records.map(c=>[c.name,{id:c.id,name:c.name,url:c.url,...c.intelligence}]))};
 await writeFile(path.join(root,"public/command-intelligence.json"),JSON.stringify(out,null,2)+"\n");console.log("[command-intelligence] generated "+records.length+" deep lesson records");
