@@ -4,12 +4,11 @@ title = "LinuxTerminal historical secret scan"
 useDefault = true
 
 [allowlist]
-description = "Known non-secret test fixtures and documentation examples"
+description = "Reviewed vendored runtime false positive"
 paths = [
   '''(^|/)node_modules/''',
   '''(^|/)dist/''',
   '''(^|/)coverage/''',
   '''(^|/)\.git/''',
-  '''(^|/)public/libv86\.js
-''
+  '''(^|/)public/libv86\.js$'''
 ]
