@@ -9,5 +9,8 @@ paths = [
   '''(^|/)node_modules/''',
   '''(^|/)dist/''',
   '''(^|/)coverage/''',
-  '''(^|/)\.git/'''
+  '''(^|/)\.git/''',
+  '''(^|/)public/libv86\.js
+]
+''
 ]
