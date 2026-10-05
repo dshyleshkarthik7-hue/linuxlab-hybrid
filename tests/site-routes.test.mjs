@@ -7,7 +7,7 @@ for (const file of required) assert.ok(existsSync(join(root, file)), `Missing pr
 const html = readFileSync(join(root, 'index.html'), 'utf8');
 for (const route of ['/beginner/','/learn/','/challenges/','/quiz/','/progress/','/certificate/']) assert.ok(html.includes(`href=\"${route}\"`), `Homepage missing route: ${route}`);
 const beginner = readFileSync(join(root, 'beginner/index.html'), 'utf8');
-for (const marker of ['200 Commands','id=\"commands\"','id=\"command-catalog-body\"']) assert.ok(beginner.includes(marker), `Beginner page lost 200-command catalogue marker: ${marker}`);
+for (const marker of ['200 Essential Linux Commands','id=\"commands\"','id=\"command-catalog-body\"']) assert.ok(beginner.includes(marker), `Beginner page lost 200-command catalogue marker: ${marker}`);
 const learn = readFileSync(join(root, 'learn/index.html'), 'utf8');
 assert.ok(learn.includes('/learn/learn.css') && learn.includes('/progress.js'), 'Tutorial assets missing');
 const challenges = readFileSync(join(root, 'challenges/index.html'), 'utf8');
