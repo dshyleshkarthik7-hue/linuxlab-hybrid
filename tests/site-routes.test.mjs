@@ -14,7 +14,7 @@ const challenges = readFileSync(join(root, 'challenges/index.html'), 'utf8');
 assert.ok(challenges.includes('/challenges/challenges.js') && challenges.includes('/challenges/challenges.css'), 'Challenge assets missing');
 const progress = readFileSync(join(root, 'progress/index.html'), 'utf8');
 assert.ok(/<link[^>]+href="(?:\.\/)?progress\.css"/.test(progress) && progress.includes('/progress.js'), 'Progress assets missing');
-assert.match(progress, /<script src="\/progress\.js" defer><\/script>\s*<script type="module" src="\.\/progress\.js"><\/script>/, 'Progress ledger must load before progress UI module');
+assert.deepEqual([...progress.matchAll(/<script[^>]+src="([^"]*progress\.js)"[^>]*>/g)].map((match) => match[1]), ['./progress.js'], 'Progress page must load exactly one page-local progress module');
 
 const commands = ['pwd','ls','cd','mkdir','cat','cp','mv','rm','grep','find','sed','awk','chmod','chown','ps','top','df','du','tar','curl','ssh','ip','ping','git','head','tail'];
 assert.equal(commands.length, 26);
