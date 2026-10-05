@@ -36,7 +36,7 @@ for (const command of data.records) {
   const exampleBlocks = examples.map(example => `<pre><code>${escapeHtml(example)}</code></pre>`).join("");
   const conceptList = concepts.map(item => `<li>${escapeHtml(item)}</li>`).join("");
   const mistakeList = mistakes.map(item => `<li>${escapeHtml(item)}</li>`).join("");
-  const practiceUrl = command.execution?.tryEnabled === false ? `/beginner/?command=${encodeURIComponent(command.name)}` : `/beginner/?command=${encodeURIComponent(command.name)}`;
+  const practiceUrl = `/beginner/?command=${encodeURIComponent(command.name)}`;
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "TechArticle",
@@ -105,7 +105,7 @@ const staticRoutes = [
   "/", "/beginner/", "/intermediate/", "/expert/", "/real-linux/", "/developer-alpine/",
   "/open-source-iso/", "/commands/", "/learn/", "/learn/linux-basics/",
   "/learn/terminal-navigation/", "/learn/files-and-directories/", "/learn/text-processing/",
-  "/learn/permissions/", "/learn/processes/", "/learn/shell-scripting/", "/challenges/",
+  "/learn/permissions/", "/learn/processes/", "/learn/shell-scripting/", "/learn/operating-systems/", "/learn/networking-basics/", "/challenges/",
   "/quiz/", "/curriculum/", "/about/", "/contact/", "/certificate/", "/linux-careers/",
   "/terms/", "/privacy/", "/verify/"
 ];
