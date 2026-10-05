@@ -11,6 +11,5 @@ paths = [
   '''(^|/)coverage/''',
   '''(^|/)\.git/''',
   '''(^|/)public/libv86\.js
-]
 ''
 ]
