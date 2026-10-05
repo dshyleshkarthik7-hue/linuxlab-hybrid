@@ -29,7 +29,7 @@ assert.equal(canonicalCatalog.length, 200, 'Built command catalogue must preserv
 assert.equal(new Set(canonicalCatalog.map(command => command.name)).size, 200, 'Canonical 200-command curriculum must contain unique command names');
 assert.ok(canonicalCatalog.every(command => typeof command.name === 'string' && typeof command.example === 'string'), 'Canonical command records must contain names and examples');
 const beginner = readFileSync(join(root, 'beginner/index.html'), 'utf8');
-assert.match(beginner, /200 Linux Commands/i, 'Built beginner page must retain the 200-command catalogue');
+assert.match(beginner, /200 Essential Linux Commands|200 Linux Commands/i, 'Built beginner page must retain the 200-command catalogue');
 
 function walk(dir) {
   return readdirSync(dir, { withFileTypes: true }).flatMap(entry => {
