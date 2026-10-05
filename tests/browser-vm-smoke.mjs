@@ -96,6 +96,7 @@ async function runSmoke() {
     await page.route('**/api/v86-firmware/**', serveFirmware);
     await page.route('**/?firmware=seabios.bin', serveFirmware);
     await page.route('**/?firmware=vgabios.bin', serveFirmware);
+    await page.route('**/?image=linux4&**', async route => { await route.fulfill({ status: 200, headers: { 'content-range': 'bytes 0-0/7731200', 'accept-ranges': 'bytes', 'content-length': '1', 'content-type': 'application/octet-stream', 'access-control-allow-origin': '*' }, body: Buffer.from([0]) }); });
     await page.route('**/api/iso**', async route => {
       const url = new URL(route.request().url());
       const image = url.searchParams.get('image');
