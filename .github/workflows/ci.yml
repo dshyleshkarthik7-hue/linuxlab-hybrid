@@ -92,3 +92,12 @@ jobs:
       - run: node tests/github-actions-pinning.test.mjs
       - name: Verify Cloudflare worker contract
         run: npm run test:iso-worker
+      - name: Production smoke (main deployment gate)
+        if: github.event_name == 'push'
+        env:
+          PRODUCTION_BASE_URL: https://linuxterminal.me
+          ISO_BASE_URL: https://linuxterminal-iso.dshyleshkarthik7.workers.dev
+          EXPECTED_DEPLOY_SHA: ${{ github.sha }}
+          PRODUCTION_SMOKE_TIMEOUT_MS: 30000
+          PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
+        run: npm run test:production
