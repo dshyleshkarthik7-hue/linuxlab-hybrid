@@ -16,7 +16,7 @@ if (canonicalCount !== EXPECTED_COMMANDS) throw new Error(`Canonical command cat
 if (index.records?.length !== EXPECTED_CURRICULUM) throw new Error(`Beginner curriculum has ${index.records?.length ?? 0} records; expected ${EXPECTED_CURRICULUM}`);
 if (authored !== EXPECTED_CURRICULUM) throw new Error(`Beginner curriculum target says ${authored} authored records; expected ${EXPECTED_CURRICULUM}`);
 if (canonical.records?.length !== canonicalCount) throw new Error(`Canonical target says ${canonicalCount} entries but contains ${canonical.records?.length ?? 0} records`);
-if (Number(index.target?.minimumEntries) < EXPECTED_COMMANDS) throw new Error(`Catalog minimum is ${index.target?.minimumEntries}; expected at least ${EXPECTED_COMMANDS}`);
+if (Number(index.target?.minimumEntries) < 6000) throw new Error(`Catalog minimum is ${index.target?.minimumEntries}; expected at least 6000`);
 if (Number(canonical.uniqueRecordNames) !== canonicalCount) throw new Error(`Canonical unique name count ${canonical.uniqueRecordNames} does not match ${canonicalCount}`);
 
 console.log(`${EXPECTED_COMMANDS}-command verification passed; ${EXPECTED_CURRICULUM}-command beginner curriculum preserved`);
