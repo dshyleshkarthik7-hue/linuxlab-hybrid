@@ -63,7 +63,7 @@ export default defineConfig({
         login: entry('login/index.html'), certificate: entry('certificate/index.html'), verify: entry('verify/index.html'), progress: entry('progress/index.html'), career: entry('linux-careers.html'),
         learn: entry('learn/index.html'), learnLinuxBasics: entry('learn/linux-basics/index.html'), learnTerminalNavigation: entry('learn/terminal-navigation/index.html'),
         learnFiles: entry('learn/files-and-directories/index.html'), learnText: entry('learn/text-processing/index.html'), learnPermissions: entry('learn/permissions/index.html'),
-        learnProcesses: entry('learn/processes/index.html'), learnShell: entry('learn/shell-scripting/index.html')
+        learnProcesses: entry('learn/processes/index.html'), learnShell: entry('learn/shell-scripting/index.html'), learnOperatingSystems: entry('learn/operating-systems/index.html'), learnNetworkingBasics: entry('learn/networking-basics/index.html')
       },
       output: {
         manualChunks(id) { if (id.includes('monaco-editor')) return 'monaco'; if (id.includes('@xterm')) return 'xterm'; }
