@@ -13,7 +13,7 @@ const testIsoSources: Record<string, string> = Object.fromEntries(
 function copyVerifiedV86Firmware() {
   return {
     name: 'copy-verified-v86-firmware',
-    async closeBundle() {
+    async writeBundle() {
       await mkdir('dist', { recursive: true });
       for (const filename of ['seabios.bin', 'vgabios.bin']) {
         await copyFile(`public/${filename}`, `dist/${filename}`);
