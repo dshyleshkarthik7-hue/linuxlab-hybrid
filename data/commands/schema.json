@@ -36,6 +36,9 @@
       },
       "uniqueItems": true
     },
+    "essential": {"type":"boolean"},
+    "difficulty": {"enum":["beginner","reference"]},
+    "priority": {"enum":["flagship","reference"]},
     "category": {
       "type": "string",
       "minLength": 1,
