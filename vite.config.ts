@@ -2,12 +2,25 @@ import { defineConfig } from 'vite';
 import { fileURLToPath } from 'node:url';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { Readable } from 'node:stream';
+import { copyFile, mkdir } from 'node:fs/promises';
 import manifest from './artifacts/manifest.json' with { type: 'json' };
 
 const entry = (name: string) => fileURLToPath(new URL(`./${name}`, import.meta.url));
 const testIsoSources: Record<string, string> = Object.fromEntries(
   manifest.artifacts.filter((artifact) => artifact.image).map((artifact) => [artifact.image, artifact.url]),
 );
+
+function copyVerifiedV86Firmware() {
+  return {
+    name: 'copy-verified-v86-firmware',
+    async closeBundle() {
+      await mkdir('dist', { recursive: true });
+      for (const filename of ['seabios.bin', 'vgabios.bin']) {
+        await copyFile(`public/${filename}`, `dist/${filename}`);
+      }
+    },
+  };
+}
 
 function testIsoProxy() {
   return {
@@ -43,7 +56,7 @@ function testIsoProxy() {
 }
 
 export default defineConfig({
-  plugins: [testIsoProxy()],
+  plugins: [testIsoProxy(), copyVerifiedV86Firmware()],
   base: '/',
   server: { port: 3000, headers: { 'Cross-Origin-Opener-Policy': 'same-origin' } },
   preview: { port: 3000, headers: { 'Cross-Origin-Opener-Policy': 'same-origin' } },
