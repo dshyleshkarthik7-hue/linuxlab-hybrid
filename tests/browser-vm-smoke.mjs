@@ -75,11 +75,11 @@ async function runSmoke() {
       const actual = createHash('sha256').update(bytes).digest('hex');
       if (actual !== pin.sha256) throw new Error(`Firmware fixture SHA-256 mismatch: ${name}`);
     }
-    await page.route('**/api/v86-firmware/**', async route => {
-      const name = new URL(route.request().url()).pathname.split('/').pop();
+    const serveFirmware = async route => {
+      const name = new URL(route.request().url()).searchParams.get('firmware') || new URL(route.request().url()).pathname.split('/').pop();
       const body = firmware.get(name);
       if (!body) {
-        await route.fulfill({ status: 404, headers: {'content-type':'text/plain'}, body: 'Not found' });
+        await route.fulfill({ status: 404, headers: {'content-type':'text/plain','access-control-allow-origin':'*'}, body: 'Not found' });
         return;
       }
       await route.fulfill({
@@ -88,10 +88,14 @@ async function runSmoke() {
           'content-type':'application/octet-stream',
           'content-length':String(body.length),
           'cache-control':'public, max-age=31536000, immutable',
+          'access-control-allow-origin':'*',
         },
         body,
       });
-    });
+    };
+    await page.route('**/api/v86-firmware/**', serveFirmware);
+    await page.route('**/?firmware=seabios.bin', serveFirmware);
+    await page.route('**/?firmware=vgabios.bin', serveFirmware);
     await page.route('**/api/iso**', async route => {
       const url = new URL(route.request().url());
       const image = url.searchParams.get('image');
