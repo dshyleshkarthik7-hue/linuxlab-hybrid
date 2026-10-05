@@ -68,7 +68,6 @@ if (!process.env.UI_UX_BASE_URL) {
 
 const browser = await chromium.launch({ headless: true });
 const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
-const p = await context.newPage();
 try {
   const uiRoutes = [
     '/', '/beginner/', '/intermediate/', '/expert/', '/learn/', '/learn/linux-basics/',
@@ -80,6 +79,7 @@ try {
   for (const [width, height] of [[320, 568], [390, 844], [768, 1024], [1024, 768], [1440, 900], [2560, 1440]]) {
     await p.setViewportSize({ width, height });
     for (const route of uiRoutes) {
+      const p = await context.newPage();
       const errors = [];
       const consoleHandler = message => { if (message.type() === 'error') errors.push(message.text()); };
       const pageErrorHandler = error => errors.push(error.message);
@@ -111,8 +111,10 @@ try {
       assert.equal(errors.length, 0, route + ' produced browser errors: ' + errors.join(' | '));
       p.off('console', consoleHandler);
       p.off('pageerror', pageErrorHandler);
+      await p.close();
     }
   }
+  const p = await context.newPage();
   const response = await p.goto(base + '/index-v86.html', { waitUntil: 'domcontentloaded', timeout: 15000 });
   assert.ok(response?.ok(), 'v86 page must load');
   assert.equal(await p.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1), true, 'v86 UI must not horizontally overflow on mobile');
