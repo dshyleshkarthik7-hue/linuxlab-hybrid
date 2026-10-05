@@ -55,6 +55,8 @@ await mkdir('dist', { recursive: true });
 const headerBlock = (csp) => `${security}
 Content-Security-Policy: ${csp}
 Reporting-Endpoints: csp-endpoint="/api/csp-report"`;
+const htmlCache = 'CDN-Cache-Control: public, max-age=3600, stale-while-revalidate=86400';
+const assetCache = 'CDN-Cache-Control: public, max-age=86400, stale-while-revalidate=604800';
 
 await writeFile('dist/_headers', `/*
   ${headerBlock(commonCsp)}
