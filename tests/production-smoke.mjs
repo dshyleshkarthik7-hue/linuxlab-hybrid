@@ -45,7 +45,7 @@ const requiredHeaders = {
   'content-security-policy': /frame-ancestors 'none'/i,
 };
 for (const [name, pattern] of Object.entries(requiredHeaders)) assert.match(homeResponse.headers.get(name) || '', pattern, `production response missing/invalid ${name}`);
-assert.match(homeResponse.headers.get('content-security-policy') || '', /connect-src[^;]*linuxterminal-iso\\.dshyleshkarthik7\\.workers\\.dev/, 'production CSP must allow the canonical ISO worker');
+assert.match(homeResponse.headers.get('content-security-policy') || '', /connect-src[^;]*linuxterminal-iso\.dshyleshkarthik7\.workers\.dev/, 'production CSP must allow the canonical ISO worker');
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage();
 try {
