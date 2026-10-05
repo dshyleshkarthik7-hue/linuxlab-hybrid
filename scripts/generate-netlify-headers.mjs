@@ -54,7 +54,8 @@ const vmCsp = `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'un
 await mkdir('dist', { recursive: true });
 const headerBlock = (csp) => `${security}
 Content-Security-Policy: ${csp}
-Reporting-Endpoints: csp-endpoint="/api/csp-report"`;
+Reporting-Endpoints: csp-endpoint="/api/csp-report"
+${htmlCache}`;
 const htmlCache = 'CDN-Cache-Control: public, max-age=3600, stale-while-revalidate=86400';
 const assetCache = 'CDN-Cache-Control: public, max-age=86400, stale-while-revalidate=604800';
 
@@ -78,5 +79,14 @@ await writeFile('dist/_headers', `/*
 
   /developer-alpine/index.html
   ${headerBlock(vmCsp)}
+
+  /*.css
+  ${assetCache}
+
+  /*.js
+  ${assetCache}
+
+  /*.svg
+  ${assetCache}
 `);
 console.log('[LinuxLab] Generated deploy security headers with separate HTTP headers and CSP directives.');
