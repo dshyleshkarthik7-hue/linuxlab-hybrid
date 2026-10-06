@@ -2,8 +2,8 @@ import { strict as assert } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 import { chromium } from 'playwright';
 
-const baseURL = process.env.PRODUCTION_BASE_URL || process.argv[2];
-if (!baseURL) throw new Error('PRODUCTION_BASE_URL is required for post-deployment verification');
+const baseURL = process.env.PREVIEW_BASE_URL || process.env.PRODUCTION_BASE_URL || process.argv[2];
+if (!baseURL) throw new Error('PREVIEW_BASE_URL or PRODUCTION_BASE_URL is required for post-deployment verification');
 const origin = baseURL.replace(/\/$/, '');
 const timeoutMs = Number(process.env.PRODUCTION_SMOKE_TIMEOUT_MS || 30000);
 const retryMs = Number(process.env.PRODUCTION_SMOKE_RETRY_MS || 2000);
@@ -30,11 +30,11 @@ async function get(url, options = {}) {
   throw lastError || new Error(`Request failed: ${url}`);
 }
 
-if(expectedDeploySha){const deadline=Date.now()+deployWaitMs;let deployed=null;while(Date.now()<deadline){const response=await get(`${origin}/build-info.json`);if(response.ok){const info=await response.json();if(info.commit===expectedDeploySha){deployed=info;break;}}await new Promise(resolve=>setTimeout(resolve,5000));}assert.equal(deployed?.commit,expectedDeploySha,`production is not serving expected commit ${expectedDeploySha}`);}
+if(expectedDeploySha){const deadline=Date.now()+deployWaitMs;let deployed=null;while(Date.now()<deadline){const response=await get(`${origin}/build-info.json`);if(response.ok){const info=await response.json();if(info.commit===expectedDeploySha){deployed=info;break;}}await new Promise(resolve=>setTimeout(resolve,5000));}assert.equal(deployed?.commit,expectedDeploySha,`deployment is not serving expected commit ${expectedDeploySha}`);}
 const homeResponse = await get(`${origin}/`);
 assert.equal(homeResponse.ok, true, `home page returned ${homeResponse.status}`);
 const homeHtml = await homeResponse.text();
-assert.match(homeHtml, /v86|main-v86|Linux/i, 'production page must expose the browser VM application');
+assert.match(homeHtml, /v86|main-v86|Linux/i, 'deployment page must expose the browser VM application');
 const requiredHeaders = {
   'strict-transport-security': /max-age=31536000/i,
   'x-content-type-options': /^nosniff$/i,
@@ -44,8 +44,8 @@ const requiredHeaders = {
   'cross-origin-resource-policy': /^same-origin$/i,
   'content-security-policy': /frame-ancestors 'none'/i,
 };
-for (const [name, pattern] of Object.entries(requiredHeaders)) assert.match(homeResponse.headers.get(name) || '', pattern, `production response missing/invalid ${name}`);
-assert.match(homeResponse.headers.get('content-security-policy') || '', /connect-src[^;]*linuxterminal-iso\.dshyleshkarthik7\.workers\.dev/, 'production CSP must allow the canonical ISO worker');
+for (const [name, pattern] of Object.entries(requiredHeaders)) assert.match(homeResponse.headers.get(name) || '', pattern, `deployment response missing/invalid ${name}`);
+assert.match(homeResponse.headers.get('content-security-policy') || '', /connect-src[^;]*linuxterminal-iso\.dshyleshkarthik7\.workers\.dev/, 'deployment CSP must allow the canonical ISO worker');
 const browser = await chromium.launch({ headless: true });
 const page = await browser.newPage();
 try {
@@ -119,4 +119,4 @@ assert.equal(outOfBounds.status, 416);
 const unknown = await get(`${isoBaseURL}/?image=unknown&chunkStart=0&chunkEnd=0`, { headers: { Origin: origin } });
 assert.equal(unknown.status, 404);
 
-console.log(`Production deployment smoke checks passed: ISO endpoint + ${sitemapPaths.length} sitemap URLs`);
+console.log(`Deployment smoke checks passed: ISO endpoint + ${sitemapPaths.length} sitemap URLs`);
