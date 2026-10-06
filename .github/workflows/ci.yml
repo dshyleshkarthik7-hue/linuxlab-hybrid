@@ -5,6 +5,11 @@ on:
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      preview_base_url:
+        description: 'Netlify Preview URL to smoke-test (for example https://deploy-preview-123--linuxterminal.netlify.app)'
+        required: false
+        type: string
   schedule:
     - cron: '17 3 * * *'
 permissions:
@@ -92,6 +97,15 @@ jobs:
       - run: node tests/github-actions-pinning.test.mjs
       - name: Verify Cloudflare worker contract
         run: npm run test:iso-worker
+      - name: Preview smoke (optional Netlify Preview gate)
+        if: github.event_name == 'workflow_dispatch' && inputs.preview_base_url != ''
+        env:
+          PREVIEW_BASE_URL: ${{ inputs.preview_base_url }}
+          ISO_BASE_URL: https://linuxterminal-iso.dshyleshkarthik7.workers.dev
+          EXPECTED_DEPLOY_SHA: ${{ github.sha }}
+          PRODUCTION_SMOKE_TIMEOUT_MS: 30000
+          PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
+        run: npm run test:preview
       - name: Production smoke (main deployment gate)
         if: github.event_name == 'push'
         env:
