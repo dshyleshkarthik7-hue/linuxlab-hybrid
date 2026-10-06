@@ -19,6 +19,12 @@
   path = "/api/csp-report"
   function = "csp-report"
 [[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
   from = "/commands"
   to = "/commands-entry.html"
   status = 200
