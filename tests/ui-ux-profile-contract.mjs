@@ -77,9 +77,9 @@ try {
     '/certificate/', '/verify/', '/about/', '/contact/', '/privacy/', '/terms/', '/linux-careers/', '/real-linux/', '/developer-alpine/', '/open-source-iso/', '/curriculum/', '/404.html',
   ];
   for (const [width, height] of [[320, 568], [390, 844], [768, 1024], [1024, 768], [1440, 900], [2560, 1440]]) {
-    await context.setViewportSize({ width, height });
     for (const route of uiRoutes) {
       const p = await context.newPage();
+      await p.setViewportSize({ width, height });
       const errors = [];
       const consoleHandler = message => { if (message.type() === 'error') errors.push(message.text()); };
       const pageErrorHandler = error => errors.push(error.message);
