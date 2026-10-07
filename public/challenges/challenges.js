@@ -1,4 +1,110 @@
-const COMMANDS=[['pwd','navigation','pwd'],['ls','navigation','ls -la'],['cd','navigation','cd /tmp'],['mkdir','files','mkdir -p practice/src'],['touch','files','touch notes.txt'],['cat','files','cat notes.txt'],['cp','files','cp notes.txt backup.txt'],['mv','files','mv draft.txt final.txt'],['rm','files','rm old.txt'],['find','search',"find . -name '*.log'"],['echo','shell','echo hello'],['printf','shell',"printf '%s\\n' hello"],['grep','search',"grep -n 'error' app.log"],['head','text','head -n 5 app.log'],['tail','text','tail -n 20 app.log'],['wc','text','wc -l notes.txt'],['sort','text','sort -n numbers.txt'],['uniq','text','uniq -c names.txt'],['sed','search',"sed 's/old/new/g' file.txt"],['awk','search',"awk '{print $1}' names.txt"],['chmod','permissions','chmod 640 report.txt'],['whoami','users','whoami'],['ps','processes','ps aux'],['top','processes','top'],['df','storage','df -h'],['du','storage','du -sh project'],['free','system','free -h'],['uname','system','uname -a'],['date','system',"date '+%Y-%m-%d'"],['env','shell','env | grep PATH'],['export','shell','export DEMO=value'],['history','shell','history | tail'],['clear','shell','clear'],['man','shell','man grep'],['tar','archives','tar -cf archive.tar project/'],['gzip','archives','gzip report.txt'],['zip','archives','zip -r project.zip project/'],['ping','network','ping -c 1 example.com'],['curl','network','curl -I https://example.com'],['ip','network','ip addr'],['ifconfig','network','ifconfig'],['ssh','network','ssh user@example.com'],['scp','network','scp report.txt user@example.com:/tmp/'],['gcc','development','gcc -Wall main.c -o main'],['make','development','make'],['nano','development','nano notes.txt'],['vim','development','vim notes.txt'],['vi','development','vi notes.txt'],['less','text','less app.log'],['cut','text','cut -d: -f1 /etc/passwd']];
-const list=document.querySelector('#list'),search=document.querySelector('#challenge-search'),category=document.querySelector('#challenge-category'),count=document.querySelector('#completed-count'),clear=document.querySelector('#clear-progress');let done=window.LinuxProgress?.read().challenges.map(x=>x.id).filter(Number.isInteger)||[];const update=()=>{if(count)count.textContent=`${done.length} / 100 complete`};for(const g of [...new Set(COMMANDS.map(x=>x[1]))]){const o=document.createElement('option');o.value=g;o.textContent=g[0].toUpperCase()+g.slice(1);category?.append(o)}
-function render(){if(!list)return;list.replaceChildren();const q=(search?.value||'').trim().toLowerCase(),g=category?.value||'';COMMANDS.forEach(([name,group,example],i)=>{const tasks=[`Run ${example}. Predict stdout, stderr and exit status before executing it, then explain whether the result matched.`,`Change one safe argument in ${example}. Explain what should change and identify one failure condition before testing it.`];tasks.forEach((task,v)=>{const id=i*2+v+1;if(q&&!`${name} ${group} ${task}`.toLowerCase().includes(q)||g&&g!==group)return;const a=document.createElement('article');a.className=`challenge${done.includes(id)?' is-complete':''}`;const tag=document.createElement('span');tag.className='tag';tag.textContent=`Challenge ${id} • ${group}`;const h=document.createElement('h2');h.textContent=`${name}: ${v?'Reason and change':'Predict and verify'}`;const p=document.createElement('p');p.textContent=task;const actions=document.createElement('div');actions.className='challenge-actions';const link=document.createElement('a');link.className='lesson-link';link.href=`/commands/${encodeURIComponent(name)}/`;link.textContent=`Read ${name} lesson`;const b=document.createElement('button');b.className=`btn${done.includes(id)?' done':''}`;b.type='button';const set=()=>{const yes=done.includes(id);b.textContent=yes?'✓ Completed':'Mark complete';b.classList.toggle('done',yes);a.classList.toggle('is-complete',yes)};b.onclick=()=>{if(done.includes(id)){done=done.filter(x=>x!==id);window.LinuxProgress?.updateChallenge?.(id,false)}else{done=[...done,id].sort((x,y)=>x-y);window.LinuxProgress?.completeChallenge(id,`${name}: ${v?'Reason and change':'Predict and verify'}`)}set();update()};set();actions.append(link,b);a.append(tag,h,p,actions);list.append(a)})});update()}
-search?.addEventListener('input',render);category?.addEventListener('change',render);clear?.addEventListener('click',()=>{if(done.length&&confirm('Reset all challenge progress on this browser?')){window.LinuxProgress?.clearChallenges?.();done=[];render()}});render();
+(() => {
+  const list = document.querySelector('#list');
+  const search = document.querySelector('#challenge-search');
+  const category = document.querySelector('#challenge-category');
+  const count = document.querySelector('#completed-count');
+  const clear = document.querySelector('#clear-progress');
+  let done = window.LinuxProgress?.read().challenges.map(x => x.id) || [];
+  let data = null;
+
+  const update = () => {
+    if (count) count.textContent = data ? `${done.length} / ${data.commandCount} commands practiced` : 'Loading…';
+  };
+
+  function render() {
+    if (!list || !data) return;
+    list.replaceChildren();
+    const q = (search?.value || '').trim().toLowerCase();
+    const group = category?.value || '';
+    const setNo = Number(setSelect?.value || 0);
+    const sets = setNo ? data.sets.filter(s => s.id === setNo) : data.sets;
+    const commands = sets.flatMap(s => s.commands);
+    for (const cmd of commands) {
+      if (q && !JSON.stringify(cmd).toLowerCase().includes(q)) continue;
+      if (group && group !== cmd.category) continue;
+      const id = String(cmd.id);
+      const set = data.sets.find(s => s.commands.some(c => String(c.id) === id));
+      const article = document.createElement('article');
+      article.className = 'challenge' + (done.includes(id) ? ' is-complete' : '');
+      const tag = document.createElement('span');
+      tag.className = 'tag';
+      tag.textContent = `${set?.title || 'Challenge'} • ${cmd.category}`;
+      const h = document.createElement('h2');
+      h.textContent = cmd.name;
+      const p = document.createElement('p');
+      p.textContent = 'Practice ' + cmd.name + ': ' + cmd.summary;
+      const actions = document.createElement('div');
+      actions.className = 'challenge-actions';
+      const link = document.createElement('a');
+      link.className = 'lesson-link';
+      link.href = cmd.url || ('/commands/' + encodeURIComponent(cmd.name) + '.html');
+      link.textContent = 'Read lesson';
+      const button = document.createElement('button');
+      button.className = 'btn' + (done.includes(id) ? ' done' : '');
+      button.type = 'button';
+      const paint = () => {
+        const yes = done.includes(id);
+        button.textContent = yes ? '✓ Completed' : 'Mark complete';
+        button.classList.toggle('done', yes);
+        article.classList.toggle('is-complete', yes);
+      };
+      button.onclick = () => {
+        if (done.includes(id)) {
+          done = done.filter(x => x !== id);
+          window.LinuxProgress?.updateChallenge?.(id, false);
+        } else {
+          done = [...done, id];
+          window.LinuxProgress?.updateChallenge?.(id, true);
+        }
+        paint();
+        update();
+      };
+      paint();
+      actions.append(link, button);
+      article.append(tag, h, p, actions);
+      list.append(article);
+    }
+    update();
+  }
+
+  const setSelect = document.querySelector('#challenge-set');
+  async function init() {
+    try {
+      const response = await fetch('/challenge-sets.json', { cache: 'force-cache' });
+      if (!response.ok) throw new Error('Challenge catalog unavailable');
+      data = await response.json();
+      if (!Array.isArray(data.sets) || Number(data.commandCount) < 1) throw new Error('Challenge catalog is invalid');
+      if (setSelect) {
+        data.sets.forEach(s => {
+          const option = document.createElement('option');
+          option.value = s.id;
+          option.textContent = s.title + ' — ' + s.commands.length + ' commands';
+          setSelect.append(option);
+        });
+      }
+      const categories = [...new Set(data.sets.flatMap(s => s.commands.map(c => c.category)))].sort();
+      categories.forEach(group => {
+        const option = document.createElement('option');
+        option.value = group;
+        option.textContent = group;
+        category?.append(option);
+      });
+      render();
+    } catch (error) {
+      if (list) list.textContent = error instanceof Error ? error.message : 'Challenge catalog unavailable. Please reload.';
+      update();
+    }
+  }
+
+  search?.addEventListener('input', render);
+  category?.addEventListener('change', render);
+  setSelect?.addEventListener('change', render);
+  clear?.addEventListener('click', () => {
+    if (done.length && confirm('Reset all challenge progress on this browser?')) {
+      window.LinuxProgress?.clearChallenges?.();
+      done = [];
+      render();
+    }
+  });
+  void init();
+})();
