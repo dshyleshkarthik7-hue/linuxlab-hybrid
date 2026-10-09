@@ -8,9 +8,11 @@ const exists = async path => { try { await readFile(join(root, path)); return tr
 
 const challenges = await read('challenges/index.html');
 const challengeScript = await read('public/challenges/challenges.js');
-const challengeCommandEntries = [...challengeScript.matchAll(/\[['"]([^'"]+)['"],['"]([^'"]+)['"](?:,|\])/g)].map(m => `${m[1]}|${m[2]}`);
-assert.equal(challengeCommandEntries.length, 50, 'challenge catalog must contain exactly 50 commands (100 challenges)');
-assert.match(challengeScript, /const COMMANDS=\[/, 'challenge catalog must expose its command data in the external JavaScript asset');
+const challengeBuilder = await read('scripts/commands/build-database.mjs');
+assert.match(challengeScript, /fetch\('\/challenge-sets\.json'/, 'challenge UI must load the generated canonical challenge catalog');
+assert.match(challengeScript, /const id = String\(cmd\.id\)/, 'challenge completion must use the stable canonical record ID');
+assert.match(challengeBuilder, /id:record\.id/, 'generated challenge records must preserve canonical IDs');
+assert.match(challengeBuilder, /catalog-manifest\.json/, 'catalog manifest must be generated from the canonical dataset');
 assert.match(challenges, /\/challenges\/challenges\.js/, 'challenge page must load the external challenge catalog script');
 assert.doesNotMatch(challenges, /cmd_json|json_data|commands_json/, 'challenge page must not contain unresolved generator placeholders');
 
