@@ -84,7 +84,71 @@ const COMMON_BANK:Q[]=[
 {id:'net-port',q:'What does a TCP or UDP port identify?',c:['a transport-layer endpoint associated with a service','a filesystem inode','a CPU core','a shell alias'],a:'a transport-layer endpoint associated with a service',t:'networking'},
 {id:'net-ip',q:'Which Linux command family commonly inspects interfaces and routes?',c:['ip','grep','tar','chmod'],a:'ip',t:'networking'},
 ];
-function buildQuestionBank():Q[]{const result:Q[]=[];const names=COMMAND_RECORDS.map(x=>String(x.name));const byCategory=new Map<string,string[]>();for(const r of COMMAND_RECORDS){const category=String(r.category||'linux');const list=byCategory.get(category)||[];list.push(String(r.name));byCategory.set(category,list)}for(const [index,r] of COMMAND_RECORDS.entries()){const name=String(r.name);const summary=String(r.summary||'').trim();const example=String(r.example||'').trim();const category=String(r.category||'linux');const pool=[...(byCategory.get(category)||[]),...names].filter(x=>x!==name);const uniquePool=pool.filter((x,i,a)=>a.indexOf(x)===i);const offset=index%Math.max(1,uniquePool.length);const distractors=[0,1,2].map(step=>uniquePool[(offset+step)%Math.max(1,uniquePool.length)]).filter(Boolean);if(summary){result.push({id:`cmd-${index}-identify`,q:`Which command is represented by this catalog description: ${summary}?`,c:[name,...distractors],a:name,t:category})}if(example){result.push({id:`cmd-${index}-example`,q:`Which example is associated with the ${name} command record?`,c:[example,...distractors.map(x=>x+' --help')],a:example,t:category})}}return [...result,...COMMON_BANK]}
+function buildQuestionBank(): Q[] {
+  const result: Q[] = [];
+  const names = [...new Set(COMMAND_RECORDS.map(record => String(record.name).trim()).filter(Boolean))];
+  const examples = [...new Set(COMMAND_RECORDS.map(record => String(record.example || '').trim()).filter(Boolean))];
+  const byCategory = new Map<string, { names: string[]; examples: string[] }>();
+  for (const record of COMMAND_RECORDS) {
+    const category = String(record.category || 'linux').trim() || 'linux';
+    const group = byCategory.get(category) || { names: [], examples: [] };
+    const name = String(record.name || '').trim();
+    const example = String(record.example || '').trim();
+    if (name && !group.names.includes(name)) group.names.push(name);
+    if (example && !group.examples.includes(example)) group.examples.push(example);
+    byCategory.set(category, group);
+  }
+  const choices = (answer: string, pool: string[], fallback: string[] = []): string[] => {
+    const distractors = [...new Set([...pool, ...fallback])]
+      .map(value => String(value).trim())
+      .filter(value => value && value !== answer);
+    const selected = distractors.slice(0, 3);
+    if (selected.length < 3) throw new Error('Verified exam catalog has too few unique distractors');
+    const result = [...new Set([answer, ...selected])];
+    if (result.length !== 4 || result.filter(value => value === answer).length !== 1) {
+      throw new Error('Verified exam question choices must contain four unique options and one answer');
+    }
+    return result;
+  };
+  for (const [index, record] of COMMAND_RECORDS.entries()) {
+    const name = String(record.name || '').trim();
+    if (!name) continue;
+    const summary = String(record.summary || '').trim();
+    const example = String(record.example || '').trim();
+    const category = String(record.category || 'linux').trim() || 'linux';
+    const group = byCategory.get(category) || { names: [], examples: [] };
+    const otherNames = group.names.filter(value => value !== name);
+    const otherExamples = group.examples.filter(value => value !== example);
+    if (summary) {
+      result.push({
+        id: `cmd-${index}-identify`,
+        q: `Which command is represented by this catalog description: ${summary}?`,
+        c: choices(name, otherNames, names),
+        a: name,
+        t: category
+      });
+    }
+    if (example) {
+      result.push({
+        id: `cmd-${index}-example`,
+        q: `Which example is associated with the ${name} command record?`,
+        c: choices(example, otherExamples, examples),
+        a: example,
+        t: category
+      });
+    }
+  }
+  const bank = [...result, ...COMMON_BANK];
+  const seen = new Set<string>();
+  for (const question of bank) {
+    if (seen.has(question.id)) throw new Error('Verified exam catalog contains duplicate question IDs');
+    seen.add(question.id);
+    if (question.c.length !== 4 || new Set(question.c).size !== 4 || question.c.filter(choice => choice === question.a).length !== 1) {
+      throw new Error('Verified exam question has invalid answer choices: ' + question.id);
+    }
+  }
+  return bank;
+}
 const BANK=buildQuestionBank();
 function shuffle<T>(values: readonly T[]): T[] {
   const result = [...values];
