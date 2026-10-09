@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+
+const read = path => readFile(new URL(path, import.meta.url), 'utf8');
+const homepage = await read('../index.html');
+const about = await read('../about/index.html');
+const permissions = await read('../learn/permissions/index.html');
+const commandBuilder = await read('../scripts/commands/build-command-pages.mjs');
+const sitemap = await read('../public/sitemap.xml');
+const robots = await read('../public/robots.txt');
+
+assert.match(homepage, /"@type":"Course"/, 'homepage must describe the learning course');
+assert.match(homepage, /"@type":"FAQPage"/, 'homepage must expose concise, visible-product FAQ structured data');
+assert.match(homepage, /200-command beginner curriculum/, 'homepage must distinguish beginner curriculum from full reference');
+assert.match(homepage, /6,161-entry command reference/, 'homepage must describe the full catalog without conflating it with beginner lessons');
+assert.match(homepage, /github\.com\/dshyleshkarthik7-hue\/linuxlab-hybrid/, 'homepage must link the open-source repository');
+assert.match(about, /"@type":"AboutPage"/, 'About page must identify its purpose in structured metadata');
+assert.match(about, /source repository/, 'About page must provide verifiable project provenance');
+assert.doesNotMatch(about, /100 practice challenges/, 'About page must not retain stale challenge counts');
+assert.match(permissions, /rel="canonical" href="https:\/\/linuxterminal\.me\/learn\/permissions\//, 'permissions tutorial must have a canonical URL');
+assert.match(permissions, /property="og:type" content="article"/, 'permissions tutorial must have social article metadata');
+assert.match(permissions, /Understand numeric modes/, 'permissions tutorial must explain numeric chmod modes');
+assert.match(permissions, /chmod 777/, 'permissions tutorial must answer a common unsafe permission misconception');
+assert.match(permissions, /directory permissions have different practical effects/, 'permissions tutorial must distinguish file and directory semantics');
+assert.match(permissions, /\/commands\/chmod\.html/, 'permissions tutorial must link to the dedicated chmod reference');
+assert.match(commandBuilder, /"@type": "TechArticle"/, 'generated command pages must contain article metadata');
+assert.match(commandBuilder, /"@type":"BreadcrumbList"/, 'generated command pages must contain breadcrumb structured data');
+assert.match(sitemap, /https:\/\/linuxterminal\.me\/learn\/permissions\//, 'sitemap must include the expanded permissions lesson');
+assert.match(robots, /Sitemap: https:\/\/linuxterminal\.me\/sitemap\.xml/, 'robots.txt must point to the canonical sitemap');
+console.log('Phase 2 SEO and content contracts passed');
