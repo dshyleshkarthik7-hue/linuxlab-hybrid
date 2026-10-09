@@ -21,7 +21,8 @@ assert.match(robots, /^Sitemap:\s*https:\/\/linuxterminal\.me\/sitemap\.xml$/m);
 const workflows = ['.github/workflows/deploy-cloudflare.yml'];
 for (const workflow of workflows) {
   const yaml = readFileSync(workflow, 'utf8');
-  assert.doesNotMatch(yaml, /\bworkflow_dispatch:\s*$/m, `${workflow}: manual production bypass is not permitted`);
+  assert.match(yaml, /workflow_dispatch:/, `${workflow}: production deployment must be manually gated`);
+  assert.match(yaml, /confirm_production_deploy/, `${workflow}: explicit production deployment confirmation is required`);
 }
 const progress = readFileSync('progress/index.html', 'utf8');
 const progressScripts = [...progress.matchAll(/<script\b[^>]+src=["']([^"']*progress\.js)["'][^>]*>/gi)].map(match => match[1]);
@@ -31,10 +32,12 @@ assert.equal(existsSync('public/home.css'), true, 'public/home.css is the canoni
 const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
 assert.match(ci, /Production smoke \(main deployment gate\)/);
 assert.match(ci, /EXPECTED_DEPLOY_SHA:\s*\$\{\{ github\.sha \}\}/);
-assert.match(ci, /github\.event_name == 'push'/, 'production smoke must run only from push events, never manual workflow dispatch');
+assert.match(ci, /inputs\.run_production_smoke == true/, 'production smoke must require explicit manual approval');
+assert.doesNotMatch(ci, /if:\s*github\.event_name == 'push'\s*\n\s*env:\s*\n\s*PRODUCTION_BASE_URL:/, 'production smoke must not run automatically on main pushes');
 assert.match(ci, /bash -n iso-builder\/build-linuxlab-gcc\.sh/, 'CI must execute the ISO builder shell syntax check');
 const cloudflare = readFileSync('.github/workflows/deploy-cloudflare.yml', 'utf8');
-assert.match(cloudflare, /github\.event\.workflow_run\.event == 'push'/, 'Cloudflare production deployment must originate from a push-triggered CI run');
+assert.match(cloudflare, /inputs\.confirm_production_deploy == true/, 'Cloudflare production deployment must require explicit manual approval');
+assert.doesNotMatch(cloudflare, /workflow_run:/, 'Cloudflare production deployment must not run automatically after CI');
 assert.match(cloudflare, /Verify deployed ISO worker/, 'Cloudflare deployment must include a post-deploy worker verification');
 const certificate = readFileSync('netlify/functions/certificate.mts', 'utf8');
 assert.doesNotMatch(certificate, /CERTIFICATE_SIGNING_SECRET/, 'certificate signing must use the keyring only');
