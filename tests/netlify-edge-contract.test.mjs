@@ -6,8 +6,17 @@ const cloudflare = await readFile(new URL('../cloudflare/iso-worker.ts', import.
 const config = await readFile(new URL('../netlify.toml', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../artifacts/manifest.json', import.meta.url), 'utf8'));
 
-assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), false, 'duplicate Netlify ISO worker must not be present');
-assert.doesNotMatch(config, /path = "\/api\/iso\/linux4"/);
+assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), true, 'Linux 4 must enter through Netlify Edge');
+assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), true, 'firmware must be served through Netlify Edge');
+assert.match(config, /path = "\/api\/iso\/linux4"/);
+assert.match(config, /path = "\/api\/v86-firmware"/);
+const linux4Edge = await readFile(new URL('../netlify/edge-functions/linux4-iso.ts', import.meta.url), 'utf8');
+const firmwareEdge = await readFile(new URL('../netlify/edge-functions/v86-firmware.ts', import.meta.url), 'utf8');
+assert.match(linux4Edge, /linuxterminal-iso\.dshyleshkarthik7\.workers\.dev/);
+assert.match(linux4Edge, /chunkStart/);
+assert.match(firmwareEdge, /seabios\.bin/);
+assert.match(firmwareEdge, /vgabios\.bin/);
+assert.match(firmwareEdge, /X-LinuxLab-SHA256/);
 
 assert.match(cloudflare, /MAX_CHUNK_BYTES\s*=\s*32\s*\*\s*1024\s*\*\s*1024/);
 assert.match(cloudflare, /queryRange/);
