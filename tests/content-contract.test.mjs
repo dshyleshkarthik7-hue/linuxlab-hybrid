@@ -49,8 +49,8 @@ assert.doesNotMatch(simulator, /application\/ld\+json/i, 'simulator must not con
 const headers = await read('netlify.toml');
 const cspGenerator = await read('scripts/generate-netlify-headers.mjs');
 assert.match(cspGenerator, /Strict-Transport-Security/);
-assert.doesNotMatch(headers, /path = "\/api\/iso"/);
-assert.doesNotMatch(headers, /path = "\/api\/v86-firmware/);
+assert.match(headers, /path = "\/api\/iso\/linux4"/);
+assert.match(headers, /path = "\/api\/v86-firmware"/);
 const isoFetcher = await read('src/core/verified-iso-fetch.ts');
 const isoCache = await read('src/core/iso-cache.ts');
 assert.doesNotMatch(isoFetcher, /cache:\s*['"]no-store['"]/);
