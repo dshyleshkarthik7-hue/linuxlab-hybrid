@@ -13,6 +13,12 @@
   command = "npm run build"
 
 [[edge_functions]]
+  path = "/api/iso/linux4"
+  function = "linux4-iso"
+[[edge_functions]]
+  path = "/api/v86-firmware"
+  function = "v86-firmware"
+[[edge_functions]]
   path = "/api/tutor"
   function = "tutor"
 [[edge_functions]]
