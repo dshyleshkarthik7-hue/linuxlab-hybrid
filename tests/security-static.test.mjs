@@ -37,7 +37,7 @@ assert.doesNotMatch(cloudflare, /"CDN-Cache-Control": "no-store"/);
 assert.doesNotMatch(cloudflare, /cache: "no-store"/);
 assert.match(cloudflare, /"Vary": "Origin"/);
 assert.match(cloudflareConfig, /"enabled": true/);
-assert.doesNotMatch(netlify, /v86-firmware/);
+assert.match(netlify, /path = "\/api\/v86-firmware"[\s\S]*?function = "v86-firmware"/, 'v86 firmware must be served through the dedicated Netlify Edge Function');
 assert.doesNotMatch(netlify, /sed -i/);
 assert.doesNotMatch(netlify, /CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN/);
 assert.doesNotMatch(sitemap, /developer-alpine\.html/);
