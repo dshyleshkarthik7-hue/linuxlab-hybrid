@@ -10,6 +10,11 @@ on:
         description: 'Netlify Preview URL to smoke-test (for example https://deploy-preview-123--linuxterminal.netlify.app)'
         required: false
         type: string
+      run_production_smoke:
+        description: 'Run production smoke only after explicit approval'
+        required: false
+        default: false
+        type: boolean
   schedule:
     - cron: '17 3 * * *'
 permissions:
@@ -107,7 +112,7 @@ jobs:
           PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
         run: npm run test:preview
       - name: Production smoke (main deployment gate)
-        if: github.event_name == 'push'
+        if: github.event_name == 'workflow_dispatch' && inputs.run_production_smoke == true
         env:
           PRODUCTION_BASE_URL: https://linuxterminal.me
           ISO_BASE_URL: https://linuxterminal-iso.dshyleshkarthik7.workers.dev
