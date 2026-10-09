@@ -29,7 +29,7 @@ type Profile = { name: string; memoryMiB: number; cdrom: string; policy: VMResou
 const VIRT_PROFILE: Profile = { name: 'Alpine Virt 3.24.1', memoryMiB: 256, cdrom: ALPINE_ARTIFACT.url, policy: 'virt', expectedGuest: 'alpine' };
 const DEVELOPER_PROFILE: Profile = { name: 'Developer Alpine v1.0.0', memoryMiB: 1024, cdrom: DEVELOPER_ALPINE_ARTIFACT.url, policy: 'developer', expectedGuest: 'alpine' };
 const LINUX4_PROFILE: Profile = { name: 'Linux 4', memoryMiB: 256, cdrom: LINUX4_ARTIFACT.url, policy: 'linux4', expectedGuest: 'buildroot' };
-const FIRMWARE_BASE = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
+const FIRMWARE_BASE = `${window.location.origin}/api/v86-firmware`;
 const READY_MARKER = '__LINUXLAB_READY__';
 const PROBE_MARKER = '__LINUXLAB_INPUT_OK__';
 const LOW_MEMORY_THRESHOLD_GB = 16;
@@ -368,7 +368,7 @@ export class V86LinuxTerminal {
 
   private async preflightRuntimeAssets(signal: AbortSignal): Promise<{ seabios: ArrayBuffer; vgabios: ArrayBuffer }> {
     const load = async (artifact: typeof SEABIOS_ARTIFACT): Promise<ArrayBuffer> => {
-      const response = await fetch(`${FIRMWARE_BASE}/?firmware=${encodeURIComponent(artifact.filename)}`, { cache: 'no-store', signal });
+      const response = await fetch(`${FIRMWARE_BASE}?firmware=${encodeURIComponent(artifact.filename)}`, { cache: 'no-store', signal });
       if (!response.ok) throw new Error(`Required VM firmware failed to load: ${artifact.filename} (${response.status})`);
       const bytes = await response.arrayBuffer();
       if (bytes.byteLength !== artifact.size) throw new Error(`Required VM firmware failed size verification: ${artifact.filename}`);
