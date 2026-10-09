@@ -44,7 +44,7 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
   chunkUrl.searchParams.set('chunkStart', String(start));
   chunkUrl.searchParams.set('chunkEnd', String(end));
   const isWorker = chunkUrl.origin === TRUSTED_ISO_ORIGIN;
-      const isNetlifyLinux4Edge = chunkUrl.origin === window.location.origin && chunkUrl.pathname === ISO_DELIVERY_PATH;
+  const isNetlifyLinux4Edge = chunkUrl.origin === window.location.origin && chunkUrl.pathname === ISO_DELIVERY_PATH;
   const range = `bytes=${start}-${end}`;
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt += 1) {
