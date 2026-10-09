@@ -11,6 +11,8 @@ const robots = await read('../public/robots.txt');
 
 assert.match(homepage, /"@type":"Course"/, 'homepage must describe the learning course');
 assert.match(homepage, /"@type":"FAQPage"/, 'homepage must expose concise, visible-product FAQ structured data');
+assert.match(homepage, /id="linux-learning-faq"/, 'FAQ content described by structured data must also be visible to visitors');
+for (const question of ['Can I learn Linux online for free?', 'Is the command reference the same as the beginner curriculum?', 'Is the verified assessment an accredited professional certification?']) assert.ok(homepage.includes(question), `visible FAQ missing: ${question}`);
 assert.match(homepage, /200-command beginner curriculum/, 'homepage must distinguish beginner curriculum from full reference');
 assert.match(homepage, /6,161-entry command reference/, 'homepage must describe the full catalog without conflating it with beginner lessons');
 assert.match(homepage, /github\.com\/dshyleshkarthik7-hue\/linuxlab-hybrid/, 'homepage must link the open-source repository');
@@ -26,5 +28,9 @@ assert.match(permissions, /\/commands\/chmod\.html/, 'permissions tutorial must 
 assert.match(commandBuilder, /"@type": "TechArticle"/, 'generated command pages must contain article metadata');
 assert.match(commandBuilder, /"@type":"BreadcrumbList"/, 'generated command pages must contain breadcrumb structured data');
 assert.match(sitemap, /https:\/\/linuxterminal\.me\/learn\/permissions\//, 'sitemap must include the expanded permissions lesson');
+const sitemapUrls = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map(match => match[1]);
+assert.equal(new Set(sitemapUrls).size, sitemapUrls.length, 'sitemap URLs must be unique');
+assert.ok(sitemapUrls.length <= 50000, 'sitemap must stay within the standard URL-count limit');
+assert.ok(sitemapUrls.every(url => url.startsWith('https://linuxterminal.me/')), 'sitemap must only contain canonical HTTPS site URLs');
 assert.match(robots, /Sitemap: https:\/\/linuxterminal\.me\/sitemap\.xml/, 'robots.txt must point to the canonical sitemap');
 console.log('Phase 2 SEO and content contracts passed');
