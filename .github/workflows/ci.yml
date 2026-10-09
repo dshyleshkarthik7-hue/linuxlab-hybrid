@@ -111,7 +111,7 @@ jobs:
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
           PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
         run: npm run test:preview
-      - name: Production smoke (main deployment gate)
+      - name: Production smoke (explicitly approved release gate)
         if: github.event_name == 'workflow_dispatch' && inputs.run_production_smoke == true
         env:
           PRODUCTION_BASE_URL: https://linuxterminal.me
