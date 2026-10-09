@@ -13,7 +13,7 @@ export default async (request: Request, _context: Context): Promise<Response> =>
   for (const [key, value] of incoming.searchParams) {
     if (ALLOWED_QUERY.has(key) && key !== "image") upstream.searchParams.set(key, value);
   }
-  const headers = new Headers();
+  const headers = new Headers({ origin: incoming.origin });
   for (const name of ["accept", "range", "if-range"]) {
     const value = request.headers.get(name);
     if (value) headers.set(name, value);
