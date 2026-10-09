@@ -30,7 +30,7 @@ assert.deepEqual(progressScripts, ['./progress.js'], 'progress page must load ex
 assert.equal(existsSync('src/home.css'), false, 'dead src/home.css must not return');
 assert.equal(existsSync('public/home.css'), true, 'public/home.css is the canonical static home stylesheet');
 const ci = readFileSync('.github/workflows/ci.yml', 'utf8');
-assert.match(ci, /Production smoke \(main deployment gate\)/);
+assert.match(ci, /Production smoke \(explicitly approved release gate\)/);
 assert.match(ci, /EXPECTED_DEPLOY_SHA:\s*\$\{\{ github\.sha \}\}/);
 assert.match(ci, /inputs\.run_production_smoke == true/, 'production smoke must require explicit manual approval');
 assert.doesNotMatch(ci, /if:\s*github\.event_name == 'push'\s*\n\s*env:\s*\n\s*PRODUCTION_BASE_URL:/, 'production smoke must not run automatically on main pushes');
