@@ -15,7 +15,7 @@ async function certificatesCollection() {
   return collection;
 }
 
-const EXAM_VERSION = 'linux-foundations-2.0';
+const EXAM_VERSION = 'linux-foundations-2.1';
 const QUESTION_COUNT = 30;
 const MIN_QUESTION_BANK_SIZE = 1000;
 const PASS_PERCENT = 80;
