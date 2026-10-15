@@ -38,6 +38,11 @@ const limiterIndex = worker.indexOf('await env.ISO_RATE_LIMITER.limit({ key: cli
 const cacheIndex = worker.indexOf('const cached = await cache.match(key)');
 assert.ok(limiterIndex >= 0 && cacheIndex >= 0 && limiterIndex < cacheIndex, 'ISO rate limiting must run before cache lookup');
 assert.match(worker, /developer\|virt\|linux4/);
+assert.match(worker, /v86 use_parts appends/);
+assert.match(worker, /\(\[a-f0-9\]\{64\}\)-\(\[0-9\]\+\)-\(\[0-9\]\+\)/, 'worker must accept v86 use_parts digest-first URL suffixes');
+assert.match(worker, /partMatch\[4\] \?\? partMatch\[5\]/, 'worker must validate the digest in either supported URL layout');
+assert.match(worker, /match\[1\] \?\? match\[5\]/, 'worker must parse start offset from either supported URL layout');
+assert.match(worker, /match\[2\] \?\? match\[6\]/, 'worker must parse end offset from either supported URL layout');
 assert.match(worker, /a-f0-9/);
 assert.match(worker, /manifest\.json/);
 assert(manifest.artifacts.some((artifact) => artifact.fallbackUrls?.some((url) => url.startsWith('https://huggingface.co/buckets/'))));

@@ -162,7 +162,7 @@ export class V86LinuxTerminal {
       if (id !== this.bootId || signal.aborted) return;
       const artifact = artifactForIsoUrl(this.profile.cdrom);
       this.bootStage = 'preparing image';
-      this.status(`${this.profile.name} • preparing verified image`);
+      this.status(`${this.profile.name} • ${this.profile.policy === 'developer' ? 'preparing streamed image' : 'preparing verified image'}`);
       // Developer Alpine uses v86's asynchronous disk-image loader. v86 fetches only
       // fixed-size parts on demand instead of materializing the entire ISO in a browser
       // ArrayBuffer. This removes the large pre-boot allocation that caused timeouts.
@@ -179,8 +179,18 @@ export class V86LinuxTerminal {
         const isoBytes = await fetchVerifiedIso(this.profile.cdrom, signal);
         if (!isoBytes.byteLength) throw new Error('Verified Linux image is empty');
       }
-      this.setIntegrityState('verified');
-      this.guestIdentity = { kind: this.profile.expectedGuest, isAlpine: this.profile.expectedGuest === 'alpine', release: `verified artifact ${artifact.version} (${artifact.sha256})` };
+      // The large Developer image is loaded lazily by v86. Its current chunk
+      // endpoint validates the pinned artifact ID and range metadata, but does
+      // not yet validate each chunk against a signed per-chunk digest manifest.
+      // Do not report whole-image SHA-256 verification for that streaming path.
+      this.setIntegrityState(developerAsyncImage ? 'unverified' : 'verified');
+      this.guestIdentity = {
+        kind: this.profile.expectedGuest,
+        isAlpine: this.profile.expectedGuest === 'alpine',
+        release: developerAsyncImage
+          ? `pinned artifact ${artifact.version} (${artifact.sha256}); streamed chunks are not independently SHA-256 verified`
+          : `verified artifact ${artifact.version} (${artifact.sha256})`,
+      };
       const screen = document.getElementById('screen_container');
       if (!screen) throw new Error('VM screen container is missing');
       const policy = this.enforcer;
@@ -190,7 +200,7 @@ export class V86LinuxTerminal {
       if (!Runtime) throw new Error('Local v86 runtime did not expose a constructor');
       this.bootStage = 'creating VM';
       this.status(`${this.profile.name} • creating VM`);
-      this.monitor(`${this.profile.memoryMiB} MiB allocation • ${artifact.filename} verified`);
+      this.monitor(`${this.profile.memoryMiB} MiB allocation • ${artifact.filename} ${developerAsyncImage ? 'pinned for lazy streaming; integrity unverified' : 'verified'}`);
       const vm = new Runtime({
         wasm_path: '/v86.wasm', memory_size: policy.memoryBytes, vga_memory_size: policy.vgaMemoryBytes,
         screen_container: screen, bios: { buffer: firmware.seabios }, vga_bios: { buffer: firmware.vgabios },
@@ -321,12 +331,12 @@ export class V86LinuxTerminal {
   private markReadyIfIdentityVerified(): void {
     if (this.ready || !this.guestIdentity || this.guestIdentity.kind !== this.profile.expectedGuest || !this.shellReady) return;
     this.ready = true;
-    this.bootStage = `interactive ${this.profile.name} shell verified from verified artifact`;
+    this.bootStage = this.integrityState === 'verified' ? `interactive ${this.profile.name} shell verified from verified artifact` : `interactive ${this.profile.name} shell running from pinned async artifact; integrity unverified`;
     if (this.bootTimeout !== null) window.clearTimeout(this.bootTimeout);
     this.bootTimeout = null;
     this.setHealth('ready');
     this.status(`${this.profile.name} • running`);
-    this.monitor(`Interactive ${this.profile.name} shell verified from pinned artifact • network disabled`);
+    this.monitor(`Interactive ${this.profile.name} shell • ${this.integrityState === 'verified' ? 'artifact integrity verified' : 'pinned async artifact; integrity unverified'} • network disabled`);
     this.fit();
   }
 

@@ -1,0 +1,15 @@
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
+const fixture='data/tutorial-videos/pwd-ls-cd.json';
+const result=spawnSync(process.execPath,['scripts/video/generate-tutorial-video.mjs','--validate',fixture],{encoding:'utf8'});
+assert.equal(result.status,0,result.stderr||result.stdout);
+assert.match(result.stdout,/schema is valid/);
+const lesson=JSON.parse(await readFile(fixture,'utf8'));
+assert.equal(lesson.slides.length,3);
+assert.ok(lesson.slides.every(slide=>slide.command&&slide.explanation));
+const source=await readFile('scripts/video/generate-tutorial-video.mjs','utf8');
+assert.match(source,/expansion=none/);
+assert.match(source,/spawnSync\(command,args/);
+assert.doesNotMatch(source,/execSync\(|shell:\s*true/);
+console.log('video generator contract passed');

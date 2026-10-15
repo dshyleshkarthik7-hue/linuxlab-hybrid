@@ -67,12 +67,12 @@ Never commit secrets.
 
 ## AI Tutor
 
-The protected Tutor edge function defaults to `Qwen/Qwen3-4B-Instruct-2507:nscale` through `HF_MODEL`. `HF_TOKEN` stays server-side. Learner context is treated as untrusted data, requests are authenticated, and Upstash rate limiting fails closed when unavailable. A deterministic teaching fallback is used if the model is unavailable.
+The protected Tutor edge function defaults to `Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218` through `HF_MODEL`, pinned to an immutable Hugging Face revision. `HF_TOKEN` stays server-side. Learner context is treated as untrusted data, requests are authenticated, and Upstash rate limiting fails closed when unavailable. A deterministic teaching fallback is used if the model is unavailable.
 
 Tutor variables:
 
 - `HF_TOKEN`
-- `HF_MODEL` (optional; defaults to `Qwen/Qwen3-4B-Instruct-2507:nscale`)
+- `HF_MODEL` (optional; defaults to the pinned `Qwen/Qwen3-8B` revision shown above)
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
 - `TUTOR_ALLOWED_ORIGINS` (optional)

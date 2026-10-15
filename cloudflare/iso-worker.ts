@@ -108,19 +108,23 @@ function getFirmware(url: URL): Firmware | null {
 function getImage(url: URL): Image | null {
   const image = url.searchParams.get("image");
   if (image === "developer" || image === "virt" || image === "linux4") return IMAGES[image];
-  const partMatch = /^\/(developer|virt|linux4)-(\d+)-(\d+)-([a-f0-9]{64})$/.exec(url.pathname);
+  // v86 use_parts appends "-<start-byte>-<end-byte>" to its configured URL.
+  // The Developer profile therefore requests /developer-<sha256>-<start>-<end>.
+  // Keep accepting /developer-<start>-<end>-<sha256> for direct clients too.
+  const partMatch = /^\/(developer|virt|linux4)-(?:([0-9]+)-([0-9]+)-([a-f0-9]{64})|([a-f0-9]{64})-([0-9]+)-([0-9]+))$/.exec(url.pathname);
   if (partMatch) {
     const image = IMAGES[partMatch[1] as ImageName];
-    return image && partMatch[4] === image.sha256 ? image : null;
+    const digest = partMatch[4] ?? partMatch[5];
+    return image && digest === image.sha256 ? image : null;
   }
   return null;
 }
 
 function pathPart(url: URL): { start: number; end: number } | null {
-  const match = /^\/(?:developer|virt|linux4)-(\d+)-(\d+)-([a-f0-9]{64})$/.exec(url.pathname);
+  const match = /^\/(?:developer|virt|linux4)-(?:([0-9]+)-([0-9]+)-([a-f0-9]{64})|([a-f0-9]{64})-([0-9]+)-([0-9]+))$/.exec(url.pathname);
   if (!match) return null;
-  const start = Number(match[1]);
-  const end = Number(match[2]);
+  const start = Number(match[1] ?? match[5]);
+  const end = Number(match[2] ?? match[6]);
   if (!Number.isSafeInteger(start) || !Number.isSafeInteger(end)) return null;
   return { start, end };
 }

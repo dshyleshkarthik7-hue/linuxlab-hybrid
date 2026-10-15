@@ -14,22 +14,33 @@ const escapeHtml = (value) => String(value ?? "")
   .replace(/"/g, "&quot;");
 
 const escapeJson = (value) => JSON.stringify(value).replace(/</g, "\\u003c");
+const isIndexable = (command) => command.page?.status === "complete" || Boolean(String(command.summary || "").trim() && String(command.example || "").trim());
 
 const relatedLinks = (items = []) => items.map((name) => {
   const target = data.records.find((r) => r.name === name);
-  return target ? `<a href="${escapeHtml(target.url)}"><code>${escapeHtml(name)}</code></a>` : "";
+  return target && (target.page?.status === "complete" || (target.summary && target.example)) ? `<a href="${escapeHtml(target.url)}"><code>${escapeHtml(name)}</code></a>` : "";
 }).filter(Boolean).join(" · ");
 
 for (const command of data.records) {
   const lesson = intelligence.records?.[command.name] || command.intelligence || {};
-  const summary = command.summary || lesson.tagline || "Linux command reference";
-  const syntax = lesson.syntax || command.name;
-  const examples = [command.example, ...(lesson.learningPath || []).slice(0, 2)].filter(Boolean);
-  const options = lesson.options || [];
-  const concepts = lesson.concepts || [];
-  const mistakes = lesson.mistakes || [];
-  const related = lesson.related || [];
-  const distroRows = Object.entries(command.availability || {}).map(([name, availability]) =>
+  const hasAuthoredLesson = command.page?.status === "complete" || command.intelligence?.status === "complete";
+  const summary = command.summary || (hasAuthoredLesson ? command.intelligence?.tagline : "") || "Linux command reference";
+  const syntax = command.intelligence?.syntax || command.name;
+  const examples = [command.example, ...(command.intelligence?.learningPath || []).slice(0, 2)]
+    .filter((example) => typeof example === "string" && example.trim());
+  const indexable = isIndexable(command);
+  const outputPath = path.join(out, path.basename(command.url));
+
+  // Preserve curated command lessons: prebuild must not replace hand-authored UI with boilerplate.
+  if (command.page?.status === "complete" && command.page?.source) {
+    try { await readFile(outputPath); continue; } catch { /* regenerate missing curated output */ }
+  }
+  const options = hasAuthoredLesson ? (command.intelligence?.options || []) : [];
+  const concepts = hasAuthoredLesson ? (command.intelligence?.concepts || []) : [];
+  const mistakes = hasAuthoredLesson ? (command.intelligence?.mistakes || []) : [];
+  const related = hasAuthoredLesson ? (command.intelligence?.related || []) : [];
+  const internals = hasAuthoredLesson ? (command.intelligence?.internals || []) : [];
+  const distroRows = Object.entries(command.availability || {}).filter(([, availability]) => availability && availability !== "unverified").map(([name, availability]) =>
     `<tr><th scope="row">${escapeHtml(name)}</th><td>${escapeHtml(availability)}</td></tr>`).join("");
   const optionRows = options.map(([flag, description]) =>
     `<tr><th scope="row"><code>${escapeHtml(flag)}</code></th><td>${escapeHtml(description)}</td></tr>`).join("");
@@ -58,7 +69,7 @@ for (const command of data.records) {
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>${escapeHtml(command.name)} command — Linux reference | LinuxTerminal.me</title>
 <meta name="description" content="${escapeHtml(summary)} Learn ${escapeHtml(command.name)} syntax, examples, common options, Linux implementation notes and safe practice.">
-<meta name="robots" content="index,follow,max-image-preview:large">
+<meta name="robots" content="${indexable ? "index,follow,max-image-preview:large" : "noindex,follow"}">
 <link rel="canonical" href="https://linuxterminal.me${escapeHtml(command.url)}">
 <meta property="og:type" content="article">
 <meta property="og:title" content="${escapeHtml(command.name)} command — Linux reference | LinuxTerminal.me">
@@ -76,29 +87,27 @@ for (const command of data.records) {
 <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">›</span><a href="/commands/">Linux commands</a><span aria-hidden="true">›</span><span>${escapeHtml(command.name)}</span></nav>
 <header class="command-hero">
 <div class="command-intro"><div class="command-mark" aria-hidden="true">&gt;_</div><h1>${escapeHtml(command.name)}</h1><h2>${escapeHtml(summary)}</h2><p>Learn what ${escapeHtml(command.name)} does, how its syntax is structured, what to check on different Linux installations, and where to practice it safely.</p></div>
-<article class="info-card"><h3>Definition</h3><p><code>${escapeHtml(command.name)}</code> — ${escapeHtml(summary)}.</p></article>
+<article class="info-card"><h3>Definition</h3><p><code>${escapeHtml(command.name)}</code> — ${escapeHtml(summary.replace(/[.!?]+$/, ""))}.</p></article>
 <article class="info-card"><h3>Syntax</h3><pre>${escapeHtml(syntax)}</pre><a class="green-btn" href="${practiceUrl}">Practice ${escapeHtml(command.name)} ›</a></article>
 </header>
 <section class="work-grid">
-<article class="steps-card"><h2>How ${escapeHtml(command.name)} fits into Linux</h2><ol class="process-list">${(lesson.internals || []).map((step, i) => `<li><b>Step ${i+1}</b><span>${escapeHtml(step)}</span></li>`).join("")}</ol></article>
+<article class="steps-card"><h2>How ${escapeHtml(command.name)} fits into Linux</h2><ol class="process-list">${internals.map((step, i) => `<li><b>Step ${i+1}</b><span>${escapeHtml(step)}</span></li>`).join("")}</ol></article>
 <article class="flow-card"><div class="flow-head"><h2>Quick command workflow</h2></div><div class="flow-map"><div class="flow-box"><b>Shell</b><small>parse arguments</small></div><span aria-hidden="true">→</span><div class="flow-box"><b>Linux tool</b><small>${escapeHtml(command.name)}</small></div><span aria-hidden="true">→</span><div class="flow-box"><b>Result</b><small>stdout / stderr</small></div><span aria-hidden="true">→</span><div class="flow-box success"><b>Status</b><small>exit code</small></div></div></article>
 </section>
-<section class="example-grid"><article class="examples-card"><h2>Examples</h2>${exampleBlocks}</article><article class="output-card"><h2>Practice command</h2><pre>$ ${escapeHtml(command.example || command.name)}
-$ echo $?
-0</pre></article></section>
+<section class="example-grid"><article class="examples-card"><h2>Examples</h2>${exampleBlocks}</article><article class="output-card"><h2>Example input</h2>${command.example ? `<pre><code>${escapeHtml(command.example)}</code></pre><p class="muted">Output depends on the current directory, files, permissions and installed implementation; it is not fabricated here.</p>` : `<p class="muted">No verified example output is available yet.</p>`}</article></section>
 <section class="lower-grid">
 <article class="availability-card"><h2>Common options</h2>${optionRows ? `<table><tbody>${optionRows}</tbody></table>` : "<p class=\"muted\">Check the installed implementation's manual for command-specific options.</p>"}</article>
 <article class="concepts-card"><h2>Key concepts</h2><ul class="concept-list">${conceptList}</ul></article>
-<article class="availability-card"><h2>Linux availability</h2><table><tbody>${distroRows}</tbody></table></article>
+<article class="availability-card"><h2>Linux availability</h2>${distroRows ? `<table><tbody>${distroRows}</tbody></table>` : `<p class="muted">Distribution availability has not been verified for this command yet.</p>`}</article>
 </section>
-<section class="card anatomy-card"><h2>Common mistakes and safety</h2><ul>${mistakeList}</ul><p>Linux utilities can differ between GNU, BusyBox, BSD-derived and distribution-specific implementations. Check &lt;code&gt;man ${escapeHtml(command.name)}&lt;/code&gt; or &lt;code&gt;${escapeHtml(command.name)} --help&lt;/code&gt; on the target system before relying on implementation-specific behavior.</p></section>
+<section class="card anatomy-card"><h2>Common mistakes and safety</h2><ul>${mistakeList}</ul><p>Linux utilities can differ between GNU, BusyBox, BSD-derived and distribution-specific implementations. Check <code>man ${escapeHtml(command.name)}</code> or <code>${escapeHtml(command.name)} --help</code> on the target system before relying on implementation-specific behavior.</p></section>
 <section class="card anatomy-card"><h2>Related Linux commands</h2><p>${relatedLinks(related) || "Explore the complete Linux command catalogue for related tools."}</p><p><a class="cta" href="/learn/files-and-directories/">Files and directories</a> <a class="cta" href="/learn/permissions/">Linux permissions</a> <a class="cta" href="/learn/">All Linux tutorials</a></p></section>
 <section class="card anatomy-card"><h2>Practice ${escapeHtml(command.name)} online</h2><p>Use the browser learning environment for a disposable practice session. The command reference itself is static and does not require the VM to load.</p><a class="cta" href="${practiceUrl}">Open practice →</a></section>
 <footer class="lesson-footer-links"><a class="cta" href="/commands/">← Back to all 6,161 Linux commands</a><a class="cta" href="/beginner/">200-command beginner curriculum →</a></footer>
 </main>
 </body>
 </html>`;
-  await writeFile(path.join(out, path.basename(command.url)), html);
+  await writeFile(outputPath, html);
 }
 
 const staticRoutes = [
@@ -112,11 +121,11 @@ const staticRoutes = [
 
 const sitemapRoutes = [...new Set([
   ...staticRoutes,
-  ...data.records.map((command) => command.url)
+  ...data.records.filter((command) => isIndexable(command)).map((command) => command.url)
 ])];
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapRoutes.map((url) => `<url><loc>https://linuxterminal.me${url}</loc></url>`).join("")}</urlset>
 `;
 await writeFile(path.join(root, "public/sitemap.xml"), sitemap);
-console.log(`[commands] generated ${data.records.length} command pages and ${sitemapRoutes.length} sitemap URLs`);
+console.log(`[commands] processed ${data.records.length} command records; sitemap contains ${sitemapRoutes.length} URLs (curated pages preserved)`);

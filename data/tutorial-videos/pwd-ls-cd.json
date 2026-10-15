@@ -1,0 +1,8 @@
+{
+  "title": "Three essential Linux navigation commands",
+  "slides": [
+    {"command":"pwd","explanation":"Prints the absolute path of the current working directory.","verified_output":"/home/student"},
+    {"command":"ls","explanation":"Lists directory entries. Exact output depends on the files in the current directory."},
+    {"command":"cd /tmp","explanation":"Changes the current shell directory to /tmp when it exists and permissions allow it."}
+  ]
+}

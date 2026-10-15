@@ -9,7 +9,7 @@ Configure these in **Netlify → Project configuration → Environment variables
 | Variable | Value |
 |---|---|
 | `HF_TOKEN` | Your Hugging Face token with only the access required for the selected inference provider |
-| `HF_MODEL` | `Qwen/Qwen3-4B-Instruct-2507:nscale` |
+| `HF_MODEL` | `Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218` |
 | `UPSTASH_REDIS_REST_URL` | Your Upstash Redis REST endpoint |
 | `UPSTASH_REDIS_REST_TOKEN` | Your Upstash Redis REST token |
 | `TUTOR_ALLOWED_ORIGINS` | Exact production origins, for example `https://linuxterminal.me` |
@@ -20,7 +20,7 @@ Tutor intentionally fails closed with HTTP 503 when distributed rate limiting is
 
 ## Hugging Face Tutor
 
-The Tutor calls Hugging Face's OpenAI-compatible router from the Netlify Edge Function. The default model is `Qwen/Qwen3-4B-Instruct-2507:nscale`; set `HF_MODEL` explicitly in production so the deployed model choice is visible in configuration.
+The Tutor calls Hugging Face's OpenAI-compatible router from the Netlify Edge Function. The default model is `Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218`; set `HF_MODEL` explicitly in production so the deployed model choice is visible in configuration.
 
 The browser never calls Hugging Face directly. High-volume ISO and firmware delivery is handled by the Cloudflare worker rather than Netlify. Tutor requests require Netlify Identity authentication, use bounded request/context sizes, and apply distributed user+IP rate limiting before calling the model provider.
 
@@ -71,7 +71,7 @@ Then manually verify:
 - A signed-in user can open Tutor.
 - An unauthenticated Tutor request receives `401`.
 - A configured production origin succeeds and an unexpected origin is rejected.
-- Tutor returns a model answer with `model: Qwen/Qwen3-4B-Instruct-2507:nscale` when the provider is healthy.
+- Tutor returns a model answer with `model: Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218` when the provider is healthy.
 - Tutor returns the guided fallback if the provider is unavailable.
 - After the rate limit is reached, Tutor returns `429` with `Retry-After: 60`.
 - Removing the Upstash variables causes Tutor to fail closed with `503`.
@@ -107,3 +107,8 @@ The browser emulator's lifecycle/resource controls are defense-in-depth and are 
 ## UI scope
 
 The production authentication page has been polished for accessibility, responsive layout, focus states, clear Tutor benefits, and account status. The existing beginner homepage is intentionally not modified.
+
+
+## Certificate model boundary
+
+Tutor and any certificate-study explanations use the single server-side model configured by HF_MODEL (the pinned Qwen3-8B revision above). Certificate scoring, pass/fail decisions, and signed issuance remain deterministic server-side logic; model output must never set the score, change an answer key, or issue a credential. The certificate endpoint currently does not need an LLM to grade submissions.
