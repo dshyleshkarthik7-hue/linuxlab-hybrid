@@ -1,4 +1,5 @@
 import manifest from '../artifacts/manifest.json' with { type: 'json' };
+import developerChunkManifest from '../artifacts/developer-alpine-chunks.json' with { type: 'json' };
 
 const MAX_CHUNK_BYTES = 32 * 1024 * 1024;
 const UPSTREAM_TIMEOUT_MS = 30_000;
@@ -99,6 +100,15 @@ function corsHeaders(request: Request): Headers {
   return headers;
 }
 
+function developerChunkManifestReady(): boolean {
+  const image = IMAGES.developer;
+  const value = developerChunkManifest as { schemaVersion?: number; artifactSha256?: string; artifactSize?: number; chunkSize?: number; chunks?: Array<{ index: number; start: number; end: number; sha256: string }> };
+  if (!value || value.schemaVersion !== 1 || value.artifactSha256 !== image.sha256 || value.artifactSize !== image.size || value.chunkSize !== MAX_CHUNK_BYTES || !Array.isArray(value.chunks)) return false;
+  const count = Math.ceil(image.size / MAX_CHUNK_BYTES);
+  if (value.chunks.length !== count) return false;
+  return value.chunks.every((chunk, index) => chunk && chunk.index === index && chunk.start === index * MAX_CHUNK_BYTES && chunk.end === Math.min(image.size - 1, (index + 1) * MAX_CHUNK_BYTES - 1) && /^[a-f0-9]{64}$/.test(chunk.sha256));
+}
+
 function getFirmware(url: URL): Firmware | null {
   const name = url.searchParams.get('firmware');
   if (!name || !/^((sea|vga)bios)\.bin$/.test(name)) return null;
@@ -170,6 +180,7 @@ function cacheKey(request: Request, origin: string, chunk: { start: number; end:
   // This prevents two different Range headers from colliding in Cloudflare cache.
   url.searchParams.set("chunkStart", String(chunk.start));
   url.searchParams.set("chunkEnd", String(chunk.end));
+  url.searchParams.set("__worker_protocol", WORKER_PROTOCOL_VERSION);
   url.searchParams.set("__cors_origin", origin);
   return new Request(url.toString(), { method: "GET" });
 }
@@ -203,6 +214,15 @@ export default {
       return errorResponse("ISO rate limiting is temporarily unavailable", 503, headers);
     }
     if (!rate.success) return errorResponse("ISO rate limit exceeded", 429, headers);
+    if (url.searchParams.get("manifest") === "developer") {
+      if (url.searchParams.get("sha256") !== IMAGES.developer.sha256) return errorResponse("Unknown Developer Alpine artifact digest", 400, headers);
+      if (!developerChunkManifestReady()) return errorResponse("Developer Alpine chunk integrity manifest is not available", 503, headers);
+      headers.set("Content-Type", "application/json; charset=utf-8");
+      headers.set("X-LinuxLab-Chunk-Manifest", "sha256");
+      headers.set("Cache-Control", "public, max-age=31536000, immutable");
+      headers.set("CDN-Cache-Control", "public, max-age=31536000, immutable");
+      return new Response(request.method === "HEAD" ? null : JSON.stringify(developerChunkManifest), { status: 200, headers });
+    }
     const firmware = getFirmware(url);
     if (firmware) {
       const keyUrl = new URL(request.url);
@@ -252,6 +272,17 @@ export default {
       return new Response("Invalid chunk", { status: 416, headers });
     }
     const expectedLength = chunk.end - chunk.start + 1;
+    let expectedDeveloperChunkSha: string | null = null;
+    if (image.filename === "alpine.iso") {
+      if (!developerChunkManifestReady()) return errorResponse("Developer Alpine chunk integrity manifest is not available", 503, headers);
+      const chunks = (developerChunkManifest as { chunks: Array<{ index: number; start: number; end: number; sha256: string }> }).chunks;
+      const expectedChunk = chunks[Math.floor(chunk.start / MAX_CHUNK_BYTES)];
+      if (!expectedChunk || expectedChunk.start !== chunk.start || expectedChunk.end !== chunk.end) {
+        headers.set("Content-Range", `bytes */${image.size}`);
+        return errorResponse("Developer Alpine requests must match a SHA-256 manifest chunk boundary", 416, headers);
+      }
+      expectedDeveloperChunkSha = expectedChunk.sha256;
+    }
     const range = `bytes=${chunk.start}-${chunk.end}`;
     const originKey = origin!;
     const key = cacheKey(request, originKey, chunk);
@@ -290,6 +321,15 @@ export default {
               response.body?.cancel();
               throw new Error("ISO origin returned invalid chunk metadata");
             }
+            if (expectedDeveloperChunkSha) {
+              const bytes = new Uint8Array(await response.arrayBuffer());
+              if (bytes.byteLength !== expectedLength) throw new Error("Developer Alpine chunk length mismatch");
+              const digest = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+              if (digest !== expectedDeveloperChunkSha) throw new Error("Developer Alpine chunk SHA-256 mismatch");
+              const verifiedHeaders = new Headers(response.headers);
+              verifiedHeaders.set("X-LinuxLab-Chunk-SHA256", digest);
+              return new Response(bytes, { status: 206, headers: verifiedHeaders });
+            }
             return response;
           }
           if (response.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES) {
@@ -316,6 +356,15 @@ export default {
       const contentLength = upstream.headers.get("content-length");
       const expectedContentRange = `bytes ${chunk.start}-${chunk.end}/${image.size}`;
       let body: ReadableStream<Uint8Array> | null = upstream.body;
+      let verifiedChunkSha: string | null = null;
+      if (expectedDeveloperChunkSha) {
+        const bytes = new Uint8Array(await upstream.arrayBuffer());
+        if (bytes.byteLength !== expectedLength) return errorResponse("Developer Alpine chunk length mismatch", 502, headers);
+        const digest = [...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+        if (digest !== expectedDeveloperChunkSha) return errorResponse("Developer Alpine chunk SHA-256 mismatch", 502, headers);
+        verifiedChunkSha = digest;
+        body = new Blob([bytes]).stream();
+      }
       if (upstream.status === 206) {
         if (contentRange !== expectedContentRange || contentLength !== String(expectedLength)) return errorResponse("ISO origin returned invalid chunk metadata", 502, headers);
       } else if (upstream.status === 200 && image.size <= MAX_FULL_UPSTREAM_BYTES) {
@@ -333,6 +382,7 @@ export default {
       headers.set("CDN-Cache-Control", "public, max-age=31536000, immutable");
       headers.set("Vary", "Origin");
       headers.set("X-LinuxLab-SHA256", image.sha256);
+      if (verifiedChunkSha) headers.set("X-LinuxLab-Chunk-SHA256", verifiedChunkSha);
       headers.set("X-LinuxLab-Artifact-Size", String(image.size));
       headers.set("X-LinuxLab-Worker-Protocol", WORKER_PROTOCOL_VERSION);
       headers.set("X-LinuxLab-Chunk-Start", String(chunk.start));

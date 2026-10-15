@@ -5,6 +5,7 @@ import { existsSync } from 'node:fs';
 const cloudflare = await readFile(new URL('../cloudflare/iso-worker.ts', import.meta.url), 'utf8');
 const config = await readFile(new URL('../netlify.toml', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../artifacts/manifest.json', import.meta.url), 'utf8'));
+const tutor = await readFile(new URL('../netlify/edge-functions/tutor.ts', import.meta.url), 'utf8');
 
 assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), true, 'Linux 4 must enter through Netlify Edge');
 assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), true, 'firmware must be served through Netlify Edge');
@@ -44,3 +45,7 @@ assert.match(cloudflare, /__cors_origin/);
 assert.doesNotMatch(cloudflare, /path = .*v86-firmware/);
 
 console.log('Netlify/Cloudflare delivery contract passed');
+
+assert.match(tutor, /Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218/);
+assert.match(tutor, /const MODEL_PIN_RE =/);
+assert.match(tutor, /PINNED_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/, 'Tutor must use only the pinned Qwen3-8B revision shared with certificate study feedback');

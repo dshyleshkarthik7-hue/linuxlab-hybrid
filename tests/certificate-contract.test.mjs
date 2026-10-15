@@ -81,3 +81,9 @@ assert.match(certificate, /certificateId: 1/);
 assert.match(certificate, /certificateIsDurablyRevoked/);
 assert.match(certificate, /rate:exam-start:ip/);
 assert.match(certificate, /rate:exam-submit:ip/);
+
+assert.match(certificate, /PINNED_QWEN_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/, 'certificate feedback must use the same immutable Qwen3-8B model as Tutor');
+assert.match(certificate, /async function explainStudyPlan/);
+assert.match(certificate, /rate:certificate-feedback:user/);
+assert.match(certificate, /studyTopics/);
+assert.match(certJs, /Get AI study plan/);

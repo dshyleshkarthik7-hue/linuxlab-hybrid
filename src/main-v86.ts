@@ -175,20 +175,38 @@ export class V86LinuxTerminal {
             fixed_chunk_size: 32 * 1024 * 1024,
           }
         : null;
+      let developerChunkIntegrityReady = false;
+      if (developerAsyncImage) {
+        try {
+          const manifestUrl = new URL("https://linuxterminal-iso.dshyleshkarthik7.workers.dev/");
+          manifestUrl.searchParams.set("manifest", "developer");
+          manifestUrl.searchParams.set("sha256", artifact.sha256);
+          const manifestResponse = await fetch(manifestUrl, { cache: "no-store", signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]) });
+          if (!manifestResponse.ok || manifestResponse.headers.get("x-linuxlab-chunk-manifest") !== "sha256") throw new Error("Worker chunk manifest is unavailable");
+          const chunkManifest = await manifestResponse.json() as { artifactSha256?: string; artifactSize?: number; chunkSize?: number; chunks?: unknown[] };
+          developerChunkIntegrityReady = chunkManifest.artifactSha256 === artifact.sha256 && chunkManifest.artifactSize === artifact.size &&
+            chunkManifest.chunkSize === 32 * 1024 * 1024 && Array.isArray(chunkManifest.chunks) &&
+            chunkManifest.chunks.length === Math.ceil(artifact.size / (32 * 1024 * 1024));
+          if (!developerChunkIntegrityReady) throw new Error("Worker chunk manifest does not match the pinned artifact");
+          this.monitor("Developer Alpine SHA-256 chunk manifest confirmed; Worker verifies each requested chunk before delivery; the entire ISO is not downloaded for a whole-file hash");
+        } catch {
+          throw new Error("Developer Alpine chunk integrity manifest is unavailable. Retry after the image service recovers.");
+        }
+      }
       if (!developerAsyncImage) {
         const isoBytes = await fetchVerifiedIso(this.profile.cdrom, signal);
         if (!isoBytes.byteLength) throw new Error('Verified Linux image is empty');
       }
-      // The large Developer image is loaded lazily by v86. Its current chunk
-      // endpoint validates the pinned artifact ID and range metadata, but does
-      // not yet validate each chunk against a signed per-chunk digest manifest.
-      // Do not report whole-image SHA-256 verification for that streaming path.
+      // The large Developer image is loaded lazily by v86. The deployed Worker
+      // verifies each fetched chunk against a manifest generated from the pinned
+      // full ISO digest. Because the whole ISO is not downloaded here, keep the
+      // whole-image integrity state unverified even when per-chunk checks are active.
       this.setIntegrityState(developerAsyncImage ? 'unverified' : 'verified');
       this.guestIdentity = {
         kind: this.profile.expectedGuest,
         isAlpine: this.profile.expectedGuest === 'alpine',
         release: developerAsyncImage
-          ? `pinned artifact ${artifact.version} (${artifact.sha256}); streamed chunks are not independently SHA-256 verified`
+          ? `pinned artifact ${artifact.version} (${artifact.sha256}); Worker verifies each fetched chunk against the pinned SHA-256 manifest; whole ISO is not fully hashed`
           : `verified artifact ${artifact.version} (${artifact.sha256})`,
       };
       const screen = document.getElementById('screen_container');
@@ -200,7 +218,7 @@ export class V86LinuxTerminal {
       if (!Runtime) throw new Error('Local v86 runtime did not expose a constructor');
       this.bootStage = 'creating VM';
       this.status(`${this.profile.name} • creating VM`);
-      this.monitor(`${this.profile.memoryMiB} MiB allocation • ${artifact.filename} ${developerAsyncImage ? 'pinned for lazy streaming; integrity unverified' : 'verified'}`);
+      this.monitor(`${this.profile.memoryMiB} MiB allocation • ${artifact.filename} ${developerAsyncImage ? (developerChunkIntegrityReady ? 'per-chunk SHA-256 verification enabled; whole ISO not fully hashed' : 'integrity unverified') : 'verified'}`);
       const vm = new Runtime({
         wasm_path: '/v86.wasm', memory_size: policy.memoryBytes, vga_memory_size: policy.vgaMemoryBytes,
         screen_container: screen, bios: { buffer: firmware.seabios }, vga_bios: { buffer: firmware.vgabios },
@@ -331,12 +349,12 @@ export class V86LinuxTerminal {
   private markReadyIfIdentityVerified(): void {
     if (this.ready || !this.guestIdentity || this.guestIdentity.kind !== this.profile.expectedGuest || !this.shellReady) return;
     this.ready = true;
-    this.bootStage = this.integrityState === 'verified' ? `interactive ${this.profile.name} shell verified from verified artifact` : `interactive ${this.profile.name} shell running from pinned async artifact; integrity unverified`;
+    this.bootStage = this.integrityState === 'verified' ? `interactive ${this.profile.name} shell running with verified artifact delivery` : `interactive ${this.profile.name} shell running from pinned async artifact; whole-ISO integrity unverified`;
     if (this.bootTimeout !== null) window.clearTimeout(this.bootTimeout);
     this.bootTimeout = null;
     this.setHealth('ready');
     this.status(`${this.profile.name} • running`);
-    this.monitor(`Interactive ${this.profile.name} shell • ${this.integrityState === 'verified' ? 'artifact integrity verified' : 'pinned async artifact; integrity unverified'} • network disabled`);
+    this.monitor(`Interactive ${this.profile.name} shell • ${this.integrityState === 'verified' ? 'artifact integrity verified' : 'per-chunk verification enforced; whole-ISO integrity unverified'} • network disabled`);
     this.fit();
   }
 

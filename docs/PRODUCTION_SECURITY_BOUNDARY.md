@@ -27,3 +27,8 @@ Use a first-party, clearly labeled sponsor card after the lesson or at the end o
 
 ## Release gates
 Before production rollout, require npm ci, typecheck/build, static security, command page quality, artifact/LFS checks, browser/mobile/accessibility tests, real guest boots for each published ISO, and production smoke checks for CSP/COEP/COOP, MIME, CORS, Range, cache headers, and hashes. Keep a known-good deploy ID and a tested rollback procedure.
+
+
+## AI-assisted certificate study feedback
+
+Tutor and certificate study feedback use the same pinned `Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218` model. The model only explains server-derived topic labels and suggests study tasks; server-side deterministic grading, HMAC signing, issuance, and verification remain authoritative. The feedback endpoint is authenticated, topic-allowlisted, and rate-limited.
