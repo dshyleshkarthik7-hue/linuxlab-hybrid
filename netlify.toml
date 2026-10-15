@@ -23,11 +23,6 @@
   function = "csp-report"
 
 [[redirects]]
-  from = "/favicon.ico"
-  to = "/logo.svg"
-  status = 200
-
-[[redirects]]
   from = "/commands"
   to = "/commands-entry.html"
   status = 200
@@ -63,11 +58,11 @@
   status = 200
 [[redirects]]
   from = "/seabios.bin"
-  to = "/api/v86-firmware/seabios.bin"
+  to = "/api/v86-firmware?firmware=seabios.bin"
   status = 200
 [[redirects]]
   from = "/vgabios.bin"
-  to = "/api/v86-firmware/vgabios.bin"
+  to = "/api/v86-firmware?firmware=vgabios.bin"
   status = 200
 [[redirects]]
   from = "/certificate"
