@@ -10,7 +10,14 @@ export default async (request: Request, _context: Context): Promise<Response> =>
     return new Response("Method not allowed", { status: 405, headers: { Allow: "GET, HEAD" } });
   }
   const url = new URL(request.url);
-  const filename = url.searchParams.get("firmware") || "";
+  // Prefer explicit ?firmware=name but fall back to the last path segment so both
+  // /api/v86-firmware?firmware=seabios.bin and /api/v86-firmware/seabios.bin work.
+  let filename = url.searchParams.get("firmware") || "";
+  if (!filename) {
+    const pathname = url.pathname.replace(/\/+$/, ""); // strip trailing slash(es)
+    const parts = pathname.split('/');
+    filename = decodeURIComponent(parts[parts.length - 1] || "");
+  }
   const asset = ASSETS[filename];
   if (!asset) return new Response("Unknown firmware asset", { status: 404, headers: { "Cache-Control": "no-store" } });
   try {
