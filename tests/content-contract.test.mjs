@@ -26,7 +26,9 @@ assert.equal(await exists('public/linux-ls-command/index.html'), false, 'stale o
 assert.equal(await exists('public/robots.txt'), true, 'public/robots.txt is required by the production contract');
 assert.equal(await exists('public/sitemap.xml'), true, 'public/sitemap.xml is required by the production contract');
 assert.equal(await exists('scripts/generate-netlify-headers.mjs'), true, 'security headers must have a canonical build-time generator');
-assert.equal(await exists('netlify/edge-functions/linux4-iso.ts'), true, 'Linux 4 delivery must be routed through Netlify Edge');
+// Linux 4 ISO delivery is intentionally handled by the canonical Cloudflare worker
+// configured in artifacts/manifest.json. Do not reintroduce the duplicate Netlify relay.
+assert.equal(await exists('netlify/edge-functions/linux4-iso.ts'), false, 'Linux 4 delivery must not add a duplicate Netlify ISO relay');
 assert.equal(await exists('netlify/edge-functions/v86-firmware.ts'), true, 'firmware delivery must be routed through Netlify Edge');
 
 const publicEntries = await readdir(join(root, 'public'), { withFileTypes: true });
@@ -49,7 +51,7 @@ assert.doesNotMatch(simulator, /application\/ld\+json/i, 'simulator must not con
 const headers = await read('netlify.toml');
 const cspGenerator = await read('scripts/generate-netlify-headers.mjs');
 assert.match(cspGenerator, /Strict-Transport-Security/);
-assert.match(headers, /path = "\/api\/iso\/linux4"/);
+assert.doesNotMatch(headers, /path = "\/api\/iso\/linux4"/, 'Linux 4 ISO is served by the Cloudflare worker, not a duplicate Netlify relay');
 assert.match(headers, /path = "\/api\/v86-firmware"/);
 const isoFetcher = await read('src/core/verified-iso-fetch.ts');
 const isoCache = await read('src/core/iso-cache.ts');
