@@ -13,10 +13,7 @@
   command = "npm run build"
 
 [[edge_functions]]
-  path = "/api/iso/linux4"
-  function = "linux4-iso"
-[[edge_functions]]
-  path = "/api/v86-firmware"
+  path = "/api/v86-firmware/*"
   function = "v86-firmware"
 [[edge_functions]]
   path = "/api/tutor"
@@ -24,8 +21,6 @@
 [[edge_functions]]
   path = "/api/csp-report"
   function = "csp-report"
-# Netlify serves dist/index.html automatically at the site root.
-# Keep root routing implicit; do not add a root rewrite that cannot fix origin-level 502s.
 
 [[redirects]]
   from = "/commands"
@@ -60,6 +55,14 @@
 [[redirects]]
   from = "/progress/"
   to = "/progress/index.html"
+  status = 200
+[[redirects]]
+  from = "/seabios.bin"
+  to = "/api/v86-firmware/seabios.bin"
+  status = 200
+[[redirects]]
+  from = "/vgabios.bin"
+  to = "/api/v86-firmware/vgabios.bin"
   status = 200
 [[redirects]]
   from = "/certificate"
