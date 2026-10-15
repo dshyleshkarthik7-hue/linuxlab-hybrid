@@ -11,10 +11,8 @@ assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), false, 'Linux 4
 assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), true, 'firmware must be served through Netlify Edge');
 assert.doesNotMatch(config, /path = "\/api\/iso\/linux4"/);
 assert.match(config, /path = "\/api\/v86-firmware\/\*"/);
-const linux4Edge = await readFile(new URL('../netlify/edge-functions/linux4-iso.ts', import.meta.url), 'utf8');
 const firmwareEdge = await readFile(new URL('../netlify/edge-functions/v86-firmware.ts', import.meta.url), 'utf8');
 
-assert.match(linux4Edge, /chunkStart/);
 assert.match(firmwareEdge, /seabios\.bin/);
 assert.match(firmwareEdge, /vgabios\.bin/);
 assert.match(firmwareEdge, /X-LinuxLab-SHA256/);
