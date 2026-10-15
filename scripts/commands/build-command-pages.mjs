@@ -38,12 +38,12 @@ for (const command of data.records) {
       // with the current indexability contract in the command database.
       const existing = await readFile(outputPath, "utf8");
       const robotsMeta = `<meta name="robots" content="${indexable ? "index,follow,max-image-preview:large" : "noindex,follow"}">`;
-      const existingRobotsTag = existing.match(/<meta\\b[^>]*>/gi)?.find((tag) => /\\bname\\s*=\\s*["']robots["']/i.test(tag));
+      const existingRobotsTag = existing.match(/<meta\b[^>]*>/gi)?.find((tag) => /\bname\s*=\s*["']robots["']/i.test(tag));
       let normalized = existing;
       if (existingRobotsTag) {
         normalized = existing.replace(existingRobotsTag, robotsMeta);
       } else {
-        normalized = existing.replace(/(<link\\b[^>]*rel=["']canonical["'][^>]*>)/i, `${robotsMeta}\\n$1`);
+        normalized = existing.replace(/(<link\b[^>]*rel=["']canonical["'][^>]*>)/i, `${robotsMeta}\n$1`);
       }
       if (normalized !== existing) await writeFile(outputPath, normalized);
       continue;
