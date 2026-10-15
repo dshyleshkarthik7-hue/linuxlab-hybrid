@@ -35,7 +35,12 @@ for (const command of records.records) {
   if (seenCanonicals.has(canonical)) throw new Error(`duplicate canonical ${canonical}`);
   seenCanonicals.add(canonical);
 
-  const robots = html.match(/<meta name="robots" content="([^"]+)"/i)?.[1] || "";
+  // Parse the robots meta element independently of attribute order, quote style,
+  // and insignificant whitespace so valid HTML formatting does not fail the gate.
+  const robotsTag = html.match(/<meta\\b(?=[^>]*\\bname\\s*=\\s*["']robots["'])[^>]*>/i)?.[0] || "";
+  const robots = (robotsTag.match(/\\bcontent\\s*=\\s*["']([^"']*)["']/i)?.[1] || "")
+    .toLowerCase()
+    .replace(/\\s+/g, "");
   const shouldIndex = command.page?.status === "complete" || Boolean(String(command.summary || "").trim() && String(command.example || "").trim());
   if (shouldIndex && !robots.startsWith("index,")) throw new Error(`indexable command lacks index directive: ${command.url}`);
   if (!shouldIndex && !robots.startsWith("noindex")) throw new Error(`thin command must be noindex: ${command.url}`);
