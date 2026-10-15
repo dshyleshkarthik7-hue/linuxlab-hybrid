@@ -33,7 +33,21 @@ for (const command of data.records) {
 
   // Preserve curated command lessons: prebuild must not replace hand-authored UI with boilerplate.
   if (command.page?.status === "complete" && command.page?.source) {
-    try { await readFile(outputPath); continue; } catch { /* regenerate missing curated output */ }
+    try {
+      // Preserve authored lesson content, but keep its robots directive aligned
+      // with the current indexability contract in the command database.
+      const existing = await readFile(outputPath, "utf8");
+      const robotsMeta = `<meta name="robots" content="${indexable ? "index,follow,max-image-preview:large" : "noindex,follow"}">`;
+      const existingRobotsTag = existing.match(/<meta\\b[^>]*>/gi)?.find((tag) => /\\bname\\s*=\\s*["']robots["']/i.test(tag));
+      let normalized = existing;
+      if (existingRobotsTag) {
+        normalized = existing.replace(existingRobotsTag, robotsMeta);
+      } else {
+        normalized = existing.replace(/(<link\\b[^>]*rel=["']canonical["'][^>]*>)/i, `${robotsMeta}\\n$1`);
+      }
+      if (normalized !== existing) await writeFile(outputPath, normalized);
+      continue;
+    } catch { /* regenerate missing curated output */ }
   }
   const options = hasAuthoredLesson ? (command.intelligence?.options || []) : [];
   const concepts = hasAuthoredLesson ? (command.intelligence?.concepts || []) : [];
