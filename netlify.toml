@@ -24,11 +24,8 @@
 [[edge_functions]]
   path = "/api/csp-report"
   function = "csp-report"
-[[redirects]]
-  from = "/"
-  to = "/index.html"
-  status = 200
-  force = true
+# Netlify serves dist/index.html automatically at the site root.
+# Avoid forcing a root rewrite so the deployed homepage is served directly.
 
 [[redirects]]
   from = "/commands"
