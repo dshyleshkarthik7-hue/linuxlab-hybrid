@@ -23,6 +23,11 @@
   function = "csp-report"
 
 [[redirects]]
+  from = "/favicon.ico"
+  to = "/logo.svg"
+  status = 200
+
+[[redirects]]
   from = "/commands"
   to = "/commands-entry.html"
   status = 200
