@@ -24,8 +24,13 @@
 [[edge_functions]]
   path = "/api/csp-report"
   function = "csp-report"
-# Netlify serves dist/index.html automatically at the site root.
-# Avoid forcing a root rewrite so the deployed homepage is served directly.
+# Explicit non-forced root mapping makes the static homepage target unambiguous.
+# Keep force=false (the default) so real files and Netlify edge routing are not overridden.
+[[redirects]]
+  from = "/"
+  to = "/index.html"
+  status = 200
+
 
 [[redirects]]
   from = "/commands"
