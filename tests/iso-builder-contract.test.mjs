@@ -19,3 +19,11 @@ assert.match(powershell, /LINUXLAB_ISO_WORK/, 'PowerShell builder must honor the
 assert.match(script, /-extract \/boot/);
 assert.match(script, /cp -a "\$BASE_ISO\/boot" "\$ISO_TREE\//);
 assert.match(script, /application\/learning guest|full Alpine installer\/live ISO/);
+
+const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
+assert.match(packageJson.scripts.prebuild, /fetch-v86-firmware\.mjs && node scripts\/check-lfs-assets\.mjs/,
+  'release build must hydrate and verify firmware/LFS assets before packaging');
+const lfsCheck = await readFile('scripts/check-lfs-assets.mjs', 'utf8');
+for (const asset of ['isolinux/isolinux.bin', 'isolinux/isohdpfx.bin', 'public/seabios.bin', 'public/vgabios.bin']) {
+  assert.ok(lfsCheck.includes(asset), 'LFS release preflight must cover ' + asset);
+}
