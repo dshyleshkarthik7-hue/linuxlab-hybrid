@@ -13,3 +13,14 @@ assert.match(source,/expansion=none/);
 assert.match(source,/spawnSync\(command,args/);
 assert.doesNotMatch(source,/execSync\(|shell:\s*true/);
 console.log('video generator contract passed');
+
+const batch = await readFile('scripts/video/generate-curriculum-videos.mjs', 'utf8');
+assert.match(batch, /public', 'tutorial-videos'/, 'Curriculum videos must be written to deployable public assets');
+assert.match(batch, /generateVideo\(input, output\)/, 'Curriculum batch must use the validated renderer');
+const library = await readFile('learn/library/index.html', 'utf8');
+assert.match(library, /id="detail-video"/, 'Lesson detail must include an embedded video player');
+assert.match(library, /tutorial-videos\/manifest\.json/, 'Lesson library must discover generated videos from a manifest');
+assert.match(library, /videoSection\.hidden=true/, 'Lessons without a generated video must still work');
+const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
+assert.equal(packageJson.scripts['video:curriculum'], 'node scripts/video/generate-curriculum-videos.mjs');
+console.log('curriculum video integration contract passed');
