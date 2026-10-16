@@ -19,13 +19,13 @@ on:
     - cron: '17 3 * * *'
 permissions:
   contents: read
-  id-token: write
-  attestations: write
 concurrency:
   group: linuxlab-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   verify:
+    permissions:
+      contents: read
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -79,10 +79,12 @@ jobs:
       - run: npm run test:ci
       - name: Package production build
         run: tar -czf linuxlab-dist-${GITHUB_SHA}.tar.gz dist
-      - name: Generate signed build provenance
-        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+      - name: Upload production build for provenance
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
-          subject-path: ${{ github.workspace }}/linuxlab-dist-${{ github.sha }}.tar.gz
+          name: linuxlab-dist-${{ github.sha }}
+          path: linuxlab-dist-${{ github.sha }}.tar.gz
+          if-no-files-found: error
       - name: Upload SBOM
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
@@ -120,3 +122,21 @@ jobs:
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
           PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
         run: npm run test:production
+
+  attest:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: verify
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
+    steps:
+      - name: Download verified production build
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
+        with:
+          name: linuxlab-dist-${{ github.sha }}
+      - name: Generate signed build provenance
+        uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: ${{ github.workspace }}/linuxlab-dist-${{ github.sha }}.tar.gz
