@@ -37,8 +37,11 @@ function run(command,args) {
   return result.stdout;
 }
 function slideText(title,slide,index,total) {
-  const lines=[title.trim(),'','$ '+slide.command.trim(),...wrapText(slide.explanation),''];
-  if(slide.verified_output) lines.push('Verified output:',...wrapText(slide.verified_output));
+  // Keep each slide readable at 720p even when source lesson fields are long.
+  // The source JSON remains complete; only the video slide is shortened.
+  const clipped=(value,limit)=>{const lines=wrapText(value,limit);return lines.length>limit? [...lines.slice(0,limit-1),'…']:lines;};
+  const lines=[...clipped(title.trim(),1),'',...clipped('$ '+slide.command.trim(),3),'',...clipped(slide.explanation,5)];
+  if(slide.verified_output) lines.push('','Output:',...clipped(slide.verified_output,2));
   lines.push('','LinuxTerminal.me - '+(index+1)+'/'+total);
   return lines.join('\n');
 }
@@ -53,7 +56,7 @@ export async function generateVideo(inputPath,outputPath,options={}) {
       await writeFile(textPath,slideText(lesson.title,slide,i,lesson.slides.length),'utf8');
       const seconds=slide.seconds===undefined?DEFAULT_SECONDS:slide.seconds, fontFile=options.fontFile||process.env.LINUXTERMINAL_VIDEO_FONT;
       const fontArg=fontFile?"fontfile='"+filterPath(fontFile)+"':":'';
-      const filter='drawtext='+fontArg+"textfile='"+filterPath(textPath)+"':expansion=none:fontcolor=white:fontsize=36:line_spacing=18:x=72:y=110:box=1:boxcolor=0x101820@0.88:boxborderw=28";
+      const filter='drawtext='+fontArg+"textfile='"+filterPath(textPath)+"':expansion=none:fontcolor=white:fontsize=30:line_spacing=10:x=72:y=110:box=1:boxcolor=0x101820@0.88:boxborderw=28";
       run(options.ffmpeg||process.env.FFMPEG||'ffmpeg',['-hide_banner','-loglevel','error','-y','-f','lavfi','-i','color=c=0x101820:s='+WIDTH+'x'+HEIGHT+':r='+FPS+':d='+seconds,'-vf',filter,'-t',String(seconds),'-an','-c:v','libx264','-preset','veryfast','-pix_fmt','yuv420p',segmentPath]);
       segments.push(segmentPath);
     }
