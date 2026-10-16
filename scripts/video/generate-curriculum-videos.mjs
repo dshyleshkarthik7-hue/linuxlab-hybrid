@@ -9,7 +9,8 @@
  *   node scripts/video/generate-curriculum-videos.mjs --all
  *   node scripts/video/generate-curriculum-videos.mjs --track Networking --limit 20
  */
-import { readFile, mkdir, writeFile } from 'node:fs/promises';
+import { readFile, mkdir, writeFile, mkdtemp, rm } from 'node:fs/promises';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateVideo } from './generate-tutorial-video.mjs';
@@ -34,6 +35,7 @@ if (!selected.length) throw new Error('No curriculum lessons matched the request
 const outputRoot = path.join(root, 'public', 'tutorial-videos');
 await mkdir(outputRoot, { recursive: true });
 const manifest = [];
+const inputRoot = await mkdtemp(path.join(os.tmpdir(), 'linuxterminal-curriculum-video-'));
 let failed = 0;
 for (let i = 0; i < selected.length; i++) {
   const lesson = selected[i];
@@ -49,7 +51,7 @@ for (let i = 0; i < selected.length; i++) {
       { command: 'Knowledge check', explanation: lesson.knowledgeCheck }
     ]
   };
-  const input = path.join(outputRoot, slug + '.json');
+  const input = path.join(inputRoot, slug + '.json');
   try {
     await writeFile(input, JSON.stringify(videoLesson, null, 2) + '\n', 'utf8');
     await generateVideo(input, output);
@@ -63,4 +65,5 @@ for (let i = 0; i < selected.length; i++) {
 }
 await writeFile(path.join(outputRoot, 'manifest.json'), JSON.stringify({ totalSelected: selected.length, rendered: manifest.filter(x => x.status === 'rendered').length, failed, lessons: manifest }, null, 2) + '\n', 'utf8');
 process.stdout.write('Video batch finished: ' + manifest.filter(x => x.status === 'rendered').length + '/' + selected.length + ' rendered. Videos will be included in the next static-site build from public/tutorial-videos/. Manifest: public/tutorial-videos/manifest.json\n');
+await rm(inputRoot, { recursive: true, force: true });
 if (failed) process.exitCode = 1;
