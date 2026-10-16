@@ -15,6 +15,12 @@ const sitemap = await readFile("public/sitemap.xml", "utf8");
 assert.ok(!sitemap.includes("https://linuxterminal.me" + thin.url), "thin pages should be excluded from the sitemap");
 
 const builder = await readFile("scripts/commands/build-command-pages.mjs", "utf8");
+const intelligenceBuilder = await readFile("scripts/commands/build-intelligence.mjs", "utf8");
+const databaseBuilder = await readFile("scripts/commands/build-database.mjs", "utf8");
+assert.match(databaseBuilder, /Catalog entry; purpose and availability are not verified/);
+assert.match(intelligenceBuilder, /"unverified"/, "inventory-only records must not be marked as complete lessons");
+assert.match(builder, /commands\.css\?v=20261016/, "generated pages must bust stale stylesheet caches");
+assert.doesNotMatch(builder, /Shell builtin:/, "generic pages must not claim arbitrary inventory entries are shell builtins");
 assert.doesNotMatch(builder, /\$ echo \$\?/, "generator must not invent generic exit-status output");
 
 for (const command of records.records) {

@@ -55,7 +55,7 @@ const records=db.records.map((r)=> {
   return {
     ...r,
     intelligence:{
-      status:"complete",
+      status: (r.page?.status === "complete" || r.intelligence?.status === "complete") ? "complete" : "unverified",
       version:2,
       tagline:m.tag+" Command focus: "+r.name+".",
       syntax:r.name+" [OPTIONS] [ARGUMENTS]",

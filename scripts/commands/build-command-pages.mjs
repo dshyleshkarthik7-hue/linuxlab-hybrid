@@ -24,9 +24,9 @@ const relatedLinks = (items = []) => items.map((name) => {
 for (const command of data.records) {
   const lesson = intelligence.records?.[command.name] || command.intelligence || {};
   const hasAuthoredLesson = command.page?.status === "complete" || command.intelligence?.status === "complete";
-  const summary = command.summary || (hasAuthoredLesson ? command.intelligence?.tagline : "") || "Linux command reference";
-  const syntax = command.intelligence?.syntax || command.name;
-  const examples = [command.example, ...(command.intelligence?.learningPath || []).slice(0, 2)]
+  const summary = command.summary || (hasAuthoredLesson ? lesson.tagline : "") || "Catalog entry; purpose and availability are not verified.";
+  const syntax = hasAuthoredLesson ? (lesson.syntax || command.name) : command.name;
+  const examples = [command.example, ...(hasAuthoredLesson ? (lesson.learningPath || []).slice(0, 2) : [])]
     .filter((example) => typeof example === "string" && example.trim());
   const indexable = isIndexable(command);
   const outputPath = path.join(out, path.basename(command.url));
@@ -49,11 +49,11 @@ for (const command of data.records) {
       continue;
     } catch { /* regenerate missing curated output */ }
   }
-  const options = hasAuthoredLesson ? (command.intelligence?.options || []) : [];
-  const concepts = hasAuthoredLesson ? (command.intelligence?.concepts || []) : [];
-  const mistakes = hasAuthoredLesson ? (command.intelligence?.mistakes || []) : [];
-  const related = hasAuthoredLesson ? (command.intelligence?.related || []) : [];
-  const internals = hasAuthoredLesson ? (command.intelligence?.internals || []) : [];
+  const options = hasAuthoredLesson ? (lesson.options || []) : [];
+  const concepts = hasAuthoredLesson ? (lesson.concepts || []) : [];
+  const mistakes = hasAuthoredLesson ? (lesson.mistakes || []) : [];
+  const related = hasAuthoredLesson ? (lesson.related || []) : [];
+  const internals = hasAuthoredLesson ? (lesson.internals || []) : [];
   const distroRows = Object.entries(command.availability || {}).filter(([, availability]) => availability && availability !== "unverified").map(([name, availability]) =>
     `<tr><th scope="row">${escapeHtml(name)}</th><td>${escapeHtml(availability)}</td></tr>`).join("");
   const optionRows = options.map(([flag, description]) =>
@@ -94,7 +94,7 @@ for (const command of data.records) {
 <meta name="twitter:title" content="${escapeHtml(command.name)} command — Linux reference | LinuxTerminal.me">
 <meta name="twitter:description" content="${escapeHtml(summary)}">
 <script type="application/ld+json">${escapeJson(articleSchema)}</script>
-<link rel="stylesheet" href="/commands.css">
+<link rel="stylesheet" href="/commands.css?v=20261016">
 </head>
 <body class="detail-page">
 <main id="main-content" class="command-page">
