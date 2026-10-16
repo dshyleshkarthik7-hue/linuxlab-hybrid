@@ -42,4 +42,17 @@ assert.match(libraryHtml, /id="search"/, 'Learning library needs searchable less
 assert.match(libraryHtml, /id="track"/, 'Learning library needs track filtering');
 assert.match(libraryHtml, /aria-live="polite"/, 'Search result count should be announced accessibly');
 assert.match(libraryHtml, /prefers-reduced-motion:reduce/, 'Learning library must respect reduced motion');
+assert.match(libraryHtml, /PAGE_SIZE=60/, 'Learning library must paginate rather than silently hiding results after 180');
+assert.match(libraryHtml, /id="previous"/, 'Learning library needs previous-page control');
+assert.match(libraryHtml, /id="next"/, 'Learning library needs next-page control');
+assert.match(libraryHtml, /cache:"no-store"/, 'Curriculum fetch should avoid stale cached JSON during rollout');
+assert.match(libraryHtml, /Array\.isArray\(data\.lessons\)/, 'Curriculum loader must validate the lessons array');
+assert.match(libraryHtml, /Incomplete lesson record/, 'Curriculum loader must reject incomplete lesson data');
+assert.match(libraryHtml, /data\.lessonCount!==data\.lessons\.length/, 'Curriculum loader must validate declared lesson count');
+assert.match(libraryHtml, /Unable to load lessons/, 'Curriculum loader must show a visible error instead of failing silently');
+assert.doesNotMatch(libraryHtml, /1106\+ lessons|1106 short lessons/, 'Library count must not advertise a stale lesson total');
+const videoBatch = await readFile(resolve(root, 'scripts/video/generate-curriculum-videos.mjs'), 'utf8');
+assert.match(videoBatch, /learn\/curriculum\.json/, 'Video batch generator must consume the shared curriculum');
+assert.match(videoBatch, /--all/, 'Rendering the entire library must require explicit opt-in');
+assert.match(videoBatch, /generateVideo\(input, output\)/, 'Video batch must use the validated FFmpeg renderer');
 console.log(`Structured learning library contract passed (${curriculum.lessonCount} lessons)`);
