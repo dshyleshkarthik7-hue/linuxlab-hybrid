@@ -4,3 +4,15 @@
 @media(max-width:650px){main{padding:24px 14px 54px}.hero,.lesson{padding:18px}nav.site-nav{padding:12px 14px}.step{grid-template-columns:34px 1fr}.num{width:30px;height:30px}}
 
 @media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}.card{transition:none}.card:hover{transform:none}}
+
+/* Consistent responsive navigation and accessible lesson controls. */
+header.site-header{position:sticky;top:0;z-index:20;background:rgba(6,20,38,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+nav.site-nav{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
+nav.site-nav>div{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+nav.site-nav a{overflow-wrap:anywhere}
+:where(a,button,input,select,summary):focus-visible{outline:3px solid var(--accent);outline-offset:3px}
+pre,code{overflow-wrap:anywhere}pre{max-width:100%;overflow:auto;white-space:pre-wrap}
+main,section,article{min-width:0}
+img,svg,video{max-width:100%}
+@media(max-width:680px){nav.site-nav{align-items:flex-start;flex-direction:column}nav.site-nav>div{gap:8px 12px}.hero{padding:20px 16px}.grid{grid-template-columns:minmax(0,1fr)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{scroll-behavior:auto!important;animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}

@@ -29,3 +29,17 @@ assert.match(indexHtml, /<pre>/i, 'Tutorial index needs practical examples');
 assert.match(indexHtml, /class="hero-actions"/i, 'Tutorial index needs clear primary actions');
 for (const route of ['/learn/operating-systems/', '/learn/networking-basics/']) assert.ok(indexHtml.includes(`href="${route}"`), `Tutorial index missing ${route}`);
 console.log(`Tutorial content contract passed (${pages.length} pages)`);
+
+const curriculum = JSON.parse(await readFile(resolve(root, 'learn/curriculum.json'), 'utf8'));
+const libraryHtml = await readFile(resolve(root, 'learn/library/index.html'), 'utf8');
+assert.ok(curriculum.lessonCount >= 500, 'The structured curriculum must contain at least 500 lessons');
+assert.equal(curriculum.lessons.length, curriculum.lessonCount, 'Curriculum count must match lesson records');
+assert.ok(new Set(curriculum.lessons.map(lesson => lesson.id)).size === curriculum.lessonCount, 'Lesson IDs must be unique');
+for (const lesson of curriculum.lessons) {
+  assert.ok(lesson.title && lesson.objective && lesson.explanation && lesson.workedExample && lesson.expectedResult && lesson.exercise && lesson.knowledgeCheck && lesson.answer, `Lesson ${lesson.id} must include all teaching sections`);
+}
+assert.match(libraryHtml, /id="search"/, 'Learning library needs searchable lessons');
+assert.match(libraryHtml, /id="track"/, 'Learning library needs track filtering');
+assert.match(libraryHtml, /aria-live="polite"/, 'Search result count should be announced accessibly');
+assert.match(libraryHtml, /prefers-reduced-motion:reduce/, 'Learning library must respect reduced motion');
+console.log(`Structured learning library contract passed (${curriculum.lessonCount} lessons)`);
