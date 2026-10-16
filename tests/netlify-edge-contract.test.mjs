@@ -47,3 +47,7 @@ console.log('Netlify/Cloudflare delivery contract passed');
 assert.match(tutor, /Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218/);
 assert.match(tutor, /const MODEL_PIN_RE =/);
 assert.match(tutor, /PINNED_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/, 'Tutor must use only the pinned Qwen3-8B revision shared with certificate study feedback');
+
+assert.match(firmwareEdge, /crypto\.subtle\.digest\("SHA-256", bytes\)/, 'firmware bytes must be cryptographically verified at the edge');
+assert.match(firmwareEdge, /actualHash !== asset\.sha256/, 'firmware delivery must fail closed when the pinned digest differs');
+assert.match(firmwareEdge, /bytes\.byteLength !== asset\.size/, 'firmware delivery must verify exact bytes even when upstream omits Content-Length');
