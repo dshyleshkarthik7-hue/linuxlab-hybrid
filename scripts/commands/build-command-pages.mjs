@@ -24,10 +24,10 @@ const relatedLinks = (items = []) => items.map((name) => {
 for (const command of data.records) {
   const lesson = intelligence.records?.[command.name] || command.intelligence || {};
   const hasAuthoredLesson = command.page?.status === "complete" || command.intelligence?.status === "complete";
-  const summary = command.summary || (hasAuthoredLesson ? lesson.tagline : "") || "Catalog entry; purpose and availability are not verified.";
-  const syntax = hasAuthoredLesson ? (lesson.syntax || command.name) : command.name;
-  const examples = [command.example, ...(hasAuthoredLesson ? (lesson.learningPath || []).slice(0, 2) : [])]
-    .filter((example) => typeof example === "string" && example.trim());
+  const hasVerifiedReference = Boolean(hasAuthoredLesson && String(lesson.definition || lesson.explanation || lesson.tagline || "").trim() && String(lesson.syntax || "").trim() && Array.isArray(lesson.examples) && lesson.examples.length > 0);
+  const summary = hasVerifiedReference ? (lesson.definition || lesson.explanation || lesson.tagline || command.summary) : (command.summary || "Catalogue entry only. A command-specific explanation has not yet been reviewed and published.");
+  const syntax = hasVerifiedReference ? lesson.syntax : "Not published — verify the local command before use.";
+  const examples = hasVerifiedReference ? lesson.examples.filter((example) => typeof example === "string" && example.trim()) : [];
   const indexable = isIndexable(command);
   const outputPath = path.join(out, path.basename(command.url));
 
@@ -49,11 +49,11 @@ for (const command of data.records) {
       continue;
     } catch { /* regenerate missing curated output */ }
   }
-  const options = hasAuthoredLesson ? (lesson.options || []) : [];
-  const concepts = hasAuthoredLesson ? (lesson.concepts || []) : [];
-  const mistakes = hasAuthoredLesson ? (lesson.mistakes || []) : [];
-  const related = hasAuthoredLesson ? (lesson.related || []) : [];
-  const internals = hasAuthoredLesson ? (lesson.internals || []) : [];
+  const options = hasVerifiedReference ? (lesson.options || []) : [];
+  const concepts = hasVerifiedReference ? (lesson.concepts || []) : [];
+  const mistakes = hasVerifiedReference ? (lesson.mistakes || []) : [];
+  const related = hasVerifiedReference ? (lesson.related || []) : [];
+  const internals = hasVerifiedReference ? (lesson.internals || []) : [];
   const distroRows = Object.entries(command.availability || {}).filter(([, availability]) => availability && availability !== "unverified").map(([name, availability]) =>
     `<tr><th scope="row">${escapeHtml(name)}</th><td>${escapeHtml(availability)}</td></tr>`).join("");
   const optionRows = options.map(([flag, description]) =>
@@ -100,15 +100,15 @@ for (const command of data.records) {
 <main id="main-content" class="command-page">
 <nav class="breadcrumb" aria-label="Breadcrumb"><a href="/">Home</a><span aria-hidden="true">›</span><a href="/commands/">Linux commands</a><span aria-hidden="true">›</span><span>${escapeHtml(command.name)}</span></nav>
 <header class="command-hero">
-<div class="command-intro"><div class="command-mark" aria-hidden="true">&gt;_</div><h1>${escapeHtml(command.name)}</h1><h2>${escapeHtml(summary)}</h2><p>Learn what ${escapeHtml(command.name)} does, how its syntax is structured, what to check on different Linux installations, and where to practice it safely.</p></div>
-<article class="info-card"><h3>Definition</h3><p><code>${escapeHtml(command.name)}</code> — ${escapeHtml(summary.replace(/[.!?]+$/, ""))}.</p></article>
-<article class="info-card"><h3>Syntax</h3><pre>${escapeHtml(syntax)}</pre><a class="green-btn" href="${practiceUrl}">Practice ${escapeHtml(command.name)} ›</a></article>
+<div class="command-intro"><p class="reference-status">${hasVerifiedReference ? "Curated and reviewed reference" : "Catalogue entry · awaiting editorial review"}</p><div class="command-mark" aria-hidden="true">&gt;_</div><h1>${escapeHtml(command.name)}</h1><h2>${escapeHtml(summary)}</h2><p>${hasVerifiedReference ? escapeHtml(lesson.explanation || lesson.definition || summary) : "We do not invent command explanations, syntax, flags, or output. This entry is listed for discovery; a reviewed, command-specific reference is not published yet."}</p></div>
+<article class="info-card"><h3>${hasVerifiedReference ? "What it does" : "Editorial status"}</h3><p>${hasVerifiedReference ? escapeHtml(lesson.definition || lesson.explanation || summary) : "This page is not a completed learning reference. The catalogue name alone is not evidence that a command exists on your system."}</p></article>
+<article class="info-card"><h3>${hasVerifiedReference ? "Syntax" : "Syntax not yet reviewed"}</h3><pre>${escapeHtml(syntax)}</pre>${hasVerifiedReference ? `<a class="green-btn" href="${practiceUrl}">Practice ${escapeHtml(command.name)} ›</a>` : `<a class="green-btn" href="/beginner/">Start with the curated beginner curriculum ›</a>`}</article>
 </header>
 <section class="work-grid">
-<article class="steps-card"><h2>How ${escapeHtml(command.name)} fits into Linux</h2><ol class="process-list">${internals.map((step, i) => `<li><b>Step ${i+1}</b><span>${escapeHtml(step)}</span></li>`).join("")}</ol></article>
+<article class="steps-card"><h2>${hasVerifiedReference ? `How ${escapeHtml(command.name)} works` : "Why this page is incomplete"}</h2>${hasVerifiedReference ? `<ol class="process-list">${internals.map((step, i) => `<li><b>Step ${i+1}</b><span>${escapeHtml(step)}</span></li>`).join("")}</ol>` : `<p>This entry needs an editor-written explanation of its purpose, argument parsing, operating-system interactions, output, exit status, implementation differences, and safe examples before it can be labelled a reference.</p>`}</article>
 <article class="flow-card"><div class="flow-head"><h2>Quick command workflow</h2></div><div class="flow-map"><div class="flow-box"><b>Shell</b><small>parse arguments</small></div><span aria-hidden="true">→</span><div class="flow-box"><b>Linux tool</b><small>${escapeHtml(command.name)}</small></div><span aria-hidden="true">→</span><div class="flow-box"><b>Result</b><small>stdout / stderr</small></div><span aria-hidden="true">→</span><div class="flow-box success"><b>Status</b><small>exit code</small></div></div></article>
 </section>
-<section class="example-grid"><article class="examples-card"><h2>Examples</h2>${exampleBlocks}</article><article class="output-card"><h2>Example input</h2>${command.example ? `<pre><code>${escapeHtml(command.example)}</code></pre><p class="muted">Output depends on the current directory, files, permissions and installed implementation; it is not fabricated here.</p>` : `<p class="muted">No verified example output is available yet.</p>`}</article></section>
+<section class="example-grid"><article class="examples-card"><h2>${hasVerifiedReference ? "Reviewed examples" : "Examples not yet reviewed"}</h2>${exampleBlocks || `<p class="muted">No command-specific examples are published. We deliberately do not generate fictional examples or expected output.</p>`}</article><article class="output-card"><h2>Example input</h2>${command.example ? `<pre><code>${escapeHtml(command.example)}</code></pre><p class="muted">Output depends on the current directory, files, permissions and installed implementation; it is not fabricated here.</p>` : `<p class="muted">No verified example output is available yet.</p>`}</article></section>
 <section class="lower-grid">
 <article class="availability-card"><h2>Common options</h2>${optionRows ? `<table><tbody>${optionRows}</tbody></table>` : "<p class=\"muted\">Check the installed implementation's manual for command-specific options.</p>"}</article>
 <article class="concepts-card"><h2>Key concepts</h2><ul class="concept-list">${conceptList}</ul></article>
@@ -116,7 +116,7 @@ for (const command of data.records) {
 </section>
 <section class="card anatomy-card"><h2>Common mistakes and safety</h2><ul>${mistakeList}</ul><p>Linux utilities can differ between GNU, BusyBox, BSD-derived and distribution-specific implementations. Check <code>man ${escapeHtml(command.name)}</code> or <code>${escapeHtml(command.name)} --help</code> on the target system before relying on implementation-specific behavior.</p></section>
 <section class="card anatomy-card"><h2>Related Linux commands</h2><p>${relatedLinks(related) || "Explore the complete Linux command catalogue for related tools."}</p><p><a class="cta" href="/learn/files-and-directories/">Files and directories</a> <a class="cta" href="/learn/permissions/">Linux permissions</a> <a class="cta" href="/learn/">All Linux tutorials</a></p></section>
-<section class="card anatomy-card"><h2>Practice ${escapeHtml(command.name)} online</h2><p>Use the browser learning environment for a disposable practice session. The command reference itself is static and does not require the VM to load.</p><a class="cta" href="${practiceUrl}">Open practice →</a></section>
+<section class="card anatomy-card"><h2>Practice ${escapeHtml(command.name)} online</h2><p>Use the browser learning environment for a disposable practice session. The command reference itself is static and does not require the VM to load.</p>${hasVerifiedReference ? `<a class="cta" href="${practiceUrl}">Open practice →</a>` : `<a class="cta" href="/beginner/">Open curated beginner practice →</a>`}</section>
 <footer class="lesson-footer-links"><a class="cta" href="/commands/">← Back to all 6,161 Linux commands</a><a class="cta" href="/beginner/">200-command beginner curriculum →</a></footer>
 </main>
 </body>
@@ -125,6 +125,7 @@ for (const command of data.records) {
 }
 
 const staticRoutes = [
+  "/faq/",
   "/", "/beginner/", "/intermediate/", "/expert/", "/real-linux/", "/developer-alpine/",
   "/open-source-iso/", "/commands/", "/learn/", "/learn/linux-basics/",
   "/learn/terminal-navigation/", "/learn/files-and-directories/", "/learn/text-processing/",

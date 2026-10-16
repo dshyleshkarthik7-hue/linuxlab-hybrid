@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>LinuxTerminal FAQ — Learning, command references and browser practice</title>
+<meta name="description" content="Answers about LinuxTerminal tutorials, the Linux command catalogue, beginner learning paths, browser practice and command-reference accuracy.">
+<link rel="canonical" href="https://linuxterminal.me/faq/">
+<link rel="stylesheet" href="/learn/tutorials.css"><link rel="stylesheet" href="/learn/learn.css">
+<style>
+.faq-list{display:grid;gap:14px;margin:24px 0}.faq-list details{border:1px solid var(--line);background:var(--panel);border-radius:14px;padding:18px 20px}.faq-list summary{font-weight:800;cursor:pointer;color:#fff}.faq-list details p{color:var(--muted);max-width:78ch}.faq-list details[open] summary{color:var(--accent)}a:focus-visible,summary:focus-visible{outline:3px solid var(--accent);outline-offset:4px}.faq-intro{max-width:78ch;color:var(--muted)}@media(max-width:650px){.shell{padding-left:14px;padding-right:14px}.faq-list details{padding:15px}}
+</style>
+</head>
+<body><main class="shell">
+<nav class="site-nav" aria-label="Main navigation"><a class="brand" href="/">&gt;_ LinuxTerminal</a><div><a href="/beginner/">Beginner</a><a href="/learn/">Tutorials</a><a href="/commands/">Commands</a><a href="/challenges/">Challenges</a><a href="/faq/" aria-current="page">FAQ</a></div></nav>
+<header class="hero"><span class="eyebrow">HELP • LEARNING • TRUST</span><h1>Frequently asked questions</h1><p class="faq-intro">Clear answers about learning Linux, command references, browser practice, and how to tell reviewed material from catalogue entries that still need editorial work.</p></header>
+<section class="faq-list" aria-label="Frequently asked questions">
+<details open><summary>Where should I start if I am new to Linux?</summary><p>Start with the beginner curriculum. Learn the current directory, paths, listing files, reading text, and permissions before moving into processes, networking, and shell scripting. Practise one idea at a time and predict the result before running a command.</p></details>
+<details><summary>Are all entries in the 6,161-command catalogue fully documented?</summary><p>No. A catalogue listing and a fully reviewed learning reference are different things. We should label entries honestly and only present command-specific definitions, syntax, flags, internal behavior, examples, and expected output when that material has been authored and reviewed.</p></details>
+<details><summary>Why might a command page have limited information?</summary><p>Command names alone do not provide reliable documentation. Implementations vary across GNU/Linux distributions, BusyBox, BSD-derived systems, shells, and installed packages. An incomplete page should say what has not been verified instead of inventing a definition or example.</p></details>
+<details><summary>Why are some command pages better than others?</summary><p>Some pages have detailed, human-written content. Automated page generation can format supplied content, but it cannot reliably invent authoritative command behavior. The goal is to preserve curated pages and expand the reviewed content set deliberately.</p></details>
+<details><summary>Is browser practice a complete Linux machine?</summary><p>Not necessarily. The learning environment may simulate a limited command set and can disable networking or privileged operations. Check the environment notes, and do not assume a simulated result proves how a full Linux host behaves.</p></details>
+<details><summary>How should I test an unfamiliar command safely?</summary><p>First confirm that the command exists with <code>command -v name</code>, then consult <code>man name</code> or the installed tool's help. Prefer read-only examples and a disposable directory. Avoid elevated privileges or commands that modify important files until you understand their effects.</p></details>
+<details><summary>What is the difference between a tutorial and a command reference?</summary><p>A tutorial teaches a concept in a planned sequence with a mental model, worked example, expected result, and check for understanding. A command reference focuses on one utility: purpose, syntax, options, behavior, portability, examples, errors, and related tools.</p></details>
+<details><summary>How do I learn Linux networking?</summary><p>Build up from interfaces and IP addresses to routing, DNS, ports, TCP/UDP, sockets, HTTP, and troubleshooting. Learn what each observation proves and what it cannot prove; for example, reachability does not guarantee that an application service is healthy.</p></details>
+<details><summary>Will Linux commands work identically on every distribution?</summary><p>No. Tool versions, command options, default behavior, shells, and filesystem layouts can differ. Use the local manual and note the implementation when precision matters.</p></details>
+<details><summary>How do I report an incorrect explanation or broken page?</summary><p>Include the page URL, the exact section, your browser and viewport if it is a layout problem, and the expected versus actual behavior. Do not include passwords, tokens, private logs, or other sensitive information.</p></details>
+<details><summary>How are tutorials meant to be structured?</summary><p>A useful lesson states its prerequisites and learning objective, explains the underlying idea, walks through a safe example, explains each part of the output, highlights common mistakes, and ends with a small knowledge check or challenge.</p></details>
+<details><summary>Are the tutorials copied from other learning websites?</summary><p>No. Other platforms can inspire general product patterns such as progressive roadmaps and hands-on exercises, but explanations, examples, lesson text, and visual design should be original to LinuxTerminal.</p></details>
+</section>
+<section class="callout"><h2>Keep learning</h2><p>Choose a guided path, explore the catalogue, or practise one concept at a time.</p><div class="hero-actions"><a class="button" href="/beginner/">Beginner curriculum</a><a class="button ghost" href="/learn/">Browse tutorials</a><a class="button ghost" href="/commands/">Command catalogue</a></div></section>
+</main></body></html>
