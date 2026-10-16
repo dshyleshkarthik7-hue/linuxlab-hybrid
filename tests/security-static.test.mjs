@@ -83,3 +83,10 @@ console.log('Static emulator SEO/security guardrails passed');
 assert.match(await readFile('netlify/edge-functions/tutor.ts','utf8'), /Tutor provider is temporarily unavailable/);
 const isoWorker = await readFile('cloudflare/iso-worker.ts', 'utf8');
 assert.match(isoWorker, /\^\(\[a-z0-9-\]\+\)--linuxterminal\\\.netlify\\.app\$/i);
+
+
+assert.match(csp, /MAX_HEADER_LINE_BYTES = 8192/, 'generated response header lines must have a hard size limit');
+assert.match(csp, /type && !\['module', 'text\/javascript', 'application\/javascript'/, 'non-executable script data such as JSON-LD must not be hashed into script-src');
+assert.match(csp, /const indentHeaders = \(block\) => block\.split\('\\n'\)\.map\(\(line\) => '  ' \+ line\)\.join\('\\n'\)/, 'every emitted response header line must be indented in _headers syntax');
+assert.match(csp, /const htmlCache = 'CDN-Cache-Control:/, 'HTML cache directive must be defined');
+assert.match(csp, /indentHeaders\(headerBlock\(commonCsp\)\)/, 'global headers must be emitted using the shared indentation helper');
