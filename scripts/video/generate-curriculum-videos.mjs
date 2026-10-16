@@ -31,7 +31,7 @@ if (!Array.isArray(curriculum.lessons) || curriculum.lessons.length !== curricul
 }
 const selected = curriculum.lessons.filter(lesson => !track || lesson.track.toLowerCase().includes(track.toLowerCase())).slice(0, limit);
 if (!selected.length) throw new Error('No curriculum lessons matched the requested track.');
-const outputRoot = path.join(root, 'dist', 'tutorial-videos');
+const outputRoot = path.join(root, 'public', 'tutorial-videos');
 await mkdir(outputRoot, { recursive: true });
 const manifest = [];
 let failed = 0;
@@ -62,5 +62,5 @@ for (let i = 0; i < selected.length; i++) {
   }
 }
 await writeFile(path.join(outputRoot, 'manifest.json'), JSON.stringify({ totalSelected: selected.length, rendered: manifest.filter(x => x.status === 'rendered').length, failed, lessons: manifest }, null, 2) + '\n', 'utf8');
-process.stdout.write('Video batch finished: ' + manifest.filter(x => x.status === 'rendered').length + '/' + selected.length + ' rendered. Manifest: dist/tutorial-videos/manifest.json\n');
+process.stdout.write('Video batch finished: ' + manifest.filter(x => x.status === 'rendered').length + '/' + selected.length + ' rendered. Videos will be included in the next static-site build from public/tutorial-videos/. Manifest: public/tutorial-videos/manifest.json\n');
 if (failed) process.exitCode = 1;
