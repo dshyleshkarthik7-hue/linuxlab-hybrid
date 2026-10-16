@@ -48,6 +48,14 @@ assert.doesNotMatch(developerAlpine, /application\/ld\+json/i, 'developer Alpine
 assert.doesNotMatch(simulator, /<script(?![^>]+src=)[^>]*>/i, 'simulator must not contain inline scripts');
 assert.doesNotMatch(simulator, /application\/ld\+json/i, 'simulator must not contain inline JSON-LD under strict CSP');
 
+const packageJson = JSON.parse(await read('package.json'));
+assert.match(packageJson.scripts.predev || '', /build-database\.mjs/, 'Development startup must regenerate catalog assets');
+const beginner = await read('beginner/index.html');
+assert.match(beginner, /200 Essential Linux Commands/, 'Beginner page must retain its separate 200-command curriculum');
+assert.match(beginner, /\.\.\/commands\//, 'Beginner page must link to the complete catalog separately');
+const commandEntry = await read('commands-entry.html');
+assert.match(commandEntry, /complete 6,161-command reference independently of the beginner curriculum/i, 'Full catalog page must remain distinct from beginner curriculum');
+assert.match(commandEntry, /href=\"\/beginner\/\">Open the 200-command beginner path/, 'Full catalog page should offer a separate beginner path');
 const headers = await read('netlify.toml');
 const cspGenerator = await read('scripts/generate-netlify-headers.mjs');
 assert.match(cspGenerator, /Strict-Transport-Security/);

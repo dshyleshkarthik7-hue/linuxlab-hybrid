@@ -19,4 +19,10 @@ if (canonical.records?.length !== canonicalCount) throw new Error(`Canonical tar
 if (Number(index.target?.minimumEntries) < 6000) throw new Error(`Catalog minimum is ${index.target?.minimumEntries}; expected at least 6000`);
 if (Number(canonical.uniqueRecordNames) !== canonicalCount) throw new Error(`Canonical unique name count ${canonical.uniqueRecordNames} does not match ${canonicalCount}`);
 
+const databaseScript = await readFile("scripts/commands/build-database.mjs", "utf8");
+const packageJson = JSON.parse(await readFile("package.json", "utf8"));
+if (!packageJson.scripts.predev?.includes("build-database.mjs")) throw new Error("Development startup must regenerate the full command catalog");
+if (!databaseScript.includes("public/command-index.json")) throw new Error("Canonical catalog generator must produce the public index");
+
+
 console.log(`${EXPECTED_COMMANDS}-command verification passed; ${EXPECTED_CURRICULUM}-command beginner curriculum preserved`);

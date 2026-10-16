@@ -8,6 +8,10 @@ const html = readFileSync(join(root, 'index.html'), 'utf8');
 for (const route of ['/beginner/','/learn/','/challenges/','/quiz/','/progress/','/certificate/']) assert.ok(html.includes(`href=\"${route}\"`), `Homepage missing route: ${route}`);
 const beginner = readFileSync(join(root, 'beginner/index.html'), 'utf8');
 for (const marker of ['200 Essential Linux Commands','id=\"commands\"','id=\"command-catalog-body\"']) assert.ok(beginner.includes(marker), `Beginner page lost 200-command catalogue marker: ${marker}`);
+assert.match(beginner, /<title>Learn Linux Online — 200 Essential Commands/, 'Beginner metadata must describe the 200-command path');
+assert.match(beginner, /href=\"\.\.\/commands\/\"/, 'Beginner page must link to the independent full catalog');
+assert.match(beginner, /CURATED 200-COMMAND BEGINNER CURRICULUM/, 'Beginner catalog section must not be labelled as the full catalog');
+assert.doesNotMatch(beginner, /href=\"#commands\">6,161 Commands/, 'Full-catalog navigation must not point to the 200-command section');
 const learn = readFileSync(join(root, 'learn/index.html'), 'utf8');
 assert.ok(learn.includes('/learn/learn.css') && learn.includes('/progress.js'), 'Tutorial assets missing');
 const challenges = readFileSync(join(root, 'challenges/index.html'), 'utf8');
@@ -48,6 +52,9 @@ for (const command of commandDatabase.records.filter(({ page }) => page.status =
 }
 const entry = readFileSync(join(root, 'commands-entry.html'), 'utf8');
 assert.match(entry, /6,161 Linux Commands|6,161-command/i, 'Commands route must identify the current canonical command reference');
+assert.match(entry, /complete 6,161-command reference independently of the beginner curriculum/i, 'Full catalog must be described independently');
+assert.match(entry, /href=\"\/beginner\/\">Open the 200-command beginner path/, 'Catalog page must link to beginner learning as a separate path');
+assert.doesNotMatch(entry, /href=\"\/beginner\/#commands\">Open the full beginner reference/, 'Full catalog CTA must not point to beginner commands');
 assert.match(entry, /canonical 6,161-command catalog|complete catalogue/i, 'Commands route must describe the full canonical catalogue');
 assert.ok(entry.includes('id=\"list\"') && entry.includes('id=\"search\"') && entry.includes('id=\"category\"') && entry.includes('id=\"count\"'), 'Commands catalogue controls missing');
 for (const command of commands) assert.ok(entry.includes(`/commands/${command}.html`), `Commands catalogue missing dedicated lesson ${command}`);
