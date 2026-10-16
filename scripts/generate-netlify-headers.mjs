@@ -3,6 +3,7 @@ import { createHash } from 'node:crypto';
 
 const scriptOrigin = (process.env.CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN || '').trim();
 const connectOrigin = (process.env.CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN || '').trim();
+const MAX_HEADER_LINE_BYTES = 8192;
 
 async function analyticsHashes() {
   const hashes = new Set();
@@ -12,9 +13,14 @@ async function analyticsHashes() {
       if (entry.isDirectory()) await walk(file);
       else if (entry.name.endsWith('.html')) {
         const html = await readFile(file, 'utf8');
-        for (const match of html.matchAll(/<script(?:\s[^>]*)?>([\s\S]*?)<\/script>/gi)) {
-          const body = match[1];
-          if (body) hashes.add(`'sha256-${createHash('sha256').update(body).digest('base64')}'`);
+        for (const match of html.matchAll(/<script(\\s[^>]*)?>([\\s\\S]*?)<\\/script>/gi)) {
+          const attrs = match[1] || '';
+          const typeMatch = attrs.match(/\\btype\\s*=\\s*(?:"([^"]*)"|'([^']*)'|([^\\s>]+))/i);
+          const type = (typeMatch?.[1] ?? typeMatch?.[2] ?? typeMatch?.[3] ?? '').trim().toLowerCase();
+          // CSP hashes only authorize executable inline scripts. JSON-LD and other data blocks are not executable.
+          if (type && !['module', 'text/javascript', 'application/javascript', 'application/ecmascript', 'text/ecmascript'].includes(type)) continue;
+          const body = match[2];
+          if (body.trim()) hashes.add(`'sha256-${createHash('sha256').update(body).digest('base64')}'`);
         }
       }
     }
@@ -36,7 +42,7 @@ function origin(value, name) {
 const scriptHost = origin(scriptOrigin, 'CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN');
 const connectHost = origin(connectOrigin, 'CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN');
 const scriptSrc = ["'self'", "'wasm-unsafe-eval'", "'sha256-Ob/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs='", ...(await analyticsHashes()), 'https://netlify-rum.netlify.app', scriptHost].filter(Boolean).join(' ');
-const connectSrc = ["'self'", 'https://linuxterminal.me', 'https://www.linuxterminal.me', 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev', 'https://huggingface.co', 'https://github.com', connectHost].filter(Boolean).join(' ');
+const connectSrc = ["'self'", 'https://linuxterminal.me', 'https://www.linuxterminal.me', 'https://linuxterminal-iso.dshyleshkarthikthik7.workers.dev', 'https://huggingface.co', 'https://github.com', connectHost].filter(Boolean).join(' ');
 
 const security = `Strict-Transport-Security: max-age=31536000; includeSubDomains
 X-Content-Type-Options: nosniff
@@ -52,33 +58,34 @@ const beginnerCsp = `default-src 'self'; script-src 'self' https://identity.netl
 const vmCsp = `default-src 'self'; script-src ${scriptSrc}; style-src 'self' 'unsafe-inline'; connect-src ${connectSrc}; img-src 'self' data:; font-src 'self'; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report; report-to csp-endpoint`;
 
 await mkdir('dist', { recursive: true });
+const htmlCache = 'CDN-Cache-Control: public, max-age=3600, stale-while-revalidate=86400';
+const assetCache = 'CDN-Cache-Control: public, max-age=86400, stale-while-revalidate=604800';
 const headerBlock = (csp) => `${security}
 Content-Security-Policy: ${csp}
 Reporting-Endpoints: csp-endpoint="/api/csp-report"
 ${htmlCache}`;
-const htmlCache = 'CDN-Cache-Control: public, max-age=3600, stale-while-revalidate=86400';
-const assetCache = 'CDN-Cache-Control: public, max-age=86400, stale-while-revalidate=604800';
+const indentHeaders = (block) => block.split('\\n').map((line) => `  ${line}`).join('\\n');
 
-await writeFile('dist/_headers', `/*
-  ${headerBlock(commonCsp)}
+const headers = `/*
+${indentHeaders(headerBlock(commonCsp))}
 
   /login/*
-  ${headerBlock(loginCsp)}
+${indentHeaders(headerBlock(loginCsp))}
 
   /beginner/*
-  ${headerBlock(beginnerCsp)}
+${indentHeaders(headerBlock(beginnerCsp))}
 
   /real-linux/*
-  ${headerBlock(vmCsp)}
+${indentHeaders(headerBlock(vmCsp))}
 
   /developer-alpine/*
-  ${headerBlock(vmCsp)}
+${indentHeaders(headerBlock(vmCsp))}
 
   /index-v86.html
-  ${headerBlock(vmCsp)}
+${indentHeaders(headerBlock(vmCsp))}
 
   /developer-alpine/index.html
-  ${headerBlock(vmCsp)}
+${indentHeaders(headerBlock(vmCsp))}
 
   /*.css
   ${assetCache}
@@ -88,5 +95,9 @@ await writeFile('dist/_headers', `/*
 
   /*.svg
   ${assetCache}
-`);
-console.log('[LinuxLab] Generated deploy security headers with separate HTTP headers and CSP directives.');
+`;
+
+const oversizedLines = headers.split('\\n').map((line) => Buffer.byteLength(line, 'utf8')).filter((bytes) => bytes > MAX_HEADER_LINE_BYTES);
+if (oversizedLines.length) throw new Error(`Generated _headers contains a line exceeding ${MAX_HEADER_LINE_BYTES} bytes`);
+await writeFile('dist/_headers', headers);
+console.log(`[LinuxLab] Generated deploy security headers; ${(await analyticsHashes()).length} executable inline-script hashes included.`);
