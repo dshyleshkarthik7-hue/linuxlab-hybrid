@@ -35,6 +35,15 @@ const libraryHtml = await readFile(resolve(root, 'learn/library/index.html'), 'u
 assert.ok(curriculum.lessonCount >= 500, 'The structured curriculum must contain at least 500 lessons');
 assert.equal(curriculum.lessons.length, curriculum.lessonCount, 'Curriculum count must match lesson records');
 assert.ok(new Set(curriculum.lessons.map(lesson => lesson.id)).size === curriculum.lessonCount, 'Lesson IDs must be unique');
+assert.equal(curriculum.schemaVersion, 2, 'Curriculum must use the current validated schema');
+assert.equal(curriculum.topicCount, new Set(curriculum.lessons.map(lesson => lesson.topic)).size, 'Declared topic count must match unique topics');
+assert.ok(curriculum.topicCount >= 40, 'Curriculum should cover a broad range of distinct topics');
+assert.equal(new Set(curriculum.lessons.map(lesson => lesson.exercise)).size, curriculum.lessonCount, 'Learning activities must have distinct exercises, not copied template prompts');
+assert.equal(new Set(curriculum.lessons.map(lesson => lesson.objective)).size, curriculum.lessonCount, 'Learning activities must have distinct objectives');
+assert.ok(curriculum.lessons.every(lesson => lesson.topic && lesson.tags?.includes(lesson.topic)), 'Each activity must be tied to an explicit topic');
+assert.ok(curriculum.lessons.every(lesson => !/catalog entry; purpose and availability are not verified|not a completed learning reference/i.test(lesson.explanation)), 'Curriculum activities must not contain placeholder catalogue copy');
+assert.match(libraryHtml, /guided activities/i, 'Library must describe the records accurately as guided activities');
+assert.match(libraryHtml, /topic/i, 'Library must communicate its topic-based organization');
 for (const lesson of curriculum.lessons) {
   assert.ok(lesson.title && lesson.objective && lesson.explanation && lesson.workedExample && lesson.expectedResult && lesson.exercise && lesson.knowledgeCheck && lesson.answer, `Lesson ${lesson.id} must include all teaching sections`);
 }
