@@ -11,6 +11,7 @@
  */
 import { readFile, mkdir, writeFile, mkdtemp, rm } from 'node:fs/promises';
 import os from 'node:os';
+import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { generateVideo } from './generate-tutorial-video.mjs';
@@ -26,6 +27,12 @@ if (!(limit === Infinity || (Number.isInteger(limit) && limit > 0))) {
   throw new Error('--limit must be a positive integer.');
 }
 if (limit === Infinity && !all) throw new Error('Use --all to explicitly render the full curriculum.');
+for (const binary of [process.env.FFMPEG || 'ffmpeg', process.env.FFPROBE || 'ffprobe']) {
+  const probe = spawnSync(binary, ['-version'], { encoding: 'utf8', windowsHide: true });
+  if (probe.error || probe.status !== 0) {
+    throw new Error('Required video tool is unavailable: ' + binary + '. Install FFmpeg with drawtext/libx264 and ffprobe, then retry.');
+  }
+}
 const curriculum = JSON.parse(await readFile(path.join(root, 'learn/curriculum.json'), 'utf8'));
 if (!Array.isArray(curriculum.lessons) || curriculum.lessons.length !== curriculum.lessonCount) {
   throw new Error('Curriculum data is empty or its lesson count is inconsistent.');
@@ -34,7 +41,13 @@ const selected = curriculum.lessons.filter(lesson => !track || lesson.track.toLo
 if (!selected.length) throw new Error('No curriculum lessons matched the requested track.');
 const outputRoot = path.join(root, 'public', 'tutorial-videos');
 await mkdir(outputRoot, { recursive: true });
-const manifest = [];
+const manifestPath = path.join(outputRoot, 'manifest.json');
+let priorEntries = [];
+try {
+  const prior = JSON.parse(await readFile(manifestPath, 'utf8'));
+  if (Array.isArray(prior.lessons)) priorEntries = prior.lessons;
+} catch { /* First run: no manifest exists yet. */ }
+const entriesById = new Map(priorEntries.filter(entry => entry && typeof entry.id === 'string').map(entry => [entry.id, entry]));
 const inputRoot = await mkdtemp(path.join(os.tmpdir(), 'linuxterminal-curriculum-video-'));
 let failed = 0;
 for (let i = 0; i < selected.length; i++) {
@@ -55,15 +68,17 @@ for (let i = 0; i < selected.length; i++) {
   try {
     await writeFile(input, JSON.stringify(videoLesson, null, 2) + '\n', 'utf8');
     await generateVideo(input, output);
-    manifest.push({ id: lesson.id, title: lesson.title, video: path.basename(output), status: 'rendered' });
+    entriesById.set(lesson.id, { id: lesson.id, title: lesson.title, video: path.basename(output), status: 'rendered' });
     process.stdout.write('[' + (i + 1) + '/' + selected.length + '] ' + lesson.title + '\n');
   } catch (error) {
     failed++;
-    manifest.push({ id: lesson.id, title: lesson.title, status: 'failed', error: String(error.message || error) });
+    entriesById.set(lesson.id, { id: lesson.id, title: lesson.title, status: 'failed', error: String(error.message || error) });
     process.stderr.write('Failed: ' + lesson.title + ': ' + String(error.message || error) + '\n');
   }
 }
-await writeFile(path.join(outputRoot, 'manifest.json'), JSON.stringify({ totalSelected: selected.length, rendered: manifest.filter(x => x.status === 'rendered').length, failed, lessons: manifest }, null, 2) + '\n', 'utf8');
-process.stdout.write('Video batch finished: ' + manifest.filter(x => x.status === 'rendered').length + '/' + selected.length + ' rendered. Videos will be included in the next static-site build from public/tutorial-videos/. Manifest: public/tutorial-videos/manifest.json\n');
+const manifest = [...entriesById.values()];
+const selectedRendered = selected.filter(lesson => entriesById.get(lesson.id)?.status === 'rendered').length;
+await writeFile(manifestPath, JSON.stringify({ schemaVersion: 1, totalSelected: selected.length, rendered: manifest.filter(x => x.status === 'rendered').length, failed: manifest.filter(x => x.status === 'failed').length, lessons: manifest }, null, 2) + '\n', 'utf8');
+process.stdout.write('Video batch finished: ' + selectedRendered + '/' + selected.length + ' selected lessons rendered. Manifest retains prior entries at public/tutorial-videos/manifest.json\n');
 await rm(inputRoot, { recursive: true, force: true });
 if (failed) process.exitCode = 1;
