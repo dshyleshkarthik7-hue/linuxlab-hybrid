@@ -18,10 +18,14 @@ assert.match(runtime, /deviceMemory < LOW_MEMORY_THRESHOLD_GB/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(csp, /frame-ancestors 'none'/);
 for (const header of ['X-Content-Type-Options','Referrer-Policy','Permissions-Policy','Cross-Origin-Opener-Policy','Cross-Origin-Resource-Policy']) assert.match(csp, new RegExp(header), `global security header missing from generated headers: ${header}`);
-assert.match(csp, /const loginCsp = `[^`]*style-src 'self' 'unsafe-inline'/);
-assert.match(csp, /const commonCsp = `[^`]*style-src 'self'/);
-const commonCsp = csp.match(/const commonCsp = `([^`]*)`/)?.[1] || '';
-assert.doesNotMatch(commonCsp, /unsafe-inline/);
+// Check the effective policy declarations without requiring a specific JS quote style.
+assert.match(csp, /const loginCsp = (?:"[^"\n]*style-src 'self' 'unsafe-inline'"|`[^`]*style-src 'self' 'unsafe-inline'`)/,
+  'login CSP must allow inline styles required by the identity provider');
+const commonCspDeclaration = csp.match(/const commonCsp = ([^\n]+)/)?.[1] || '';
+assert.match(commonCspDeclaration, /style-src 'self'/,
+  'common CSP must keep styles restricted to self');
+assert.doesNotMatch(commonCspDeclaration, /unsafe-inline/,
+  'common CSP must not permit unsafe inline styles');
 assert.match(csp, /report-to csp-endpoint/);
 assert.match(csp, /Reporting-Endpoints: csp-endpoint="\/api\/csp-report"/);
 assert.doesNotMatch(csp, /analyticsBootstrapHash|analyticsInlineHash/);
