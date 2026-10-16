@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "predev": "node scripts/commands/build-database.mjs && node scripts/commands/build-intelligence.mjs && node scripts/commands/build-command-pages.mjs",
     "prebuild": "node scripts/commands/build-database.mjs && node scripts/commands/build-intelligence.mjs && node scripts/commands/build-command-pages.mjs && node scripts/fetch-v86-firmware.mjs && node scripts/generate-static-redirects.mjs",
     "build": "tsc && vite build && node scripts/generate-netlify-headers.mjs && node scripts/generate-build-info.mjs",
     "preview": "vite preview",

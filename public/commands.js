@@ -7,10 +7,15 @@ async function loadCommands() {
   const response = await fetch('/command-index.json', { credentials: 'omit' });
   if (!response.ok) throw new Error('Command index unavailable');
   const payload = await response.json();
-  return Array.isArray(payload.records) ? payload.records : [];
+  if (!Array.isArray(payload.records) || !Number.isInteger(payload.recordCount) ||
+      payload.recordCount < 6000 || payload.recordCount !== payload.records.length) {
+    throw new Error('Canonical command index is incomplete');
+  }
+  return payload.records;
 }
 
 loadCommands().then((commands) => {
+  if (search) search.value = new URLSearchParams(window.location.search).get('q') || '';
   for (const value of [...new Set(commands.map((item) => item.category))].sort()) {
     const option = document.createElement('option'); option.value = value; option.textContent = value[0].toUpperCase() + value.slice(1); category?.appendChild(option);
   }
