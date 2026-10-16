@@ -91,5 +91,23 @@ const records=db.records.map((r)=> {
     }
   };
 });
+const bzexe=records.find(c=>c.name==="bzexe");
+if(bzexe){
+  bzexe.intelligence={
+    status:"complete",version:3,
+    definition:"bzexe is a Debian-family shell utility from the bzip2 package that can compress an executable and produce a small launcher script which decompresses it when run. It is not a general-purpose archive manager, and it is not installed on every Linux distribution.",
+    explanation:"The utility is intended for reducing the on-disk size of executable files where its wrapper-based approach is appropriate. The generated launcher needs the decompressor and a writable location for the expanded executable at runtime. Treat generated output as executable code and inspect it before distribution; do not use this as a substitute for a normal package or a transparent deployment format.",
+    syntax:"bzexe [options] file ...",
+    tagline:"Compress executable files using a launcher wrapper (availability is distribution/package-specific).",
+    options:[["-d","Decompress a file previously processed by bzexe, where supported by the installed implementation."]],
+    examples:["command -v bzexe","man bzexe","bzexe -d ./sample-program"],
+    internals:["The shell resolves bzexe through PATH; the utility is commonly supplied by Debian-family bzip2 packaging rather than by every Linux installation.","The script checks its arguments and selects the executable files to process.","The implementation uses bzip2 compression and creates or updates a launcher/wrapper arrangement; exact filenames and details depend on the packaged script version.","At launch, the wrapper invokes a decompressor to make the program available, then transfers control to the executable.","The process returns a status, and diagnostics may be written to standard error."],
+    concepts:["bzip2 compression","shell launcher scripts","runtime decompression","executable permissions","package-specific utilities"],
+    mistakes:["Do not assume bzexe exists on Alpine, BusyBox-only, BSD, or minimal containers.","Do not run it on system binaries or production executables without backups and a rollback plan.","Inspect generated wrapper scripts before running or distributing them.","Do not assume compression makes an executable safer or protects its contents.","Check the local man page and package version because implementation details can vary."],
+    related:["bzip2","bunzip2","bzip2recover","file","command"],
+    distroNotes:["Usually associated with Debian-family bzip2 packaging; verify the installed package contents on Debian or Ubuntu.","Not guaranteed to be present on Alpine or BusyBox-focused systems.","Other distributions may omit the wrapper utility even when bzip2 itself is installed."],
+    lesson:{family:"archives",learningPath:["Check availability with command -v bzexe and inspect the local manual.","Use a disposable executable in a temporary directory rather than a system program.","Inspect all files created or modified by the tool before executing the wrapper.","Test runtime dependencies and verify the original executable can be restored."]}
+  };
+}
 const out={schemaVersion:2,generatedFrom:"data/commands/canonical.json",records:Object.fromEntries(records.map(c=>[c.name,{id:c.id,name:c.name,url:c.url,...c.intelligence}]))};
 await writeFile(path.join(root,"public/command-intelligence.json"),JSON.stringify(out,null,2)+"\n");console.log("[command-intelligence] generated "+records.length+" deep lesson records");
