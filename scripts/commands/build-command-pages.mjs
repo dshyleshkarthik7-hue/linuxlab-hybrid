@@ -14,7 +14,7 @@ const escapeHtml = (value) => String(value ?? "")
   .replace(/"/g, "&quot;");
 
 const escapeJson = (value) => JSON.stringify(value).replace(/</g, "\\u003c");
-const isIndexable = (command) => command.page?.status === "complete" || Boolean(String(command.summary || "").trim() && String(command.example || "").trim());
+const isIndexable = (command, intelligenceRecord) => command.page?.status === "complete" || command.intelligence?.status === "complete" || intelligenceRecord?.status === "complete" || Boolean(String(command.summary || "").trim() && String(command.example || "").trim());
 
 const relatedLinks = (items = []) => items.map((name) => {
   const target = data.records.find((r) => r.name === name);
@@ -28,7 +28,7 @@ for (const command of data.records) {
   const summary = hasVerifiedReference ? (lesson.definition || lesson.explanation || lesson.tagline || command.summary) : (command.summary || "Catalogue entry only. A command-specific explanation has not yet been reviewed and published.");
   const syntax = hasVerifiedReference ? lesson.syntax : "Not published — verify the local command before use.";
   const examples = hasVerifiedReference ? lesson.examples.filter((example) => typeof example === "string" && example.trim()) : [];
-  const indexable = isIndexable(command);
+  const indexable = isIndexable(command, intelligence.records?.[command.name]);
   const outputPath = path.join(out, path.basename(command.url));
 
   // Preserve curated command lessons: prebuild must not replace hand-authored UI with boilerplate.
