@@ -4,7 +4,7 @@ import runtimeConfig from '../config/runtime.json' with { type: 'json' };
 
 const scriptOrigin = (process.env.CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN || '').trim();
 const connectOrigin = (process.env.CLOUDFLARE_INSIGHTS_CONNECT_ORIGIN || '').trim();
-const isoWorkerOrigin = (process.env.ISO_WORKER_ORIGIN || runtimeConfig.isoWorkerOrigin).trim();
+const isoWorkerOrigin = runtimeConfig.isoWorkerOrigin;
 const MAX_HEADER_LINE_BYTES = 8192;
 
 function origin(value, name) {
