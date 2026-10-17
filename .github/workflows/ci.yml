@@ -64,7 +64,7 @@ jobs:
           npm cache verify
           npm ci --ignore-scripts --prefer-offline
       - name: Verify required build and test packages
-        run: node -e "for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p + '/package.json'); if (!f) process.exit(1); console.log('verified', p, f); }"
+        run: node -e "for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p); if (!f) process.exit(1); console.log('verified', p, f); }"
       - run: npm audit --audit-level=high
       - name: Write dependency audit artifact
         if: always()
