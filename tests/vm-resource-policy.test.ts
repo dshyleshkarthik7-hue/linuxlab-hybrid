@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { VM_RESOURCE_POLICIES, VMRuntimeResourceEnforcer, guestObservedLimits, hostEnforcedLimits } from '../src/engine/VMResourcePolicy.ts';
+import { VM_RESOURCE_POLICIES, VMRuntimeResourceEnforcer, configuredButNotHostEnforcedLimits, guestObservedLimits, hostEnforcedLimits } from '../src/engine/VMResourcePolicy.ts';
 
 for (const policy of Object.values(VM_RESOURCE_POLICIES)) {
   const enforcer = new VMRuntimeResourceEnforcer(policy, 1_000);
@@ -46,5 +46,8 @@ for (const policy of Object.values(VM_RESOURCE_POLICIES)) {
 assert.deepEqual(guestObservedLimits, ['cpuSeconds', 'processCount', 'filesystemBytes', 'memoryBytes']);
 assert.ok(hostEnforcedLimits.includes('vmMemoryAllocation'));
 assert.ok(hostEnforcedLimits.includes('networkDisabled'));
+assert.ok(configuredButNotHostEnforcedLimits.includes('commandTimeout'));
+assert.ok(configuredButNotHostEnforcedLimits.includes('pipelineStages'));
+assert.equal(hostEnforcedLimits.includes('commandTimeout'), false);
 
 console.log('VM resource policy enforcement checks passed');
