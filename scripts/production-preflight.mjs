@@ -52,7 +52,7 @@ try {
 const modelResponse = await fetch('https://router.huggingface.co/v1/chat/completions', {
   method: 'POST',
   headers: { authorization: 'Bearer ' + process.env.HF_TOKEN, 'content-type': 'application/json' },
-  body: JSON.stringify({ model: ROUTER_QWEN_MODEL, messages: [{ role: 'user', content: 'Reply with OK.' }], max_tokens: 2, temperature: 0 }),
+  body: JSON.stringify({ model: ROUTER_QWEN_MODEL, messages: [{ role: 'user', content: 'Reply with OK. /no_think' }], max_tokens: 8, temperature: 0 }),
   signal: AbortSignal.timeout(20000),
   cache: 'no-store',
 });
