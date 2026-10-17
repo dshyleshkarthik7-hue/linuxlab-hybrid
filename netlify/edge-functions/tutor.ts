@@ -265,7 +265,7 @@ export default async (request: Request, context: unknown) => {
     if (!response.ok) { await recordCircuitFailure(); return json({ error: 'Tutor provider is temporarily unavailable. Please try again shortly.' }, 503, origin, { 'retry-after': '30' }); }
     const data: unknown = await response.json();
     const answer = (data as HuggingFaceResponse)?.choices?.[0]?.message?.content;
-    if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin); }
+    if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ error: 'Tutor provider returned an invalid response. Please try again shortly.' }, 503, origin, { 'retry-after': '30' }); }
     await recordCircuitSuccess();
     const safeAnswer = answer.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, '').replace(/<\/?think>/gi, '').replace(CONTROL_CHARS, '').trim().slice(0, MAX_OUTPUT_CHARS);
     if (!safeAnswer) return json({ error: 'Tutor provider returned an empty response.' }, 503, origin);
