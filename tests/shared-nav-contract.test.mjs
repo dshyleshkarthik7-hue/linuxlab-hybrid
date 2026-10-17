@@ -9,7 +9,7 @@ for (const [label, href] of [['Learn', '/learn/'], ['Commands', '/commands/'], [
   assert.ok(nav.includes(`['${label}', '${href}']`), `shared nav must include ${label}`);
 }
 assert.match(nav, /Skip to main content/);
-assert.match(nav, /focus-visible/);
+assert.match(css, /focus-visible/);
 assert.doesNotMatch(nav, /innerHTML/);
 assert.match(injector, /dist/);
 assert.match(injector, /site-nav\.js/);
