@@ -90,8 +90,8 @@ function corsHeaders(request: Request): Headers {
   const headers = new Headers({
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
-    "Cache-Control": "public, max-age=31536000, immutable",
-    "CDN-Cache-Control": "public, max-age=31536000, immutable",
+    "Cache-Control": "public, max-age=60, stale-while-revalidate=300",
+    "CDN-Cache-Control": "public, max-age=60, stale-while-revalidate=300",
     "Access-Control-Allow-Headers": "Range, If-Range, If-None-Match, If-Modified-Since",
     "Access-Control-Expose-Headers": "Accept-Ranges, Content-Length, Content-Range, Content-Type, ETag, X-LinuxLab-SHA256, X-LinuxLab-Chunk-Start, X-LinuxLab-Chunk-End, X-LinuxLab-Chunk-Total, X-LinuxLab-Artifact-Size, X-LinuxLab-Worker-Protocol",
   });
