@@ -29,7 +29,7 @@ assert.match(resumableFetcher, /writeIsoChunkCache\(artifact, start, end, bytes\
 assert.match(resumableFetcher, /Promise\.all\(batch\.map\(\(\{ start, end \}\) => fetchRange\(url, start, end, artifact, signal\)\)\)/, 'chunk retrieval is coordinated in bounded batches');
 assert.match(resumableFetcher, /cacheAttempt < 2/, 'a failed whole-image digest gets one cache-cleared retry');
 assert.match(resumableFetcher, /clearIsoArtifactCache\(artifact\)/, 'whole-image digest mismatch invalidates cached chunks before retry');
-assert.match(resumableFetcher, /actual !== artifact\.sha256/, 'full image is rejected unless the pinned digest matches');
+assert.match(resumableFetcher, /actual\.toLowerCase\(\) === artifact\.sha256\.toLowerCase\(\)/, 'full image is accepted only when the pinned digest matches');
 
 const fixture = new TextEncoder().encode('The quick brown fox jumps over the lazy dog');
 const expected = createHash('sha256').update(fixture).digest('hex');
