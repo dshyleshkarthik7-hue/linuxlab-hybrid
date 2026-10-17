@@ -116,22 +116,95 @@ export class InBrowserLinuxEngine {
         output += ch;
         continue;
       }
-      if (ch === '
+      if (ch === '$' && quote !== "'") {
+        if (input[i + 1] === '?') {
+          output += String(this.exitCode);
+          i += 1;
+          continue;
+        }
+        const braced = input.slice(i + 1).match(/^\{([A-Za-z_][A-Za-z0-9_]*)\}/);
+        if (braced) {
+          output += this.env.get(braced[1]) ?? '';
+          i += braced[0].length;
+          continue;
+        }
+        const plain = input.slice(i + 1).match(/^([A-Za-z_][A-Za-z0-9_]*)/);
+        if (plain) {
+          output += this.env.get(plain[1]) ?? '';
+          i += plain[0].length;
+          continue;
+        }
+      }
+      output += ch;
+    }
+    return output;
+  }
+
+  public async execute(raw: string): Promise<string> {
+    const rawLine = raw.trim();
+    if (!rawLine) return '';
+    this.history.push(rawLine);
     const splitOperator = (input: string, operators: string[]) => {
-      const parts: string[] = []; const found: string[] = []; let current = ''; let quote = ''; let escaped = false;
-      for (let i = 0; i < input.length; i++) { const ch = input[i]; if (escaped) { current += ch; escaped = false; continue; } if (ch === '\\') { current += ch; escaped = true; continue; } if (ch === '"' || ch === "'") { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; } if (!quote) { const op = operators.find(candidate => input.startsWith(candidate, i)); if (op) { parts.push(current.trim()); found.push(op); current = ''; i += op.length - 1; continue; } } current += ch; }
-      parts.push(current.trim()); return { parts, operators: found };
+      const parts: string[] = [];
+      const found: string[] = [];
+      let current = '';
+      let quote = '';
+      let escaped = false;
+      for (let i = 0; i < input.length; i += 1) {
+        const ch = input[i];
+        if (escaped) { current += ch; escaped = false; continue; }
+        if (ch === '\\') { current += ch; escaped = true; continue; }
+        if (ch === '"' || ch === "'") {
+          if (!quote) quote = ch;
+          else if (quote === ch) quote = '';
+          current += ch;
+          continue;
+        }
+        if (!quote) {
+          const op = operators.find(candidate => input.startsWith(candidate, i));
+          if (op) { parts.push(current.trim()); found.push(op); current = ''; i += op.length - 1; continue; }
+        }
+        current += ch;
+      }
+      parts.push(current.trim());
+      return { parts, operators: found };
     };
     const runChain = async (input: string): Promise<{ output: string; failed: boolean }> => {
       const { parts, operators } = splitOperator(input, ['&&', '||']);
-      if (!operators.length) { const output = await this.executePipeline(parts[0]); return { output, failed: this.exitCode !== 0 }; }
-      let result = await runChain(parts[0]); let output = result.output;
-      for (let i = 0; i < operators.length; i++) { const op = operators[i]; const shouldRun = (op === '&&' && !result.failed) || (op === '||' && result.failed); if (!shouldRun) continue; const previousFailed = result.failed; const next = await runChain(parts[i + 1]); if (op === '||' && previousFailed) output = output === result.output ? next.output : (next.output ? output + '\n' + next.output : output); else if (next.output) output = output ? output + '\n' + next.output : next.output; result = next; }
+      if (!operators.length) {
+        const output = await this.executePipeline(this.expandVariables(parts[0]));
+        return { output, failed: this.exitCode !== 0 };
+      }
+      let result = await runChain(parts[0]);
+      let output = result.output;
+      for (let i = 0; i < operators.length; i += 1) {
+        const op = operators[i];
+        const shouldRun = (op === '&&' && !result.failed) || (op === '||' && result.failed);
+        if (!shouldRun) continue;
+        const previousFailed = result.failed;
+        const next = await runChain(parts[i + 1]);
+        if (op === '||' && previousFailed) output = output === result.output ? next.output : (next.output ? output + '\n' + next.output : output);
+        else if (next.output) output = output ? output + '\n' + next.output : next.output;
+        result = next;
+      }
       return { output, failed: result.failed };
     };
-    const sequence = splitOperator(line, [';']);
-    if (sequence.operators.length) { const outputs: string[] = []; let failed = false; for (const part of sequence.parts) { if (!part) continue; const result = await runChain(part); if (result.output) outputs.push(result.output); failed = result.failed; } this.exitCode = failed ? 1 : 0; return outputs.join('\n'); }
-    const result = await runChain(line); this.exitCode = result.failed ? 1 : 0; return result.output;
+    const sequence = splitOperator(rawLine, [';']);
+    if (sequence.operators.length) {
+      const outputs: string[] = [];
+      let failed = false;
+      for (const part of sequence.parts) {
+        if (!part) continue;
+        const result = await runChain(part);
+        if (result.output) outputs.push(result.output);
+        failed = result.failed;
+      }
+      this.exitCode = failed ? 1 : 0;
+      return outputs.join('\n');
+    }
+    const result = await runChain(rawLine);
+    this.exitCode = result.failed ? 1 : 0;
+    return result.output;
   }
 
   private async executePipeline(line: string): Promise<string> {
@@ -362,6 +435,7 @@ class EducationalCInterpreter {
   }
 
   protected async executeCommand(cmdLine: string, stdin = ''): Promise<string> {
+    const tokens = (cmdLine.match(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || []).map(token => token.replace(/^(['"])([\s\S]*)\1$/, '$2'));
     const cmd = tokens[0]; const args = tokens.slice(1); this.exitCode = 0;
     if (cmd?.startsWith('./')) { const binName = cmd.slice(2); const bin = this.readFile(binName); if (!bin) { this.exitCode = 127; return `bash: ${cmd}: No such file or directory`; } if (bin.startsWith('__TRANSPILED_C__:')) { const srcFile = bin.slice('__TRANSPILED_C__:'.length); const src = this.readFile(srcFile); if (src === null) { this.exitCode = 1; return `bash: ${cmd}: compiled source is unavailable`; } return this.executeGeneralCode(src, 'c', undefined, args); } this.exitCode = 126; return `bash: ${cmd}: cannot execute binary file`; }
     switch (cmd) {
