@@ -133,6 +133,9 @@ async function run() {
   assert.equal(await e.execute('tail -n 1 /tmp/regression/text'), 'beta');
   assert.equal(await e.execute('touch /tmp/regression/data /tmp/regression/log && ls /tmp/regression/data'), 'data');
   assert.equal(await e.execute('mv /tmp/regression/a /tmp/regression/a && cat /tmp/regression/a'), 'first');
+  assert.equal(await e.execute('export GREETING=world && echo "$GREETING"'), 'world');
+  assert.equal(await e.execute("echo '$GREETING'"), '$GREETING');
+  assert.equal(await e.execute('false; echo $?'), '1');
 
   console.log('LinuxTerminal engine checks passed');
 }
