@@ -80,9 +80,21 @@ const headers = [
     const normalized = relative.replace(/\\/g, '/');
     const kind = /(^|\/)login\//.test(normalized) ? 'login'
       : /(^|\/)beginner\//.test(normalized) ? 'beginner'
-      : /(^|\/)(real-linux|developer-alpine)\//.test(normalized) || /(^|\/)(index-v86|linux4|simulator)\.html$/.test(normalized) ? 'vm'
+      : /(^|\/)(real-linux|developer-alpine)\//.test(normalized) || /(^|\/)(index-v86|linux4)\.html$/.test(normalized) ? 'vm'
       : 'common';
-    return ['/' + normalized, indent('Content-Security-Policy: ' + policy(html, kind) + '\n' + htmlCache), ''];
+    const block = indent('Content-Security-Policy: ' + policy(html, kind) + '\n' + htmlCache);
+    const aliases = normalized === 'login/index.html' ? ['/login/*', '/login/', '/login']
+      : normalized === 'beginner/index.html' ? ['/beginner/*', '/beginner/', '/beginner']
+      : normalized === 'developer-alpine/index.html' ? ['/developer-alpine/*', '/developer-alpine/', '/developer-alpine']
+      : normalized === 'index-v86.html' ? ['/real-linux/*', '/real-linux/', '/real-linux']
+      : normalized === 'learn/index.html' ? ['/learn/*', '/learn/', '/learn', '/tutorials/*', '/tutorials/', '/tutorials']
+      : normalized === 'progress/index.html' ? ['/progress/*', '/progress/', '/progress']
+      : normalized === 'commands-entry.html' ? ['/commands/*', '/commands/', '/commands']
+      : normalized === 'certificate/index.html' ? ['/certificate/*', '/certificate/', '/certificate']
+      : normalized === 'verify/index.html' ? ['/verify/*', '/verify/', '/verify']
+      : [];
+    return [['/' + normalized, block], ...aliases.map((alias) => [alias, block])]
+      .flatMap(([route, headers]) => [route, headers, '']);
   }),
   '/*.css', '  ' + assetCache, '',
   '/*.js', '  ' + assetCache, '',
