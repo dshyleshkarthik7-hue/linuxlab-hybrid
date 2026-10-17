@@ -372,7 +372,8 @@ export class V86LinuxTerminal {
     const ch = this.serialDecoder.decode(Uint8Array.of(byte & 255), { stream: true });
     if (!ch) return;
     this.lastSerialAt = Date.now();
-    this.serial = (this.serial + ch).slice(-65536);
+    this.serial += ch;
+    if (this.serial.length > 65536) this.serial = this.serial.slice(-65536);
     // Guest identity comes from the pinned, verified image metadata, not arbitrary shell output.
     const accepted = this.enforcer.acceptOutput(ch);
     if (accepted.value) this.term.write(accepted.value);
