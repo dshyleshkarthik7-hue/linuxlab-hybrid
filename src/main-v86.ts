@@ -381,12 +381,6 @@ export class V86LinuxTerminal {
     if (this.shellReady) this.markReadyIfIdentityVerified();
   }
 
-  private detectGuestIdentity(text: string): GuestIdentity | null {
-    if (/(?:^|\r?\n)ID=alpine(?:\r?\n|$)/im.test(text) || /Alpine Linux/i.test(text)) return { kind: 'alpine', isAlpine: true, release: text.slice(-4096) };
-    if (/(?:^|\r?\n)(?:ID=buildroot|NAME=.*buildroot)(?:\r?\n|$)/im.test(text) || /Buildroot|Linux version/i.test(text)) return { kind: 'buildroot', isAlpine: false, release: text.slice(-4096) };
-    return null;
-  }
-
   private loadRuntime(signal: AbortSignal): Promise<void> {
     const runtimeWindow = window as RuntimeWindow;
     if (typeof runtimeWindow.V86Starter === 'function' || typeof runtimeWindow.V86 === 'function') return Promise.resolve();
