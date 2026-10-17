@@ -19,6 +19,9 @@
   path = "/api/tutor"
   function = "tutor"
 [[edge_functions]]
+  path = "/api/careers-jobs"
+  function = "careers-jobs"
+[[edge_functions]]
   path = "/api/csp-report"
   function = "csp-report"
 
