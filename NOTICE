@@ -1,10 +1,11 @@
-LinuxLab Hybrid redistributes browser/runtime assets from third-party projects.
+LinuxTerminal (formerly LinuxLab Hybrid) redistributes browser/runtime assets from third-party projects.
 
 Third-party components include:
 - v86 — x86 virtualization in the browser. See the upstream project and its license.
 - xterm.js — terminal emulator components used by the browser UI.
 - Monaco Editor — code editor components used by the learning simulator.
 - SeaBIOS and VGABIOS — firmware assets used by the browser VM.
+- Alpine Linux packages in the custom ISO — each package remains under its own upstream license; see the package inventory and license texts produced for each release.
 
 This NOTICE does not replace the upstream license terms. The repository's proprietary
 LICENSE applies only to original LinuxLab code and content and does not override
