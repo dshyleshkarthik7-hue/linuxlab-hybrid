@@ -75,7 +75,8 @@
     "typecheck:functions": "tsc --project tsconfig.functions.json",
     "check:installed-deps": "node -e \"for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p); if (!f) process.exit(1); console.log('verified', p, f); }\"",
     "test:careers-jobs": "node tests/careers-jobs-contract.test.mjs",
-    "test:shared-nav": "node tests/shared-nav-contract.test.mjs"
+    "test:shared-nav": "node tests/shared-nav-contract.test.mjs",
+    "release:preflight": "node scripts/production-preflight.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
