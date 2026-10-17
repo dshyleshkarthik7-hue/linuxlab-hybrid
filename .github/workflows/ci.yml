@@ -136,6 +136,19 @@ jobs:
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
           PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
         run: npm run test:preview
+      - name: Live release preflight (explicitly approved release gate)
+        if: github.event_name == 'workflow_dispatch' && inputs.run_production_smoke == true
+        env:
+          MONGODB_URI: ${{ secrets.MONGODB_URI }}
+          MONGODB_DB: ${{ secrets.MONGODB_DB }}
+          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
+          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
+          CERTIFICATE_SIGNING_KEYS: ${{ secrets.CERTIFICATE_SIGNING_KEYS }}
+          CERTIFICATE_SIGNING_KEY_ID: ${{ secrets.CERTIFICATE_SIGNING_KEY_ID }}
+          CERTIFICATE_ALLOWED_ORIGINS: ${{ secrets.CERTIFICATE_ALLOWED_ORIGINS }}
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_MODEL: ${{ secrets.HF_MODEL }}
+        run: npm run release:preflight
       - name: Production smoke (explicitly approved release gate)
         if: github.event_name == 'workflow_dispatch' && inputs.run_production_smoke == true
         env:
