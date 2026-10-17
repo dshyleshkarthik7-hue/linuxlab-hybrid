@@ -86,15 +86,15 @@
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
-    "mongodb": "6.20.0",
+    "mongodb": "6.21.0",
     "@xterm/xterm": "5.5.0",
     "@xterm/addon-fit": "0.11.0"
   },
   "devDependencies": {
     "esbuild": "0.28.2",
     "typescript": "5.9.3",
-    "vite": "8.3.1",
-    "playwright": "1.56.0"
+    "vite": "8.3.4",
+    "playwright": "1.64.1"
   },
   "engines": {
     "node": ">=22.0.0",
