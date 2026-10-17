@@ -20,7 +20,7 @@ The guest kernel is not running on a shared Linux host, but the host browser and
 CORS Origin checks are not authentication because non-browser clients can forge the header. Rate limits must use a real client identity or signed short-lived tokens where needed; ensure a Netlify-to-Cloudflare proxy does not collapse all clients into one egress-IP bucket.
 
 ## Single model policy
-Use only Qwen/Qwen3-8B for Tutor and optional certificate-study explanations, pinned to the immutable revision in docs/PRODUCTION.md. Keep the provider token server-side. The certificate grader remains deterministic; model output is explanatory and never authoritative for scoring or signing.
+Use the documented Hugging Face Inference Providers model-ID syntax for Tutor and optional certificate-study explanations. The OpenAI-compatible Router model field does not document `@<commit-sha>` revision pinning; do not claim an immutable model revision when using this API. Verify the configured model with a live staging request before release, and keep the provider token server-side. The certificate grader remains deterministic; model output is explanatory and never authoritative for scoring or signing.
 
 ## Ads and sponsorship
 Use a first-party, clearly labeled sponsor card after the lesson or at the end of a tutorial. Do not place ads in the terminal viewport, VM boot UI, certificate assessment, login, or recovery dialogs. Avoid popups, autoplay audio/video, sticky overlays, layout shifts, or third-party scripts on VM routes. Disclose affiliate links and use aggregate, privacy-respecting measurement.
@@ -31,4 +31,4 @@ Before production rollout, require npm ci, typecheck/build, static security, com
 
 ## AI-assisted certificate study feedback
 
-Tutor and certificate study feedback use the same pinned `Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218` model. The model only explains server-derived topic labels and suggests study tasks; server-side deterministic grading, HMAC signing, issuance, and verification remain authoritative. The feedback endpoint is authenticated, topic-allowlisted, and rate-limited.
+Tutor and certificate study feedback use the same configured `Qwen/Qwen3-8B` model identifier. This identifier is not an immutable revision pin. The model only explains server-derived topic labels and suggests study tasks; server-side deterministic grading, HMAC signing, issuance, and verification remain authoritative. The feedback endpoint is authenticated, topic-allowlisted, and rate-limited.
