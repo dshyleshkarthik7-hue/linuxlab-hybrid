@@ -157,13 +157,15 @@ function buildQuestionBank(): Q[] {
         t: category
       });
     }
-    result.push({
-      id: `cmd-${index}-category`,
-      q: `Which catalog category contains the ${name} command?`,
-      c: choices(category, categories, categories),
-      a: category,
-      t: category
-    });
+    if (summary || example) {
+      result.push({
+        id: `cmd-${index}-category`,
+        q: `Which catalog category contains the ${name} command?`,
+        c: choices(category, categories, categories),
+        a: category,
+        t: category
+      });
+    }
     if (example) {
       result.push({
         id: `cmd-${index}-example`,
