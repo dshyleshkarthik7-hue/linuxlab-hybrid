@@ -105,7 +105,7 @@ function buildQuestionBank(): Q[] {
     const distractors = [...new Set([...pool, ...fallback])]
       .map(value => String(value).trim())
       .filter(value => value && value !== answer);
-    const selected = distractors.slice(0, 3);
+    const selected = shuffle(distractors).slice(0, 3);
     if (selected.length < 3) throw new Error('Verified exam catalog has too few unique distractors');
     const result = [...new Set([answer, ...selected])];
     if (result.length !== 4 || result.filter(value => value === answer).length !== 1) {
