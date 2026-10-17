@@ -25,7 +25,9 @@ for (const command of data.records) {
   const lesson = intelligence.records?.[command.name] || command.intelligence || {};
   const hasAuthoredLesson = command.page?.status === "complete" || command.intelligence?.status === "complete" || intelligence.records?.[command.name]?.status === "complete";
   const hasVerifiedReference = Boolean(hasAuthoredLesson && String(lesson.definition || lesson.explanation || "").trim() && String(lesson.syntax || "").trim() && Array.isArray(lesson.examples) && lesson.examples.length > 0 && Array.isArray(lesson.internals) && lesson.internals.length > 0);
-  const summary = hasVerifiedReference ? (lesson.definition || lesson.explanation || lesson.tagline || command.summary) : (command.summary || "Catalogue entry only. A command-specific explanation has not yet been reviewed and published.");
+  const rawSummary = hasVerifiedReference ? (lesson.definition || lesson.explanation || lesson.tagline || command.summary) : (command.summary || "Catalogue entry only. A command-specific explanation has not yet been reviewed and published.");
+  // Keep descriptions useful and within the 320-character metadata contract.
+  const summary = String(rawSummary).replace(/\\s+/g, " ").trim().slice(0, 190);
   const syntax = hasVerifiedReference ? lesson.syntax : "Not published — verify the local command before use.";
   const examples = hasVerifiedReference ? lesson.examples.filter((example) => typeof example === "string" && example.trim()) : [];
   const indexable = isIndexable(command, intelligence.records?.[command.name]);
