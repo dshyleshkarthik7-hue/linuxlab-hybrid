@@ -126,4 +126,4 @@ for (const command of data.records) {
   await writeFile(outputPath, html);
 }
 
-console.log(`[commands] processed ${data.records.length} command records; sitemap contains ${sitemapRoutes.length} URLs (curated pages preserved)`);
+console.log(`[commands] processed ${data.records.length} command records (curated pages preserved)`);
