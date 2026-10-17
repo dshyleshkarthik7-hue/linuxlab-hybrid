@@ -215,3 +215,27 @@
   from = "/commands/tail/"
   to = "/commands/tail.html"
   status = 301
+
+# Runtime emulator assets are fetched only when a VM is started. Keep browser
+# caches revalidating mutable root filenames while allowing Netlify's edge cache
+# to serve them efficiently. SHA-256 checks protect the BIOS binaries in runtime.
+[[headers]]
+  for = "/v86.wasm"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Netlify-CDN-Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+    Content-Type = "application/wasm"
+
+[[headers]]
+  for = "/seabios.bin"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Netlify-CDN-Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+    Content-Type = "application/octet-stream"
+
+[[headers]]
+  for = "/vgabios.bin"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+    Netlify-CDN-Cache-Control = "public, max-age=86400, stale-while-revalidate=604800"
+    Content-Type = "application/octet-stream"
