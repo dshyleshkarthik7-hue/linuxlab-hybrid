@@ -4,6 +4,9 @@ import { readFile } from 'node:fs/promises';
 const source = await readFile('src/main-v86.ts', 'utf8');
 assert.match(source, /private readonly handlePageHide = \(\): void => \{/,
   'VM must define a pagehide cleanup handler');
+assert.match(source, /const disposeTelemetry = this\.telemetryDispose/, 'Telemetry disposer must be detached before invocation');
+assert.match(source, /try \{ disposeTelemetry\?\.\(\); \} catch/, 'Telemetry cleanup failures must not skip VM teardown');
+assert.match(source, /try \{ emulator\?\.destroy\?\.\(\); \} catch/, 'VM destroy failures must not skip reference release');
 assert.match(source, /this\.bootController\?\.abort\(\)/,
   'Leaving the page must abort in-flight VM startup');
 assert.match(source, /this\.bootId \+= 1/,
