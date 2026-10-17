@@ -56,22 +56,6 @@ const json = (
   return new Response(JSON.stringify(body), { status, headers: h });
 };
 
-function fallback(contextText: string, question: string) {
-  const lower = `${question}\n${contextText}`.toLowerCase();
-  if (/\bcommand-not-found\b|\bnot found\b/.test(lower)) {
-    return 'That command was not found. Check spelling with `command -v <command>`, then verify that the lesson expects that tool.';
-  }
-  if (/\bpermission denied\b/.test(lower)) {
-    return 'Permission denied means the current user lacks the required permission. Inspect the target with `ls -l` and learn the ownership and mode before changing anything.';
-  }
-  if (/\bpwd\b/.test(lower)) return '`pwd` prints your current working directory. Use it whenever you need to confirm where you are in the filesystem.';
-  if (/\bls\b/.test(lower)) return '`ls` lists directory entries. Try `ls -la` to include hidden entries and useful metadata.';
-  if (/\bcd\b/.test(lower)) return '`cd` changes the current working directory. Try `cd /tmp`, then `pwd` to verify the change.';
-  if (/\bmkdir\b/.test(lower)) return '`mkdir` creates directories. Start with `mkdir practice`, then use `cd practice` and `pwd` to verify it.';
-  if (/\bcat\b/.test(lower)) return '`cat` writes a file to standard output. It is useful for short files and for learning how stdout flows through the shell.';
-  if (/\b(?:hint|next)\b/.test(lower)) return 'Start with the command you just ran, inspect its output and exit status, then make one small change. Compare the new result with your prediction.';
-  return 'Start by identifying the command, its arguments, the current directory, and the output or error. Make one small experiment and compare the result with your prediction.';
-}
 
 function trustedClientKey(context: unknown) {
   if (typeof context !== 'object' || context === null) return '';
