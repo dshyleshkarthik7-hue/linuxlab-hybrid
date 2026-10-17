@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const data = JSON.parse(await readFile(path.join(root, "public/command-records.json"), "utf8"));
-const intelligence = JSON.parse(await readFile(path.join(root, "public/command-intelligence.json"), "utf8"));
+const intelligence = JSON.parse(await readFile(path.join(root, ".cache/command-intelligence.json"), "utf8"));
 const out = path.join(root, "public/commands");
 
 await mkdir(out, { recursive: true });
