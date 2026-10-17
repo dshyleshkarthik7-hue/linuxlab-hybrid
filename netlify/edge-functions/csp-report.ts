@@ -142,10 +142,33 @@ export default async (request: Request, context: EdgeContext): Promise<Response>
     }
     const text = new TextDecoder().decode(bytes);
     const parsed: unknown = JSON.parse(text);
-    if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+    if (Array.isArray(parsed)) {
+      // The Reporting API sends an array of { type, body, ... } objects.
+      // Bound work and normalize its camelCase fields into the same safe log schema.
+      for (const item of parsed.slice(0, 20)) {
+        if (typeof item !== 'object' || item === null || Array.isArray(item)) continue;
+        const entry = item as Record<string, unknown>;
+        const body = typeof entry.body === 'object' && entry.body !== null && !Array.isArray(entry.body)
+          ? entry.body as Record<string, unknown>
+          : null;
+        if (!body) continue;
+        const normalized: CspReport = {
+          'document-uri': body.documentURL,
+          referrer: body.referrer,
+          'violated-directive': body.effectiveDirective,
+          'effective-directive': body.effectiveDirective,
+          'original-policy': body.originalPolicy,
+          'blocked-uri': body.blockedURL,
+          'source-file': body.sourceFile,
+          'status-code': body.statusCode,
+        };
+        console.log('[CSP_REPORT]', JSON.stringify(sanitizeReport(normalized)));
+      }
+    } else if (typeof parsed === 'object' && parsed !== null) {
+      console.log('[CSP_REPORT]', JSON.stringify(sanitizeReport(parsed as CspReport)));
+    } else {
       return new Response('Invalid report', { status: 400, headers });
     }
-    console.log('[CSP_REPORT]', JSON.stringify(sanitizeReport(parsed as CspReport)));
     return new Response(null, {
       status: 204,
       headers: { ...headers, 'Cache-Control': 'no-store' },
