@@ -10,11 +10,11 @@ const certificate = await readFile(new URL('../netlify/functions/certificate.mts
 const questionValidation = tutor.indexOf("if (!question) return json({ error: 'Question is required.' }");
 const rateLimitCall = tutor.indexOf('const limit = await durableLimit');
 assert.ok(questionValidation >= 0 && rateLimitCall > questionValidation, 'Tutor must validate the question before consuming rate-limit quota');
-const pinnedModel = 'Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218';
-assert.ok(tutor.includes(`const PINNED_QWEN_MODEL = '${pinnedModel}'`), 'Tutor must pin the approved immutable Qwen revision');
-assert.ok(certificate.includes(`const PINNED_QWEN_MODEL = '${pinnedModel}'`), 'Certificate feedback must use the same immutable Qwen revision');
-assert.match(tutor, /MODEL !== PINNED_QWEN_MODEL/, 'Tutor must fail closed on an environment override mismatch');
-assert.match(certificate, /CERTIFICATE_FEEDBACK_MODEL !== PINNED_QWEN_MODEL/, 'Certificate feedback must fail closed on an environment override mismatch');
+const routerModel = 'Qwen/Qwen3-8B';
+assert.ok(tutor.includes(`const ROUTER_QWEN_MODEL = '${routerModel}'`), 'Tutor must pin the supported Hugging Face router model ID');
+assert.ok(certificate.includes(`const ROUTER_QWEN_MODEL = '${routerModel}'`), 'Certificate feedback must use the same supported Hugging Face router model ID');
+assert.match(tutor, /MODEL !== ROUTER_QWEN_MODEL/, 'Tutor must fail closed on an environment override mismatch');
+assert.match(certificate, /CERTIFICATE_FEEDBACK_MODEL !== ROUTER_QWEN_MODEL/, 'Certificate feedback must fail closed on an environment override mismatch');
 assert.match(tutor, /return json\(\{ error: 'Tutor provider is temporarily unavailable\./, 'Tutor provider errors must return a non-success response');
 assert.match(certificate, /return json\(\{ error: 'AI study feedback is temporarily unavailable\./, 'Certificate feedback provider errors must fail closed');
 assert.match(certificate, /certificate_revocations_certificateId_unique|revocationIndexPromise/, 'Certificate revocation must use durable indexed storage');
@@ -61,8 +61,8 @@ assert.doesNotMatch(cloudflare, /path = .*v86-firmware/);
 console.log('Netlify/Cloudflare delivery contract passed');
 
 assert.match(tutor, /const MODEL_ID_RE =/);
-assert.match(tutor, /MODEL !== PINNED_QWEN_MODEL/, 'environment overrides must not change the pinned model');
-assert.match(tutor, /PINNED_QWEN_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/, 'Tutor must use the exact immutable Qwen revision');
+assert.match(tutor, /MODEL !== ROUTER_QWEN_MODEL/, 'environment overrides must not change the pinned model');
+assert.match(tutor, /ROUTER_QWEN_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/, 'Tutor must use the standard Hugging Face router model ID');
 assert.match(tutor, /Tutor provider is temporarily unavailable[\s\S]*?503/, 'provider failures must not be disguised as successful 200 responses');
 assert.match(tutor, /Tutor provider request failed\. Please try again shortly\./, 'provider exceptions must be visible to callers');
 
