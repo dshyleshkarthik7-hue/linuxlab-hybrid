@@ -17,7 +17,7 @@ assert.match(certificate, /CERTIFICATE_SIGNING_KEY_ID/);
 assert.doesNotMatch(certificate, /CERTIFICATE_SIGNING_SECRET/, 'legacy signing secret must not remain in certificate runtime or tests');
 assert.match(certificate, /HMAC/);
 assert.match(certificate, /QUESTION_COUNT\s*=\s*30/);
-assert.match(certificate, /MIN_QUESTION_BANK_SIZE\s*=\s*300/);
+assert.match(certificate, /MIN_QUESTION_BANK_SIZE\s*=\s*1000/);
 assert.match(certificate, /buildQuestionBank\(\)/);
 assert.match(certificate, /COMMAND_RECORDS\.entries\(\)/);
 assert.match(certificate, /const choices = \(answer: string, pool: string\[\], fallback: string\[\] = \[\]\)/, 'verified exam must build answer choices from distinct values');
@@ -25,6 +25,9 @@ assert.match(certificate, /question\.c\.length !== 4 \|\| new Set\(question\.c\)
 assert.match(certificate, /EXAM_VERSION = 'linux-foundations-2\.2'/, 'exam version must change when question generation changes');
 assert.match(certificate, /BANK\.length < MIN_QUESTION_BANK_SIZE/);
 assert.match(certificate, /const selected = shuffle\(BANK\)/, 'exam question selection should be randomized for every attempt');
+assert.match(certificate, /cmd-\\\$\{index\}-purpose-example/, 'exam bank must include combined purpose-and-example questions');
+assert.match(certificate, /cmd-\\\$\{index\}-from-example/, 'exam bank must test reverse command lookup');
+assert.match(certificate, /cmd-\\\$\{index\}-category/, 'exam bank must test command taxonomy');
 assert.match(certificate, /PASS_PERCENT\s*=\s*80/);
 assert.match(certificate, /canonical\(unsigned/);
 assert.match(certificate, /new TextEncoder\(\)\.encode\(secret\)/, 'certificate signing must use the selected key, not only the current key');
