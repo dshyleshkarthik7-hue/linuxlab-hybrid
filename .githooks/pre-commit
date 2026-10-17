@@ -1,11 +1,5 @@
 #!/bin/sh
 set -eu
 
-echo "[LinuxLab] Pre-commit: coverage gate"
-npm run test:coverage
-
-echo "[LinuxLab] Pre-commit: production build and TypeScript checks"
-npm run build
-
-echo "[LinuxLab] Pre-commit: accessibility smoke audit"
-npm run test:accessibility
+echo "[LinuxLab] Running pre-commit release-quality gates"
+npm run test:precommit
