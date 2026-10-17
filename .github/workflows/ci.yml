@@ -66,6 +66,8 @@ jobs:
           name: dependency-audit-${{ github.sha }}
           path: dependency-audit.json
       - run: npm run lint
+      - name: Type-check Netlify backend and edge functions
+        run: npm run typecheck:server
       - name: Verify ISO builder scripts
         run: |
           set -euo pipefail
