@@ -21,6 +21,7 @@
 [[edge_functions]]
   path = "/api/careers-jobs"
   function = "careers-jobs"
+  cache = "manual"
 [[edge_functions]]
   path = "/api/csp-report"
   function = "csp-report"
