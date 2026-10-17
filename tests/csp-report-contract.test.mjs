@@ -19,3 +19,11 @@ assert.match(source, /if \(typeof data !== 'object' \|\| data === null \|\| !\('
 assert.match(source, /if \(typeof result !== 'number'\)/);
 assert.match(source, /catch \{\s*return true;\s*\}/);
 assert.match(source, /Origin Not Allowed/);
+
+const headersGenerator = readFileSync(new URL('../scripts/generate-netlify-headers.mjs', import.meta.url), 'utf8');
+assert.doesNotMatch(headersGenerator, /https:\/\/\*\.amazonaws\.com/, 'CSP must not allow arbitrary AWS buckets');
+assert.doesNotMatch(headersGenerator, /sha256-Ob\/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs=/, 'unexplained static script hash must not be trusted');
+assert.match(headersGenerator, /inlineScriptHashes\(html\)/, 'inline script hashes must be derived from the HTML being protected');
+assert.match(headersGenerator, /kind === 'vm' \? \["'wasm-unsafe-eval'"\]/, 'WebAssembly evaluation must be limited to VM pages');
+assert.match(headersGenerator, /htmlEntries\.flatMap/, 'CSP must be generated per exact HTML path to avoid overlapping policies');
+assert.doesNotMatch(headersGenerator, /const commonCsp|const vmCsp|const loginCsp/, 'overlapping path-specific CSP variables must not be emitted alongside a global CSP');
