@@ -507,13 +507,16 @@ export class V86LinuxTerminal {
   private async dispose(): Promise<void> {
     if (this.bootTimeout !== null) { window.clearTimeout(this.bootTimeout); this.bootTimeout = null; }
     if (this.sessionTimer !== null) { window.clearTimeout(this.sessionTimer); this.sessionTimer = null; }
-    this.telemetryDispose?.();
+    const disposeTelemetry = this.telemetryDispose;
     this.telemetryDispose = null;
+    try { disposeTelemetry?.(); } catch { /* Cleanup must continue even if telemetry teardown fails. */ }
     document.removeEventListener('visibilitychange', this.handleVisibility);
     window.removeEventListener('resize', this.handleResize);
     window.removeEventListener('orientationchange', this.handleOrientationChange);
-    try { this.emulator?.stop?.(); this.emulator?.destroy?.(); } catch {}
+    const emulator = this.emulator;
     this.emulator = null;
+    try { emulator?.stop?.(); } catch { /* Best-effort stop before destruction. */ }
+    try { emulator?.destroy?.(); } catch { /* Continue releasing references if runtime teardown throws. */ }
     this.enforcer?.stop();
     this.enforcer = null;
   }
