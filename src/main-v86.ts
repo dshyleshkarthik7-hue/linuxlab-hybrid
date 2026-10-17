@@ -63,6 +63,7 @@ export class V86LinuxTerminal {
   private bootStage = 'starting';
   private integrityState: 'verified' | 'unverified' = 'unverified';
   private serial = '';
+  private readonly serialDecoder = new TextDecoder();
   private lastSerialAt = 0;
   private activeView: 'terminal' | 'screen' = 'terminal';
   private readonly handleResize = (): void => this.fit();
@@ -144,6 +145,7 @@ export class V86LinuxTerminal {
     this.guestIdentity = null;
     this.initializationFailure = null;
     this.serial = '';
+    this.serialDecoder.decode();
     this.lastSerialAt = 0;
     this.bootStage = 'starting';
     this.setHealth('booting');
@@ -365,14 +367,15 @@ export class V86LinuxTerminal {
 
   private serialOutput(byte: number): void {
     if (!this.enforcer?.acceptSerialByte(1)) { this.fail('VM serial output limit reached'); return; }
-    const ch = String.fromCharCode(byte & 255);
+    // v86 emits raw bytes; decode UTF-8 incrementally so multibyte characters survive chunk boundaries.
+    const ch = this.serialDecoder.decode(Uint8Array.of(byte & 255), { stream: true });
+    if (!ch) return;
     this.lastSerialAt = Date.now();
     this.serial = (this.serial + ch).slice(-65536);
-    const identity = this.detectGuestIdentity(this.serial);
-    if (identity) this.acceptGuestIdentity(identity);
+    // Guest identity comes from the pinned, verified image metadata, not arbitrary shell output.
     const accepted = this.enforcer.acceptOutput(ch);
     if (accepted.value) this.term.write(accepted.value);
-    if (this.serial.includes(READY_MARKER) || /Buildroot|Linux version|(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/.test(this.serial)) this.shellReady = true;
+    if (this.serial.includes(READY_MARKER) || /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/.test(this.serial)) this.shellReady = true;
     if (this.shellReady) this.markReadyIfIdentityVerified();
   }
 
