@@ -62,7 +62,7 @@ console.log('Netlify/Cloudflare delivery contract passed');
 
 assert.match(tutor, /const MODEL_ID_RE =/);
 assert.match(tutor, /MODEL !== ROUTER_QWEN_MODEL/, 'environment overrides must not change the pinned model');
-assert.match(tutor, /ROUTER_QWEN_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/, 'Tutor must use the standard Hugging Face router model ID');
+assert.match(tutor, /ROUTER_QWEN_MODEL = 'Qwen\\/Qwen3-8B'/, 'Tutor must use the standard Hugging Face router model ID');
 assert.match(tutor, /Tutor provider is temporarily unavailable[\s\S]*?503/, 'provider failures must not be disguised as successful 200 responses');
 assert.match(tutor, /Tutor provider request failed\. Please try again shortly\./, 'provider exceptions must be visible to callers');
 
