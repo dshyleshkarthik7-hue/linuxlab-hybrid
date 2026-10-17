@@ -7,3 +7,8 @@ declare const Netlify: {
 declare const process: {
   env: Record<string, string | undefined>;
 };
+
+interface ExecutionContext {
+  waitUntil(promise: Promise<unknown>): void;
+  passThroughOnException(): void;
+}
