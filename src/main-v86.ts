@@ -378,7 +378,10 @@ export class V86LinuxTerminal {
     const accepted = this.enforcer.acceptOutput(ch);
     if (accepted.value) this.term.write(accepted.value);
     // Readiness checks are only needed at line boundaries or prompt terminators; avoid rescanning the full retained transcript per byte.
-    if ((ch.includes('\n') || ch.includes('\r') || ch.endsWith('$') || ch.endsWith('#') || ch.includes(READY_MARKER)) && (this.serial.includes(READY_MARKER) || /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/.test(this.serial))) this.shellReady = true;
+    const promptBoundary = ch.includes('\n') || ch.includes('\r') || ch.endsWith('$') || ch.endsWith('#') || ch.includes(READY_MARKER);
+    const promptSeen = promptBoundary && /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/.test(this.serial);
+    if (promptBoundary && (this.serial.includes(READY_MARKER) || promptSeen)) this.shellReady = true;
+    if (promptSeen) this.enforcer?.resetCommandWindow();
     if (this.shellReady) this.markReadyIfIdentityVerified();
   }
 
