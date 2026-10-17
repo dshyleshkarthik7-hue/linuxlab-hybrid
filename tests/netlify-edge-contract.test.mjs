@@ -48,7 +48,8 @@ assert.doesNotMatch(cloudflare, /path = .*v86-firmware/);
 console.log('Netlify/Cloudflare delivery contract passed');
 
 assert.match(tutor, /const MODEL_ID_RE =/);
-assert.ok(tutor.includes("DEFAULT_MODEL = 'Qwen/Qwen3-8B'"), 'Tutor must use a documented Hugging Face Router model ID');
+assert.match(tutor, /MODEL !== PINNED_QWEN_MODEL/, 'environment overrides must not change the pinned model');
+assert.match(tutor, /PINNED_QWEN_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/, 'Tutor must use the exact immutable Qwen revision');
 
 assert.match(firmwareEdge, /crypto\.subtle\.digest\("SHA-256", bytes\)/, 'firmware bytes must be cryptographically verified at the edge');
 assert.match(firmwareEdge, /actualHash !== asset\.sha256/, 'firmware delivery must fail closed when the pinned digest differs');
