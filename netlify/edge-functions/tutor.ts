@@ -165,7 +165,9 @@ async function authenticatedUser(request: Request): Promise<IdentityUser | null>
 
 export default async (request: Request, context: unknown) => {
   const origin = request.headers.get('origin') || undefined;
-  if (origin && !configuredOrigins.includes(origin)) return json({ error: 'Origin not allowed.' }, 403, origin);
+  const selfOrigin = new URL(request.url).origin;
+  if (origin && origin !== selfOrigin && !configuredOrigins.includes(origin)) return json({ error: 'Origin not allowed.' }, 403, origin);
+  if (!configuredOrigins.includes(selfOrigin)) configuredOrigins.push(selfOrigin);
   if (request.method === 'OPTIONS') return new Response('', { status: 204, headers: headers(origin) });
   if (request.method !== 'POST') return json({ error: 'method not allowed' }, 405, origin, { Allow: 'POST, OPTIONS' });
   if (!UPSTASH_URL || !UPSTASH_TOKEN) {
@@ -224,7 +226,7 @@ export default async (request: Request, context: unknown) => {
     contextText || '(no additional context)',
     '',
     'Question:',
-    question,
+    question + '\\n/no_think',
   ].join('\n');
 
   if (await circuitOpen()) return json({ error: 'Tutor provider is temporarily unavailable. Please try again shortly.' }, 503, origin, { 'retry-after': String(CIRCUIT_OPEN_SECONDS) });
