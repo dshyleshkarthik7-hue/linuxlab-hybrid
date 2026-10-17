@@ -92,9 +92,11 @@ async function load(): Promise<void> {
   const seenIds = new Set<string>();
 
   for (const record of records) {
-    const name = String(record.name).trim();
-    const purpose = String(record.summary || 'Linux command').trim() || 'Linux command';
-    const example = String(record.example || '').trim() || name + ' --help';
+    const name = String(record.name || '').trim();
+    const purpose = String(record.summary || '').trim();
+    const example = String(record.example || '').trim();
+    // Do not turn placeholder catalog records into misleading questions.
+    if (!name || (!purpose && !example)) continue;
     const category = String(record.category || 'linux').trim() || 'linux';
     const categoryNames = namesByCategory.get(category) ?? [];
     const categoryExamples = examplesByCategory.get(category) ?? [];
