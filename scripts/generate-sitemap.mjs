@@ -9,7 +9,7 @@ const staticPaths = [
   '/learn/text-processing/', '/learn/permissions/', '/learn/processes/',
   '/learn/shell-scripting/', '/challenges/', '/quiz/', '/curriculum/',
   '/about/', '/contact/', '/certificate/', '/faq/', '/terms/',
-  '/privacy/', '/verify/'
+  '/privacy/', '/verify/', '/learn/library/'
 ];
 
 const canonical = JSON.parse(await readFile('public/command-records.json', 'utf8'));
