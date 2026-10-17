@@ -38,7 +38,7 @@
     "test:security": "npm audit --audit-level=high",
     "test:ci": "npm run typecheck:server && npm run typecheck:functions && npm run test:config && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy",
     "lint": "tsc --noEmit && node tests/security-static.test.mjs",
-    "build:iso": "node ./iso-builder/build-iso.mjs",
+    "build:iso": "node scripts/check-lfs-assets.mjs --iso && node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
     "check": "npm run test:ci",
     "test:smoke": "node tests/browser-vm-smoke.mjs",
