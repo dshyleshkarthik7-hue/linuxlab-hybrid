@@ -22,7 +22,7 @@ assert.throws(() => importSnapshot('{"format":"other","version":2}'), /not a Lin
 assert.throws(() => importSnapshot('{"format":"linuxterminal-progress","version":9}'), /Unsupported progress snapshot version/);
 assert.throws(() => importSnapshot('not json'), /valid JSON/);
 assert.throws(() => importSnapshot(JSON.stringify({ format: 'linuxterminal-progress', version: 2, quiz: { bestScore: 11, bestTotal: 10 } })), /out of range/);
-assert.throws(() => importSnapshot(JSON.stringify({ format: 'linuxterminal-progress', version: 2, __proto__: { polluted: true } })), /forbidden property/);
+assert.throws(() => importSnapshot('{"format":"linuxterminal-progress","version":2,"__proto__":{"polluted":true}}'), /forbidden property/);
 assert.throws(() => importSnapshot(' '.repeat(1024 * 1024 + 1)), /larger than 1 MiB/);
 assert.throws(() => validateSnapshot({ version: 2, challenges: 'not-an-array' }), /invalid challenges list/);
 console.log('Progress snapshot round-trip and malicious-input contracts passed');
