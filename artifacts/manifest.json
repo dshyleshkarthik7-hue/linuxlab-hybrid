@@ -76,5 +76,19 @@
     "attestationRequired": true,
     "attestationWorkflow": ".github/workflows/ci.yml",
     "verification": "gh attestation verify"
-  }
+  },
+  "buildAssets": [
+    {
+      "path": "isolinux/isolinux.bin",
+      "purpose": "ISO boot loader",
+      "size": 38912,
+      "sha256": "f0f645e52bbe18bf7a4ac07be9afa985e21d8eb8c9c57938bdaf5b868a0e0e7f"
+    },
+    {
+      "path": "isolinux/isohdpfx.bin",
+      "purpose": "ISO hybrid boot prefix",
+      "size": 432,
+      "sha256": "7b43a4dd2061e95da55af51d57a2385c257d64444ee2a62264bcf634a1d0945b"
+    }
+  ]
 }
