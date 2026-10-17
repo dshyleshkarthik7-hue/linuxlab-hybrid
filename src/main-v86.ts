@@ -3,7 +3,7 @@ import * as fitModule from '@xterm/addon-fit';
 import '@xterm/xterm/css/xterm.css';
 import { attachGuestTelemetry, type GuestIdentity, type V86TelemetryTarget } from './v86-telemetry.ts';
 import { VM_RESOURCE_POLICIES, VMRuntimeResourceEnforcer, type VMResourcePolicyName } from './engine/VMResourcePolicy.ts';
-import { artifactForIsoUrl, fetchVerifiedIso } from './core/verified-iso-fetch.ts';
+import { artifactForIsoUrl, fetchVerifiedIso, TRUSTED_ISO_ORIGIN } from './core/verified-iso-fetch.ts';
 import { ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT, SEABIOS_ARTIFACT, VGABIOS_ARTIFACT } from './core/artifacts.ts';
 import { waitForV86Loaded } from './v86-ready.ts';
 
@@ -171,7 +171,7 @@ export class V86LinuxTerminal {
       // ArrayBuffer. This removes the large pre-boot allocation that caused timeouts.
       const developerAsyncImage = this.profile.expectedGuest === 'alpine' && this.profile.policy === 'developer'
         ? {
-            url: `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/developer-${artifact.sha256}`,
+            url: `${TRUSTED_ISO_ORIGIN}/developer-${artifact.sha256}`,
             async: true,
             size: artifact.size,
             use_parts: true,
@@ -181,7 +181,7 @@ export class V86LinuxTerminal {
       let developerChunkIntegrityReady = false;
       if (developerAsyncImage) {
         try {
-          const manifestUrl = new URL("https://linuxterminal-iso.dshyleshkarthik7.workers.dev/");
+          const manifestUrl = new URL(TRUSTED_ISO_ORIGIN + "/");
           manifestUrl.searchParams.set("manifest", "developer");
           manifestUrl.searchParams.set("sha256", artifact.sha256);
           const manifestResponse = await fetch(manifestUrl, { cache: "no-store", signal: AbortSignal.any([signal, AbortSignal.timeout(8000)]) });
