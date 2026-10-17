@@ -86,7 +86,7 @@ assert.match(certificate, /rate:exam-submit:ip/);
 
 assert.match(certificate, /PINNED_QWEN_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/, 'certificate feedback must use the same immutable Qwen3-8B model as Tutor');
 const tutorSource = await readFile(new URL('../netlify/edge-functions/tutor.ts', import.meta.url), 'utf8');
-assert.match(tutorSource, /PINNED_QWEN_MODEL = 'Qwen\\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/, 'Tutor must use the same immutable model revision as certificate feedback');
+assert.match(tutorSource, /PINNED_QWEN_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/, 'Tutor must use the same immutable model revision as certificate feedback');
 assert.match(certificate, /async function explainStudyPlan/);
 assert.match(certificate, /rate:certificate-feedback:user/);
 assert.match(certificate, /studyTopics/);
