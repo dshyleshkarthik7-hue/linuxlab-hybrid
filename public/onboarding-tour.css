@@ -1,0 +1,5 @@
+.learning-tour{max-width:900px;margin:2rem auto;padding:1.25rem;border:1px solid #315b7e;border-radius:1rem;background:#0d2038;color:#e8f1ff}
+.learning-tour h2{margin-top:0}.learning-tour li{margin:.35rem 0}.learning-tour a{color:#7dd3fc;text-underline-offset:.2em}
+.learning-tour button{margin-top:.75rem;padding:.6rem .9rem;border:1px solid #4b779b;border-radius:.5rem;background:#102943;color:#fff;font:inherit;cursor:pointer}
+.learning-tour a:focus-visible,.learning-tour button:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}
+@media(prefers-reduced-motion:reduce){.learning-tour{scroll-behavior:auto}}
