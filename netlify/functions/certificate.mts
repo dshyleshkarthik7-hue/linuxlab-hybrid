@@ -2,7 +2,7 @@ import { MongoClient, ServerApiVersion } from 'mongodb';
 import catalog from '../../data/commands/canonical.json' with { type: 'json' };
 
 const MONGODB_URI = process.env.MONGODB_URI;
-const MONGODB_DB = process.env.MONGODB_DB || 'linuxlab';
+const MONGODB_DB = process.env.MONGODB_DB || 'linuxterminal';
 let mongoPromise: Promise<MongoClient> | null = null;
 type CertificateDocument = Cert & { _id: string; userEmail: string | null; createdAt: Date; expiresAt: Date; attemptId: string; audit: { issuedAt: string; source: 'assessment' } };
 
