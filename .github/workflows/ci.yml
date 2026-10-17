@@ -61,6 +61,8 @@ jobs:
           npm config set registry "$NPM_CONFIG_REGISTRY"
           npm cache verify
           npm ci --ignore-scripts --prefer-offline
+      - name: Load trusted ISO worker endpoint from runtime config
+        run: node --input-type=module -e 'import config from "./config/runtime.json" with { type: "json" }; console.log("ISO_BASE_URL=" + config.isoWorkerOrigin)' >> "$GITHUB_ENV"
       - name: Verify required build and test packages
         run: node -e "for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p); if (!f) process.exit(1); console.log('verified', p, f); }"
       - run: npm audit --audit-level=high
@@ -127,7 +129,6 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.preview_base_url != ''
         env:
           PREVIEW_BASE_URL: ${{ inputs.preview_base_url }}
-          ISO_BASE_URL: https://linuxterminal-iso.dshyleshkarthik7.workers.dev
           EXPECTED_DEPLOY_SHA: ${{ github.sha }}
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
           PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
