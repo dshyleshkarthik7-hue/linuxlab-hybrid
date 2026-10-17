@@ -20,18 +20,17 @@ assert.match(certificate, /return json\(\{ error: 'AI study feedback is temporar
 assert.match(certificate, /certificate_revocations_certificateId_unique|REVOCATION_INDEX_READY/, 'Certificate revocation must use durable indexed storage');
 
 assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), false, 'Linux 4 must use the direct Cloudflare Worker rather than a duplicate Netlify relay');
-assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), true, 'firmware must be served through Netlify Edge');
-assert.doesNotMatch(config, /path = "\/api\/iso\/linux4"/);
-assert.match(config, /path = "\/api\/v86-firmware"/, 'firmware query endpoint without a trailing slash must be routed to the Edge Function');
-assert.match(config, /path = "\/api\/v86-firmware\/\*"/);
-const firmwareEdge = await readFile(new URL('../netlify/edge-functions/v86-firmware.ts', import.meta.url), 'utf8');
-
-assert.match(firmwareEdge, /seabios\.bin/);
-assert.match(firmwareEdge, /vgabios\.bin/);
-assert.match(firmwareEdge, /X-LinuxLab-SHA256/);
-assert.match(firmwareEdge, /raw\.githubusercontent\.com\/copy\/v86\/679ecd2e\/bios\/seabios\.bin/, 'SeaBIOS must be fetched from the pinned upstream asset');
-assert.match(firmwareEdge, /raw\.githubusercontent\.com\/copy\/v86\/679ecd2e\/bios\/vgabios\.bin/, 'VGABIOS must be fetched from the pinned upstream asset');
-assert.doesNotMatch(firmwareEdge, /new URL\("\/" \+ filename, url\.origin\)/, 'firmware must not proxy-fetch from the same site root and recurse');
+assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), false, 'firmware must not use a runtime proxy');
+assert.doesNotMatch(config, /v86-firmware/, 'firmware API routes must be removed');
+const linux4Entry = await readFile(new URL('../src/main-linux4.ts', import.meta.url), 'utf8');
+const v86Entry = await readFile(new URL('../src/main-v86.ts', import.meta.url), 'utf8');
+const firmwareBuild = await readFile(new URL('../scripts/fetch-v86-firmware.mjs', import.meta.url), 'utf8');
+const headersBuild = await readFile(new URL('../scripts/generate-netlify-headers.mjs', import.meta.url), 'utf8');
+assert.match(linux4Entry, /bios: \{ url: '\/seabios\.bin' \}/);
+assert.match(linux4Entry, /vga_bios: \{ url: '\/vgabios\.bin' \}/);
+assert.match(v86Entry, /fetch\(\`\/\$\{artifact\.filename\}\`/);
+assert.match(firmwareBuild, /createHash\('sha256'\)/);
+assert.match(headersBuild, /max-age=31536000, immutable/);
 
 
 assert.match(cloudflare, /MAX_CHUNK_BYTES\s*=\s*32\s*\*\s*1024\s*\*\s*1024/);
@@ -67,6 +66,5 @@ assert.match(tutor, /PINNED_QWEN_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109e
 assert.match(tutor, /Tutor provider is temporarily unavailable[\s\S]*?503/, 'provider failures must not be disguised as successful 200 responses');
 assert.match(tutor, /Tutor provider request failed\. Please try again shortly\./, 'provider exceptions must be visible to callers');
 
-assert.match(firmwareEdge, /crypto\.subtle\.digest\("SHA-256", bytes\)/, 'firmware bytes must be cryptographically verified at the edge');
-assert.match(firmwareEdge, /actualHash !== asset\.sha256/, 'firmware delivery must fail closed when the pinned digest differs');
-assert.match(firmwareEdge, /bytes\.byteLength !== asset\.size/, 'firmware delivery must verify exact bytes even when upstream omits Content-Length');
+assert.match(firmwareBuild, /asset\.size/);
+assert.match(firmwareBuild, /asset\.sha256/);
