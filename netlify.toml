@@ -13,6 +13,9 @@
   command = "npm run build"
 
 [[edge_functions]]
+  path = "/api/v86-firmware"
+  function = "v86-firmware"
+[[edge_functions]]
   path = "/api/v86-firmware/*"
   function = "v86-firmware"
 [[edge_functions]]
