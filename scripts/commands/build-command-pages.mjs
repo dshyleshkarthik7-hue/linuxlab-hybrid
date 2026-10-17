@@ -18,7 +18,7 @@ const isIndexable = (command, intelligenceRecord) => command.page?.status === "c
 
 const relatedLinks = (items = []) => items.map((name) => {
   const target = data.records.find((r) => r.name === name);
-  return target && (target.page?.status === "complete" || (target.summary && target.example)) ? `<a href="${escapeHtml(target.url)}"><code>${escapeHtml(name)}</code></a>` : "";
+  return target && isIndexable(target, intelligence.records?.[target.name]) ? `<a href="${escapeHtml(target.url)}"><code>${escapeHtml(name)}</code></a>` : "";
 }).filter(Boolean).join(" · ");
 
 for (const command of data.records) {
@@ -126,23 +126,4 @@ for (const command of data.records) {
   await writeFile(outputPath, html);
 }
 
-const staticRoutes = [
-  "/faq/",
-  "/", "/beginner/", "/intermediate/", "/expert/", "/real-linux/", "/developer-alpine/",
-  "/open-source-iso/", "/commands/", "/learn/", "/learn/linux-basics/",
-  "/learn/terminal-navigation/", "/learn/files-and-directories/", "/learn/text-processing/",
-  "/learn/permissions/", "/learn/processes/", "/learn/shell-scripting/", "/learn/operating-systems/", "/learn/networking-basics/", "/challenges/",
-  "/quiz/", "/curriculum/", "/about/", "/contact/", "/certificate/", "/linux-careers/",
-  "/terms/", "/privacy/", "/verify/"
-];
-
-const sitemapRoutes = [...new Set([
-  ...staticRoutes,
-  ...data.records.filter((command) => isIndexable(command)).map((command) => command.url)
-])];
-
-const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
-<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">${sitemapRoutes.map((url) => `<url><loc>https://linuxterminal.me${url}</loc></url>`).join("")}</urlset>
-`;
-await writeFile(path.join(root, "public/sitemap.xml"), sitemap);
 console.log(`[commands] processed ${data.records.length} command records; sitemap contains ${sitemapRoutes.length} URLs (curated pages preserved)`);
