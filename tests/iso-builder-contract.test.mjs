@@ -24,8 +24,15 @@ const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
 assert.match(packageJson.scripts.prebuild, /fetch-v86-firmware\.mjs && node scripts\/check-lfs-assets\.mjs/,
   'release build must hydrate and verify firmware/LFS assets before packaging');
 const lfsCheck = readFileSync('scripts/check-lfs-assets.mjs', 'utf8');
+const artifactManifest = JSON.parse(readFileSync('artifacts/manifest.json', 'utf8'));
 assert.match(packageJson.scripts['build:iso'], /check-lfs-assets\.mjs --iso/, 'ISO builds must verify ISO-only boot assets');
 assert.match(packageJson.scripts.prebuild, /fetch-v86-firmware\.mjs && node scripts\/check-lfs-assets\.mjs(?! --iso)/, 'web builds must verify only runtime firmware');
-for (const asset of ['isolinux/isolinux.bin', 'isolinux/isohdpfx.bin', 'public/seabios.bin', 'public/vgabios.bin']) {
-  assert.ok(lfsCheck.includes(asset), 'LFS release preflight must cover ' + asset);
+for (const asset of ['isolinux/isolinux.bin', 'isolinux/isohdpfx.bin']) {
+  assert.ok(artifactManifest.buildAssets?.some((entry) => entry.path === asset && Number.isInteger(entry.size) && /^[a-f0-9]{64}$/.test(entry.sha256)), 'artifact manifest must pin size and SHA-256 for ' + asset);
 }
+for (const filename of ['seabios.bin', 'vgabios.bin']) {
+  assert.ok(artifactManifest.artifacts.some((entry) => entry.filename === filename && Number.isInteger(entry.size) && /^[a-f0-9]{64}$/.test(entry.sha256)), 'artifact manifest must pin size and SHA-256 for ' + filename);
+}
+assert.match(lfsCheck, /manifest\.artifacts/);
+assert.match(lfsCheck, /manifest\.buildAssets/);
+assert.match(lfsCheck, /git-lfs\.github\.com\/spec\/v1/);
