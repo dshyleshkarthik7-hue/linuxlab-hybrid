@@ -2,10 +2,10 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "noEmit": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "noUnusedLocals": false
   },
   "include": [
-    "netlify/functions/**/*.mts",
     "netlify/edge-functions/**/*.ts",
     "types/netlify-edge.d.ts",
     "cloudflare/iso-worker.ts"
