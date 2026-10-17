@@ -88,6 +88,28 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#certificate')?.addEventListener('click', () => { const certificate = window.LinuxProgress?.issueLocalCertificate($('#name').value); if (certificate) showCertificate(certificate); render(); });
   $('#reset')?.addEventListener('click', () => { if (confirm('Reset every local tutorial, challenge, quiz and session record?')) { window.LinuxProgress?.reset(); location.reload(); } });
 
+  $('#export-badges')?.addEventListener('click', () => {
+    const state = window.LinuxProgress?.summary();
+    if (!state) return;
+    const quizPct = state.quiz?.bestTotal ? Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100) : 0;
+    const badges = [
+      ['First Steps', state.tutorialCount >= 1 || state.challengeCount >= 1],
+      ['Practice Builder', state.challengeCount >= 10 && state.tutorialCount >= 3],
+      ['Quiz Ready', quizPct >= 80],
+      ['Shell Scripter', state.challengeCount >= 25],
+      ['Century Club', state.challengeCount >= 100],
+      ['Path Complete', state.tutorialCount >= 10 && state.challengeCount >= 50],
+      ['Advanced Learner', state.challengeCount >= 100 && state.tutorialCount >= 10 && quizPct >= 80],
+      ['Dedicated', state.points >= 500]
+    ].filter((item) => item[1]).map((item) => item[0]);
+    const escapeXml = (value) => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+    const badgeText = badges.length ? badges : ['No badges unlocked yet'];
+    const rows = badgeText.map((name, index) => `<g transform="translate(40 ${118 + index * 34})"><circle cx="10" cy="-6" r="7" fill="#4ade80"/><text x="28" y="0" fill="#e8f1ff" font-size="20">${escapeXml(name)}</text></g>`).join('');
+    const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="900" height="${Math.max(240, 150 + badgeText.length * 34)}" viewBox="0 0 900 ${Math.max(240, 150 + badgeText.length * 34)}"><rect width="100%" height="100%" rx="24" fill="#061426"/><text x="40" y="52" fill="#43d9ff" font-family="system-ui,sans-serif" font-size="16">LINUXTERMINAL · LOCAL LEARNING BADGES</text><text x="40" y="88" fill="#ffffff" font-family="system-ui,sans-serif" font-size="28">${escapeXml(state.name || 'Linux learner')}</text>${rows}<text x="40" y="${Math.max(210, 118 + badgeText.length * 34)}" fill="#9bb0c9" font-family="system-ui,sans-serif" font-size="13">Generated locally · Not a verified credential</text></svg>`;
+    const url = URL.createObjectURL(new Blob([svg], { type: 'image/svg+xml' }));
+    const link = document.createElement('a'); link.href = url; link.download = 'linuxterminal-badges.svg'; link.click(); URL.revokeObjectURL(url);
+  });
+
   const status = $('#snapshot-status');
   $('#export-progress')?.addEventListener('click', () => {
     try {
