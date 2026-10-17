@@ -341,7 +341,7 @@ export class V86LinuxTerminal {
   private acceptGuestIdentity(identity: GuestIdentity): void {
     // Once the expected guest has been verified, ordinary command output must not
     // be able to change the detected identity or terminate a healthy session.
-    if (this.guestIdentity?.kind === this.profile.expectedGuest || this.ready) return;
+    if (this.ready) return;
     if (identity.kind !== this.profile.expectedGuest) {
       if (identity.kind !== 'unknown') this.fail(`Guest identity mismatch: expected ${this.profile.expectedGuest}`);
       return;
