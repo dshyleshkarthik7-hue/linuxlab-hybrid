@@ -415,7 +415,7 @@ async function submit(user: User, body: unknown, request: Request) {
 async function explainStudyPlan(user: User, body: unknown, request: Request) {
   if (!UPSTASH_URL || !UPSTASH_TOKEN) return json({ error: 'AI study feedback is temporarily unavailable.' }, 503, corsOrigin(request));
   if (!(await rateLimit('linuxterminal:rate:certificate-feedback:user:' + safe(String(user.id)), 5, 3600)) ) return json({ error: 'AI study feedback limit reached. Try again later.' }, 429, corsOrigin(request));
-  if (!process.env.HF_TOKEN || CERTIFICATE_FEEDBACK_MODEL !== PINNED_QWEN_MODEL) return json({ error: 'The configured Qwen study-feedback model is not configured.' }, 503, corsOrigin(request));
+  if (!process.env.HF_TOKEN || CERTIFICATE_FEEDBACK_MODEL !== ROUTER_QWEN_MODEL) return json({ error: 'The configured Qwen study-feedback model is not configured.' }, 503, corsOrigin(request));
   if (!body || typeof body !== 'object' || Array.isArray(body)) return json({ error: 'Invalid study feedback request.' }, 400, corsOrigin(request));
   const rawTopics = (body as { topics?: unknown }).topics;
   if (!Array.isArray(rawTopics) || rawTopics.length > 8 || rawTopics.some(topic => typeof topic !== 'string')) return json({ error: 'Provide up to eight assessment topic labels.' }, 400, corsOrigin(request));
