@@ -43,7 +43,7 @@ const serious = [];
 const other = [];
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-  await page.addInitScript({ content: axeSource });
+  await page.addInitScript(axeSource);
   for (const route of routes) {
     const response = await page.goto(baseURL + route, { waitUntil: 'domcontentloaded' });
     if (!response || response.status() >= 400) throw new Error(route + ' returned HTTP ' + (response?.status() ?? 'no response'));
