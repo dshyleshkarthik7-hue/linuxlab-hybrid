@@ -36,7 +36,7 @@
     "test:real-guest-firmware-proxy": "node tests/real-guest-firmware-proxy.test.mjs",
     "test:coverage": "node tests/coverage-threshold.mjs",
     "test:security": "npm audit --audit-level=high",
-    "test:ci": "npm run test:config && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy",
+    "test:ci": "npm run typecheck:server && npm run typecheck:functions && npm run test:config && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy",
     "lint": "tsc --noEmit && node tests/security-static.test.mjs",
     "build:iso": "node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
@@ -71,7 +71,8 @@
     "test:developer-chunk-manifest": "node tests/developer-chunk-manifest.test.mjs",
     "video:curriculum": "node scripts/video/generate-curriculum-videos.mjs",
     "typecheck:server": "tsc --project tsconfig.server.json",
-    "test:sitemap": "node scripts/generate-sitemap.mjs --check && node tests/sitemap-generation.test.mjs"
+    "test:sitemap": "node scripts/generate-sitemap.mjs --check && node tests/sitemap-generation.test.mjs",
+    "typecheck:functions": "tsc --project tsconfig.functions.json"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
