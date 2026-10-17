@@ -1,6 +1,6 @@
-const SUPPORTED_QWEN_MODEL = 'Qwen/Qwen3-8B';
-const MODEL = Netlify.env.get('HF_MODEL') || SUPPORTED_QWEN_MODEL;
-const MODEL_ID_RE = new RegExp('^[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+(?::[A-Za-z0-9_-]+)?$', 'i');
+const PINNED_QWEN_MODEL = 'Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218';
+const MODEL = Netlify.env.get('HF_MODEL') || PINNED_QWEN_MODEL;
+const MODEL_ID_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+@[a-f0-9]{40}$/i;
 const MAX_OUTPUT_TOKENS = 300;
 const MAX_CONTEXT_CHARS = 5000;
 const MAX_QUESTION_CHARS = 1200;
@@ -225,7 +225,7 @@ export default async (request: Request, context: unknown) => {
   if (!limit.allowed) return json({ error: 'Tutor rate limit reached. Please wait a minute and try again.' }, 429, origin, { 'retry-after': '60' });
 
 
-  if (!MODEL_ID_RE.test(MODEL) || MODEL !== SUPPORTED_QWEN_MODEL) return json({ error: 'Tutor model configuration is invalid. Use the supported Qwen model identifier.' }, 503, origin, { 'retry-after': '60' });
+  if (!MODEL_ID_RE.test(MODEL) || MODEL !== PINNED_QWEN_MODEL) return json({ error: 'Tutor model configuration is invalid. The pinned model revision is required.' }, 503, origin, { 'retry-after': '60' });
   const token = Netlify.env.get('HF_TOKEN');
   if (!token) return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin);
 
