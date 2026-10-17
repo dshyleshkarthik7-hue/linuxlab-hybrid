@@ -96,6 +96,9 @@ const headers = [
   '',
   '/*.svg',
   '  ' + assetCache,
+  '',
+  '/*.bin',
+  '  Cache-Control: public, max-age=31536000, immutable\n  CDN-Cache-Control: public, max-age=31536000, immutable',
   ''
 ].join('\n');
 
