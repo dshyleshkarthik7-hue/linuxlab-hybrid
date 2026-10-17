@@ -273,7 +273,7 @@ export default async (request: Request, context: unknown) => {
   } catch (error) {
     await recordCircuitFailure();
     console.error('Tutor request failed', error instanceof Error ? error.message : String(error));
-    return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin);
+    return json({ error: 'Tutor provider request failed. Please try again shortly.' }, 503, origin, { 'retry-after': '30' });
   } finally {
     clearTimeout(timeout);
   }
