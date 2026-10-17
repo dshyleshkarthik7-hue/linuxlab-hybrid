@@ -1,0 +1,21 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "noEmit": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": false,
+    "noUnusedParameters": false,
+    "types": [
+      "node"
+    ]
+  },
+  "include": [
+    "netlify/functions/**/*.mts"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
