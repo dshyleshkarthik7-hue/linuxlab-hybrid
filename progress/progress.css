@@ -6,3 +6,5 @@
 .achievement-badge small{display:block;text-align:center;color:var(--muted)}
 .achievement-badge:focus-within{outline:3px solid var(--accent);outline-offset:3px}
 @media(prefers-reduced-motion:reduce){.achievement-badge,.snapshot-actions button{animation:none!important;transition:none!important}}
+
+@media(prefers-reduced-motion:no-preference){.achievement-badge.is-unlocked svg{animation:badge-unlock .28s ease-out both}@keyframes badge-unlock{from{transform:scale(.9);opacity:.65}to{transform:scale(1);opacity:1}}}
