@@ -518,7 +518,7 @@ async function explainStudyPlan(user: User, body: unknown, request: Request) {
   if (!body || typeof body !== 'object' || Array.isArray(body)) return json({ error: 'Invalid study feedback request.' }, 400, corsOrigin(request));
   const rawTopics = (body as { topics?: unknown }).topics;
   if (!Array.isArray(rawTopics) || rawTopics.length > 8 || rawTopics.some(topic => typeof topic !== 'string')) return json({ error: 'Provide up to eight assessment topic labels.' }, 400, corsOrigin(request));
-  const allowedTopics = new Set(BANK.map(question => question.t));
+  const allowedTopics = new Set(getQuestionBank().map(question => question.t));
   const topics = [...new Set(rawTopics.map(topic => String(topic).trim()).filter(topic => allowedTopics.has(topic)))];
   if (!topics.length) return json({ error: 'No valid study topics were provided.' }, 400, corsOrigin(request));
   const controller = new AbortController();
