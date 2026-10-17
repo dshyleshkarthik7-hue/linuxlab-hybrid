@@ -26,6 +26,7 @@ const QUESTION_COUNT = 30;
 const MIN_QUESTION_BANK_SIZE = 1000;
 const PASS_PERCENT = 80;
 const ATTEMPT_TTL = 3600;
+const ATTEMPT_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 const VERIFY_RATE_LIMIT = 30;
 const EXAM_RATE_LIMIT = 20;
 const EXAM_RATE_WINDOW_SECONDS = 3600;
@@ -405,7 +406,7 @@ async function submit(user: User, body: unknown, request: Request) {
     return json({ error: 'Verified exam is not configured.' }, 503);
   }
 
-  const ip = safe((request.headers.get('x-nf-client-connection-ip') || request.headers.get('x-forwarded-for')?.split(',')[0] || 'unknown').trim().slice(0, 128));
+  const ip = safe((request.headers.get('x-nf-client-connection-ip') || '').trim().slice(0, 128));
   if (!ip) return json({ error: 'Unable to establish a trusted client identity.' }, 503);
   if (!(await rateLimit(`linuxterminal:rate:exam-submit:ip:${ip}`, EXAM_RATE_LIMIT, EXAM_RATE_WINDOW_SECONDS))) return json({ error: 'Too many exam submissions from this client. Please try again later.' }, 429);
   if (!(await rateLimit(`linuxterminal:rate:exam-submit:user:${safe(String(user.id))}`, 10, 3600))) {
@@ -414,7 +415,7 @@ async function submit(user: User, body: unknown, request: Request) {
   if (!body || typeof body !== 'object') return json({ error: 'Invalid request body.' }, 400);
 
   const value = body as { attemptId?: unknown; answers?: unknown };
-  if (typeof value.attemptId !== 'string' || !Array.isArray(value.answers) || value.answers.length !== QUESTION_COUNT) {
+  if (typeof value.attemptId !== 'string' || !ATTEMPT_ID_RE.test(value.attemptId) || !Array.isArray(value.answers) || value.answers.length !== QUESTION_COUNT) {
     return json({ error: `Exactly ${QUESTION_COUNT} answers are required.` }, 400);
   }
 
