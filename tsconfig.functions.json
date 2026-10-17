@@ -6,13 +6,11 @@
     "noEmit": true,
     "skipLibCheck": true,
     "noUnusedLocals": false,
-    "noUnusedParameters": false,
-    "types": [
-      "node"
-    ]
+    "noUnusedParameters": false
   },
   "include": [
-    "netlify/functions/**/*.mts"
+    "netlify/functions/**/*.mts",
+    "types/node-env.d.ts"
   ],
   "exclude": [
     "node_modules",
