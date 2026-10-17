@@ -51,6 +51,9 @@ try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   for (const route of routes) {
     await page.goto(baseURL + route, { waitUntil: 'domcontentloaded' });
+    await page.keyboard.press('Tab');
+    const firstFocus = await page.evaluate(() => ({ text: document.activeElement?.textContent || '', outline: getComputedStyle(document.activeElement).outlineStyle, outlineWidth: getComputedStyle(document.activeElement).outlineWidth }));
+    if (!/skip to main content/i.test(firstFocus.text) || firstFocus.outline === 'none' || firstFocus.outlineWidth === '0px') throw new Error(route + ' skip link must be first keyboard stop with visible focus: ' + JSON.stringify(firstFocus));
     const result = await page.evaluate(() => {
       const visible = el => { const r = el.getBoundingClientRect(); const s = getComputedStyle(el); return r.width > 0 && r.height > 0 && s.visibility !== 'hidden' && s.display !== 'none'; };
       const badImages = [...document.images].filter(img => visible(img) && !img.alt);
@@ -59,9 +62,11 @@ try {
       const noText = controls.filter(el => !(el.textContent || '').trim() && !el.getAttribute('aria-label') && !el.getAttribute('title'));
       const skipLinks = [...document.querySelectorAll('a[href^="#"]')].filter(el => /skip to (main|content)/i.test(el.textContent || '')).length;
       const liveRegions = document.querySelectorAll('[aria-live], [role="status"], [role="alert"]').length;
-      return { lang: document.documentElement.lang, title: document.title, badImages: badImages.length, unlabeled: unlabeled.length, noText: noText.length, h1: document.querySelectorAll('h1').length, overflow: document.documentElement.scrollWidth > window.innerWidth + 1, skipLinks, liveRegions };
+      const challengeResultStatus = document.querySelector('#completed-count[aria-live="polite"]');
+      const progressSnapshotControls = route => route !== '/progress/' || (document.querySelector('#export-progress') && document.querySelector('#import-progress') && document.querySelector('#snapshot-status[aria-live="polite"]');
+      return { challengeResultStatus: Boolean(challengeResultStatus), progressSnapshotControls: Boolean(progressSnapshotControls(location.pathname)), lang: document.documentElement.lang, title: document.title, badImages: badImages.length, unlabeled: unlabeled.length, noText: noText.length, h1: document.querySelectorAll('h1').length, overflow: document.documentElement.scrollWidth > window.innerWidth + 1, skipLinks, liveRegions };
     });
-    if (!result.lang || !result.title || result.badImages || result.unlabeled || result.noText || result.h1 !== 1 || result.overflow || (route === '/progress/' && result.liveRegions < 1)) throw new Error(route + ' accessibility contract failed: ' + JSON.stringify(result));
+    if (!result.lang || !result.title || (route === '/challenges/' && !result.challengeResultStatus) || (route === '/progress/' && !result.progressSnapshotControls) || result.badImages || result.unlabeled || result.noText || result.h1 !== 1 || result.overflow || (route === '/progress/' && result.liveRegions < 1)) throw new Error(route + ' accessibility contract failed: ' + JSON.stringify(result));
     for (const width of [640, 2560]) {
       await page.setViewportSize({ width, height: 900 });
       await page.reload({ waitUntil: 'domcontentloaded' });
