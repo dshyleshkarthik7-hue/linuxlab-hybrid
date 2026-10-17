@@ -22,6 +22,7 @@ assert.match(certificate, /certificate_revocations_certificateId_unique|REVOCATI
 assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), false, 'Linux 4 must use the direct Cloudflare Worker rather than a duplicate Netlify relay');
 assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), true, 'firmware must be served through Netlify Edge');
 assert.doesNotMatch(config, /path = "\/api\/iso\/linux4"/);
+assert.match(config, /path = "\/api\/v86-firmware"/, 'firmware query endpoint without a trailing slash must be routed to the Edge Function');
 assert.match(config, /path = "\/api\/v86-firmware\/\*"/);
 const firmwareEdge = await readFile(new URL('../netlify/edge-functions/v86-firmware.ts', import.meta.url), 'utf8');
 
