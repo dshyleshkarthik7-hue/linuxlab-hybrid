@@ -6,6 +6,9 @@ const cloudflare = await readFile(new URL('../cloudflare/iso-worker.ts', import.
 const config = await readFile(new URL('../netlify.toml', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../artifacts/manifest.json', import.meta.url), 'utf8'));
 const tutor = await readFile(new URL('../netlify/edge-functions/tutor.ts', import.meta.url), 'utf8');
+const questionValidation = tutor.indexOf("if (!question) return json({ error: 'Question is required.' }");
+const rateLimitCall = tutor.indexOf('const limit = await durableLimit');
+assert.ok(questionValidation >= 0 && rateLimitCall > questionValidation, 'Tutor must validate the question before consuming rate-limit quota');
 
 assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), false, 'Linux 4 must use the direct Cloudflare Worker rather than a duplicate Netlify relay');
 assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), true, 'firmware must be served through Netlify Edge');
