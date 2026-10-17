@@ -12,7 +12,7 @@ const axeSource = await readFile(require.resolve('axe-core/axe.min.js'), 'utf8')
 const explicit = process.env.A11Y_BASE_URL || process.argv[2];
 const port = process.env.A11Y_PORT || '4174';
 const baseURL = explicit || `http://127.0.0.1:${port}`;
-const routes = ['/', '/learn/', '/quiz/', '/progress/', '/certificate/', '/verify/', '/real-linux/', '/developer-alpine/', '/challenges/', '/linux-careers/'];
+const routes = ['/', '/learn/', '/quiz/', '/progress/', '/certificate/', '/verify/', '/real-linux/', '/developer-alpine/', '/challenges/', '/linux-careers.html', '/linux-careers/'];
 let server;
 
 async function waitForServer(url, timeoutMs = 20000) {
