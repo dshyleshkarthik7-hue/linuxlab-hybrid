@@ -492,7 +492,7 @@ export class V86LinuxTerminal {
     if (!/^[A-Za-z0-9._+ -]{1,180}$/.test(value) || !value || !this.shellReady) return;
     const vm = this.emulator;
     if (!vm || !this.enforcer || this.enforcer.isStopped() || this.enforcer.sessionExpired()) return;
-    vm.serial0_send(`${value}\\n`);
+    vm.serial0_send(`${value}\n`);
   }
 
   private async dispose(): Promise<void> {
