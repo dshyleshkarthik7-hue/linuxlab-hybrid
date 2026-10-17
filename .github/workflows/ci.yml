@@ -19,13 +19,15 @@ on:
     - cron: '17 3 * * *'
 permissions:
   contents: read
-  id-token: write
-  attestations: write
 concurrency:
   group: linuxlab-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   verify:
+    permissions:
+      contents: read
+      id-token: write
+      attestations: write
     runs-on: ubuntu-24.04
     timeout-minutes: 45
     env:
@@ -40,6 +42,12 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
+      - name: Hydrate and verify Git LFS assets
+        run: |
+          set -euo pipefail
+          git lfs install --local
+          git lfs pull
+          node scripts/check-lfs-assets.mjs --iso
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
@@ -54,7 +62,9 @@ jobs:
           set -euo pipefail
           npm config set registry "$NPM_CONFIG_REGISTRY"
           npm cache verify
-          npm ci --ignore-scripts --prefer-online
+          npm ci --ignore-scripts --prefer-offline
+      - name: Verify required build and test packages
+        run: node -e "for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p + '/package.json'); if (!f) process.exit(1); console.log('verified', p, f); }"
       - run: npm audit --audit-level=high
       - name: Write dependency audit artifact
         if: always()
@@ -78,6 +88,8 @@ jobs:
           set -euo pipefail
           test -f node_modules/playwright/cli.js
           node node_modules/playwright/cli.js install --with-deps chromium firefox webkit
+      - name: Build production assets before dist-dependent tests
+        run: npm run build
       - run: npm run test:ci
       - name: Package production build
         run: tar -czf linuxlab-dist-${GITHUB_SHA}.tar.gz dist
