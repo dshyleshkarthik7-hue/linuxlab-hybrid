@@ -24,8 +24,8 @@ for (const header of ['X-Content-Type-Options','Referrer-Policy','Permissions-Po
 assert.match(csp, /kind === 'login'.*style-src 'self' 'unsafe-inline'/,
   'login CSP must allow inline styles required by the identity provider');
 assert.match(csp, /const connectSrc = \[.*workerOrigin/,
-  'browser network access must use the configured worker origin and explicit fallback hosts');
-assert.doesNotMatch(csp, /https:\/\/\*\.amazonaws\.com/,
+  'browser network access must use the configured worker origin rather than arbitrary upstreams');
+assert.doesNotMatch(csp, /https:\/\/\*\.amazonaws\.com|https:\/\/\*\.hf\.co|https:\/\/github\.com|https:\/\/release-assets\.githubusercontent\.com|https:\/\/objects\.githubusercontent\.com/,
   'CSP must not allow every AWS bucket');
 assert.doesNotMatch(csp, /sha256-Ob\/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs=/,
   'CSP must not contain an unexplained static script hash');
