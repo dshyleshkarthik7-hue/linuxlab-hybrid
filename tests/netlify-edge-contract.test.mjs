@@ -17,7 +17,7 @@ assert.match(tutor, /MODEL !== PINNED_QWEN_MODEL/, 'Tutor must fail closed on an
 assert.match(certificate, /CERTIFICATE_FEEDBACK_MODEL !== PINNED_QWEN_MODEL/, 'Certificate feedback must fail closed on an environment override mismatch');
 assert.match(tutor, /return json\(\{ error: 'Tutor provider is temporarily unavailable\./, 'Tutor provider errors must return a non-success response');
 assert.match(certificate, /return json\(\{ error: 'AI study feedback is temporarily unavailable\./, 'Certificate feedback provider errors must fail closed');
-assert.match(certificate, /certificate_revocations_certificateId_unique|REVOCATION_INDEX_READY/, 'Certificate revocation must use durable indexed storage');
+assert.match(certificate, /certificate_revocations_certificateId_unique|revocationIndexPromise/, 'Certificate revocation must use durable indexed storage');
 
 assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), false, 'Linux 4 must use the direct Cloudflare Worker rather than a duplicate Netlify relay');
 assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), false, 'firmware must not use a runtime proxy');
