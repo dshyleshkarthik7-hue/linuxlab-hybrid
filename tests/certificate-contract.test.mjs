@@ -21,7 +21,7 @@ assert.match(certificate, /MIN_QUESTION_BANK_SIZE\s*=\s*100/);
 assert.match(certificate, /buildQuestionBank\(\)/);
 assert.match(certificate, /const bank = \[\.\.\.COMMON_BANK, \.\.\.FUNDAMENTAL_BANK\]/, 'verified assessment must use curated Linux foundations questions only');
 assert.doesNotMatch(certificate, /COMMAND_RECORDS|cmd-\$\{index\}-purpose|cmd-\$\{index\}-category|cmd-\$\{index\}-example/, 'catalog-trivia generation must not be used in the certificate exam');
-assert.match(certificate, /const choices = \(answer: string, pool: string\[\], fallback: string\[\] = \[\]\)/, 'verified exam must build answer choices from distinct values');
+assert.match(certificate, /Curated exam question has invalid answer choices/, 'verified exam must reject duplicate answer choices');
 assert.match(certificate, /question\.c\.length !== 4 \|\| new Set\(question\.c\)\.size !== 4/, 'verified exam must reject duplicate answer choices');
 assert.match(certificate, /EXAM_VERSION = 'linux-foundations-2\.3'/, 'exam version must change when question generation changes');
 assert.match(certificate, /bank\.length < MIN_QUESTION_BANK_SIZE/);
