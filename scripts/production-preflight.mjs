@@ -1,13 +1,13 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
-const PINNED_QWEN_MODEL = 'Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218';
+const ROUTER_QWEN_MODEL = 'Qwen/Qwen3-8B';
 const required = ['MONGODB_URI', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN', 'CERTIFICATE_SIGNING_KEYS', 'CERTIFICATE_SIGNING_KEY_ID', 'HF_TOKEN'];
 const missing = required.filter((name) => !process.env[name]?.trim());
 if (missing.length) {
   console.error('Release preflight missing required environment variables:', missing.join(', '));
   process.exit(1);
 }
-if ((process.env.HF_MODEL || PINNED_QWEN_MODEL) !== PINNED_QWEN_MODEL) throw new Error('HF_MODEL must match the pinned Qwen revision exactly.');
+if ((process.env.HF_MODEL || ROUTER_QWEN_MODEL) !== ROUTER_QWEN_MODEL) throw new Error('HF_MODEL must match the supported Qwen router model ID exactly.');
 const origins = new Set((process.env.CERTIFICATE_ALLOWED_ORIGINS || 'https://linuxterminal.me').split(',').map((x) => x.trim()).filter(Boolean));
 if (!origins.has('https://linuxterminal.me')) throw new Error('CERTIFICATE_ALLOWED_ORIGINS must include https://linuxterminal.me.');
 
@@ -52,7 +52,7 @@ try {
 const modelResponse = await fetch('https://router.huggingface.co/v1/chat/completions', {
   method: 'POST',
   headers: { authorization: 'Bearer ' + process.env.HF_TOKEN, 'content-type': 'application/json' },
-  body: JSON.stringify({ model: PINNED_QWEN_MODEL, messages: [{ role: 'user', content: 'Reply with OK.' }], max_tokens: 2, temperature: 0 }),
+  body: JSON.stringify({ model: ROUTER_QWEN_MODEL, messages: [{ role: 'user', content: 'Reply with OK.' }], max_tokens: 2, temperature: 0 }),
   signal: AbortSignal.timeout(20000),
   cache: 'no-store',
 });
@@ -62,5 +62,5 @@ if (!modelResponse.ok) {
 }
 const modelPayload = await modelResponse.json();
 if (!modelPayload.choices?.[0]?.message?.content) throw new Error('Hugging Face Router returned no model completion.');
-console.log('Hugging Face Router accepted the pinned Qwen revision and returned a completion.');
+console.log('Hugging Face Router accepted the supported Qwen router model ID and returned a completion.');
 console.log('Release preflight passed. No secret values were printed.');
