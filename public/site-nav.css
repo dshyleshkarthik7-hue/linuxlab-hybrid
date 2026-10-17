@@ -1,0 +1,5 @@
+.site-shared-links{display:flex;flex-wrap:wrap;gap:.45rem .85rem;align-items:center;padding:.55rem .75rem;border-block:1px solid #38516d;background:#0b1726;color:#e6eef8;font:500 .9rem/1.5 system-ui,sans-serif}
+.site-shared-links a{color:inherit;text-decoration:underline;text-underline-offset:.2em}
+.site-shared-links a:focus-visible,.site-skip-link:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}
+.site-skip-link{position:absolute;z-index:9999;left:.75rem;top:-100px;background:#fff;color:#111;padding:.65rem 1rem;border-radius:.4rem}
+.site-skip-link:focus{top:.75rem}
