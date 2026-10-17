@@ -204,7 +204,7 @@ export default async (request: Request, context: unknown) => {
   const contextText = readText(body.context, MAX_CONTEXT_CHARS);
   if (!question) return json({ error: 'Question is required.' }, 400, origin);
 
-  if (!MODEL_ID_RE.test(MODEL) || MODEL !== PINNED_QWEN_MODEL) return json({ error: 'Tutor model configuration is invalid. The pinned model revision is required.' }, 503, origin, { 'retry-after': '60' });
+  if (!MODEL_ID_RE.test(MODEL) || MODEL !== ROUTER_QWEN_MODEL) return json({ error: 'Tutor model configuration is invalid. The supported router model ID is required.' }, 503, origin, { 'retry-after': '60' });
   const token = Netlify.env.get('HF_TOKEN');
   if (!token) return json({ error: 'Tutor provider is not configured. Please try again later.' }, 503, origin, { 'retry-after': '60' });
 
