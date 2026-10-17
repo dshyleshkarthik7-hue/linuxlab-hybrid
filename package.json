@@ -73,7 +73,7 @@
     "typecheck:server": "tsc --project tsconfig.server.json",
     "test:sitemap": "node scripts/commands/build-database.mjs && node scripts/commands/build-intelligence.mjs && node scripts/generate-sitemap.mjs --check && node tests/sitemap-generation.test.mjs",
     "typecheck:functions": "tsc --project tsconfig.functions.json",
-    "check:installed-deps": "node -e \"for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p + '/package.json'); if (!f) process.exit(1); console.log('verified', p, f); }\""
+    "check:installed-deps": "node -e \"for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p); if (!f) process.exit(1); console.log('verified', p, f); }\""
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
