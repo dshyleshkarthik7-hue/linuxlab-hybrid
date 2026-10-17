@@ -76,20 +76,20 @@ const headers = [
   '',
   ...htmlEntries.flatMap(({ relative, absolute }) => {
     const html = htmlCacheMap.get(absolute);
-    const normalized = relative.replace(/\\\\/g, '/');
-    const kind = /(^|\\/)login\\//.test(normalized) ? 'login'
-      : /(^|\\/)beginner\\//.test(normalized) ? 'beginner'
-      : /(^|\\/)(real-linux|developer-alpine)\\//.test(normalized) || /(^|\\/)(index-v86|linux4|simulator)\\.html$/.test(normalized) ? 'vm'
+    const normalized = relative.replace(/\\/g, '/');
+    const kind = /(^|\/)login\//.test(normalized) ? 'login'
+      : /(^|\/)beginner\//.test(normalized) ? 'beginner'
+      : /(^|\/)(real-linux|developer-alpine)\//.test(normalized) || /(^|\/)(index-v86|linux4|simulator)\.html$/.test(normalized) ? 'vm'
       : 'common';
-    return ['/' + normalized, indent('Content-Security-Policy: ' + policy(html, kind) + '\\n' + htmlCache), ''];
+    return ['/' + normalized, indent('Content-Security-Policy: ' + policy(html, kind) + '\n' + htmlCache), ''];
   }),
   '/*.css', '  ' + assetCache, '',
   '/*.js', '  ' + assetCache, '',
   '/*.svg', '  ' + assetCache, '',
-  '/*.bin', '  Cache-Control: public, max-age=31536000, immutable\\n  CDN-Cache-Control: public, max-age=31536000, immutable', ''
-].join('\\n');
+  '/*.bin', '  Cache-Control: public, max-age=31536000, immutable\n  CDN-Cache-Control: public, max-age=31536000, immutable', ''
+].join('\n');
 
-const oversizedLines = headers.split('\\n').map((line) => Buffer.byteLength(line, 'utf8')).filter((bytes) => bytes > MAX_HEADER_LINE_BYTES);
+const oversizedLines = headers.split('\n').map((line) => Buffer.byteLength(line, 'utf8')).filter((bytes) => bytes > MAX_HEADER_LINE_BYTES);
 if (oversizedLines.length) throw new Error('Generated _headers contains a line exceeding ' + MAX_HEADER_LINE_BYTES + ' bytes');
 await writeFile('dist/_headers', headers);
 console.log('[LinuxLab] Generated deploy security headers for ' + htmlEntries.length + ' HTML pages; wasm eval is limited to VM pages.');
