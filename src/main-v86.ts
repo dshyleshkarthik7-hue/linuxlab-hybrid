@@ -375,13 +375,13 @@ export class V86LinuxTerminal {
     this.serial += ch;
     if (this.serial.length > 65536) this.serial = this.serial.slice(-65536);
     // Guest identity comes from the pinned, verified image metadata, not arbitrary shell output.
-    const accepted = this.enforcer.acceptOutput(ch);
-    if (accepted.value) this.term.write(accepted.value);
-    // Readiness checks are only needed at line boundaries or prompt terminators; avoid rescanning the full retained transcript per byte.
+    // Reset command budgets before rendering the prompt so the next command can always show output.
     const promptBoundary = ch.includes('\n') || ch.includes('\r') || ch.endsWith('$') || ch.endsWith('#') || ch.includes(READY_MARKER);
     const promptSeen = promptBoundary && /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/.test(this.serial);
-    if (promptBoundary && (this.serial.includes(READY_MARKER) || promptSeen)) this.shellReady = true;
     if (promptSeen) this.enforcer?.resetCommandWindow();
+    const accepted = this.enforcer.acceptOutput(ch);
+    if (accepted.value) this.term.write(accepted.value);
+    if (promptBoundary && (this.serial.includes(READY_MARKER) || promptSeen)) this.shellReady = true;
     if (this.shellReady) this.markReadyIfIdentityVerified();
   }
 
