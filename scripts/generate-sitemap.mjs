@@ -8,7 +8,7 @@ const staticPaths = [
   '/learn/terminal-navigation/', '/learn/files-and-directories/',
   '/learn/text-processing/', '/learn/permissions/', '/learn/processes/',
   '/learn/shell-scripting/', '/challenges/', '/quiz/', '/curriculum/',
-  '/about/', '/contact/', '/certificate/', '/linux-careers/', '/terms/',
+  '/about/', '/contact/', '/certificate/', '/faq/', '/terms/',
   '/privacy/', '/verify/'
 ];
 
