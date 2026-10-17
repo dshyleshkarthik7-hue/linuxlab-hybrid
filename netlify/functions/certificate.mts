@@ -15,7 +15,7 @@ async function certificatesCollection() {
   return collection;
 }
 
-const EXAM_VERSION = 'linux-foundations-2.1';
+const EXAM_VERSION = 'linux-foundations-2.2';
 const QUESTION_COUNT = 30;
 const MIN_QUESTION_BANK_SIZE = 300;
 const PASS_PERCENT = 80;
@@ -164,23 +164,6 @@ function shuffle<T>(values: readonly T[]): T[] {
   return result;
 }
 
-async function stableUserShuffle<T>(values: readonly T[], userId: string): Promise<T[]> {
-  const digest = new Uint8Array(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(`${EXAM_VERSION}|${userId}`)));
-  let seed = (digest[0] | (digest[1] << 8) | (digest[2] << 16) | (digest[3] << 24)) >>> 0;
-  if (seed === 0) seed = 0x9e3779b9;
-  const result = [...values];
-  const next = () => {
-    seed ^= seed << 13; seed >>>= 0;
-    seed ^= seed >>> 17; seed >>>= 0;
-    seed ^= seed << 5; seed >>>= 0;
-    return seed;
-  };
-  for (let i = result.length - 1; i > 0; i -= 1) {
-    const k = next() % (i + 1);
-    [result[i], result[k]] = [result[k], result[i]];
-  }
-  return result;
-}
 const json = (value: Record<string, unknown>, status = 200, requestOrigin?: string, extra?: Record<string, string>) => {
   const headers = new Headers({
     'content-type': 'application/json; charset=utf-8',
