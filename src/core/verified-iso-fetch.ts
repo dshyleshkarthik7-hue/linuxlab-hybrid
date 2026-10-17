@@ -7,7 +7,6 @@ const inFlight = new Map<string, Promise<ArrayBuffer>>();
 const inFlightConsumers = new Map<string, number>();
 const inFlightControllers = new Map<string, AbortController>();
 export const TRUSTED_ISO_ORIGIN = runtimeConfig.isoWorkerOrigin;
-export const ISO_DELIVERY_PATH = '/api/iso/linux4';
 const RANGE_FETCH_TIMEOUT_MS = 180_000;
 const RANGE_CHUNK_BYTES = 32 * 1024 * 1024;
 const RANGE_CONCURRENCY = 4;
@@ -45,7 +44,6 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
   chunkUrl.searchParams.set('chunkStart', String(start));
   chunkUrl.searchParams.set('chunkEnd', String(end));
   const isWorker = chunkUrl.origin === TRUSTED_ISO_ORIGIN;
-  const isNetlifyLinux4Edge = chunkUrl.origin === window.location.origin && chunkUrl.pathname === ISO_DELIVERY_PATH;
   const range = `bytes=${start}-${end}`;
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt += 1) {
@@ -54,7 +52,7 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
       // object. Do not send an HTTP Range to the Worker: Workers Cache would
       // interpret that Range against the chunk body instead of the full ISO.
       // Direct fallback origins still receive the real byte range.
-      const headers: HeadersInit = isWorker || isNetlifyLinux4Edge ? {} : { Range: range };
+      const headers: HeadersInit = isWorker ? {} : { Range: range };
       const response = await fetch(chunkUrl, { cache: 'default', headers, signal: requestSignal(signal, RANGE_FETCH_TIMEOUT_MS) });
       const chunkStart = response.headers.get('x-linuxlab-chunk-start');
       const chunkEnd = response.headers.get('x-linuxlab-chunk-end');
@@ -128,8 +126,10 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   const promise = (async () => {
     let lastError: unknown;
     const image = url.searchParams.get('image') || (artifact.filename === 'linux4.iso' ? 'linux4' : artifact.filename === 'alpine.iso' ? 'developer' : 'virt');
-    const primary = artifact.filename === 'linux4.iso' ? `${window.location.origin}${ISO_DELIVERY_PATH}?image=linux4` : `${TRUSTED_ISO_ORIGIN}/?image=${image}`;
-    const candidates = [primary, ...(artifact.filename === 'linux4.iso' ? [`${TRUSTED_ISO_ORIGIN}/?image=linux4`] : []), ...(artifact.fallbackUrls ?? [])];
+    const primary = `${TRUSTED_ISO_ORIGIN}/?image=${image}`;
+    // The worker performs upstream failover and digest validation. Keep browser
+    // downloads on this single trusted origin rather than bypassing its controls.
+    const candidates = [primary];
     for (const candidate of candidates) {
       try { return await fetchIsoResumable(candidate, artifact, controller.signal); }
       catch (error) { lastError = error; if (controller.signal.aborted) throw error; }
