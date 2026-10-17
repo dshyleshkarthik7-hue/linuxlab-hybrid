@@ -573,7 +573,7 @@ export default async (request: Request) => {
 
   try {
     const url = new URL(request.url);
-    if (request.method === 'GET') return verify(url.searchParams.get('id') || '', request);
+    if (request.method === 'GET') return await verify(url.searchParams.get('id') || '', request);
     if (request.method !== 'POST') return json({ error: 'method not allowed' }, 405, corsOrigin(request));
 
     const user = await auth(request);
@@ -581,7 +581,7 @@ export default async (request: Request) => {
 
     const action = url.searchParams.get('action');
     if (action !== 'start' && action !== 'submit' && action !== 'explain') return json({ error: 'Unknown action.' }, 400);
-    if (action === 'start') return start(user, request);
+    if (action === 'start') return await start(user, request);
 
     let body: unknown;
     try {
@@ -590,8 +590,8 @@ export default async (request: Request) => {
       const message = error instanceof Error ? error.message : String(error);
       return json({ error: message }, message === 'request body is too large' ? 413 : 400);
     }
-    if (action === 'explain') return explainStudyPlan(user, body, request);
-    return submit(user, body, request);
+    if (action === 'explain') return await explainStudyPlan(user, body, request);
+    return await submit(user, body, request);
   } catch (error) {
     console.error('Certificate service failed', error instanceof Error ? error.message : String(error));
     return json({ error: 'Certificate service unavailable.' }, 503);
