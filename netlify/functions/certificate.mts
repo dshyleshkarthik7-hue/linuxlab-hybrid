@@ -91,6 +91,8 @@ function buildQuestionBank(): Q[] {
   const result: Q[] = [];
   const names = [...new Set(COMMAND_RECORDS.map(record => String(record.name).trim()).filter(Boolean))];
   const examples = [...new Set(COMMAND_RECORDS.map(record => String(record.example || '').trim()).filter(Boolean))];
+  const summaryCounts = new Map<string, number>();
+  for (const record of COMMAND_RECORDS) { const summary = String(record.summary || '').trim().toLowerCase(); if (summary) summaryCounts.set(summary, (summaryCounts.get(summary) || 0) + 1); }
   const byCategory = new Map<string, { names: string[]; examples: string[] }>();
   for (const record of COMMAND_RECORDS) {
     const category = String(record.category || 'linux').trim() || 'linux';
@@ -122,7 +124,7 @@ function buildQuestionBank(): Q[] {
     const group = byCategory.get(category) || { names: [], examples: [] };
     const otherNames = group.names.filter(value => value !== name);
     const otherExamples = group.examples.filter(value => value !== example);
-    if (summary) {
+    if (summary && summaryCounts.get(summary.toLowerCase()) === 1) {
       result.push({
         id: `cmd-${index}-identify`,
         q: `Which command is represented by this catalog description: ${summary}?`,
