@@ -19,6 +19,9 @@ const intelligenceBuilder = await readFile("scripts/commands/build-intelligence.
 const databaseBuilder = await readFile("scripts/commands/build-database.mjs", "utf8");
 assert.match(databaseBuilder, /Catalog entry; purpose and availability are not verified/);
 assert.match(intelligenceBuilder, /"unverified"/, "inventory-only records must not be marked as complete lessons");
+assert.match(intelligenceBuilder, /\.cache\/command-intelligence\.json/, "large generated intelligence must stay outside the public web root");
+assert.match(builder, /\.cache\/command-intelligence\.json/, "command pages should consume the build-time intelligence artifact");
+assert.doesNotMatch(intelligenceBuilder, /public\/command-intelligence\.json/, "generated intelligence must not be published as a whole-site JSON download");
 assert.match(builder, /commands\.css\?v=20261016/, "generated pages must bust stale stylesheet caches");
 assert.doesNotMatch(builder, /Shell builtin:/, "generic pages must not claim arbitrary inventory entries are shell builtins");
 assert.doesNotMatch(builder, /\$ echo \$\?/, "generator must not invent generic exit-status output");
