@@ -69,8 +69,9 @@ assert.match(worker, /endsWith\("\.huggingface\.co"\)/);
 assert.match(worker, /endsWith\("\.xethub\.hf\.co"\)/);
 assert.match(worker, /github-production-release-asset-/);
 
-assert.match(worker, /isLocalDevelopmentOrigin/);
-assert.match(worker, /if \(isLocalDevelopmentOrigin\) return true/);
+assert.match(worker, /allowLocalDevelopment/);
+assert.match(worker, /env\.ENVIRONMENT === "development"/);
+assert.doesNotMatch(worker, /return isProductionOrigin \|\| isLocalDevelopmentOrigin/, 'localhost origins must never be allowed by production policy');
 assert.equal(manifest.artifacts.find((artifact) => artifact.image === 'linux4').fallbackUrls[0], 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso');
 assert.match(manifest.artifacts.find((artifact) => artifact.image === 'linux4').fallbackUrls[0], /^https:\/\/github\.com\/dshyleshkarthik7-hue\/linuxlab-hybrid\/releases\/download\/v3\.00\/linux4\.iso$/);
 
