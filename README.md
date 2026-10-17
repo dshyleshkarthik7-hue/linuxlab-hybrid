@@ -67,7 +67,7 @@ Never commit secrets.
 
 ## AI Tutor
 
-The protected Tutor edge function defaults to `Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218` through `HF_MODEL`, pinned to an immutable Hugging Face revision. `HF_TOKEN` stays server-side. Learner context is treated as untrusted data, requests are authenticated, and Upstash rate limiting fails closed when unavailable. A deterministic teaching fallback is used if the model is unavailable.
+The protected Tutor edge function uses the immutable `Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218` revision. `HF_MODEL` is accepted only when it matches this pin. `HF_TOKEN` stays server-side. Learner context is treated as untrusted data, requests are authenticated, and Upstash rate limiting fails closed when unavailable. A deterministic teaching fallback is used if the model is unavailable.
 
 Tutor variables:
 
@@ -132,7 +132,7 @@ Production deployment requires the GitHub `production` environment, required rev
 
 
 ### Current deployment architecture
-The browser VM uses the explicitly trusted Cloudflare ISO worker at `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/`; there is intentionally no Netlify `/api/iso` Edge Function. ISO and firmware delivery are designed to avoid consuming Netlify bandwidth. Netlify remains the static application host and currently retains the authenticated Tutor/CSP/certificate application services; those services are not part of the high-volume ISO delivery path.
+The browser VM uses the explicitly trusted Cloudflare ISO worker at `https://linuxterminal-iso.dshyleshkarthik7.workers.dev/`; there is intentionally no Netlify `/api/iso` Edge Function. ISO delivery uses the Cloudflare worker, while the small pinned SeaBIOS and VGABIOS files are downloaded and SHA-256 verified during the build and served as immutable static assets. Netlify remains the static application host and currently retains the authenticated Tutor/CSP/certificate application services; those services are not part of the high-volume ISO delivery path.
 
 
 ## Security and credential trust
