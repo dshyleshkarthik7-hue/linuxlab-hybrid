@@ -1,6 +1,6 @@
 const PINNED_MODEL = 'Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218';
 const MODEL = Netlify.env.get('HF_MODEL') || PINNED_MODEL;
-const MODEL_PIN_RE = /^Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218$/;
+const MODEL_PIN_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+@[a-f0-9]{40}$/i;
 const MAX_OUTPUT_TOKENS = 300;
 const MAX_CONTEXT_CHARS = 5000;
 const MAX_QUESTION_CHARS = 1200;
@@ -266,9 +266,9 @@ export default async (request: Request, context: unknown) => {
     const answer = (data as HuggingFaceResponse)?.choices?.[0]?.message?.content;
     if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin); }
     await recordCircuitSuccess();
-    const safeAnswer = answer.replace(CONTROL_CHARS, '').trim().slice(0, MAX_OUTPUT_CHARS);
+    const safeAnswer = answer.replace(/<think>[\\s\\S]*?(?:<\\/think>|$)/gi, '').replace(/<\\/?think>/gi, '').replace(CONTROL_CHARS, '').trim().slice(0, MAX_OUTPUT_CHARS);
     if (!safeAnswer) return json({ error: 'Tutor provider returned an empty response.' }, 503, origin);
-    return json({ answer: safeAnswer, model: MODEL, provider: 'nscale', outputFormat: 'plain-text' }, 200, origin);
+    return json({ answer: safeAnswer, model: MODEL, provider: 'huggingface-router', outputFormat: 'plain-text' }, 200, origin);
   } catch (error) {
     await recordCircuitFailure();
     console.error('Tutor request failed', error instanceof Error ? error.message : String(error));
