@@ -226,7 +226,7 @@ export default async (request: Request, context: unknown) => {
 
   if (!MODEL_PIN_RE.test(MODEL)) return json({ error: 'Tutor model is not pinned to an immutable revision.' }, 503, origin, { 'retry-after': '60' });
   const token = Netlify.env.get('HF_TOKEN');
-  if (!token) return json({ error: 'Tutor provider is temporarily unavailable.' }, 503, origin, { 'retry-after': '60' });
+  if (!token) return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin);
 
   const prompt = [
     'You are LinuxTerminal Tutor, a concise Linux teacher.',
@@ -242,7 +242,7 @@ export default async (request: Request, context: unknown) => {
     question,
   ].join('\n');
 
-  if (await circuitOpen()) return json({ error: 'Tutor provider is temporarily unavailable.' }, 503, origin, { 'retry-after': String(CIRCUIT_OPEN_SECONDS) });
+  if (await circuitOpen()) return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -261,10 +261,10 @@ export default async (request: Request, context: unknown) => {
         stream: false,
       }),
     });
-    if (!response.ok) { await recordCircuitFailure(); return json({ error: 'Tutor provider is temporarily unavailable.' }, 503, origin, { 'retry-after': '60' }); }
+    if (!response.ok) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin); }
     const data: unknown = await response.json();
     const answer = (data as HuggingFaceResponse)?.choices?.[0]?.message?.content;
-    if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ error: 'Tutor provider returned an invalid response.' }, 503, origin, { 'retry-after': '60' }); }
+    if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin); }
     await recordCircuitSuccess();
     const safeAnswer = answer.replace(CONTROL_CHARS, '').trim().slice(0, MAX_OUTPUT_CHARS);
     if (!safeAnswer) return json({ error: 'Tutor provider returned an empty response.' }, 503, origin);
@@ -272,7 +272,7 @@ export default async (request: Request, context: unknown) => {
   } catch (error) {
     await recordCircuitFailure();
     console.error('Tutor request failed', error instanceof Error ? error.message : String(error));
-    return json({ error: 'Tutor provider is temporarily unavailable.' }, 503, origin, { 'retry-after': '60' });
+    return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin);
   } finally {
     clearTimeout(timeout);
   }
