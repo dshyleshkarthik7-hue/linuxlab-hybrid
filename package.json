@@ -7,7 +7,7 @@
     "dev": "vite",
     "predev": "node scripts/commands/build-database.mjs && node scripts/commands/build-intelligence.mjs && node scripts/commands/build-command-pages.mjs",
     "prebuild": "node scripts/commands/build-database.mjs && node scripts/commands/build-intelligence.mjs && node scripts/commands/build-command-pages.mjs && node scripts/fetch-v86-firmware.mjs && node scripts/check-lfs-assets.mjs && node scripts/generate-static-redirects.mjs && node scripts/generate-sitemap.mjs",
-    "build": "tsc && vite build && node scripts/generate-netlify-headers.mjs && node scripts/generate-build-info.mjs",
+    "build": "tsc && vite build && node scripts/inject-shared-navigation.mjs && node scripts/generate-netlify-headers.mjs && node scripts/generate-build-info.mjs",
     "preview": "vite preview",
     "test:engine": "node --experimental-strip-types tests/linux-engine.test.ts",
     "test:catalog": "node --experimental-strip-types tests/command-catalog.test.ts",
@@ -36,7 +36,7 @@
     "test:real-guest-firmware-proxy": "node tests/real-guest-firmware-proxy.test.mjs",
     "test:coverage": "node tests/coverage-threshold.mjs",
     "test:security": "npm audit --audit-level=high",
-    "test:ci": "npm run typecheck:server && npm run typecheck:functions && npm run test:config && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy",
+    "test:ci": "npm run typecheck:server && npm run typecheck:functions && npm run test:config && npm run test:shared-nav && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy",
     "lint": "tsc --noEmit && node tests/security-static.test.mjs",
     "build:iso": "node scripts/check-lfs-assets.mjs --iso && node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
@@ -74,7 +74,8 @@
     "test:sitemap": "node scripts/commands/build-database.mjs && node scripts/commands/build-intelligence.mjs && node scripts/generate-sitemap.mjs --check && node tests/sitemap-generation.test.mjs",
     "typecheck:functions": "tsc --project tsconfig.functions.json",
     "check:installed-deps": "node -e \"for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p); if (!f) process.exit(1); console.log('verified', p, f); }\"",
-    "test:careers-jobs": "node tests/careers-jobs-contract.test.mjs"
+    "test:careers-jobs": "node tests/careers-jobs-contract.test.mjs",
+    "test:shared-nav": "node tests/shared-nav-contract.test.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
