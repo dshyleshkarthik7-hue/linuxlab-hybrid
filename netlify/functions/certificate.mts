@@ -24,7 +24,7 @@ async function certificatesCollection() {
 
 const EXAM_VERSION = 'linux-foundations-2.2';
 const QUESTION_COUNT = 30;
-const MIN_QUESTION_BANK_SIZE = 300;
+const MIN_QUESTION_BANK_SIZE = 1000;
 const PASS_PERCENT = 80;
 const ATTEMPT_TTL = 3600;
 const VERIFY_RATE_LIMIT = 30;
@@ -104,6 +104,8 @@ function buildQuestionBank(): Q[] {
   const result: Q[] = [];
   const names = [...new Set(COMMAND_RECORDS.map(record => String(record.name).trim()).filter(Boolean))];
   const examples = [...new Set(COMMAND_RECORDS.map(record => String(record.example || '').trim()).filter(Boolean))];
+  const purposes = [...new Set(COMMAND_RECORDS.map(record => String(record.summary || '').trim()).filter(Boolean))];
+  const categories = [...new Set(COMMAND_RECORDS.map(record => String(record.category || 'linux').trim() || 'linux'))];
   const summaryCounts = new Map<string, number>();
   for (const record of COMMAND_RECORDS) { const summary = String(record.summary || '').trim().toLowerCase(); if (summary) summaryCounts.set(summary, (summaryCounts.get(summary) || 0) + 1); }
   const byCategory = new Map<string, { names: string[]; examples: string[] }>();
@@ -146,6 +148,22 @@ function buildQuestionBank(): Q[] {
         t: category
       });
     }
+    if (summary) {
+      result.push({
+        id: `cmd-${index}-purpose`,
+        q: `What purpose does the catalog document for the ${name} command?`,
+        c: choices(summary, purposes, purposes),
+        a: summary,
+        t: category
+      });
+    }
+    result.push({
+      id: `cmd-${index}-category`,
+      q: `Which catalog category contains the ${name} command?`,
+      c: choices(category, categories, categories),
+      a: category,
+      t: category
+    });
     if (example) {
       result.push({
         id: `cmd-${index}-example`,
@@ -154,6 +172,22 @@ function buildQuestionBank(): Q[] {
         a: example,
         t: category
       });
+      result.push({
+        id: `cmd-${index}-from-example`,
+        q: `Which command is shown by this example: ${example}?`,
+        c: choices(name, otherNames, names),
+        a: name,
+        t: category
+      });
+      if (summary) {
+        result.push({
+          id: `cmd-${index}-purpose-example`,
+          q: `Which command matches both this purpose — ${summary} — and example — ${example}?`,
+          c: choices(name, otherNames, names),
+          a: name,
+          t: category
+        });
+      }
     }
   }
   const bank = [...result, ...COMMON_BANK, ...FUNDAMENTAL_BANK];
