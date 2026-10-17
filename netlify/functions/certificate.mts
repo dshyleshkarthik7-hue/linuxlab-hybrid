@@ -4,10 +4,16 @@ import catalog from '../../data/commands/canonical.json' with { type: 'json' };
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB = process.env.MONGODB_DB || 'linuxlab';
 let mongoPromise: Promise<MongoClient> | null = null;
-async function certificatesCollection() {
+type CertificateDocument = Cert & { _id: string; userEmail: string | null; createdAt: Date; expiresAt: Date; attemptId: string; audit: { issuedAt: string; source: 'assessment' } };
+
+async function mongoDatabase() {
   if (!MONGODB_URI) throw new Error('MONGODB_URI is not configured');
-  if (!mongoPromise) mongoPromise = new MongoClient(MONGODB_URI, { maxPoolSize: 5, maxIdleTimeMS: 30000, retryWrites: true, retryReads: true, serverSelectionTimeoutMS: 8000, serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true } }).connect().catch(error => { mongoPromise = null; throw error; });
-  const collection = (await mongoPromise).db(MONGODB_DB).collection('certificates');
+  if (!mongoPromise) mongoPromise = new MongoClient(MONGODB_URI, { maxPoolSize: 5, maxIdleTimeMS: 30000, retryWrites: true, retryReads: true, serverSelectionTimeoutMS: 8000, serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true } } as any).connect().catch(error => { mongoPromise = null; throw error; });
+  return (await mongoPromise).db(MONGODB_DB);
+}
+
+async function certificatesCollection() {
+  const collection = (await mongoDatabase()).collection<CertificateDocument>('certificates');
   if (!CERT_INDEX_READY.has(collection)) {
     await collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: 'certificates_expiresAt_ttl' });
     CERT_INDEX_READY.add(collection);
@@ -337,7 +343,7 @@ async function stableCertificateId(attemptId: string): Promise<string> {
 
 async function certificateIsDurablyRevoked(id: string): Promise<boolean> {
   if (!MONGODB_URI) return false;
-  const collection = (await certificatesCollection()).db(MONGODB_DB).collection('certificate_revocations');
+  const collection = (await mongoDatabase()).collection<{ certificateId: string }>('certificate_revocations');
   if (!REVOCATION_INDEX_READY.has(collection)) {
     await collection.createIndex({ certificateId: 1 }, { unique: true, name: 'certificate_revocations_certificateId_unique' });
     REVOCATION_INDEX_READY.add(collection);
@@ -393,10 +399,11 @@ async function submit(user: User, body: unknown, request: Request) {
     for (const item of value.answers) {
       if (!item || typeof item !== 'object') return json({ error: 'Invalid answer entry.' }, 400);
       const answer = item as { id?: unknown; choice?: unknown };
-      if (typeof answer.id !== 'string' || !questionIds.has(answer.id) || !Number.isInteger(answer.choice) || answer.choice < 0 || answer.choice >= 4 || answers.has(answer.id)) {
+      const choice = answer.choice;
+      if (typeof answer.id !== 'string' || !questionIds.has(answer.id) || typeof choice !== 'number' || !Number.isInteger(choice) || choice < 0 || choice >= 4 || answers.has(answer.id)) {
         return json({ error: 'Each question must be answered exactly once with a valid choice.' }, 400);
       }
-      answers.set(answer.id, answer.choice as number);
+      answers.set(answer.id, choice);
     }
 
     if (answers.size !== QUESTION_COUNT) {
