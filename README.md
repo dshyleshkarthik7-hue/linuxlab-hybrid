@@ -67,12 +67,12 @@ Never commit secrets.
 
 ## AI Tutor
 
-The protected Tutor edge function uses the immutable `Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218` revision. `HF_MODEL` is accepted only when it matches this pin. `HF_TOKEN` stays server-side. Learner context is treated as untrusted data, requests are authenticated, and Upstash rate limiting fails closed when unavailable. A deterministic teaching fallback is used if the model is unavailable.
+The protected Tutor and certificate feedback functions use the Hugging Face Inference Providers router model ID `Qwen/Qwen3-8B`. The OpenAI-compatible router documents repository model IDs and provider-selection suffixes, but not an immutable repository-revision pin in this request format; provider-side model revisions may change. `HF_MODEL` is accepted only when it matches this router model ID. `HF_TOKEN` stays server-side. Learner context is treated as untrusted data, requests are authenticated, and Upstash rate limiting fails closed when unavailable. A deterministic teaching fallback is used if the model is unavailable.
 
 Tutor variables:
 
 - `HF_TOKEN`
-- `HF_MODEL` (optional; defaults to the pinned `Qwen/Qwen3-8B` revision shown above)
+- `HF_MODEL` (optional; defaults to `Qwen/Qwen3-8B` and must match that model ID)
 - `UPSTASH_REDIS_REST_URL`
 - `UPSTASH_REDIS_REST_TOKEN`
 - `TUTOR_ALLOWED_ORIGINS` (optional)
