@@ -1,6 +1,6 @@
 const ASSETS: Record<string, { size: number; sha256: string }> = {
-  "seabios.bin": { size: 131072, sha256: "73e3f359102e3a9982c35fce98eb7cd08f18303ac7f1ba6ebfbe6cdc1c244d98" },
-  "vgabios.bin": { size: 36352, sha256: "a4bc0d80cc3ca028c73dafa8fee396b8d054ce87ebd8abfbd31b06b437607880" },
+  "seabios.bin": { size: 131072, sha256: "73e3f359102e3a9982c35fce98eb7cd08f18303ac7f1ba6ebfbe6cdc1c244d98", url: "https://raw.githubusercontent.com/copy/v86/679ecd2e/bios/seabios.bin" },
+  "vgabios.bin": { size: 36352, sha256: "a4bc0d80cc3ca028c73dafa8fee396b8d054ce87ebd8abfbd31b06b437607880", url: "https://raw.githubusercontent.com/copy/v86/679ecd2e/bios/vgabios.bin" },
 };
 
 export default async (request: Request): Promise<Response> => {
@@ -22,8 +22,7 @@ export default async (request: Request): Promise<Response> => {
   if (!asset) return new Response("Unknown firmware asset", { status: 404, headers: { "Cache-Control": "no-store" } });
 
   try {
-    const upstream = new URL("/" + filename, url.origin);
-    const response = await fetch(upstream, { method: "GET", redirect: "error", signal: AbortSignal.timeout(10000) });
+    const response = await fetch(asset.url, { method: "GET", redirect: "error", signal: AbortSignal.timeout(10000) });
     if (!response.ok) return new Response("Firmware asset unavailable", { status: 502, headers: { "Cache-Control": "no-store" } });
 
     const bytes = new Uint8Array(await response.arrayBuffer());
