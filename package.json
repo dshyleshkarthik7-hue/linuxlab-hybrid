@@ -71,7 +71,7 @@
     "test:developer-chunk-manifest": "node tests/developer-chunk-manifest.test.mjs",
     "video:curriculum": "node scripts/video/generate-curriculum-videos.mjs",
     "typecheck:server": "tsc --project tsconfig.server.json",
-    "test:sitemap": "node scripts/generate-sitemap.mjs --check && node tests/sitemap-generation.test.mjs",
+    "test:sitemap": "node scripts/commands/build-database.mjs && node scripts/commands/build-intelligence.mjs && node scripts/generate-sitemap.mjs --check && node tests/sitemap-generation.test.mjs",
     "typecheck:functions": "tsc --project tsconfig.functions.json"
   },
   "dependencies": {
