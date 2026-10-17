@@ -1,5 +1,4 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
-import catalog from '../../data/commands/canonical.json' with { type: 'json' };
 
 const MONGODB_URI = process.env.MONGODB_URI;
 const MONGODB_DB = process.env.MONGODB_DB || 'linuxterminal';
@@ -21,9 +20,9 @@ async function certificatesCollection() {
   return collection;
 }
 
-const EXAM_VERSION = 'linux-foundations-2.2';
+const EXAM_VERSION = 'linux-foundations-2.3';
 const QUESTION_COUNT = 30;
-const MIN_QUESTION_BANK_SIZE = 1000;
+const MIN_QUESTION_BANK_SIZE = 100;
 const PASS_PERCENT = 80;
 const ATTEMPT_TTL = 3600;
 const ATTEMPT_ID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
@@ -83,7 +82,6 @@ type Cert = {
   keyId?: string;
 };
 
-type CatalogRecord={name:string;summary?:string;example?:string;category?:string};const COMMAND_RECORDS=(catalog as {records:CatalogRecord[]}).records;
 const COMMON_BANK:Q[]=[
 {id:'os-kernel',q:'Which component manages core Linux resources such as processes and memory?',c:['the Linux kernel','the shell prompt','the terminal emulator','the browser cache'],a:'the Linux kernel',t:'operating-systems'},
 {id:'os-process',q:'What is a process?',c:['a running instance of a program','a filesystem path','a DNS record','a terminal color'],a:'a running instance of a program',t:'operating-systems'},
@@ -100,114 +98,16 @@ const FUNDAMENTAL_BANK: Q[] = FUNDAMENTAL_ITEMS.flatMap(([id, q, scenario, answe
 ]);
 
 function buildQuestionBank(): Q[] {
-  const result: Q[] = [];
-  const names = [...new Set(COMMAND_RECORDS.map(record => String(record.name).trim()).filter(Boolean))];
-  const examples = [...new Set(COMMAND_RECORDS.map(record => String(record.example || '').trim()).filter(Boolean))];
-  const purposes = [...new Set(COMMAND_RECORDS.map(record => String(record.summary || '').trim()).filter(Boolean))];
-  const categories = [...new Set(COMMAND_RECORDS.map(record => String(record.category || 'linux').trim() || 'linux'))];
-  const summaryCounts = new Map<string, number>();
-  for (const record of COMMAND_RECORDS) { const summary = String(record.summary || '').trim().toLowerCase(); if (summary) summaryCounts.set(summary, (summaryCounts.get(summary) || 0) + 1); }
-  const byCategory = new Map<string, { names: string[]; examples: string[] }>();
-  for (const record of COMMAND_RECORDS) {
-    const category = String(record.category || 'linux').trim() || 'linux';
-    const group = byCategory.get(category) || { names: [], examples: [] };
-    const name = String(record.name || '').trim();
-    const example = String(record.example || '').trim();
-    if (name && !group.names.includes(name)) group.names.push(name);
-    if (example && !group.examples.includes(example)) group.examples.push(example);
-    byCategory.set(category, group);
-  }
-  const rnd = (n: number): number => {
-    if (n <= 0) throw new Error('empty distractor pool');
-    const values = new Uint32Array(1);
-    crypto.getRandomValues(values);
-    return values[0] % n;
-  };
-  const choices = (answer: string, pool: string[], fallback: string[] = []): string[] => {
-    const selected = new Set<string>();
-    const total = pool.length + fallback.length;
-    for (let i = 0; selected.size < 3 && i < 500; i += 1) {
-      const index = rnd(total);
-      const value = String(index < pool.length ? pool[index] : fallback[index - pool.length] ?? '').trim();
-      if (value && value !== answer) selected.add(value);
-    }
-    if (selected.size < 3) {
-      for (const value of [...new Set([...pool, ...fallback].map(value => String(value).trim()).filter(value => value && value !== answer && !selected.has(value)))]) { selected.add(value); if (selected.size === 3) break; }
-    }
-    if (selected.size < 3) throw new Error('Verified exam catalog has too few unique distractors');
-    const result = [answer, ...selected];
-    if (result.length !== 4 || new Set(result).size !== 4) throw new Error('Verified exam question choices must contain four unique options and one answer');
-    return result;
-  };
-  for (const [index, record] of COMMAND_RECORDS.entries()) {
-    const name = String(record.name || '').trim();
-    if (!name) continue;
-    const summary = String(record.summary || '').trim();
-    const example = String(record.example || '').trim();
-    const category = String(record.category || 'linux').trim() || 'linux';
-    const group = byCategory.get(category) || { names: [], examples: [] };
-    const otherNames = group.names.filter(value => value !== name);
-    const otherExamples = group.examples.filter(value => value !== example);
-    if (summary && summaryCounts.get(summary.toLowerCase()) === 1) {
-      result.push({
-        id: `cmd-${index}-identify`,
-        q: `Which command is represented by this catalog description: ${summary}?`,
-        c: choices(name, otherNames, names),
-        a: name,
-        t: category
-      });
-    }
-    if (summary) {
-      result.push({
-        id: `cmd-${index}-purpose`,
-        q: `What purpose does the catalog document for the ${name} command?`,
-        c: choices(summary, purposes, purposes),
-        a: summary,
-        t: category
-      });
-    }
-    if (summary || example) {
-      result.push({
-        id: `cmd-${index}-category`,
-        q: `Which catalog category contains the ${name} command?`,
-        c: choices(category, categories, categories),
-        a: category,
-        t: category
-      });
-    }
-    if (example) {
-      result.push({
-        id: `cmd-${index}-example`,
-        q: `Which example is associated with the ${name} command record?`,
-        c: choices(example, otherExamples, examples),
-        a: example,
-        t: category
-      });
-      result.push({
-        id: `cmd-${index}-from-example`,
-        q: `Which command is shown by this example: ${example}?`,
-        c: choices(name, otherNames, names),
-        a: name,
-        t: category
-      });
-      if (summary) {
-        result.push({
-          id: `cmd-${index}-purpose-example`,
-          q: `Which command matches both this purpose — ${summary} — and example — ${example}?`,
-          c: choices(name, otherNames, names),
-          a: name,
-          t: category
-        });
-      }
-    }
-  }
-  const bank = [...result, ...COMMON_BANK, ...FUNDAMENTAL_BANK];
+  const bank = [...COMMON_BANK, ...FUNDAMENTAL_BANK];
   const seen = new Set<string>();
   for (const question of bank) {
-    if (seen.has(question.id)) throw new Error('Verified exam catalog contains duplicate question IDs');
+    if (seen.has(question.id)) throw new Error('Curated exam bank contains duplicate question IDs');
     seen.add(question.id);
     if (question.c.length !== 4 || new Set(question.c).size !== 4 || question.c.filter(choice => choice === question.a).length !== 1) {
-      throw new Error('Verified exam question has invalid answer choices: ' + question.id);
+      throw new Error('Curated exam question has invalid answer choices: ' + question.id);
+    }
+    if (question.q.toLocaleLowerCase().includes(question.a.toLocaleLowerCase())) {
+      throw new Error('Curated exam question leaks its answer in the question text: ' + question.id);
     }
   }
   return bank;
