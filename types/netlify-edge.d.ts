@@ -13,4 +13,4 @@ interface ExecutionContext {
   passThroughOnException(): void;
 }
 
-declare const caches: CacheStorage & { default: Cache };
+interface CacheStorage { readonly default: Cache; }
