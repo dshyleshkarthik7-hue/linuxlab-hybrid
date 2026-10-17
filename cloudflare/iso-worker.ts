@@ -187,8 +187,8 @@ function cacheKey(request: Request, origin: string, chunk: { start: number; end:
 
 function errorResponse(message: string, status: number, headers: Headers): Response {
   const responseHeaders = new Headers(headers);
-  responseHeaders.set("Cache-Control", "public, max-age=60, stale-while-revalidate=300");
-  responseHeaders.set("CDN-Cache-Control", "public, max-age=60, stale-while-revalidate=300");
+  responseHeaders.set("Cache-Control", "no-store");
+  responseHeaders.set("CDN-Cache-Control", "no-store");
   return new Response(message, { status, headers: responseHeaders });
 }
 
@@ -197,11 +197,11 @@ export default {
     const url = new URL(request.url);
     const headers = corsHeaders(request);
     const origin = request.headers.get("Origin");
-    if (!isAllowedOrigin(origin)) return new Response("Origin not allowed", { status: 403, headers });
+    if (!isAllowedOrigin(origin)) return errorResponse("Origin not allowed", 403, headers);
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers });
     if (request.method !== "GET" && request.method !== "HEAD") {
       headers.set("Allow", "GET, HEAD, OPTIONS");
-      return new Response("Method Not Allowed", { status: 405, headers });
+      return errorResponse("Method Not Allowed", 405, headers);
     }
     const clientKey = request.headers.get("CF-Connecting-IP") || "unknown";
     if (!env?.ISO_RATE_LIMITER || typeof env.ISO_RATE_LIMITER.limit !== "function") {
@@ -261,7 +261,7 @@ export default {
       return response;
     }
     const image = getImage(url);
-    if (!image) return new Response("Unknown image. Use image=developer, image=virt, or image=linux4.", { status: 404, headers });
+    if (!image) return errorResponse("Unknown image. Use image=developer, image=virt, or image=linux4.", 404, headers);
     let chunk;
     try {
       const part = pathPart(url);
@@ -269,7 +269,7 @@ export default {
     }
     catch {
       headers.set("Content-Range", `bytes */${image.size}`);
-      return new Response("Invalid chunk", { status: 416, headers });
+      return errorResponse("Invalid chunk", 416, headers);
     }
     const expectedLength = chunk.end - chunk.start + 1;
     let expectedDeveloperChunkSha: string | null = null;
