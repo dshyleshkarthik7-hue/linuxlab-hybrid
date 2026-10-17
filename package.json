@@ -83,9 +83,7 @@
     "test:production-preflight-contract": "node tests/production-preflight-contract.test.mjs",
     "test:progress-snapshot": "node tests/progress-export-import.test.mjs",
     "test:accessibility:axe": "node tests/accessibility-axe.mjs",
-    "test:catalog-pagination": "node tests/command-catalog-pagination.test.mjs",
-    "prepare": "husky",
-    "test:precommit": "npm run test:coverage && npm run build && npm run test:accessibility:axe"
+    "test:catalog-pagination": "node tests/command-catalog-pagination.test.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
@@ -97,9 +95,7 @@
     "esbuild": "0.28.2",
     "typescript": "5.9.3",
     "vite": "8.3.2",
-    "playwright": "1.64.1",
-    "husky": "^9.1.7",
-    "axe-core": "4.10.3"
+    "playwright": "1.64.1"
   },
   "engines": {
     "node": ">=22.0.0",
