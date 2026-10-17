@@ -1,4 +1,4 @@
-import {readFile,writeFile} from "node:fs/promises";
+import {readFile,writeFile,mkdir} from "node:fs/promises";
 import path from "node:path";
 import {fileURLToPath} from "node:url";
 
@@ -110,4 +110,4 @@ if(bzexe){
   };
 }
 const out={schemaVersion:2,generatedFrom:"data/commands/canonical.json",records:Object.fromEntries(records.map(c=>[c.name,{id:c.id,name:c.name,url:c.url,...c.intelligence}]))};
-await writeFile(path.join(root,"public/command-intelligence.json"),JSON.stringify(out,null,2)+"\n");console.log("[command-intelligence] generated "+records.length+" deep lesson records");
+await mkdir(path.join(root,".cache"),{recursive:true});await writeFile(path.join(root,".cache/command-intelligence.json"),JSON.stringify(out,null,2)+"\n");console.log("[command-intelligence] generated "+records.length+" build-time lesson records outside the public web root");
