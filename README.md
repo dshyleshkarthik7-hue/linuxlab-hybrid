@@ -77,6 +77,12 @@ Tutor variables:
 - `UPSTASH_REDIS_REST_TOKEN`
 - `TUTOR_ALLOWED_ORIGINS` (optional)
 
+## Authentication and account security
+
+The application currently uses Netlify Identity for authenticated learner accounts and server-side user verification. **Netlify Identity remains a supported Netlify authentication option as of October 2026**, so a forced migration is not required. Keep the existing provider rather than introducing an unconfigured replacement that could invalidate accounts or weaken authorization. Reconsider a migration only if the product needs capabilities that Identity does not provide; any future migration must preserve existing user IDs/ownership, verify tokens server-side, and be tested on a Deploy Preview before production rollout.
+
+Official status and documentation: https://www.netlify.com/blog/auth0-extension-identity-changes/ and https://docs.netlify.com/manage/security/secure-access-to-sites/identity/overview/.
+
 ## Integrity and security
 
 VM artifacts are pinned to exact SHA-256 digests and sizes. The ISO relay validates release metadata before streaming, while the browser validates every requested range and incrementally computes the complete-artifact SHA-256 digest while assembling large images. The final digest and exact size must match the pinned artifact before the ISO is accepted.
