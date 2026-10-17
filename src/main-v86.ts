@@ -134,6 +134,8 @@ export class V86LinuxTerminal {
     const signal = this.bootController.signal;
     await this.dispose();
     if (id !== this.bootId || signal.aborted) return;
+    window.addEventListener('resize', this.handleResize);
+    window.addEventListener('orientationchange', this.handleOrientationChange);
     this.profile = profileFromPage();
     this.enforcer = new VMRuntimeResourceEnforcer(VM_RESOURCE_POLICIES[this.profile.policy]);
     this.ready = false;
@@ -337,6 +339,9 @@ export class V86LinuxTerminal {
   }
 
   private acceptGuestIdentity(identity: GuestIdentity): void {
+    // Once the expected guest has been verified, ordinary command output must not
+    // be able to change the detected identity or terminate a healthy session.
+    if (this.guestIdentity?.kind === this.profile.expectedGuest || this.ready) return;
     if (identity.kind !== this.profile.expectedGuest) {
       if (identity.kind !== 'unknown') this.fail(`Guest identity mismatch: expected ${this.profile.expectedGuest}`);
       return;
@@ -485,7 +490,9 @@ export class V86LinuxTerminal {
   private prefillCommandFromPage(): void {
     const value = new URLSearchParams(window.location.search).get('try')?.trim() ?? '';
     if (!/^[A-Za-z0-9._+ -]{1,180}$/.test(value) || !value || !this.shellReady) return;
-    this.term.write(value);
+    const vm = this.emulator;
+    if (!vm || !this.enforcer || this.enforcer.isStopped() || this.enforcer.sessionExpired()) return;
+    vm.serial0_send(`${value}\\n`);
   }
 
   private async dispose(): Promise<void> {
