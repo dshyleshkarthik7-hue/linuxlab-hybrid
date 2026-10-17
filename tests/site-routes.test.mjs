@@ -66,4 +66,8 @@ for (const command of commands) {
   const canonical = `to = \"/commands/${command}.html`;
   assert.ok(netlify.includes(from) && netlify.includes(canonical), `Legacy redirect missing for ${command}`);
 }
+const vite = readFileSync('vite.config.ts', 'utf8');
+for (const [route, input] of [['privacy/index.html', 'privacy: entry(\'privacy/index.html\')'], ['terms/index.html', 'terms: entry(\'terms/index.html\')'], ['faq/index.html', 'faq: entry(\'faq/index.html\')'], ['learn/library/index.html', 'learnLibrary: entry(\'learn/library/index.html\')']]) {
+  assert.ok(vite.includes(input), `Vite production build input missing ${route}`);
+}
 console.log(`site routes: ${required.length} core assets + canonical command reference + ${commands.length} static command lessons verified`);
