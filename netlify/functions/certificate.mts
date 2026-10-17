@@ -8,7 +8,8 @@ type CertificateDocument = Cert & { _id: string; userEmail: string | null; creat
 
 async function mongoDatabase() {
   if (!MONGODB_URI) throw new Error('MONGODB_URI is not configured');
-  if (!mongoPromise) mongoPromise = new MongoClient(MONGODB_URI, { maxPoolSize: 5, maxIdleTimeMS: 30000, retryWrites: true, retryReads: true, serverSelectionTimeoutMS: 8000, serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true } } as any).connect().catch(error => { mongoPromise = null; throw error; });
+  const mongoOptions = { maxPoolSize: 5, maxIdleTimeMS: 30000, retryWrites: true, retryReads: true, serverSelectionTimeoutMS: 8000, serverApi: { version: ServerApiVersion.v1, strict: true, deprecationErrors: true } } as unknown as import('mongodb').MongoClientOptions;
+  if (!mongoPromise) mongoPromise = new MongoClient(MONGODB_URI, mongoOptions).connect().catch(error => { mongoPromise = null; throw error; });
   return (await mongoPromise).db(MONGODB_DB);
 }
 
