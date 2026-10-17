@@ -11,7 +11,7 @@ Before deployment, read [`THREAT_MODEL.md`](./THREAT_MODEL.md). The browser simu
 - Homepage: https://linuxterminal.me/
 - Tutorials: https://linuxterminal.me/learn/
 - Beginner path: https://linuxterminal.me/beginner/
-- canonical command reference (currently 6,161 entries): https://linuxterminal.me/commands/
+- canonical command reference (6,161 catalog entries, including planned entries and name-only stubs): https://linuxterminal.me/commands/
 - 30 challenge sets: https://linuxterminal.me/challenges/
 - 500-question practice quiz: https://linuxterminal.me/quiz/
 - Free verified exam and certificate: https://linuxterminal.me/certificate/
@@ -32,13 +32,13 @@ Crawlable tutorials cover Linux basics, terminal navigation, files and directori
 
 ### Command reference
 
-The canonical catalog contains 6,161 commands. Important commands have dedicated URLs such as `/commands/cd/`, `/commands/pwd/`, `/commands/ls/`, `/commands/grep/`, `/commands/chmod/` and `/commands/gcc/`.
+The canonical catalog contains 6,161 entries; this is a reference-catalog count, not a count of fully authored lessons. The current catalog has 26 complete entries, 174 planned entries, and 5,961 entries without lesson status/content. Only entries with authored teaching content should be presented as lessons. Important commands have dedicated URLs such as `/commands/cd/`, `/commands/pwd/`, `/commands/ls/`, `/commands/grep/`, `/commands/chmod/` and `/commands/gcc/`.
 
-Each lesson explains purpose, starter syntax, behavior and safe practice. A reference page does not imply that every command is implemented by the educational simulator.
+Completed lessons explain purpose, starter syntax, behavior and safe practice. Planned and name-only catalog entries are reference stubs, not complete lessons. A reference page does not imply that every command is implemented by the educational simulator.
 
 ### Challenges
 
-There are 30 challenge sets covering the complete canonical command catalog, plus operating-system and networking questions. Every command has a prediction-and-verification task and a reasoning/change task. Learners are asked to predict stdout, stderr and exit status before running a command, then explain the observed evidence.
+There are 30 challenge sets across selected command topics, plus operating-system and networking questions. Challenge coverage is not a guarantee that every catalog entry has a dedicated prediction-and-verification task or a reasoning/change task. Learners are asked to predict stdout, stderr and exit status before running a command, then explain the observed evidence.
 
 ### 500-question practice quiz
 
