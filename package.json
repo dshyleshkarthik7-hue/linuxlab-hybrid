@@ -78,7 +78,8 @@
     "test:shared-nav": "node tests/shared-nav-contract.test.mjs",
     "release:preflight": "node scripts/production-preflight.mjs",
     "test:production-preflight-contract": "node tests/production-preflight-contract.test.mjs",
-    "test:progress-snapshot": "node tests/progress-export-import.test.mjs"
+    "test:progress-snapshot": "node tests/progress-export-import.test.mjs",
+    "test:accessibility:axe": "node tests/accessibility-axe.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
