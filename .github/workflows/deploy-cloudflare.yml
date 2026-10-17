@@ -35,6 +35,21 @@ jobs:
           cache: npm
       - name: Generate and verify Developer Alpine chunk manifest
         run: node scripts/generate-iso-chunk-manifest.mjs
+      - name: Assert generated chunk manifest covers the full pinned artifact
+        run: |
+          node --input-type=module -e '
+            import manifest from "./artifacts/manifest.json" with { type: "json" };
+            import chunks from "./artifacts/developer-alpine-chunks.json" with { type: "json" };
+            const artifact = manifest.artifacts.find(item => item.image === "developer");
+            if (!artifact || chunks.artifactSize !== artifact.size || chunks.artifactSha256 !== artifact.sha256 || !Array.isArray(chunks.chunks) || chunks.chunks.length === 0) throw new Error("Developer Alpine chunk manifest is empty or does not match the pinned artifact");
+            let next = 0;
+            for (const [index, chunk] of chunks.chunks.entries()) {
+              if (chunk.index !== index || chunk.start !== next || chunk.end < chunk.start || !/^[a-f0-9]{64}$/.test(chunk.sha256)) throw new Error("Invalid chunk manifest entry " + index);
+              next = chunk.end + 1;
+            }
+            if (next !== artifact.size) throw new Error("Chunk manifest does not cover the complete ISO");
+            console.log("Verified", chunks.chunks.length, "contiguous SHA-256 chunks covering", next, "bytes");
+          '
       - name: Verify worker contract
         run: npm run test:iso-worker
       - name: Deploy ISO worker
