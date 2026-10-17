@@ -3,15 +3,17 @@ import { join, relative } from 'node:path';
 
 const root = 'dist';
 const scriptTag = '<script defer src="/site-nav.js"></script>';
+const styleTag = '<link rel="stylesheet" href="/site-nav.css">';
 async function walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
     const path = join(dir, entry.name);
     if (entry.isDirectory()) await walk(path);
     else if (entry.isFile() && entry.name.endsWith('.html')) {
       const html = await readFile(path, 'utf8');
-      if (html.includes('/site-nav.js')) continue;
-      if (!html.includes('</body>')) continue;
-      await writeFile(path, html.replace('</body>', scriptTag + '</body>'));
+      let output = html;
+      if (!output.includes('/site-nav.css') && output.includes('</head>')) output = output.replace('</head>', styleTag + '</head>');
+      if (!output.includes('/site-nav.js') && output.includes('</body>')) output = output.replace('</body>', scriptTag + '</body>');
+      if (output !== html) await writeFile(path, output);
     }
   }
 }
