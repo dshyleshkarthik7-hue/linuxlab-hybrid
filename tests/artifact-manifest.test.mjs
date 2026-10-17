@@ -4,6 +4,10 @@ import { readFileSync } from 'node:fs';
 const manifest = JSON.parse(readFileSync('artifacts/manifest.json', 'utf8'));
 assert.equal(manifest.schemaVersion, 3);
 assert.ok(Array.isArray(manifest.artifacts) && manifest.artifacts.length >= 5);
+assert.deepEqual(manifest.buildAssets?.map(({ path, size, sha256 }) => ({ path, size, sha256 })), [
+  { path: 'isolinux/isolinux.bin', size: 38912, sha256: 'f0f645e52bbe18bf7a4ac07be9afa985e21d8eb8c9c57938bdaf5b868a0e0e7f' },
+  { path: 'isolinux/isohdpfx.bin', size: 432, sha256: '7b43a4dd2061e95da55af51d57a2385c257d64444ee2a62264bcf634a1d0945b' }
+], 'ISO boot inputs must have pinned sizes and SHA-256 hashes');
 
 for (const artifact of manifest.artifacts) {
   assert.match(artifact.sha256, /^[a-f0-9]{64}$/i);
