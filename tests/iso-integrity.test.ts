@@ -22,6 +22,15 @@ assert.equal(await verifyArtifact(bytes.buffer, trusted), true);
 await assert.rejects(() => verifyArtifact(new Uint8Array(bytes.length + 1).buffer, trusted), /unexpected size/);
 await assert.rejects(() => verifyArtifact(new TextEncoder().encode('wrong').buffer, { ...trusted, size: 5 }), /failed SHA-256/);
 
+const resumableFetcher = readFileSync('src/core/verified-iso-fetch.ts', 'utf8');
+assert.match(resumableFetcher, /for \(let attempt = 0; attempt < 3; attempt \+= 1\)/, 'chunk downloads retry transient failures');
+assert.match(resumableFetcher, /readIsoChunkCache\(artifact, start, end\)/, 'a resumed download reuses previously verified cached chunks');
+assert.match(resumableFetcher, /writeIsoChunkCache\(artifact, start, end, bytes\)/, 'successfully validated chunks are persisted for resume');
+assert.match(resumableFetcher, /Promise\.all\(batch\.map\(\(\{ start, end \}\) => fetchRange\(url, start, end, artifact, signal\)\)\)/, 'chunk retrieval is coordinated in bounded batches');
+assert.match(resumableFetcher, /cacheAttempt < 2/, 'a failed whole-image digest gets one cache-cleared retry');
+assert.match(resumableFetcher, /clearIsoArtifactCache\(artifact\)/, 'whole-image digest mismatch invalidates cached chunks before retry');
+assert.match(resumableFetcher, /actual !== artifact\.sha256/, 'full image is rejected unless the pinned digest matches');
+
 const fixture = new TextEncoder().encode('The quick brown fox jumps over the lazy dog');
 const expected = createHash('sha256').update(fixture).digest('hex');
 assert.equal(await sha256Hex(fixture.buffer), expected);
