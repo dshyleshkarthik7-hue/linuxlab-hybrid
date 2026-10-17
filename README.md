@@ -42,7 +42,7 @@ There are 30 challenge sets across selected command topics, plus operating-syste
 
 ### 500-question practice quiz
 
-Each practice session selects 500 questions from a generated bank built from the complete canonical command catalog plus operating-system and networking questions. It tests purpose, syntax, options, expected results, failure conditions, command selection, stdout/stderr, exit status and safe experimentation. Question order and answer-choice order are randomized for every session and reset.
+Each practice session selects up to 500 questions from a generated bank built from catalog entries that have authored summaries or examples, plus operating-system and networking questions. Catalog stubs without teaching content are excluded. Coverage varies by available authored content; it is not a claim that every catalog entry is tested. Question and answer-choice order are randomized for every session and reset.
 
 The practice quiz is browser-local and is not treated as a credential.
 
