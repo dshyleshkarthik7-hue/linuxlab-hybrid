@@ -12,3 +12,5 @@ interface ExecutionContext {
   waitUntil(promise: Promise<unknown>): void;
   passThroughOnException(): void;
 }
+
+declare const caches: CacheStorage & { default: Cache };
