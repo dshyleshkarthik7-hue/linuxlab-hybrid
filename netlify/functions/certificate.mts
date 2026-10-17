@@ -17,7 +17,7 @@ async function certificatesCollection() {
 
 const EXAM_VERSION = 'linux-foundations-2.1';
 const QUESTION_COUNT = 30;
-const MIN_QUESTION_BANK_SIZE = 1000;
+const MIN_QUESTION_BANK_SIZE = 300;
 const PASS_PERCENT = 80;
 const ATTEMPT_TTL = 3600;
 const VERIFY_RATE_LIMIT = 30;
@@ -317,7 +317,7 @@ async function start(user: User, request: Request) {
   }
 
   if (BANK.length < MIN_QUESTION_BANK_SIZE) return json({ error: 'The verified exam question bank is not sufficiently large.' }, 503);
-  const selected = (await stableUserShuffle(BANK, String(user.id)))
+  const selected = shuffle(BANK)
     .slice(0, QUESTION_COUNT)
     .map((question) => ({ ...question, c: shuffle(question.c) }));
   const id = crypto.randomUUID();
