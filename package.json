@@ -83,7 +83,9 @@
     "test:production-preflight-contract": "node tests/production-preflight-contract.test.mjs",
     "test:progress-snapshot": "node tests/progress-export-import.test.mjs",
     "test:accessibility:axe": "node tests/accessibility-axe.mjs",
-    "test:catalog-pagination": "node tests/command-catalog-pagination.test.mjs"
+    "test:catalog-pagination": "node tests/command-catalog-pagination.test.mjs",
+    "prepare": "node scripts/install-git-hooks.mjs",
+    "test:precommit": "npm run test:coverage && npm run build && npm run test:accessibility"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
