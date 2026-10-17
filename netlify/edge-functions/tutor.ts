@@ -203,12 +203,6 @@ export default async (request: Request, context: unknown) => {
   const length = request.headers.get('content-length');
   if (length && (!/^\d+$/.test(length) || Number(length) > MAX_BODY_BYTES)) return json({ error: 'request body is too large' }, 413, origin);
 
-  const ip = trustedClientKey(context);
-  if (!ip) return json({ error: 'Unable to establish a trusted client identity.' }, 503, origin);
-  const limit = await durableLimit(String(user.id), ip);
-  if (!limit.available) return json({ error: 'Tutor rate limiting is temporarily unavailable. Please try again shortly.' }, 503, origin, { 'retry-after': '60' });
-  if (!limit.allowed) return json({ error: 'Tutor rate limit reached. Please wait a minute and try again.' }, 429, origin, { 'retry-after': '60' });
-
   let body: TutorRequest;
   try {
     const raw = await request.arrayBuffer();
@@ -223,6 +217,13 @@ export default async (request: Request, context: unknown) => {
   const question = readText(body.question, MAX_QUESTION_CHARS);
   const contextText = readText(body.context, MAX_CONTEXT_CHARS);
   if (!question) return json({ error: 'Question is required.' }, 400, origin);
+
+  const ip = trustedClientKey(context);
+  if (!ip) return json({ error: 'Unable to establish a trusted client identity.' }, 503, origin);
+  const limit = await durableLimit(String(user.id), ip);
+  if (!limit.available) return json({ error: 'Tutor rate limiting is temporarily unavailable. Please try again shortly.' }, 503, origin, { 'retry-after': '60' });
+  if (!limit.allowed) return json({ error: 'Tutor rate limit reached. Please wait a minute and try again.' }, 429, origin, { 'retry-after': '60' });
+
 
   if (!MODEL_PIN_RE.test(MODEL)) return json({ error: 'Tutor model is not pinned to an immutable revision.' }, 503, origin, { 'retry-after': '60' });
   const token = Netlify.env.get('HF_TOKEN');
