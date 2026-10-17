@@ -55,7 +55,7 @@ const security = [
   'Permissions-Policy: camera=(), microphone=(), geolocation=()'
 ].join('\n');
 
-const connectSrc = ["'self'", 'https://linuxterminal.me', 'https://www.linuxterminal.me', workerOrigin, connectHost].filter(Boolean).join(' ');
+const connectSrc = ["'self'", 'https://linuxterminal.me', 'https://www.linuxterminal.me', workerOrigin, 'https://huggingface.co', 'https://*.hf.co', 'https://*.xethub.hf.co', 'https://github.com', 'https://release-assets.githubusercontent.com', 'https://objects.githubusercontent.com', connectHost].filter(Boolean).join(' ');
 const policy = (html, kind) => {
   const scriptSrc = ["'self'", ...(kind === 'vm' ? ["'wasm-unsafe-eval'"] : []), ...inlineScriptHashes(html), 'https://netlify-rum.netlify.app', scriptHost].filter(Boolean).join(' ');
   if (kind === 'login') return "default-src 'self'; script-src " + scriptSrc + " https://identity.netlify.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://identity.netlify.com; img-src 'self' data: https://identity.netlify.com; frame-src 'self' https://identity.netlify.com; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report; report-to csp-endpoint";
