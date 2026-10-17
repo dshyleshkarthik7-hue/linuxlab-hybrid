@@ -34,6 +34,7 @@ if (root) {
         list.append(card);
       }
       status.textContent = `Showing ${data.jobs.length} remote listings from Remotive. The feed is cached for up to 24 hours.`;
+      root.setAttribute('aria-busy', 'false');
       const attribution = el('p', 'Source: Remotive. Listings may be delayed or change; verify eligibility and details at the source before applying.', 'live-job-attribution');
       const source = el('a', 'Remotive job board');
       source.href = data.sourceUrl || 'https://remotive.com/remote-jobs';
@@ -45,5 +46,6 @@ if (root) {
     .catch((error) => {
       status.textContent = error instanceof Error ? error.message : 'Listings are temporarily unavailable.';
       status.classList.add('live-job-error');
+      root.setAttribute('aria-busy', 'false');
     });
 }
