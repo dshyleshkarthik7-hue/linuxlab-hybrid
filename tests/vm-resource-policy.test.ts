@@ -9,6 +9,12 @@ for (const policy of Object.values(VM_RESOURCE_POLICIES)) {
   assert.equal(enforcer.hasFreshTelemetry(1_000), false);
   assert.equal(enforcer.acceptSerialByte(policy.maxSerialBytes), true);
   assert.equal(enforcer.acceptSerialByte(1), false);
+  const commandWindow = new VMRuntimeResourceEnforcer(policy, 1_000);
+  assert.equal(commandWindow.acceptSerialByte(policy.maxSerialBytes), true);
+  commandWindow.acceptOutput('x'.repeat(policy.maxOutputBytes));
+  commandWindow.resetCommandWindow();
+  assert.equal(commandWindow.acceptSerialByte(1), true);
+  assert.equal(commandWindow.acceptOutput('next command').value, 'next command');
   const output = enforcer.acceptOutput('x'.repeat(policy.maxOutputBytes + 10));
   assert.equal(output.truncated, true);
   assert.equal(new TextEncoder().encode(output.value).byteLength, policy.maxOutputBytes);
