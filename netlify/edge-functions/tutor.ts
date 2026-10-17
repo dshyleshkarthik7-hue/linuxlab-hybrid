@@ -227,7 +227,7 @@ export default async (request: Request, context: unknown) => {
 
   if (!MODEL_ID_RE.test(MODEL) || MODEL !== PINNED_QWEN_MODEL) return json({ error: 'Tutor model configuration is invalid. The pinned model revision is required.' }, 503, origin, { 'retry-after': '60' });
   const token = Netlify.env.get('HF_TOKEN');
-  if (!token) return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin);
+  if (!token) return json({ error: 'Tutor provider is not configured. Please try again later.' }, 503, origin, { 'retry-after': '60' });
 
   const prompt = [
     'You are LinuxTerminal Tutor, a concise Linux teacher.',
