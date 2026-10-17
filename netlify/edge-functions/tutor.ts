@@ -1,5 +1,5 @@
-const PINNED_MODEL = 'Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218';
-const MODEL = Netlify.env.get('HF_MODEL') || PINNED_MODEL;
+const DEFAULT_MODEL = 'Qwen/Qwen3-8B';
+const MODEL = Netlify.env.get('HF_MODEL') || DEFAULT_MODEL;
 const MODEL_PIN_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+@[a-f0-9]{40}$/i;
 const MAX_OUTPUT_TOKENS = 300;
 const MAX_CONTEXT_CHARS = 5000;
@@ -225,7 +225,7 @@ export default async (request: Request, context: unknown) => {
   if (!limit.allowed) return json({ error: 'Tutor rate limit reached. Please wait a minute and try again.' }, 429, origin, { 'retry-after': '60' });
 
 
-  if (!MODEL_PIN_RE.test(MODEL)) return json({ error: 'Tutor model is not pinned to an immutable revision.' }, 503, origin, { 'retry-after': '60' });
+  if (!MODEL_ID_RE.test(MODEL)) return json({ error: 'Tutor model identifier is invalid.' }, 503, origin, { 'retry-after': '60' });
   const token = Netlify.env.get('HF_TOKEN');
   if (!token) return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin);
 
