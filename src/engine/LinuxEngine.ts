@@ -362,7 +362,6 @@ class EducationalCInterpreter {
   }
 
   protected async executeCommand(cmdLine: string, stdin = ''): Promise<string> {
-    const tokens = (cmdLine.match(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || []).map(token => token.replace(/^(['"])([\s\S]*)\1$/, '$2'));
     const cmd = tokens[0]; const args = tokens.slice(1); this.exitCode = 0;
     if (cmd?.startsWith('./')) { const binName = cmd.slice(2); const bin = this.readFile(binName); if (!bin) { this.exitCode = 127; return `bash: ${cmd}: No such file or directory`; } if (bin.startsWith('__TRANSPILED_C__:')) { const srcFile = bin.slice('__TRANSPILED_C__:'.length); const src = this.readFile(srcFile); if (src === null) { this.exitCode = 1; return `bash: ${cmd}: compiled source is unavailable`; } return this.executeGeneralCode(src, 'c', undefined, args); } this.exitCode = 126; return `bash: ${cmd}: cannot execute binary file`; }
     switch (cmd) {
