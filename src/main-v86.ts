@@ -197,9 +197,10 @@ export class V86LinuxTerminal {
           throw new Error("Developer Alpine chunk integrity manifest is unavailable. Retry after the image service recovers.");
         }
       }
+      let verifiedIsoBytes: ArrayBuffer | null = null;
       if (!developerAsyncImage) {
-        const isoBytes = await fetchVerifiedIso(this.profile.cdrom, signal);
-        if (!isoBytes.byteLength) throw new Error('Verified Linux image is empty');
+        verifiedIsoBytes = await fetchVerifiedIso(this.profile.cdrom, signal);
+        if (!verifiedIsoBytes.byteLength) throw new Error('Verified Linux image is empty');
       }
       // The large Developer image is loaded lazily by v86. The deployed Worker
       // verifies each fetched chunk against a manifest generated from the pinned
@@ -226,7 +227,7 @@ export class V86LinuxTerminal {
       const vm = new Runtime({
         wasm_path: '/v86.wasm', memory_size: policy.memoryBytes, vga_memory_size: policy.vgaMemoryBytes,
         screen_container: screen, bios: { buffer: firmware.seabios }, vga_bios: { buffer: firmware.vgabios },
-        cdrom: developerAsyncImage ?? { buffer: await fetchVerifiedIso(this.profile.cdrom, signal) },
+        cdrom: developerAsyncImage ?? { buffer: verifiedIsoBytes! },
         boot_order: 0x213, fastboot: true, bootmenu: false, autostart: false,
         disable_speaker: true, net_device: { type: 'none' },
       });
