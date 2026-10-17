@@ -13,12 +13,11 @@ async function mongoDatabase() {
   return (await mongoPromise).db(MONGODB_DB);
 }
 
+let certificateIndexPromise: Promise<void> | null = null;
 async function certificatesCollection() {
   const collection = (await mongoDatabase()).collection<CertificateDocument>('certificates');
-  if (!CERT_INDEX_READY.has(collection)) {
-    await collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: 'certificates_expiresAt_ttl' });
-    CERT_INDEX_READY.add(collection);
-  }
+  if (!certificateIndexPromise) certificateIndexPromise = collection.createIndex({ expiresAt: 1 }, { expireAfterSeconds: 0, name: 'certificates_expiresAt_ttl' }).then(() => undefined).catch(error => { certificateIndexPromise = null; throw error; });
+  await certificateIndexPromise;
   return collection;
 }
 
@@ -33,8 +32,7 @@ const EXAM_RATE_WINDOW_SECONDS = 3600;
 const REVOKED_CERTIFICATE_IDS = new Set((process.env.REVOKED_CERTIFICATE_IDS || '').split(',').map(v => v.trim()).filter(Boolean));
 const VERIFY_RATE_WINDOW_SECONDS = 60;
 const CERT_TTL = 60 * 60 * 24 * 365 * 5;
-const CERT_INDEX_READY = new WeakSet<object>();
-const REVOCATION_INDEX_READY = new WeakSet<object>();
+let revocationIndexPromise: Promise<void> | null = null;
 const MAX_BODY_BYTES = 16384;
 const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
@@ -45,7 +43,7 @@ const CERTIFICATE_FEEDBACK_MODEL = process.env.HF_MODEL || PINNED_QWEN_MODEL;
 const CERTIFICATE_FEEDBACK_TIMEOUT_MS = 15000;
 const SIGNING_KEYS = (() => { const map = new Map<string, string>(); for (const item of (process.env.CERTIFICATE_SIGNING_KEYS || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
 const ALLOWED_ORIGINS = new Set((process.env.CERTIFICATE_ALLOWED_ORIGINS || 'https://linuxterminal.me').split(',').map(value => value.trim()).filter(Boolean));
-const corsOrigin = (request: Request) => { const origin = request.headers.get('origin'); return origin && ALLOWED_ORIGINS.has(origin) ? origin : undefined; };
+const corsOrigin = (request: Request) => { const origin = request.headers.get('origin'); return origin && (origin === new URL(request.url).origin || ALLOWED_ORIGINS.has(origin)) ? origin : undefined; };
 
 type User = {
   id?: unknown;
@@ -118,16 +116,26 @@ function buildQuestionBank(): Q[] {
     if (example && !group.examples.includes(example)) group.examples.push(example);
     byCategory.set(category, group);
   }
+  const rnd = (n: number): number => {
+    if (n <= 0) throw new Error('empty distractor pool');
+    const values = new Uint32Array(1);
+    crypto.getRandomValues(values);
+    return values[0] % n;
+  };
   const choices = (answer: string, pool: string[], fallback: string[] = []): string[] => {
-    const distractors = [...new Set([...pool, ...fallback])]
-      .map(value => String(value).trim())
-      .filter(value => value && value !== answer);
-    const selected = shuffle(distractors).slice(0, 3);
-    if (selected.length < 3) throw new Error('Verified exam catalog has too few unique distractors');
-    const result = [...new Set([answer, ...selected])];
-    if (result.length !== 4 || result.filter(value => value === answer).length !== 1) {
-      throw new Error('Verified exam question choices must contain four unique options and one answer');
+    const selected = new Set<string>();
+    const total = pool.length + fallback.length;
+    for (let i = 0; selected.size < 3 && i < 500; i += 1) {
+      const index = rnd(total);
+      const value = String(index < pool.length ? pool[index] : fallback[index - pool.length] ?? '').trim();
+      if (value && value !== answer) selected.add(value);
     }
+    if (selected.size < 3) {
+      for (const value of [...new Set([...pool, ...fallback].map(value => String(value).trim()).filter(value => value && value !== answer && !selected.has(value)))]) { selected.add(value); if (selected.size === 3) break; }
+    }
+    if (selected.size < 3) throw new Error('Verified exam catalog has too few unique distractors');
+    const result = [answer, ...selected];
+    if (result.length !== 4 || new Set(result).size !== 4) throw new Error('Verified exam question choices must contain four unique options and one answer');
     return result;
   };
   for (const [index, record] of COMMAND_RECORDS.entries()) {
@@ -203,7 +211,8 @@ function buildQuestionBank(): Q[] {
   }
   return bank;
 }
-const BANK=buildQuestionBank();
+let BANK: Q[] | null = null;
+function getQuestionBank(): Q[] { if (!BANK) BANK = buildQuestionBank(); return BANK; }
 function shuffle<T>(values: readonly T[]): T[] {
   const result = [...values];
   for (let i = result.length - 1; i > 0; i -= 1) {
@@ -350,8 +359,9 @@ async function start(user: User, request: Request) {
     return json({ error: 'Too many exam starts. Please try again later.' }, 429);
   }
 
-  if (BANK.length < MIN_QUESTION_BANK_SIZE) return json({ error: 'The verified exam question bank is not sufficiently large.' }, 503);
-  const selected = shuffle(BANK)
+  const bank = getQuestionBank();
+  if (bank.length < MIN_QUESTION_BANK_SIZE) return json({ error: 'The verified exam question bank is not sufficiently large.' }, 503);
+  const selected = shuffle(bank)
     .slice(0, QUESTION_COUNT)
     .map((question) => ({ ...question, c: shuffle(question.c) }));
   const id = crypto.randomUUID();
@@ -381,10 +391,8 @@ async function stableCertificateId(attemptId: string): Promise<string> {
 async function certificateIsDurablyRevoked(id: string): Promise<boolean> {
   if (!MONGODB_URI) return false;
   const collection = (await mongoDatabase()).collection<{ certificateId: string }>('certificate_revocations');
-  if (!REVOCATION_INDEX_READY.has(collection)) {
-    await collection.createIndex({ certificateId: 1 }, { unique: true, name: 'certificate_revocations_certificateId_unique' });
-    REVOCATION_INDEX_READY.add(collection);
-  }
+  if (!revocationIndexPromise) revocationIndexPromise = collection.createIndex({ certificateId: 1 }, { unique: true, name: 'certificate_revocations_certificateId_unique' }).then(() => undefined).catch(error => { revocationIndexPromise = null; throw error; });
+  await revocationIndexPromise;
   return Boolean(await collection.findOne({ certificateId: id }, { projection: { _id: 1 } }));
 }
 
