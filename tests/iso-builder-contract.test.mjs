@@ -24,8 +24,8 @@ const packageJson = JSON.parse(readFileSync('package.json', 'utf8'));
 assert.match(packageJson.scripts.prebuild, /fetch-v86-firmware\.mjs && node scripts\/check-lfs-assets\.mjs/,
   'release build must hydrate and verify firmware/LFS assets before packaging');
 const lfsCheck = readFileSync('scripts/check-lfs-assets.mjs', 'utf8');
-assert.match(packageJson.scripts['build:iso'], /check-lfs-assets\\.mjs --iso/, 'ISO builds must verify ISO-only boot assets');
-assert.match(packageJson.scripts.prebuild, /fetch-v86-firmware\\.mjs && node scripts\\/check-lfs-assets\\.mjs(?! --iso)/, 'web builds must verify only runtime firmware');
+assert.match(packageJson.scripts['build:iso'], /check-lfs-assets\.mjs --iso/, 'ISO builds must verify ISO-only boot assets');
+assert.match(packageJson.scripts.prebuild, /fetch-v86-firmware\.mjs && node scripts\/check-lfs-assets\.mjs(?! --iso)/, 'web builds must verify only runtime firmware');
 for (const asset of ['isolinux/isolinux.bin', 'isolinux/isohdpfx.bin', 'public/seabios.bin', 'public/vgabios.bin']) {
   assert.ok(lfsCheck.includes(asset), 'LFS release preflight must cover ' + asset);
 }
