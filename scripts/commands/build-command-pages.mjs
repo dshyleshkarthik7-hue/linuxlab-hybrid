@@ -18,7 +18,7 @@ const isIndexable = (command, intelligenceRecord) => command.page?.status === "c
 
 const relatedLinks = (items = []) => items.map((name) => {
   const target = data.records.find((r) => r.name === name);
-  return target && (target.page?.status === "complete" || (target.summary && target.example)) ? `<a href="${escapeHtml(target.url)}"><code>${escapeHtml(name)}</code></a>` : "";
+  return target && isIndexable(target, intelligence.records?.[target.name]) ? `<a href="${escapeHtml(target.url)}"><code>${escapeHtml(name)}</code></a>` : "";
 }).filter(Boolean).join(" · ");
 
 for (const command of data.records) {
@@ -27,7 +27,7 @@ for (const command of data.records) {
   const hasVerifiedReference = Boolean(hasAuthoredLesson && String(lesson.definition || lesson.explanation || "").trim() && String(lesson.syntax || "").trim() && Array.isArray(lesson.examples) && lesson.examples.length > 0 && Array.isArray(lesson.internals) && lesson.internals.length > 0);
   const rawSummary = hasVerifiedReference ? (lesson.definition || lesson.explanation || lesson.tagline || command.summary) : (command.summary || "Catalogue entry only. A command-specific explanation has not yet been reviewed and published.");
   // Keep descriptions useful and within the 320-character metadata contract.
-  const summary = String(rawSummary).replace(/\\s+/g, " ").trim().slice(0, 190);
+  const summary = String(rawSummary).replace(/\s+/g, " ").trim().slice(0, 190);
   const syntax = hasVerifiedReference ? lesson.syntax : "Not published — verify the local command before use.";
   const examples = hasVerifiedReference ? lesson.examples.filter((example) => typeof example === "string" && example.trim()) : [];
   const indexable = isIndexable(command, intelligence.records?.[command.name]);
@@ -138,7 +138,7 @@ const staticRoutes = [
 
 const sitemapRoutes = [...new Set([
   ...staticRoutes,
-  ...data.records.filter((command) => isIndexable(command)).map((command) => command.url)
+  ...data.records.filter((command) => isIndexable(command, intelligence.records?.[command.name])).map((command) => command.url)
 ])];
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
