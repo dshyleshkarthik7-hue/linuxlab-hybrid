@@ -1,6 +1,6 @@
 const DEFAULT_MODEL = 'Qwen/Qwen3-8B';
 const MODEL = Netlify.env.get('HF_MODEL') || DEFAULT_MODEL;
-const MODEL_PIN_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+@[a-f0-9]{40}$/i;
+const MODEL_ID_RE = /^[A-Za-z0-9_.-]+\\/[A-Za-z0-9_.-]+(?::[A-Za-z0-9_-]+)?$/i;
 const MAX_OUTPUT_TOKENS = 300;
 const MAX_CONTEXT_CHARS = 5000;
 const MAX_QUESTION_CHARS = 1200;
