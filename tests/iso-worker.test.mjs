@@ -27,6 +27,8 @@ assert.doesNotMatch(worker, /"CDN-Cache-Control": "no-store"/);
 assert.doesNotMatch(worker, /cache: "no-store"/);
 assert.match(worker, /WORKER_PROTOCOL_VERSION = "7"/);
 assert.match(worker, /developerChunkManifestReady/);
+assert.match(worker, /responseHeaders\.set\("Cache-Control", "no-store"\)/, 'transient worker errors must not be cached');
+assert.match(worker, /responseHeaders\.set\("CDN-Cache-Control", "no-store"\)/, 'CDN must not cache transient worker errors');
 assert.match(worker, /crypto\.subtle\.digest\("SHA-256", bytes\)/);
 assert.match(worker, /X-LinuxLab-Chunk-SHA256/);
 assert.match(worker, /searchParams\.get\("manifest"\) === "developer"/);
