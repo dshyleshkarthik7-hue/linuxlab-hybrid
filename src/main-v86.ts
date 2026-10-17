@@ -67,6 +67,12 @@ export class V86LinuxTerminal {
   private activeView: 'terminal' | 'screen' = 'terminal';
   private readonly handleResize = (): void => this.fit();
   private readonly handleOrientationChange = (): void => { window.setTimeout(() => this.fit(), 50); };
+  private readonly handlePageHide = (): void => {
+    this.bootController?.abort();
+    this.bootId += 1;
+    void this.dispose().finally(() => this.term.dispose());
+    if (window.linuxLabVM === this) delete window.linuxLabVM;
+  };
 
   constructor(containerId = 'v86-terminal-container') {
     if (!TerminalCtor || !FitAddonCtor) throw new Error('Terminal runtime failed to load');
@@ -80,6 +86,7 @@ export class V86LinuxTerminal {
     this.term.onData((data) => this.sendInput(data));
     window.addEventListener('resize', this.handleResize);
     window.addEventListener('orientationchange', this.handleOrientationChange);
+    window.addEventListener('pagehide', this.handlePageHide, { once: true });
     document.getElementById('screen_container')?.addEventListener('pointerdown', () => this.enableGuestKeyboard(), { passive: true });
     this.bindControls();
     window.linuxLabVM = this;
