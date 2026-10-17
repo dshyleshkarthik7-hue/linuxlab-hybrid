@@ -40,8 +40,8 @@ const UPSTASH_URL = process.env.UPSTASH_REDIS_REST_URL;
 const UPSTASH_TOKEN = process.env.UPSTASH_REDIS_REST_TOKEN;
 const UPSTASH_TIMEOUT_MS = Math.max(1000, Number(process.env.UPSTASH_TIMEOUT_MS || 5000));
 const SIGNING_KEY_ID = process.env.CERTIFICATE_SIGNING_KEY_ID || 'current';
-const QWEN_MODEL = 'Qwen/Qwen3-8B';
-const CERTIFICATE_FEEDBACK_MODEL = process.env.HF_MODEL || QWEN_MODEL;
+const PINNED_QWEN_MODEL = 'Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218';
+const CERTIFICATE_FEEDBACK_MODEL = process.env.HF_MODEL || PINNED_QWEN_MODEL;
 const CERTIFICATE_FEEDBACK_TIMEOUT_MS = 15000;
 const SIGNING_KEYS = (() => { const map = new Map<string, string>(); for (const item of (process.env.CERTIFICATE_SIGNING_KEYS || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
 const ALLOWED_ORIGINS = new Set((process.env.CERTIFICATE_ALLOWED_ORIGINS || 'https://linuxterminal.me').split(',').map(value => value.trim()).filter(Boolean));
@@ -506,7 +506,7 @@ async function submit(user: User, body: unknown, request: Request) {
 async function explainStudyPlan(user: User, body: unknown, request: Request) {
   if (!UPSTASH_URL || !UPSTASH_TOKEN) return json({ error: 'AI study feedback is temporarily unavailable.' }, 503, corsOrigin(request));
   if (!(await rateLimit('linuxterminal:rate:certificate-feedback:user:' + safe(String(user.id)), 5, 3600)) ) return json({ error: 'AI study feedback limit reached. Try again later.' }, 429, corsOrigin(request));
-  if (!process.env.HF_TOKEN || CERTIFICATE_FEEDBACK_MODEL !== QWEN_MODEL) return json({ error: 'The configured Qwen study-feedback model is not configured.' }, 503, corsOrigin(request));
+  if (!process.env.HF_TOKEN || CERTIFICATE_FEEDBACK_MODEL !== PINNED_QWEN_MODEL) return json({ error: 'The configured Qwen study-feedback model is not configured.' }, 503, corsOrigin(request));
   if (!body || typeof body !== 'object' || Array.isArray(body)) return json({ error: 'Invalid study feedback request.' }, 400, corsOrigin(request));
   const rawTopics = (body as { topics?: unknown }).topics;
   if (!Array.isArray(rawTopics) || rawTopics.length > 8 || rawTopics.some(topic => typeof topic !== 'string')) return json({ error: 'Provide up to eight assessment topic labels.' }, 400, corsOrigin(request));
