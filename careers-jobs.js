@@ -2,6 +2,8 @@ const root = document.querySelector('#live-jobs-feed');
 if (root) {
   const status = root.querySelector('[data-jobs-status]');
   const list = root.querySelector('[data-jobs-list]');
+  if (list) list.setAttribute('role', 'list');
+  if (status) { status.setAttribute('role', 'status'); status.setAttribute('aria-live', 'polite'); }
   const formatDate = (value) => {
     const date = new Date(value);
     return Number.isNaN(date.getTime()) ? '' : date.toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
@@ -19,14 +21,17 @@ if (root) {
       return data;
     })
     .then((data) => {
+      list.replaceChildren();
+      status.classList.remove('live-job-error');
       if (!Array.isArray(data.jobs) || !data.jobs.length) throw new Error('No current remote Linux listings were returned. Try the external job boards below.');
       for (const job of data.jobs) {
         const card = el('article', null, 'live-job-card');
+        card.setAttribute('role', 'listitem');
         card.append(el('h3', job.title));
         card.append(el('p', job.company));
         const details = [job.location, job.category, job.jobType, job.salary, formatDate(job.publishedAt)].filter(Boolean);
         if (details.length) card.append(el('p', details.join(' · '), 'live-job-meta'));
-        const link = el('a', 'View listing at Remotive ↗');
+        const link = el('a', `View ${job.title} at Remotive ↗`);
         link.href = job.url;
         link.target = '_blank';
         link.rel = 'noopener noreferrer';
@@ -44,6 +49,7 @@ if (root) {
       root.append(attribution);
     })
     .catch((error) => {
+      list.replaceChildren();
       status.textContent = error instanceof Error ? error.message : 'Listings are temporarily unavailable.';
       status.classList.add('live-job-error');
       root.setAttribute('aria-busy', 'false');
