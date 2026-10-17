@@ -8,7 +8,7 @@ const { chromium } = require('playwright');
 const explicit = process.env.A11Y_BASE_URL || process.argv[2];
 const port = process.env.A11Y_PORT || '4173';
 const baseURL = explicit || `http://127.0.0.1:${port}`;
-const routes = ['/', '/learn/', '/quiz/', '/progress/', '/certificate/', '/verify/'];
+const routes = ['/', '/learn/', '/quiz/', '/progress/', '/certificate/', '/verify/', '/real-linux/', '/developer-alpine/', '/challenges/'];
 let server;
 
 async function waitForServer(url, timeoutMs = 20000) {
@@ -57,9 +57,11 @@ try {
       const unlabeled = [...document.querySelectorAll('input,select,textarea')].filter(el => visible(el) && !el.getAttribute('aria-label') && !el.getAttribute('aria-labelledby') && !(el.id && document.querySelector('label[for="' + CSS.escape(el.id) + '"]')) && !el.closest('label'));
       const controls = [...document.querySelectorAll('button,a,[role="button"]')].filter(visible);
       const noText = controls.filter(el => !(el.textContent || '').trim() && !el.getAttribute('aria-label') && !el.getAttribute('title'));
-      return { lang: document.documentElement.lang, title: document.title, badImages: badImages.length, unlabeled: unlabeled.length, noText: noText.length, h1: document.querySelectorAll('h1').length, overflow: document.documentElement.scrollWidth > window.innerWidth + 1 };
+      const skipLinks = [...document.querySelectorAll('a[href^="#"]')].filter(el => /skip to (main|content)/i.test(el.textContent || '')).length;
+      const liveRegions = document.querySelectorAll('[aria-live], [role="status"], [role="alert"]').length;
+      return { lang: document.documentElement.lang, title: document.title, badImages: badImages.length, unlabeled: unlabeled.length, noText: noText.length, h1: document.querySelectorAll('h1').length, overflow: document.documentElement.scrollWidth > window.innerWidth + 1, skipLinks, liveRegions };
     });
-    if (!result.lang || !result.title || result.badImages || result.unlabeled || result.noText || result.h1 !== 1 || result.overflow) throw new Error(route + ' accessibility contract failed: ' + JSON.stringify(result));
+    if (!result.lang || !result.title || result.badImages || result.unlabeled || result.noText || result.h1 !== 1 || result.overflow || (route === '/progress/' && result.liveRegions < 1)) throw new Error(route + ' accessibility contract failed: ' + JSON.stringify(result));
     for (const width of [640, 2560]) {
       await page.setViewportSize({ width, height: 900 });
       await page.reload({ waitUntil: 'domcontentloaded' });
