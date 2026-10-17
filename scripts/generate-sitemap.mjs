@@ -12,7 +12,7 @@ const staticPaths = [
   '/privacy/', '/verify/'
 ];
 
-const canonical = JSON.parse(await readFile('data/commands/canonical.json', 'utf8'));
+const canonical = JSON.parse(await readFile('public/command-records.json', 'utf8'));
 const intelligence = JSON.parse(await readFile('public/command-intelligence.json', 'utf8'));
 if (!Array.isArray(canonical.records)) throw new Error('Canonical command catalog is invalid');
 const isIndexable = (record) => record.page?.status === 'complete'
