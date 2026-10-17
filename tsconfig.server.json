@@ -7,7 +7,8 @@
   "include": [
     "netlify/functions/**/*.mts",
     "netlify/edge-functions/**/*.ts",
-    "types/netlify-edge.d.ts"
+    "types/netlify-edge.d.ts",
+    "cloudflare/iso-worker.ts"
   ],
   "exclude": [
     "node_modules",
