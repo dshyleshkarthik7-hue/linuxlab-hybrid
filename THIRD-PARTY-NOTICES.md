@@ -22,6 +22,10 @@ The browser x86 emulator is vendored as `public/libv86.js` from the `copy/v86` p
 
 The vendored artifact must retain its upstream copyright and license notices. The BSD-2-Clause terms permit redistribution and modification provided the copyright notice, license conditions, and disclaimer are retained.
 
+## Alpine Linux ISO contents
+
+The custom ISO is assembled from Alpine Linux repositories and includes packages such as BusyBox, musl, the Linux kernel, GCC/binutils, and other tools. These are not covered by this project's proprietary license. Each package remains subject to its upstream license and notice/source obligations. The release process must archive the exact installed package inventory and corresponding license texts for the image being distributed; do not treat the Alpine distribution as having one blanket license.
+
 ## Firmware
 
 SeaBIOS/VGA BIOS assets are served only through the verified firmware path. The build must fail if required firmware is represented by an unresolved Git LFS pointer rather than actual binary content.
