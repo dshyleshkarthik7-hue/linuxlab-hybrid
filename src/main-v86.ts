@@ -32,7 +32,7 @@ const LINUX4_PROFILE: Profile = { name: 'Linux 4', memoryMiB: 256, cdrom: LINUX4
 const FIRMWARE_BASE = '/api/v86-firmware';
 const READY_MARKER = '__LINUXLAB_READY__';
 const PROBE_MARKER = '__LINUXLAB_INPUT_OK__';
-const LOW_MEMORY_THRESHOLD_GB = 16;
+const LOW_MEMORY_THRESHOLD_GB = 4;
 
 function lowMemoryWarning(): string | null {
   const deviceMemory = (navigator as Navigator & { deviceMemory?: number }).deviceMemory;
@@ -306,10 +306,10 @@ export class V86LinuxTerminal {
       }
     }
     if (loginPromptVisible && typeof vm.keyboard_send_text === 'function' && typeof waitForVga === 'function') {
-      vm.keyboard_send_text('root\\n');
+      vm.keyboard_send_text('root\n');
       try {
         await waitForVga.call(vm, /password:\s*/i, { timeout_msec: Math.min(3000, Math.max(750, deadline - Date.now())) });
-        vm.keyboard_send_text('\\n');
+        vm.keyboard_send_text('\n');
       } catch {}
     }
     if (this.vgaReady && vm.keyboard_send_text && waitForVga && (serialReady || shellPromptVisible || loginPromptVisible)) {
