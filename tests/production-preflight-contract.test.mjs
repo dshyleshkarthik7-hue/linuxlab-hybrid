@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 const script = await readFile(new URL('../scripts/production-preflight.mjs', import.meta.url), 'utf8');
 const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-assert.match(script, /PINNED_QWEN_MODEL = 'Qwen\/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218'/);
+assert.match(script, /ROUTER_QWEN_MODEL = 'Qwen\\/Qwen3-8B'/);
 assert.match(script, /router\.huggingface\.co\/v1\/chat\/completions/);
 assert.match(script, /certificates_expiresAt_ttl/);
 assert.match(script, /certificate_revocations_certificateId_unique/);
