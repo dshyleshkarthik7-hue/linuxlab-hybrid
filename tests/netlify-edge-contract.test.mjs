@@ -6,9 +6,18 @@ const cloudflare = await readFile(new URL('../cloudflare/iso-worker.ts', import.
 const config = await readFile(new URL('../netlify.toml', import.meta.url), 'utf8');
 const manifest = JSON.parse(await readFile(new URL('../artifacts/manifest.json', import.meta.url), 'utf8'));
 const tutor = await readFile(new URL('../netlify/edge-functions/tutor.ts', import.meta.url), 'utf8');
+const certificate = await readFile(new URL('../netlify/functions/certificate.mts', import.meta.url), 'utf8');
 const questionValidation = tutor.indexOf("if (!question) return json({ error: 'Question is required.' }");
 const rateLimitCall = tutor.indexOf('const limit = await durableLimit');
 assert.ok(questionValidation >= 0 && rateLimitCall > questionValidation, 'Tutor must validate the question before consuming rate-limit quota');
+const pinnedModel = 'Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218';
+assert.ok(tutor.includes(`const PINNED_QWEN_MODEL = '${pinnedModel}'`), 'Tutor must pin the approved immutable Qwen revision');
+assert.ok(certificate.includes(`const PINNED_QWEN_MODEL = '${pinnedModel}'`), 'Certificate feedback must use the same immutable Qwen revision');
+assert.match(tutor, /MODEL !== PINNED_QWEN_MODEL/, 'Tutor must fail closed on an environment override mismatch');
+assert.match(certificate, /CERTIFICATE_FEEDBACK_MODEL !== PINNED_QWEN_MODEL/, 'Certificate feedback must fail closed on an environment override mismatch');
+assert.match(tutor, /return json\(\{ error: 'Tutor provider is temporarily unavailable\./, 'Tutor provider errors must return a non-success response');
+assert.match(certificate, /return json\(\{ error: 'AI study feedback is temporarily unavailable\./, 'Certificate feedback provider errors must fail closed');
+assert.match(certificate, /certificate_revocations_certificateId_unique|REVOCATION_INDEX_READY/, 'Certificate revocation must use durable indexed storage');
 
 assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), false, 'Linux 4 must use the direct Cloudflare Worker rather than a duplicate Netlify relay');
 assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), true, 'firmware must be served through Netlify Edge');
