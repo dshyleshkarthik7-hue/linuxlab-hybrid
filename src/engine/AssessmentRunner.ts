@@ -46,6 +46,7 @@ export class AssessmentRunner {
     if(!code.trim()) return 'No source code was supplied.';
     if(lang==='c'&&!/\bint\s+main\s*\(/.test(code)) return 'C entry point could not be verified.';
     if(lang==='java'&&!/static\s+void\s+main\s*\(/.test(code)) return 'Java entry point could not be verified.';
+    if(lang==='java'&&/\b(for|while|do)\b/.test(code)) return 'Java loop execution is outside the educational interpreter subset; this case cannot be reliably graded. Use Engine B for native Java execution.';
     if(/\b(system|exec|fork|popen|Runtime\.getRuntime|ProcessBuilder)\s*\(/.test(code)) return 'Program uses host-process features that Engine A deliberately does not emulate.';
     return null;
   }
