@@ -94,11 +94,12 @@ async function run() {
       }
     }
   }`;
-  assert.equal(e.executeGeneralCode(javaPrimeProgram, 'java', { num: 7 }), '7 is a Prime Number\n');
-  assert.equal(e.executeGeneralCode(javaPrimeProgram, 'java', { num: 8 }), '8 is not a Prime Number\n');
+  assert.match(e.executeGeneralCode(javaPrimeProgram, 'java', { num: 7 }), /Loop execution is not supported/);
+  assert.match(e.executeGeneralCode(javaPrimeProgram, 'java', { num: 8 }), /Loop execution is not supported/);
   const javaAssessment = new AssessmentRunner(e).runJavaTestSuite(javaPrimeProgram);
   const composite = javaAssessment.checks.find(check => check.label === 'Composite test for 8');
-  assert.equal(composite?.passed, true);
+  assert.equal(composite?.state, 'unable-to-verify');
+  assert.equal(composite?.passed, false);
   assert.equal(javaAssessment.educationalOnly, true);
   assert.equal(javaAssessment.executionVerified, false);
 
