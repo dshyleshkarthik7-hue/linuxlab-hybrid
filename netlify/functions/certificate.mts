@@ -294,8 +294,8 @@ async function rateLimit(key: string, limit: number, windowSeconds: number) {
   return Number(count) <= limit;
 }
 
-function constantTimeEqualHex(left: string, right: string): boolean {
-  if (left.length !== right.length) return false;
+function constantTimeEqualHex(left: unknown, right: unknown): boolean {
+  if (typeof left !== 'string' || typeof right !== 'string' || left.length !== right.length) return false;
   let difference = 0;
   for (let i = 0; i < left.length; i++) difference |= left.charCodeAt(i) ^ right.charCodeAt(i);
   return difference === 0;
