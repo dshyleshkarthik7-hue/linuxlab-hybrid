@@ -84,7 +84,7 @@ assert.ok(realLinux.includes('/v86-layout.css') && developer.includes('/v86-layo
 
 console.log('Static emulator SEO/security guardrails passed');
 
-assert.match(await readFile('netlify/edge-functions/tutor.ts','utf8'), /Tutor provider is temporarily unavailable/);
+assert.match(await readFile('netlify/edge-functions/tutor.ts','utf8'), /model: 'local-fallback'/);
 const isoWorker = await readFile('cloudflare/iso-worker.ts', 'utf8');
 assert.match(isoWorker, /\^\(\[a-z0-9-\]\+\)--linuxterminal\\\.netlify\\.app\$/i);
 
