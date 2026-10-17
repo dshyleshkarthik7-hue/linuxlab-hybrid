@@ -103,6 +103,17 @@ jobs:
           name: sbom-${{ github.sha }}
           path: sbom.cdx.json
       - run: npm run test:smoke
+      - name: Install pinned axe-core for accessibility audit
+        run: npm install --no-save --ignore-scripts --no-audit --no-fund axe-core@4.10.3
+      - name: Cross-browser accessibility smoke matrix
+        run: |
+          set -euo pipefail
+          for browser in chromium firefox webkit; do
+            echo "Accessibility smoke: $browser"
+            A11Y_BROWSER="$browser" npm run test:accessibility
+            echo "axe-core WCAG audit: $browser"
+            A11Y_BROWSER="$browser" npm run test:accessibility:axe
+          done
       - name: Real guest isolation gate
         env:
           GITHUB_TOKEN: ${{ github.token }}
