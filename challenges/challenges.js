@@ -6,14 +6,17 @@
   const clear = document.querySelector('#clear-progress');
   let done = window.LinuxProgress?.read().challenges.map(x => x.id) || [];
   let data = null;
+  let visibleCount = 0;
+  if (count) { count.setAttribute('role', 'status'); count.setAttribute('aria-live', 'polite'); count.setAttribute('aria-atomic', 'true'); }
 
   const update = () => {
-    if (count) count.textContent = data ? `${done.length} / ${data.commandCount} commands practiced` : 'Loading…';
+    if (count) count.textContent = data ? `${done.length} / ${data.commandCount} commands practiced · ${visibleCount} results shown` : 'Loading challenge catalog…';
   };
 
   function render() {
     if (!list || !data) return;
     list.replaceChildren();
+    visibleCount = 0;
     const q = (search?.value || '').trim().toLowerCase();
     const group = category?.value || '';
     const setNo = Number(setSelect?.value || 0);
@@ -33,6 +36,11 @@
       h.textContent = cmd.name;
       const p = document.createElement('p');
       p.textContent = 'Practice ' + cmd.name + ': ' + cmd.summary;
+      const depth = document.createElement('span');
+      depth.className = 'content-depth';
+      const curated = Boolean(String(cmd.example || '').trim() && String(cmd.summary || '').trim().length >= 80);
+      depth.textContent = curated ? 'Curated task' : 'Catalog entry · lesson detail may be limited';
+      depth.setAttribute('aria-label', curated ? 'Curated task with example' : 'Catalog entry; lesson detail may be limited');
       const actions = document.createElement('div');
       actions.className = 'challenge-actions';
       const link = document.createElement('a');
@@ -61,8 +69,9 @@
       };
       paint();
       actions.append(link, button);
-      article.append(tag, h, p, actions);
+      article.append(tag, h, p, depth, actions);
       list.append(article);
+      visibleCount += 1;
     }
     update();
   }
