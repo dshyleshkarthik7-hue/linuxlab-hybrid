@@ -115,6 +115,24 @@ async function run() {
   assert.ok((await e.execute('free')).includes('illustrative 256 MiB model'));
   assert.ok((await e.execute('top')).includes('illustrative 256 MiB model'));
 
+  // Regression tests for corrected simulator option and operand semantics.
+  assert.equal(await e.execute('mkdir -p /tmp/regression/nested && test -d /tmp/regression/nested'), '');
+  assert.equal(await e.execute('echo first > /tmp/regression/a && echo second > /tmp/regression/b'), '');
+  assert.equal(await e.execute('cp /tmp/regression/a /tmp/regression/b /tmp'), '');
+  assert.equal(await e.execute('cat /tmp/a'), 'first');
+  assert.equal(await e.execute('cat /tmp/b'), 'second');
+  assert.equal(await e.execute('mv /tmp/a /tmp/b /tmp/regression'), '');
+  assert.equal(await e.execute('cat /tmp/regression/a'), 'first');
+  assert.equal(await e.execute('cat /tmp/regression/b'), 'second');
+  assert.equal(await e.execute('echo Alpha > /tmp/regression/text && echo beta >> /tmp/regression/text'), '');
+  assert.equal(await e.execute('grep -i alpha /tmp/regression/text'), 'Alpha');
+  assert.equal(await e.execute('grep -n beta /tmp/regression/text'), '2:beta');
+  assert.equal(await e.execute('grep -v alpha /tmp/regression/text'), 'beta');
+  assert.equal(await e.execute('head -n 1 /tmp/regression/text'), 'Alpha');
+  assert.equal(await e.execute('tail -n 1 /tmp/regression/text'), 'beta');
+  assert.equal(await e.execute('touch /tmp/regression/data /tmp/regression/log && ls /tmp/regression/data'), 'data');
+  assert.equal(await e.execute('mv /tmp/regression/a /tmp/regression/a && cat /tmp/regression/a'), 'first');
+
   console.log('LinuxTerminal engine checks passed');
 }
 
