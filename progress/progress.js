@@ -1,4 +1,4 @@
-import { exportSnapshot, importSnapshot } from '../public/progress-snapshot.mjs';
+import { exportSnapshot, importSnapshot } from './progress-snapshot.mjs';
 
 document.addEventListener('DOMContentLoaded', () => {
   const $ = (selector) => document.querySelector(selector);
