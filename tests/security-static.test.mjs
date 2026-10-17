@@ -86,7 +86,9 @@ assert.ok(realLinux.includes('/v86-layout.css') && developer.includes('/v86-layo
 
 console.log('Static emulator SEO/security guardrails passed');
 
-assert.match(await readFile('netlify/edge-functions/tutor.ts','utf8'), /model: 'local-fallback'/);
+const tutorSource = await readFile('netlify/edge-functions/tutor.ts', 'utf8');
+assert.match(tutorSource, /if \(!token\) return json\(\{ error: 'Tutor provider is not configured[\s\S]*?503/);
+assert.doesNotMatch(tutorSource, /model: 'local-fallback'/, 'Tutor must not disguise a missing or failed provider as a successful response');
 const isoWorker = await readFile('cloudflare/iso-worker.ts', 'utf8');
 assert.match(isoWorker, /\^\(\[a-z0-9-\]\+\)--linuxterminal\\\.netlify\\.app\$/i);
 
