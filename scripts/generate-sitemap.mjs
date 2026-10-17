@@ -13,9 +13,11 @@ const staticPaths = [
 ];
 
 const canonical = JSON.parse(await readFile('data/commands/canonical.json', 'utf8'));
+const intelligence = JSON.parse(await readFile('public/command-intelligence.json', 'utf8'));
 if (!Array.isArray(canonical.records)) throw new Error('Canonical command catalog is invalid');
 const isIndexable = (record) => record.page?.status === 'complete'
   || record.intelligence?.status === 'complete'
+  || intelligence.records?.[record.name]?.status === 'complete'
   || Boolean(String(record.summary || '').trim() && String(record.example || '').trim());
 const commandUrls = canonical.records
   .filter(isIndexable)
