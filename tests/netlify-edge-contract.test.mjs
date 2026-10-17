@@ -29,6 +29,10 @@ const firmwareEdge = await readFile(new URL('../netlify/edge-functions/v86-firmw
 assert.match(firmwareEdge, /seabios\.bin/);
 assert.match(firmwareEdge, /vgabios\.bin/);
 assert.match(firmwareEdge, /X-LinuxLab-SHA256/);
+assert.match(firmwareEdge, /raw\.githubusercontent\.com\/copy\/v86\/679ecd2e\/bios\/seabios\.bin/, 'SeaBIOS must be fetched from the pinned upstream asset');
+assert.match(firmwareEdge, /raw\.githubusercontent\.com\/copy\/v86\/679ecd2e\/bios\/vgabios\.bin/, 'VGABIOS must be fetched from the pinned upstream asset');
+assert.doesNotMatch(firmwareEdge, /new URL\("\/" \+ filename, url\.origin\)/, 'firmware must not proxy-fetch from the same site root and recurse');
+
 
 assert.match(cloudflare, /MAX_CHUNK_BYTES\s*=\s*32\s*\*\s*1024\s*\*\s*1024/);
 assert.match(cloudflare, /queryRange/);
