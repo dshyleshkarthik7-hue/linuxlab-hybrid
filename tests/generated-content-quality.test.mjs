@@ -20,6 +20,8 @@ const databaseBuilder = await readFile("scripts/commands/build-database.mjs", "u
 assert.match(databaseBuilder, /Catalog entry; purpose and availability are not verified/);
 assert.match(intelligenceBuilder, /"unverified"/, "inventory-only records must not be marked as complete lessons");
 assert.match(builder, /commands\.css\?v=20261016/, "generated pages must bust stale stylesheet caches");
+assert.ok(builder.includes('replace(/\\s+/g, " ")'), "command summaries should normalize real whitespace");
+assert.ok(builder.includes("isIndexable(target, intelligence.records?.[target.name])"), "related links should follow the shared indexability contract");
 assert.doesNotMatch(builder, /Shell builtin:/, "generic pages must not claim arbitrary inventory entries are shell builtins");
 assert.doesNotMatch(builder, /\$ echo \$\?/, "generator must not invent generic exit-status output");
 
