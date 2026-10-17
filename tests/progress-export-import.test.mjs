@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { exportSnapshot, importSnapshot, validateSnapshot } from '../public/progress-snapshot.mjs';
+import { exportSnapshot, importSnapshot, validateSnapshot } from '../progress/progress-snapshot.mjs';
 
 const original = {
   version: 2, name: 'Learner', points: 42,
