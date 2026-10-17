@@ -173,7 +173,8 @@ export class InBrowserLinuxEngine {
   }
 
   protected async executeCommand(cmdLine: string, stdin = ''): Promise<string> {
-    const tokens = (cmdLine.match(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || []).map(token => token.replace(/^(['"])([\s\S]*)\1$/, '$2'));
+    const expandedLine = this.expandVariables(cmdLine);
+    const tokens = (expandedLine.match(/(?:[^\s"'\\]|\\.|"(?:\\.|[^"])*"|'(?:\\.|[^'])*')+/g) || []).map(token => token.replace(/^(['"])([\s\S]*)\1$/, '$2'));
     const cmd = tokens[0]; const args = tokens.slice(1); this.exitCode = 0;
     if (cmd?.startsWith('./')) { const binName = cmd.slice(2); const bin = this.readFile(binName); if (!bin) { this.exitCode = 127; return `bash: ${cmd}: No such file or directory`; } if (bin.startsWith('__TRANSPILED_C__:')) { const srcFile = bin.slice('__TRANSPILED_C__:'.length); const src = this.readFile(srcFile); if (src === null) { this.exitCode = 1; return `bash: ${cmd}: compiled source is unavailable`; } return this.executeGeneralCode(src, 'c', undefined, args); } this.exitCode = 126; return `bash: ${cmd}: cannot execute binary file`; }
     switch (cmd) {
@@ -304,7 +305,7 @@ class EducationalCInterpreter {
     const rawLine = raw.trim();
     if (!rawLine) return '';
     this.history.push(rawLine);
-    const line = this.expandVariables(rawLine);
+    const line = rawLine;
     const splitOperator = (input: string, operators: string[]) => {
       const parts: string[] = []; const found: string[] = []; let current = ''; let quote = ''; let escaped = false;
       for (let i = 0; i < input.length; i++) { const ch = input[i]; if (escaped) { current += ch; escaped = false; continue; } if (ch === '\\') { current += ch; escaped = true; continue; } if (ch === '"' || ch === "'") { if (!quote) quote = ch; else if (quote === ch) quote = ''; current += ch; continue; } if (!quote) { const op = operators.find(candidate => input.startsWith(candidate, i)); if (op) { parts.push(current.trim()); found.push(op); current = ''; i += op.length - 1; continue; } } current += ch; }
