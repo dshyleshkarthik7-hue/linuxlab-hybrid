@@ -1,11 +1,12 @@
 import { ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT, LINUX4_ARTIFACT, type PinnedArtifact } from './ISOIntegrity.ts';
 import { Sha256 } from './sha256.ts';
 import { clearIsoArtifactCache, readIsoChunkCache, writeIsoChunkCache } from './iso-cache.ts';
+import runtimeConfig from '../../config/runtime.json' with { type: 'json' };
 
 const inFlight = new Map<string, Promise<ArrayBuffer>>();
 const inFlightConsumers = new Map<string, number>();
 const inFlightControllers = new Map<string, AbortController>();
-export const TRUSTED_ISO_ORIGIN = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev';
+export const TRUSTED_ISO_ORIGIN = runtimeConfig.isoWorkerOrigin;
 export const ISO_DELIVERY_PATH = '/api/iso/linux4';
 const RANGE_FETCH_TIMEOUT_MS = 180_000;
 const RANGE_CHUNK_BYTES = 32 * 1024 * 1024;
