@@ -243,7 +243,7 @@ export default async (request: Request, context: unknown) => {
     question,
   ].join('\n');
 
-  if (await circuitOpen()) return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin);
+  if (await circuitOpen()) return json({ error: 'Tutor provider is temporarily unavailable. Please try again shortly.' }, 503, origin, { 'retry-after': String(CIRCUIT_OPEN_SECONDS) });
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
   try {
@@ -262,7 +262,7 @@ export default async (request: Request, context: unknown) => {
         stream: false,
       }),
     });
-    if (!response.ok) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin); }
+    if (!response.ok) { await recordCircuitFailure(); return json({ error: 'Tutor provider is temporarily unavailable. Please try again shortly.' }, 503, origin, { 'retry-after': '30' }); }
     const data: unknown = await response.json();
     const answer = (data as HuggingFaceResponse)?.choices?.[0]?.message?.content;
     if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin); }
