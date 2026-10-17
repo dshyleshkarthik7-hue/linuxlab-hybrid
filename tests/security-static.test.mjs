@@ -21,13 +21,20 @@ assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(csp, /frame-ancestors 'none'/);
 for (const header of ['X-Content-Type-Options','Referrer-Policy','Permissions-Policy','Cross-Origin-Opener-Policy','Cross-Origin-Resource-Policy']) assert.match(csp, new RegExp(header), `global security header missing from generated headers: ${header}`);
 // Check the effective policy declarations without requiring a specific JS quote style.
-assert.match(csp, /const loginCsp = (?:"[^"]*style-src 'self' 'unsafe-inline'|`[^`]*style-src 'self' 'unsafe-inline')/,
+assert.match(csp, /kind === 'login'.*style-src 'self' 'unsafe-inline'/,
   'login CSP must allow inline styles required by the identity provider');
-const commonCspDeclaration = csp.match(/const commonCsp = ([^\n]+)/)?.[1] || '';
-assert.match(commonCspDeclaration, /style-src 'self'/,
-  'common CSP must keep styles restricted to self');
-assert.doesNotMatch(commonCspDeclaration, /unsafe-inline/,
-  'common CSP must not permit unsafe inline styles');
+assert.match(csp, /const connectSrc = \[.*workerOrigin/,
+  'browser network access must use the configured worker origin and explicit fallback hosts');
+assert.doesNotMatch(csp, /https:\/\/\*\.amazonaws\.com/,
+  'CSP must not allow every AWS bucket');
+assert.doesNotMatch(csp, /sha256-Ob\/z7smzKJGFdMGHiYHvik0pzOqdUCQ9Qa2zSrkvshs=/,
+  'CSP must not contain an unexplained static script hash');
+assert.match(csp, /inlineScriptHashes\(html\)/,
+  'inline script hashes must be generated for the exact HTML file');
+assert.match(csp, /kind === 'vm' \? \["'wasm-unsafe-eval'"\]/,
+  'wasm-unsafe-eval must be scoped to VM pages');
+assert.match(csp, /htmlEntries\.flatMap/,
+  'each HTML path must receive one page-specific CSP rather than overlapping CSPs');
 assert.match(csp, /report-to csp-endpoint/);
 assert.match(csp, /Reporting-Endpoints: csp-endpoint="\/api\/csp-report"/);
 assert.doesNotMatch(csp, /analyticsBootstrapHash|analyticsInlineHash/);
@@ -43,7 +50,7 @@ assert.doesNotMatch(cloudflare, /"CDN-Cache-Control": "no-store"/);
 assert.doesNotMatch(cloudflare, /cache: "no-store"/);
 assert.match(cloudflare, /"Vary": "Origin"/);
 assert.match(cloudflareConfig, /"enabled": true/);
-assert.match(netlify, /path = "\/api\/v86-firmware(?:\/\*)?"[\s\S]*?function = "v86-firmware"/, 'v86 firmware must be served through the dedicated Netlify Edge Function');
+assert.doesNotMatch(netlify, /v86-firmware/, 'firmware must be served as static build-verified assets, not through a runtime proxy');
 assert.doesNotMatch(netlify, /sed -i/);
 assert.doesNotMatch(netlify, /CLOUDFLARE_INSIGHTS_SCRIPT_ORIGIN/);
 assert.doesNotMatch(sitemap, /developer-alpine\.html/);
@@ -95,6 +102,7 @@ assert.match(isoWorker, /\^\(\[a-z0-9-\]\+\)--linuxterminal\\\.netlify\\.app\$/i
 
 assert.match(csp, /MAX_HEADER_LINE_BYTES = 8192/, 'generated response header lines must have a hard size limit');
 assert.match(csp, /type && !\['module', 'text\/javascript', 'application\/javascript'/, 'non-executable script data such as JSON-LD must not be hashed into script-src');
-assert.match(csp, /const indentHeaders = \(block\) => block\.split\('\\n'\)\.map\(\(line\) => '  ' \+ line\)\.join\('\\n'\)/, 'every emitted response header line must be indented in _headers syntax');
+assert.match(csp, /const indent = \(block\) => block\.split\('\\n'\)\.map\(\(line\) => '  ' \+ line\)\.join\('\\n'\)/, 'every emitted response header line must be indented in _headers syntax');
 assert.match(csp, /const htmlCache = 'CDN-Cache-Control:/, 'HTML cache directive must be defined');
-assert.match(csp, /indentHeaders\(headerBlock\(commonCsp\)\)/, 'global headers must be emitted using the shared indentation helper');
+assert.match(csp, /indent\(security \+ '\\nReporting-Endpoints/,
+  'global security headers must be emitted using the shared indentation helper');
