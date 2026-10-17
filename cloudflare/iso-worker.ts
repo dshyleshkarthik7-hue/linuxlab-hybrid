@@ -53,7 +53,7 @@ const FIRMWARES = Object.fromEntries(
   }]),
 ) as Record<string, Firmware>;
 
-function isAllowedOrigin(origin: string | null): boolean {
+function isAllowedOrigin(origin: string | null, allowLocalDevelopment = false): boolean {
   if (!origin) return false;
   try {
     const parsed = new URL(origin);
@@ -63,7 +63,7 @@ function isAllowedOrigin(origin: string | null): boolean {
       parsed.origin === "http://127.0.0.1:4174" ||
       parsed.origin === "http://localhost:4173" ||
       parsed.origin === "http://localhost:4174";
-    if (isLocalDevelopmentOrigin) return true;
+    if (isLocalDevelopmentOrigin) return allowLocalDevelopment;
     if (parsed.protocol !== "https:") return false;
 
     const isProductionOrigin =
@@ -77,16 +77,16 @@ function isAllowedOrigin(origin: string | null): boolean {
       /^([a-z0-9-]+)--linuxterminalm\.netlify\.app$/i.test(parsed.hostname) ||
       /^([a-z0-9-]+)--linuxterminal\.netlify\.app$/i.test(parsed.hostname);
 
-    return isProductionOrigin || isLocalDevelopmentOrigin || isNetlifyPreview;
+    return isProductionOrigin || isNetlifyPreview;
   } catch {
     return false;
   }
 }
 
 interface RateLimitBinding { limit(input: { key: string }): Promise<{ success: boolean }>; }
-interface Env { ISO_RATE_LIMITER: RateLimitBinding; }
+interface Env { ISO_RATE_LIMITER: RateLimitBinding; ENVIRONMENT?: string; }
 
-function corsHeaders(request: Request): Headers {
+function corsHeaders(request: Request, env: Env): Headers {
   const headers = new Headers({
     "Vary": "Origin",
     "Access-Control-Allow-Methods": "GET, HEAD, OPTIONS",
@@ -96,7 +96,7 @@ function corsHeaders(request: Request): Headers {
     "Access-Control-Expose-Headers": "Accept-Ranges, Content-Length, Content-Range, Content-Type, ETag, X-LinuxLab-SHA256, X-LinuxLab-Chunk-Start, X-LinuxLab-Chunk-End, X-LinuxLab-Chunk-Total, X-LinuxLab-Artifact-Size, X-LinuxLab-Worker-Protocol",
   });
   const origin = request.headers.get("Origin");
-  if (isAllowedOrigin(origin)) headers.set("Access-Control-Allow-Origin", origin!);
+  if (isAllowedOrigin(origin, env.ENVIRONMENT === "development")) headers.set("Access-Control-Allow-Origin", origin!);
   return headers;
 }
 
@@ -195,9 +195,9 @@ function errorResponse(message: string, status: number, headers: Headers): Respo
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
     const url = new URL(request.url);
-    const headers = corsHeaders(request);
+    const headers = corsHeaders(request, env);
     const origin = request.headers.get("Origin");
-    if (!isAllowedOrigin(origin)) return errorResponse("Origin not allowed", 403, headers);
+    if (!isAllowedOrigin(origin, env.ENVIRONMENT === "development")) return errorResponse("Origin not allowed", 403, headers);
     if (request.method === "OPTIONS") return new Response(null, { status: 204, headers });
     if (request.method !== "GET" && request.method !== "HEAD") {
       headers.set("Allow", "GET, HEAD, OPTIONS");
