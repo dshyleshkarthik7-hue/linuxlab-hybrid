@@ -138,7 +138,7 @@ const staticRoutes = [
 
 const sitemapRoutes = [...new Set([
   ...staticRoutes,
-  ...data.records.filter((command) => isIndexable(command)).map((command) => command.url)
+  ...data.records.filter((command) => isIndexable(command, intelligence.records?.[command.name])).map((command) => command.url)
 ])];
 
 const sitemap = `<?xml version="1.0" encoding="UTF-8"?>
