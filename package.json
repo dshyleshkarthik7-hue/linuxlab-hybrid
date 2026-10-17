@@ -54,7 +54,7 @@
     "test:browser-security": "node tests/browser-security-contract.test.mjs",
     "test:all": "npm run test:ci && npm run test:production",
     "test:iso-worker": "node tests/iso-worker.test.mjs && npm run test:developer-chunk-manifest",
-    "test:netlify-edge": "node tests/netlify-edge-contract.test.mjs",
+    "test:netlify-edge": "node tests/netlify-edge-contract.test.mjs && npm run test:careers-jobs",
     "test:profile-boot": "node tests/profile-boot.mjs",
     "test:ui-ux": "node tests/ui-ux-profile-contract.mjs",
     "test:config": "node scripts/production-config-contract.mjs",
@@ -73,7 +73,8 @@
     "typecheck:server": "tsc --project tsconfig.server.json",
     "test:sitemap": "node scripts/commands/build-database.mjs && node scripts/commands/build-intelligence.mjs && node scripts/generate-sitemap.mjs --check && node tests/sitemap-generation.test.mjs",
     "typecheck:functions": "tsc --project tsconfig.functions.json",
-    "check:installed-deps": "node -e \"for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p); if (!f) process.exit(1); console.log('verified', p, f); }\""
+    "check:installed-deps": "node -e \"for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p); if (!f) process.exit(1); console.log('verified', p, f); }\"",
+    "test:careers-jobs": "node tests/careers-jobs-contract.test.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
