@@ -48,7 +48,7 @@ The practice quiz is browser-local and is not treated as a credential.
 
 ## Free verified assessment and certificate
 
-The verified assessment is free. A signed-in user starts a server-created exam attempt. The server chooses and randomizes 30 questions from a generated bank containing a generated bank of command questions plus OS/networking questions and randomizes their choices, stores the answer key in Upstash Redis, grades the submitted answers server-side, and requires 80% to pass.
+The verified assessment is free. A signed-in user starts a server-created exam attempt. The server chooses and randomizes 30 questions from a curated Linux-foundations assessment bank, validates question IDs, distinct answer choices, and answer-leakage rules, stores the answer key in Upstash Redis, grades submitted answers server-side, and requires 80% to pass. The current assessment version is `linux-foundations-2.3`.
 
 A passing attempt creates a unique certificate ID and a server-signed record containing the exact score, percentage, issue date and assessment version. The public verification page checks the stored record and signature.
 
