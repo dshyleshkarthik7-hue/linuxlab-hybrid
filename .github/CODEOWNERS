@@ -1,6 +1,8 @@
-# CODEOWNERS reflects the current maintainer ownership.
-# Release review is enforced by the repository ruleset (required approval,
-# last-push approval, resolved threads, and the required verify check).
+# Current owner: dshyleshkarthik7-hue. Add a second real, trusted maintainer before release.
+# The active GitHub ruleset requires a PR, one approval, last-push approval,
+# resolved review threads, and the "verify" status check. CODEOWNERS review is
+# currently disabled in that ruleset and must be enabled by a repository owner.
+# Do not add a placeholder identity as a substitute for a trusted reviewer.
 /src/ @dshyleshkarthik7-hue
 /netlify/ @dshyleshkarthik7-hue
 /iso-builder/ @dshyleshkarthik7-hue
