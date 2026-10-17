@@ -13,7 +13,7 @@ assert.match(runtime, /markReadyIfIdentityVerified\s*\(/);
 assert.match(runtime, /autostart:\s*false/);
 assert.match(runtime, /waitForV86Loaded/);
 assert.match(runtime, /wait_until_vga_screen_contains/);
-assert.match(runtime, /const LOW_MEMORY_THRESHOLD_GB = 16/);
+assert.match(runtime, /const LOW_MEMORY_THRESHOLD_GB = 4/);
 assert.match(runtime, /deviceMemory < LOW_MEMORY_THRESHOLD_GB/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(csp, /frame-ancestors 'none'/);
