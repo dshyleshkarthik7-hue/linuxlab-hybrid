@@ -69,7 +69,8 @@
     "test:preview": "node tests/production-smoke.mjs",
     "test:video-generation": "node tests/video-generator-contract.test.mjs",
     "test:developer-chunk-manifest": "node tests/developer-chunk-manifest.test.mjs",
-    "video:curriculum": "node scripts/video/generate-curriculum-videos.mjs"
+    "video:curriculum": "node scripts/video/generate-curriculum-videos.mjs",
+    "typecheck:server": "tsc --project tsconfig.server.json"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
