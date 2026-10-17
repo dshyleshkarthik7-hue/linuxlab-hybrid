@@ -96,19 +96,6 @@ async function runSmoke() {
     await page.route('**/seabios.bin', serveFirmware);
     await page.route('**/vgabios.bin', serveFirmware);
     await page.route('**/?image=linux4&**', async route => { await route.fulfill({ status: 200, headers: { 'content-range': 'bytes 0-0/7731200', 'accept-ranges': 'bytes', 'content-length': '1', 'content-type': 'application/octet-stream', 'access-control-allow-origin': '*' }, body: Buffer.from([0]) }); });
-    await page.route('**/api/iso**', async route => {
-      const url = new URL(route.request().url());
-      const image = url.searchParams.get('image');
-      if (image !== 'virt' && image !== 'developer') {
-        await route.fulfill({ status: 404, headers: {'content-type':'text/plain'}, body: 'Unknown image' });
-        return;
-      }
-      const range = route.request().headers().range;
-      const headers = range
-        ? {'content-range':'bytes 0-0/1','accept-ranges':'bytes','content-length':'1','content-type':'application/octet-stream'}
-        : {'content-length':'1','content-type':'application/octet-stream'};
-      await route.fulfill({ status: range ? 206 : 200, headers, body: Buffer.from([0]) });
-    });
     await stage(page, 'page-load', async () => { const response = await page.goto(baseURL.replace(/\/$/,'') + '/index-v86.html', { waitUntil:'domcontentloaded' }); if (!response || !response.ok()) throw new Error('Unable to load V86 page'); });
     const required=['#v86-health','#v86-status','#v86-monitor','#v86-terminal-container','#screen_container'];
     await stage(page, 'required-controls', async () => { for (const selector of required) await page.waitForSelector(selector,{state:'attached'}); });
