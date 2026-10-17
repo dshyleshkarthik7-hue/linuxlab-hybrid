@@ -1,6 +1,6 @@
-const PINNED_QWEN_MODEL = 'Qwen/Qwen3-8B@b968826d9c46dd6066d109eabc6255188de91218';
-const MODEL = Netlify.env.get('HF_MODEL') || PINNED_QWEN_MODEL;
-const MODEL_ID_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+@[a-f0-9]{40}$/i;
+const ROUTER_QWEN_MODEL = 'Qwen/Qwen3-8B';
+const MODEL = Netlify.env.get('HF_MODEL') || ROUTER_QWEN_MODEL;
+const MODEL_ID_RE = /^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?::[A-Za-z0-9_.-]+)?$/i;
 const MAX_OUTPUT_TOKENS = 300;
 const MAX_CONTEXT_CHARS = 5000;
 const MAX_QUESTION_CHARS = 1200;
@@ -225,7 +225,7 @@ export default async (request: Request, context: unknown) => {
     contextText || '(no additional context)',
     '',
     'Question:',
-    question + '\\n/no_think',
+    question + '\n/no_think',
   ].join('\n');
 
   if (await circuitOpen()) return json({ error: 'Tutor provider is temporarily unavailable. Please try again shortly.' }, 503, origin, { 'retry-after': String(CIRCUIT_OPEN_SECONDS) });
