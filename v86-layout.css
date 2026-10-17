@@ -8,3 +8,7 @@
 @media(max-width:900px){.app-header{align-items:flex-start;flex-direction:column;padding:10px 16px}.header-actions{width:100%;max-width:none;justify-content:flex-start}.action-btn{font-size:.76rem}}
 @media(max-width:640px){.app-header{padding:8px 12px}.logo-title{font-size:.96rem}.header-actions{flex-wrap:nowrap;overflow:auto}.action-btn{padding:7px 8px;min-height:34px}.app-header{gap:8px}#vm-main{min-height:260px}#v86-terminal-container{padding:8px}#screen_container{inset:8px}#v86-diagnostics{left:8px;right:8px;bottom:8px;max-height:48%}.mobile-v86-keyboard{position:absolute;left:8px;right:8px;bottom:8px;z-index:21;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:7px;border:1px solid rgba(148,163,184,.25);border-radius:12px;background:rgba(2,6,23,.48);backdrop-filter:blur(8px);pointer-events:auto}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important}}
+
+.developer-device-advice{margin:1rem 0;padding:1rem;border:1px solid #6b8aa8;border-radius:.75rem;background:#0b1b2b;color:#f1f5f9}
+.developer-device-advice-link{display:inline-block;padding:.5rem .75rem;border-radius:.4rem;background:#164e63;color:#fff;text-decoration:underline;text-underline-offset:.2em}
+.developer-device-advice-link:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}
