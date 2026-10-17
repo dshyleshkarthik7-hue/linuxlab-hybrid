@@ -10,7 +10,7 @@ async function reserveDailyProviderRequest(): Promise<boolean> {
   const response = await fetch(UPSTASH_URL, {
     method: 'POST',
     headers: { authorization: 'Bearer ' + UPSTASH_TOKEN, 'content-type': 'application/json' },
-    body: JSON.stringify(['EVAL', \"local count = redis.call('INCR', KEYS[1]); if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end; return count\", '1', key, '172800']),
+    body: JSON.stringify(['EVAL', "local count = redis.call('INCR', KEYS[1]); if count == 1 then redis.call('EXPIRE', KEYS[1], ARGV[1]) end; return count", '1', key, '172800']),
     signal: AbortSignal.timeout(4000),
     cache: 'no-store',
   });
