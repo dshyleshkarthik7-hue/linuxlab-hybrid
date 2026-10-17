@@ -266,7 +266,7 @@ export default async (request: Request, context: unknown) => {
     const answer = (data as HuggingFaceResponse)?.choices?.[0]?.message?.content;
     if (typeof answer !== 'string' || !answer.trim()) { await recordCircuitFailure(); return json({ answer: fallback(contextText, question), model: 'local-fallback', provider: 'local-fallback', outputFormat: 'plain-text' }, 200, origin); }
     await recordCircuitSuccess();
-    const safeAnswer = answer.replace(/<think>[\\s\\S]*?(?:<\\/think>|$)/gi, '').replace(/<\\/?think>/gi, '').replace(CONTROL_CHARS, '').trim().slice(0, MAX_OUTPUT_CHARS);
+    const safeAnswer = answer.replace(/<think>[\s\S]*?(?:<\/think>|$)/gi, '').replace(/<\/?think>/gi, '').replace(CONTROL_CHARS, '').trim().slice(0, MAX_OUTPUT_CHARS);
     if (!safeAnswer) return json({ error: 'Tutor provider returned an empty response.' }, 503, origin);
     return json({ answer: safeAnswer, model: MODEL, provider: 'huggingface-router', outputFormat: 'plain-text' }, 200, origin);
   } catch (error) {
