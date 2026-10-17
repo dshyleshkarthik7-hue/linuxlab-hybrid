@@ -32,7 +32,7 @@ assert.match(certificate, /PASS_PERCENT\s*=\s*80/);
 assert.match(certificate, /canonical\(unsigned/);
 assert.match(certificate, /new TextEncoder\(\)\.encode\(secret\)/, 'certificate signing must use the selected key, not only the current key');
 assert.match(certificate, /constantTimeEqualHex\(expected, signature\)/, 'certificate verification must compare signatures without ordinary string equality');
-assert.match(certificate, /typeof left !== 'string' \\|\\| typeof right !== 'string'/, 'malformed stored signatures must fail closed instead of throwing');
+assert.match(certificate, /typeof left !== 'string'.*typeof right !== 'string'/, 'malformed stored signatures must fail closed instead of throwing');
 assert.match(certificate, /userId/);
 assert.match(certificate, /DEL/);
 assert.doesNotMatch(certificate, /(?:\:\s*any\b|\bas\s+any\b|<\s*any\s*>)/);
