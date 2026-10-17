@@ -4,7 +4,10 @@ import { setTimeout as sleep } from 'node:timers/promises';
 import { resolve } from 'node:path';
 
 const require = createRequire(import.meta.url);
-const { chromium } = require('playwright');
+const playwright = require('playwright');
+const browserName = process.env.A11Y_BROWSER || 'chromium';
+if (!['chromium', 'firefox', 'webkit'].includes(browserName)) throw new Error('A11Y_BROWSER must be chromium, firefox, or webkit');
+const browserType = playwright[browserName];
 const explicit = process.env.A11Y_BASE_URL || process.argv[2];
 const port = process.env.A11Y_PORT || '4173';
 const baseURL = explicit || `http://127.0.0.1:${port}`;
@@ -46,7 +49,7 @@ if (!explicit) {
   await waitForServer(baseURL);
 }
 
-const browser = await chromium.launch({ headless: true });
+const browser = await browserType.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   for (const route of routes) {
@@ -63,7 +66,7 @@ try {
       const skipLinks = [...document.querySelectorAll('a[href^="#"]')].filter(el => /skip to (main|content)/i.test(el.textContent || '')).length;
       const liveRegions = document.querySelectorAll('[aria-live], [role="status"], [role="alert"]').length;
       const challengeResultStatus = document.querySelector('#completed-count[aria-live="polite"]');
-      const progressSnapshotControls = route => route !== '/progress/' || (document.querySelector('#export-progress') && document.querySelector('#import-progress') && document.querySelector('#snapshot-status[aria-live="polite"]');
+      const progressSnapshotControls = route => route !== '/progress/' || Boolean(document.querySelector('#export-progress') && document.querySelector('#import-progress') && document.querySelector('#snapshot-status[aria-live="polite"]'));
       return { challengeResultStatus: Boolean(challengeResultStatus), progressSnapshotControls: Boolean(progressSnapshotControls(location.pathname)), lang: document.documentElement.lang, title: document.title, badImages: badImages.length, unlabeled: unlabeled.length, noText: noText.length, h1: document.querySelectorAll('h1').length, overflow: document.documentElement.scrollWidth > window.innerWidth + 1, skipLinks, liveRegions };
     });
     if (!result.lang || !result.title || (route === '/challenges/' && !result.challengeResultStatus) || (route === '/progress/' && !result.progressSnapshotControls) || result.badImages || result.unlabeled || result.noText || result.h1 !== 1 || result.overflow || (route === '/progress/' && result.liveRegions < 1)) throw new Error(route + ' accessibility contract failed: ' + JSON.stringify(result));
