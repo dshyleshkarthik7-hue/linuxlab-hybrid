@@ -3,12 +3,13 @@ const search = document.querySelector('#search');
 const category = document.querySelector('#category');
 const count = document.querySelector('#count');
 
-// Keep the canonical 6,161-record dataset searchable without creating thousands
-// of DOM nodes at once. More cards are appended only after explicit user action.
-const PAGE_SIZE = 100;
+// Progressive rendering for the 6,161-command catalogue.
+const PAGE_SIZE = 50;
+const PAGE_STEPS = [50, 100, 200, 500];
 let visibleLimit = PAGE_SIZE;
 let filteredCommands = [];
 let loadMoreButton;
+let pageSizeSelect;
 
 async function loadCommands() {
   const response = await fetch('/command-index.json', { credentials: 'omit' });
@@ -26,18 +27,18 @@ function createCard(item) {
   card.className = 'card command-card';
   const pill = document.createElement('span');
   pill.className = 'pill';
-  pill.textContent = item.category.toUpperCase();
+  pill.textContent = String(item.category || 'command').toUpperCase();
   const title = document.createElement('h2');
   const code = document.createElement('code');
   code.textContent = item.name;
   title.appendChild(code);
   const desc = document.createElement('p');
   desc.className = 'muted';
-  desc.textContent = item.summary;
+  desc.textContent = item.summary || ('Open the full lesson for ' + item.name);
   const link = document.createElement('a');
   link.className = 'cta';
   link.href = item.url;
-  link.textContent = 'Open command page →';
+  link.textContent = 'Open full lesson →';
   card.append(pill, title, desc, link);
   return card;
 }
@@ -51,50 +52,96 @@ loadCommands().then((commands) => {
     category?.appendChild(option);
   }
 
+  if (list && !document.querySelector('#page-size')) {
+    const toolbar = document.createElement('div');
+    toolbar.className = 'catalog-toolbar';
+    toolbar.style.cssText = 'display:flex;flex-wrap:wrap;gap:.75rem;align-items:center;margin:0 0 1rem';
+    const label = document.createElement('label');
+    label.htmlFor = 'page-size';
+    label.textContent = 'Show per page';
+    pageSizeSelect = document.createElement('select');
+    pageSizeSelect.id = 'page-size';
+    pageSizeSelect.setAttribute('aria-label', 'Commands shown per page');
+    for (const n of PAGE_STEPS) {
+      const opt = document.createElement('option');
+      opt.value = String(n);
+      opt.textContent = String(n);
+      if (n === PAGE_SIZE) opt.selected = true;
+      pageSizeSelect.appendChild(opt);
+    }
+    pageSizeSelect.addEventListener('change', () => {
+      visibleLimit = Number(pageSizeSelect.value) || PAGE_SIZE;
+      render();
+    });
+    toolbar.append(label, pageSizeSelect);
+    list.insertAdjacentElement('beforebegin', toolbar);
+  }
+
   if (list) {
     loadMoreButton = document.createElement('button');
     loadMoreButton.type = 'button';
     loadMoreButton.className = 'cta';
-    loadMoreButton.textContent = 'Load 100 more commands';
+    loadMoreButton.textContent = 'Load more commands';
     loadMoreButton.setAttribute('aria-controls', 'list');
     loadMoreButton.hidden = true;
     list.insertAdjacentElement('afterend', loadMoreButton);
     loadMoreButton.addEventListener('click', () => {
-      visibleLimit += PAGE_SIZE;
+      const step = Number(pageSizeSelect?.value) || PAGE_SIZE;
+      visibleLimit += step;
       render();
+      loadMoreButton.focus();
+    });
+  }
+
+  function filterCommands() {
+    const q = (search?.value || '').trim().toLowerCase();
+    const cat = category?.value || '';
+    return commands.filter((item) => {
+      if (cat && item.category !== cat) return false;
+      if (!q) return true;
+      return item.name.toLowerCase().includes(q) ||
+        String(item.summary || '').toLowerCase().includes(q) ||
+        String(item.category || '').toLowerCase().includes(q);
     });
   }
 
   function render() {
-    if (!list) return;
-    const q = (search?.value || '').toLowerCase().trim();
-    const selected = category?.value || '';
-    filteredCommands = commands.filter((item) =>
-      (!q || item.name.toLowerCase().includes(q) || item.summary.toLowerCase().includes(q)) &&
-      (!selected || item.category === selected)
-    );
-    visibleLimit = Math.max(PAGE_SIZE, visibleLimit);
-    list.replaceChildren(...filteredCommands.slice(0, visibleLimit).map(createCard));
-    const shown = Math.min(visibleLimit, filteredCommands.length);
-    if (count) count.textContent = 'Showing ' + shown + ' of ' + filteredCommands.length +
-      ' matching commands (' + commands.length + ' total)';
+    filteredCommands = filterCommands();
+    const step = Number(pageSizeSelect?.value) || PAGE_SIZE;
+    visibleLimit = Math.max(step, Math.min(visibleLimit, filteredCommands.length || step));
+    const slice = filteredCommands.slice(0, visibleLimit);
+    if (list) {
+      list.replaceChildren();
+      for (const item of slice) list.appendChild(createCard(item));
+    }
+    const shown = slice.length;
+    const total = commands.length;
+    const matched = filteredCommands.length;
+    if (count) {
+      if (matched === total) {
+        count.textContent = 'Showing ' + shown + ' of ' + total + ' Linux commands. Use search or category filters to narrow results.';
+      } else {
+        count.textContent = 'Showing ' + shown + ' of ' + matched + ' matches (from ' + total + ' total). Refine search or load more.';
+      }
+    }
     if (loadMoreButton) {
-      const remaining = filteredCommands.length - shown;
+      const remaining = matched - shown;
       loadMoreButton.hidden = remaining <= 0;
       loadMoreButton.textContent = remaining > 0
-        ? 'Load ' + Math.min(PAGE_SIZE, remaining) + ' more commands (' + remaining + ' remaining)'
-        : '';
+        ? 'Load ' + Math.min(step, remaining) + ' more (' + remaining + ' remaining)'
+        : 'All matching commands shown';
     }
   }
 
   function resetAndRender() {
-    visibleLimit = PAGE_SIZE;
+    visibleLimit = Number(pageSizeSelect?.value) || PAGE_SIZE;
     render();
   }
+
   search?.addEventListener('input', resetAndRender);
   category?.addEventListener('change', resetAndRender);
   render();
 }).catch((error) => {
-  if (count) count.textContent = 'Command reference temporarily unavailable';
+  if (count) count.textContent = 'Command reference temporarily unavailable. Refresh the page or try again shortly.';
   console.error(error);
 });
