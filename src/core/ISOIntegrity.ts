@@ -8,6 +8,7 @@ const SHA256_RE = /^[a-f0-9]{64}$/i;
 const TRUSTED_RELEASE_PREFIX = 'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/';
 const TRUSTED_HF_PREFIX = 'https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/';
 const TRUSTED_ISO_WORKER_PREFIX = 'https://linuxterminal-iso.dshyleshkarthik7.workers.dev/';
+const TRUSTED_SITE_PREFIX = 'https://linuxterminal.me/';
 const TRUSTED_MANIFEST_PREFIX = 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/';
 const TRUSTED_RELEASE_ASSET_API_PREFIX = 'https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/assets/';
 
@@ -15,6 +16,23 @@ const trustedUrl = (value: string, prefix: string) => {
   try {
     const url = new URL(value);
     return url.protocol === 'https:' && value.startsWith(prefix) && !value.includes('..');
+  } catch {
+    return false;
+  }
+};
+
+/** Same-origin Netlify paths (linux4 edge + static firmware). */
+const trustedSitePath = (value: string) => {
+  try {
+    const url = new URL(value, 'https://linuxterminal.me');
+    if (url.protocol !== 'https:') return false;
+    if (url.hostname !== 'linuxterminal.me' && url.hostname !== 'www.linuxterminal.me') return false;
+    return (
+      url.pathname === '/api/linux4-iso' ||
+      url.pathname === '/api/linux4-iso/' ||
+      url.pathname === '/seabios.bin' ||
+      url.pathname === '/vgabios.bin'
+    );
   } catch {
     return false;
   }
@@ -33,9 +51,26 @@ export function sha256StreamHex(chunks: Iterable<Uint8Array>): string {
 export function assertTrustedArtifact(artifact: PinnedArtifact): void {
   if (!SHA256_RE.test(artifact.sha256)) throw new Error(`Artifact ${artifact.filename} has no trusted SHA-256 digest configured`);
   if (!Number.isSafeInteger(artifact.size) || artifact.size <= 0) throw new Error(`Artifact ${artifact.filename} has no trusted exact size configured`);
-  if (!trustedUrl(artifact.url, TRUSTED_RELEASE_PREFIX) && !trustedUrl(artifact.url, TRUSTED_HF_PREFIX) && !trustedUrl(artifact.url, TRUSTED_ISO_WORKER_PREFIX)) throw new Error(`Artifact ${artifact.filename} is not from a trusted release host or ISO origin`);
+  if (
+    !trustedUrl(artifact.url, TRUSTED_RELEASE_PREFIX) &&
+    !trustedUrl(artifact.url, TRUSTED_HF_PREFIX) &&
+    !trustedUrl(artifact.url, TRUSTED_ISO_WORKER_PREFIX) &&
+    !trustedUrl(artifact.url, TRUSTED_SITE_PREFIX) &&
+    !trustedSitePath(artifact.url)
+  ) {
+    throw new Error(`Artifact ${artifact.filename} is not from a trusted release host or ISO origin`);
+  }
   for (const fallback of artifact.fallbackUrls ?? []) {
-    if (!trustedUrl(fallback, TRUSTED_RELEASE_PREFIX) && !trustedUrl(fallback, TRUSTED_HF_PREFIX) && !trustedUrl(fallback, TRUSTED_ISO_WORKER_PREFIX) && !trustedUrl(fallback, TRUSTED_RELEASE_ASSET_API_PREFIX)) throw new Error(`Artifact ${artifact.filename} has an untrusted fallback origin`);
+    if (
+      !trustedUrl(fallback, TRUSTED_RELEASE_PREFIX) &&
+      !trustedUrl(fallback, TRUSTED_HF_PREFIX) &&
+      !trustedUrl(fallback, TRUSTED_ISO_WORKER_PREFIX) &&
+      !trustedUrl(fallback, TRUSTED_RELEASE_ASSET_API_PREFIX) &&
+      !trustedUrl(fallback, TRUSTED_SITE_PREFIX) &&
+      !trustedSitePath(fallback)
+    ) {
+      throw new Error(`Artifact ${artifact.filename} has an untrusted fallback origin`);
+    }
   }
   if (!trustedUrl(artifact.releaseManifestUrl, TRUSTED_MANIFEST_PREFIX)) throw new Error(`Artifact ${artifact.filename} has an untrusted release manifest URL`);
 }
