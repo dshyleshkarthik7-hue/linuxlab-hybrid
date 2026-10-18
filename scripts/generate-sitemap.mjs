@@ -9,11 +9,12 @@ const staticPaths = [
   '/learn/text-processing/', '/learn/permissions/', '/learn/processes/',
   '/learn/shell-scripting/', '/challenges/', '/quiz/', '/curriculum/',
   '/about/', '/contact/', '/certificate/', '/faq/', '/terms/',
-  '/privacy/', '/verify/', '/learn/library/'
+  '/privacy/', '/verify/', '/learn/library/', '/linux-careers/'
 ];
 
 const canonical = JSON.parse(await readFile('public/command-records.json', 'utf8'));
-const intelligence = JSON.parse(await readFile('public/command-intelligence.json', 'utf8'));
+// Intelligence is intentionally generated outside the public web root (.cache).
+const intelligence = JSON.parse(await readFile('.cache/command-intelligence.json', 'utf8'));
 if (!Array.isArray(canonical.records)) throw new Error('Canonical command catalog is invalid');
 const isIndexable = (record) => record.page?.status === 'complete'
   || record.intelligence?.status === 'complete'
