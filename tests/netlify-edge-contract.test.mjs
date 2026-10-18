@@ -33,12 +33,11 @@ assert.ok(v86Entry.includes('fetch(`/${artifact.filename}`'), 'v86 must load fir
 assert.match(firmwareBuild, /createHash\('sha256'\)/);
 assert.match(headersBuild, /max-age=31536000, immutable/);
 
-
 assert.match(cloudflare, /MAX_CHUNK_BYTES\s*=\s*32\s*\*\s*1024\s*\*\s*1024/);
 assert.match(cloudflare, /queryRange/);
 assert.match(cloudflare, /Conflicting range parameters/);
-assert.match(cloudflare, /contentRange !== expectedContentRange/);
-assert.match(cloudflare, /contentLength !== String\(expectedLength\)/);
+assert.match(cloudflare, /content-range"\) !== expectedContentRange/);
+assert.match(cloudflare, /content-length"\) !== String\(expectedLength\)/);
 assert.match(cloudflare, /X-LinuxLab-SHA256/);
 assert.match(cloudflare, /X-LinuxLab-Worker-Protocol/);
 assert.match(cloudflare, /new AbortController/);
@@ -50,15 +49,10 @@ assert.match(cloudflare, /isNetlifyPreview/);
 assert.doesNotMatch(cloudflare, /hostname\.endsWith\('\.netlify\.app'\)/);
 
 assert.match(cloudflare, /crypto\.subtle\.digest\('SHA-256'/);
-
 assert.match(cloudflare, /firmwareKey/);
 assert.match(cloudflare, /__cors_origin/);
 assert.match(cloudflare, /getFirmware/);
-
-assert.match(cloudflare, /firmwareKey/);
-assert.match(cloudflare, /__cors_origin/);
 assert.doesNotMatch(cloudflare, /path = .*v86-firmware/);
-
 
 const linux4Edge = await readFile(new URL('../netlify/edge-functions/linux4-iso.ts', import.meta.url), 'utf8');
 assert.match(linux4Edge, /linux4/, 'linux4 edge must reference the pinned artifact');
