@@ -83,9 +83,9 @@ assert.match(certificate, /certificateIsDurablyRevoked/);
 assert.match(certificate, /rate:exam-start:ip/);
 assert.match(certificate, /rate:exam-submit:ip/);
 
-assert.match(certificate, /ROUTER_QWEN_MODEL = 'Qwen\\/Qwen3-8B'/, 'certificate feedback must use a standard Hugging Face router model ID');
+assert.match(certificate, /ROUTER_QWEN_MODEL = 'Qwen\/Qwen3-8B'/, 'certificate feedback must use a standard Hugging Face router model ID');
 const tutorSource = await readFile(new URL('../netlify/edge-functions/tutor.ts', import.meta.url), 'utf8');
-assert.match(tutorSource, /ROUTER_QWEN_MODEL = 'Qwen\\/Qwen3-8B'/, 'Tutor must use a standard Hugging Face router model ID');
+assert.match(tutorSource, /ROUTER_QWEN_MODEL = 'Qwen\/Qwen3-8B'/, 'Tutor must use a standard Hugging Face router model ID');
 assert.match(certificate, /async function explainStudyPlan/);
 assert.match(certificate, /rate:certificate-feedback:user/);
 assert.match(certificate, /studyTopics/);

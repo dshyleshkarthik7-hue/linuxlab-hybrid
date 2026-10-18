@@ -3,7 +3,7 @@ import path from "node:path";
 
 const EXPECTED = 6161;
 const records = JSON.parse(await readFile("public/command-records.json", "utf8"));
-const intelligence = JSON.parse(await readFile("public/command-intelligence.json", "utf8"));
+const intelligence = JSON.parse(await readFile(".cache/command-intelligence.json", "utf8"));
 if (records.records.length !== EXPECTED) {
   throw new Error(`expected ${EXPECTED} command records, found ${records.records.length}`);
 }

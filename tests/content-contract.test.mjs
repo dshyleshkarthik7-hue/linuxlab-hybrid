@@ -29,7 +29,7 @@ assert.equal(await exists('scripts/generate-netlify-headers.mjs'), true, 'securi
 // Linux 4 ISO delivery is intentionally handled by the canonical Cloudflare worker
 // configured in artifacts/manifest.json. Do not reintroduce the duplicate Netlify relay.
 assert.equal(await exists('netlify/edge-functions/linux4-iso.ts'), false, 'Linux 4 delivery must not add a duplicate Netlify ISO relay');
-assert.equal(await exists('netlify/edge-functions/v86-firmware.ts'), true, 'firmware delivery must be routed through Netlify Edge');
+assert.equal(await exists('netlify/edge-functions/v86-firmware.ts'), false, 'firmware delivery must not duplicate the canonical Cloudflare worker');
 
 const publicEntries = await readdir(join(root, 'public'), { withFileTypes: true });
 for (const entry of publicEntries.filter(e => e.isDirectory())) {
@@ -60,7 +60,7 @@ const headers = await read('netlify.toml');
 const cspGenerator = await read('scripts/generate-netlify-headers.mjs');
 assert.match(cspGenerator, /Strict-Transport-Security/);
 assert.doesNotMatch(headers, /path = "\/api\/iso\/linux4"/, 'Linux 4 ISO is served by the Cloudflare worker, not a duplicate Netlify relay');
-assert.match(headers, /path = "\/api\/v86-firmware(?:\/\*|")/, "firmware route must accept the configured wildcard path");
+assert.doesNotMatch(headers, /path = "\/api\/v86-firmware(?:\/\*|")/, "firmware must not be routed through a duplicate Netlify endpoint");
 const isoFetcher = await read('src/core/verified-iso-fetch.ts');
 const isoCache = await read('src/core/iso-cache.ts');
 assert.doesNotMatch(isoFetcher, /cache:\s*['"]no-store['"]/);
@@ -71,7 +71,11 @@ assert.match(isoCache, /artifact\.sha256/);
 assert.match(isoCache, /content-length/);
 const vmPolicy = await read('src/engine/VMResourcePolicy.ts');
 assert.match(vmPolicy, /developer: \{ memoryMiB: 1024/);
+const runtimeConfig = await read('config/runtime.json');
 const cloudflareWorker = await read('cloudflare/iso-worker.ts');
+assert.match(runtimeConfig, /isoWorkerOrigin/, 'runtime configuration must identify the canonical Cloudflare worker');
+assert.match(cloudflareWorker, /function getFirmware\(url: URL\): Firmware \| null/);
+assert.match(cloudflareWorker, /const firmware = getFirmware\(url\)/, 'Cloudflare worker must route pinned firmware artifacts');
 assert.match(cloudflareWorker, /linuxterminal\.me/);
 assert.match(cloudflareWorker, /MAX_CHUNK_BYTES/);
 assert.match(cloudflareWorker, /getFirmware/);
