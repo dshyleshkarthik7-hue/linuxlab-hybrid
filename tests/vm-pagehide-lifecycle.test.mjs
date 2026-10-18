@@ -13,6 +13,11 @@ assert.match(source, /this\.bootId \+= 1/,
   'Leaving the page must invalidate stale boot callbacks');
 assert.match(source, /void this\.dispose\(\)\.finally\(\(\) => this\.term\.dispose\(\)\)/,
   'Leaving the page must stop and destroy the VM and dispose the terminal');
+const failBody = source.slice(source.indexOf('private fail('), source.indexOf('private showTerminal()'));
+assert.match(failBody, /try \{ this\.emulator\?\.stop\?\.\(\); \} catch/,
+  'A failed VM stop must not abort error cleanup');
+assert.match(failBody, /try \{ this\.emulator\?\.destroy\?\.\(\); \} catch/,
+  'VM destruction must still be attempted if stopping the VM throws');
 assert.match(source, /window\.addEventListener\('pagehide', this\.handlePageHide, \{ once: true \}\)/,
   'The cleanup handler must be registered once');
 assert.match(source, /if \(window\.linuxLabVM === this\) delete window\.linuxLabVM/,
