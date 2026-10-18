@@ -56,14 +56,12 @@ export class V86LinuxTerminal {
   private ready = false;
   private vgaReady = false;
   private shellReady = false;
-  private guestIdentity: GuestIdentity | null = null;
   private initializationFailure: Error | null = null;
   private health: 'booting' | 'ready' | 'offline' = 'booting';
   private bootStage = 'starting';
   private integrityState: 'verified' | 'unverified' = 'unverified';
   private serial = '';
   private readonly serialDecoder = new TextDecoder();
-  private lastSerialAt = 0;
   private activeView: 'terminal' | 'screen' = 'terminal';
   private readonly handleResize = (): void => this.fit();
   private readonly handleOrientationChange = (): void => { window.setTimeout(() => this.fit(), 50); };
@@ -138,11 +136,9 @@ export class V86LinuxTerminal {
     this.ready = false;
     this.vgaReady = false;
     this.shellReady = false;
-    this.guestIdentity = null;
     this.initializationFailure = null;
     this.serial = '';
     this.serialDecoder.decode();
-    this.lastSerialAt = 0;
     this.bootStage = 'starting';
     this.setHealth('booting');
     this.setIntegrityState('unverified');
@@ -200,13 +196,6 @@ export class V86LinuxTerminal {
         if (!verifiedIsoBytes.byteLength) throw new Error('Verified Linux image is empty');
       }
       this.setIntegrityState(developerAsyncImage ? 'unverified' : 'verified');
-      this.guestIdentity = {
-        kind: this.profile.expectedGuest,
-        isAlpine: this.profile.expectedGuest === 'alpine',
-        release: developerAsyncImage
-          ? `pinned artifact ${artifact.version} (${artifact.sha256}); streamed parts; whole ISO is not fully hashed`
-          : `verified artifact ${artifact.version} (${artifact.sha256})`,
-      };
       const screen = document.getElementById('screen_container');
       if (!screen) throw new Error('VM screen container is missing');
       const policy = this.enforcer;
@@ -331,7 +320,6 @@ export class V86LinuxTerminal {
     if (!this.enforcer.acceptSerialByte(1)) { this.fail('Serial output limit reached'); return; }
     const chunk = this.serialDecoder.decode(new Uint8Array([value & 255]), { stream: true });
     if (!chunk) return;
-    this.lastSerialAt = Date.now();
     this.serial += chunk;
     if (this.serial.length > 65536) this.serial = this.serial.slice(-65536);
     const out = this.enforcer.acceptOutput(chunk);
@@ -352,7 +340,10 @@ export class V86LinuxTerminal {
   }
 
   private acceptGuestIdentity(identity: GuestIdentity): void {
-    this.guestIdentity = identity;
+    if (identity.kind === 'unknown' || identity.kind !== this.profile.expectedGuest) {
+      this.fail(`Guest identity mismatch: expected ${this.profile.expectedGuest}, received ${identity.kind}`);
+      return;
+    }
     this.markReady();
   }
 
