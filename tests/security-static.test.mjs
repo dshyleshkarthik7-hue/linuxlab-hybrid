@@ -13,7 +13,7 @@ assert.match(runtime, /this\.acceptGuestIdentity\(identity\)/, "guest readiness 
 assert.match(runtime, /autostart:\s*false/);
 assert.match(runtime, /waitForV86Loaded/);
 assert.match(runtime, /wait_until_vga_screen_contains/);
-assert.match(runtime, /this\.serial \+= ch;\s*if \(this\.serial\.length > 65536\)/, 'serial transcript must avoid copying the entire buffer for every byte');
+assert.match(runtime, /this\.serial \+= chunk;\s*if \(this\.serial\.length > 65536\)/, 'serial transcript must avoid copying the entire buffer for every byte');
 assert.match(runtime, /vm\.serial0_send/, 'prefilled commands must be sent to the guest serial input');
 assert.match(runtime, /const LOW_MEMORY_THRESHOLD_GB = 4/);
 assert.match(runtime, /deviceMemory < LOW_MEMORY_THRESHOLD_GB/);
