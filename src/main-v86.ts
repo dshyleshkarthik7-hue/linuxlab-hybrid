@@ -439,7 +439,9 @@ export class V86LinuxTerminal {
     if (this.bootTimeout !== null) { window.clearTimeout(this.bootTimeout); this.bootTimeout = null; }
     if (this.sessionTimer !== null) { window.clearTimeout(this.sessionTimer); this.sessionTimer = null; }
     this.enforcer?.stop();
-    try { this.emulator?.stop?.(); this.emulator?.destroy?.(); } catch {}
+    // Stop and destroy independently: a stop() failure must not skip destroy().
+    try { this.emulator?.stop?.(); } catch { /* Best-effort stop before destruction. */ }
+    try { this.emulator?.destroy?.(); } catch { /* Continue releasing references if destruction fails. */ }
     this.emulator = null;
     this.status(`${this.profile.name} • ${message}`);
     this.monitor(`Offline • ${message}`);
