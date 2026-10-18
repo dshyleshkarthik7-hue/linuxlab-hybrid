@@ -20,7 +20,6 @@ assert.match(runtime, /deviceMemory < LOW_MEMORY_THRESHOLD_GB/);
 assert.equal(csp.includes('https://router.huggingface.co'), false);
 assert.match(csp, /frame-ancestors 'none'/);
 for (const header of ['X-Content-Type-Options','Referrer-Policy','Permissions-Policy','Cross-Origin-Opener-Policy','Cross-Origin-Resource-Policy']) assert.match(csp, new RegExp(header), `global security header missing from generated headers: ${header}`);
-// Check the effective policy declarations without requiring a specific JS quote style.
 assert.match(csp, /kind === 'login'.*style-src 'self' 'unsafe-inline'/,
   'login CSP must allow inline styles required by the identity provider');
 assert.match(csp, /const connectSrc = \[.*workerOrigin/,
@@ -43,7 +42,7 @@ const cloudflare = await readFile('cloudflare/iso-worker.ts', 'utf8');
 const cloudflareConfig = await readFile('cloudflare/wrangler.jsonc', 'utf8');
 assert.match(cloudflare, /MAX_CHUNK_BYTES/);
 assert.match(cloudflare, /X-LinuxLab-Chunk-Total/);
-assert.match(cloudflare, /upstream\.status === 200 && image\.size <= MAX_FULL_UPSTREAM_BYTES/);
+assert.match(cloudflare, /response\.status === 200 && image\.size <= MAX_FULL_UPSTREAM_BYTES/);
 assert.match(cloudflare, /status === 206/);
 assert.doesNotMatch(cloudflare, /"Cache-Control": "no-store"/);
 assert.doesNotMatch(cloudflare, /"CDN-Cache-Control": "no-store"/);
@@ -88,8 +87,7 @@ assert.ok(byImage.developer.fallbackUrls.some((url) => url.includes('/alpine-iso
 assert.ok(byImage.linux4.fallbackUrls.some((url) => url.includes('/alpine-iso-bucket/resolve/linux4.iso')));
 assert.match(realLinux, /data-v86-key="ctrl-shift-v"/);
 assert.match(byImage.linux4.url, /^https:\/\/linuxterminal\.me\/api\/linux4-iso$/);
-assert.match(csp, /indent\(line\) => `  ${line}`/);
-assert.match(csp, /const indent = \(value\) => value\.split\('\\n'\)\.map\(\(line\) => '  ' \+ line\)\.join\('\\n'\)/, 'every emitted response header line must be indented in _headers syntax');
+assert.match(csp, /const indent = \(block\) => block\.split\('\\n'\)\.map\(\(line\) => '  ' \+ line\)\.join\('\\n'\)/, 'every emitted response header line must be indented in _headers syntax');
 assert.match(csp, /const htmlCache = 'CDN-Cache-Control:/, 'HTML cache directive must be defined');
 assert.match(csp, /indent\(security \+ '\\nReporting-Endpoints/,
   'global security headers must be emitted using the shared indentation helper');
