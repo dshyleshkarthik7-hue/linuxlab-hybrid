@@ -2,7 +2,7 @@ import { readFile, writeFile } from 'node:fs/promises';
 
 const base = 'https://linuxterminal.me';
 const staticPaths = [
-  '/learn/operating-systems/', '/learn/networking-basics/', '/', '/beginner/',
+  '/learn/operating-systems/', '/learn/networking-basics/', '/', '/beginner/', '/tutorials/', '/tutorials/linux-ls-command/', '/tutorials/grep-examples/',
   '/intermediate/', '/expert/', '/real-linux/', '/developer-alpine/',
   '/open-source-iso/', '/commands/', '/learn/', '/learn/linux-basics/',
   '/learn/terminal-navigation/', '/learn/files-and-directories/',
