@@ -39,6 +39,7 @@ const cloudflare = readFileSync('.github/workflows/deploy-cloudflare.yml', 'utf8
 assert.match(cloudflare, /inputs\.confirm_production_deploy == true/, 'Cloudflare production deployment must require explicit manual approval');
 assert.doesNotMatch(cloudflare, /workflow_run:/, 'Cloudflare production deployment must not run automatically after CI');
 assert.match(cloudflare, /Verify deployed ISO worker/, 'Cloudflare deployment must include a post-deploy worker verification');
+assert.match(cloudflare, /grep -qi '\^HTTP\/\.\* 206'/, 'ISO byte-range smoke test must require HTTP 206 Partial Content');
 const certificate = readFileSync('netlify/functions/certificate.mts', 'utf8');
 assert.doesNotMatch(certificate, /CERTIFICATE_SIGNING_SECRET/, 'certificate signing must use the keyring only');
 assert.match(certificate, /CERTIFICATE_SIGNING_KEYS/);
