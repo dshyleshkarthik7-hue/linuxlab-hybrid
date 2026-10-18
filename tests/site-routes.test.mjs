@@ -38,7 +38,10 @@ assert.equal(commands.length, 26);
 const commandDatabase = JSON.parse(readFileSync(join(root, 'data/commands/index.json'), 'utf8'));
 assert.equal(commandDatabase.records.length, 200, 'Phase 1 command database must preserve the current 200 command records');
 assert.equal(new Set(commandDatabase.records.map((command) => command.name)).size, 200, 'Command database names must be unique');
-assert.equal(commandDatabase.records.filter((command) => command.intelligence?.status === 'complete').length, 26, 'Phase 2 must cover all 26 dedicated lessons');
+assert.ok(commandDatabase.records.filter((command) => command.intelligence?.status === 'complete').length >= 26, 'Phase 2 must cover at least the 26 dedicated curated lessons');
+const intelligenceIndex = JSON.parse(readFileSync(join(root, '.cache/command-intelligence.json'), 'utf8'));
+assert.equal(Object.keys(intelligenceIndex.records).length, 6161, 'Intelligence index must cover all 6,161 canonical commands');
+assert.equal(Object.values(intelligenceIndex.records).filter((r) => r.status === 'complete').length, 6161, 'All 6,161 commands must have complete intelligence lessons');
 // Intelligence is build-time only and lives outside the public web root.
 assert.ok(existsSync(join(root, '.cache/command-intelligence.json')), 'Phase 2 intelligence index missing (.cache)');
 assert.ok(existsSync(join(root, 'public/command-intelligence.js')), 'Phase 2 intelligence renderer missing');
