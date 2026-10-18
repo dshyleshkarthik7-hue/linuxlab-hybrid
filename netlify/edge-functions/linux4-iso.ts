@@ -2,22 +2,19 @@
  * Netlify Edge: serve linux4.iso with Range support from pinned GitHub/HF origins.
  * Small (~7.7 MiB) image stays on Netlify; large Alpine images remain on Cloudflare.
  */
-import manifest from '../../artifacts/manifest.json' with { type: 'json' };
 
 const UPSTREAM_TIMEOUT_MS = 60_000;
 const MAX_CHUNK_BYTES = 8 * 1024 * 1024;
 
-type Artifact = {
-  filename: string;
-  size: number;
-  sha256: string;
-  url?: string;
-  fallbackUrls?: string[];
-  image?: string;
-};
-
-const linux4 = (manifest.artifacts as Artifact[]).find((a) => a.image === 'linux4' || a.filename === 'linux4.iso');
-if (!linux4) throw new Error('linux4 artifact missing from manifest');
+const linux4 = {
+  filename: 'linux4.iso',
+  size: 7731200,
+  sha256: 'a8ea434ab3b177c55f01275dcc1d35f52cfbee9bd44a32e74765c975b58bcc73',
+  fallbackUrls: [
+    'https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso',
+    'https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/linux4.iso?download=true',
+  ],
+} as const;
 
 function isTrustedUpstream(value: string): boolean {
   try {
@@ -92,9 +89,7 @@ export default async (request: Request): Promise<Response> => {
     return error('Invalid range', 416, { 'content-range': `bytes */${linux4.size}` });
   }
 
-  const origins = [...(linux4.fallbackUrls || []), linux4.url || '']
-    .filter(Boolean)
-    .filter((u) => isTrustedUpstream(u));
+  const origins = [...linux4.fallbackUrls].filter((u) => isTrustedUpstream(u));
 
   if (!origins.length) return error('No trusted linux4 origin configured', 503);
 
