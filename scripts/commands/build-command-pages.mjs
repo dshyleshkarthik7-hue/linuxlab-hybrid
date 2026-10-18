@@ -14,7 +14,16 @@ const escapeHtml = (value) => String(value ?? "")
   .replace(/"/g, "&quot;");
 
 const escapeJson = (value) => JSON.stringify(value).replace(/</g, "\\u003c");
-const isIndexable = (command, intelligenceRecord) => command.page?.status === "complete" || command.intelligence?.status === "complete" || intelligenceRecord?.status === "complete" || Boolean(String(command.summary || "").trim() && String(command.example || "").trim());
+const isIndexable = (command, intelligenceRecord) => {
+  if (command.page?.status === "complete" && command.page?.source) return true;
+  const lesson = intelligenceRecord || command.intelligence || {};
+  const hasReviewedStatus = command.intelligence?.status === "complete" || intelligenceRecord?.status === "complete";
+  return Boolean(hasReviewedStatus
+    && String(lesson.definition || lesson.explanation || "").trim()
+    && String(lesson.syntax || "").trim()
+    && Array.isArray(lesson.examples) && lesson.examples.some((example) => typeof example === "string" && example.trim())
+    && Array.isArray(lesson.internals) && lesson.internals.length > 0);
+};
 
 const relatedLinks = (items = []) => items.map((name) => {
   const target = data.records.find((r) => r.name === name);
