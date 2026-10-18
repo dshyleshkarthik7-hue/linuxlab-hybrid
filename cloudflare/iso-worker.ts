@@ -92,33 +92,26 @@ function corsHeaders(request: Request, env: Env): Headers {
   return headers;
 }
 
-function synthesizeDeveloperChunks(size: number, chunkSize: number): Array<{ index: number; start: number; end: number; sha256: string }> {
-  const count = Math.ceil(size / chunkSize);
-  const chunks: Array<{ index: number; start: number; end: number; sha256: string }> = [];
-  for (let index = 0; index < count; index++) {
-    const start = index * chunkSize;
-    const end = Math.min(size - 1, (index + 1) * chunkSize - 1);
-    chunks.push({ index, start, end, sha256: "" });
-  }
-  return chunks;
-}
+type DeveloperChunk = { index: number; start: number; end: number; sha256: string };
 
-function getDeveloperChunks(): Array<{ index: number; start: number; end: number; sha256: string }> {
+function getDeveloperChunks(): DeveloperChunk[] | null {
   const image = IMAGES.developer;
-  const value = developerChunkManifest as { schemaVersion?: number; artifactSha256?: string; artifactSize?: number; chunkSize?: number; chunks?: Array<{ index: number; start: number; end: number; sha256: string }> };
-  if (!value || value.schemaVersion !== 1 || value.artifactSha256 !== image.sha256 || value.artifactSize !== image.size || value.chunkSize !== MAX_CHUNK_BYTES || !Array.isArray(value.chunks)) {
-    return synthesizeDeveloperChunks(image.size, MAX_CHUNK_BYTES);
-  }
+  const value = developerChunkManifest as { schemaVersion?: number; artifactSha256?: string; artifactSize?: number; chunkSize?: number; chunks?: DeveloperChunk[] };
+  if (!value || value.schemaVersion !== 1 || value.artifactSha256 !== image.sha256 || value.artifactSize !== image.size || value.chunkSize !== MAX_CHUNK_BYTES || !Array.isArray(value.chunks)) return null;
   const count = Math.ceil(image.size / MAX_CHUNK_BYTES);
-  if (value.chunks.length === 0) return synthesizeDeveloperChunks(image.size, MAX_CHUNK_BYTES);
-  if (value.chunks.length !== count) return synthesizeDeveloperChunks(image.size, MAX_CHUNK_BYTES);
-  const valid = value.chunks.every((chunk, index) => chunk && chunk.index === index && chunk.start === index * MAX_CHUNK_BYTES && chunk.end === Math.min(image.size - 1, (index + 1) * MAX_CHUNK_BYTES - 1));
-  if (!valid) return synthesizeDeveloperChunks(image.size, MAX_CHUNK_BYTES);
-  return value.chunks;
+  if (value.chunks.length !== count) return null;
+  const valid = value.chunks.every((chunk, index) =>
+    chunk &&
+    chunk.index === index &&
+    chunk.start === index * MAX_CHUNK_BYTES &&
+    chunk.end === Math.min(image.size - 1, (index + 1) * MAX_CHUNK_BYTES - 1) &&
+    /^[a-f0-9]{64}$/.test(chunk.sha256),
+  );
+  return valid ? value.chunks : null;
 }
 
 function developerChunkManifestReady(): boolean {
-  return getDeveloperChunks().length > 0;
+  return getDeveloperChunks() !== null;
 }
 
 function getFirmware(url: URL): Firmware | null {
@@ -218,6 +211,7 @@ export default {
     if (url.searchParams.get("manifest") === "developer") {
       if (url.searchParams.get("sha256") !== IMAGES.developer.sha256) return errorResponse("Unknown Developer Alpine artifact digest", 400, headers);
       const chunks = getDeveloperChunks();
+      if (!chunks) return errorResponse("Developer Alpine SHA-256 chunk manifest is unavailable", 503, headers);
       const payload = {
         schemaVersion: 1,
         artifactSha256: IMAGES.developer.sha256,
@@ -282,14 +276,13 @@ export default {
     let expectedDeveloperChunkSha: string | null = null;
     if (image.filename === "alpine.iso") {
       const chunks = getDeveloperChunks();
+      if (!chunks) return errorResponse("Developer Alpine SHA-256 chunk manifest is unavailable", 503, headers);
       const expectedChunk = chunks[Math.floor(chunk.start / MAX_CHUNK_BYTES)];
       if (!expectedChunk || expectedChunk.start !== chunk.start || expectedChunk.end !== chunk.end) {
         headers.set("Content-Range", `bytes */${image.size}`);
         return errorResponse("Developer Alpine requests must match a chunk boundary", 416, headers);
       }
-      if (expectedChunk.sha256 && /^[a-f0-9]{64}$/.test(expectedChunk.sha256)) {
-        expectedDeveloperChunkSha = expectedChunk.sha256;
-      }
+      expectedDeveloperChunkSha = expectedChunk.sha256;
     }
 
     const range = `bytes=${chunk.start}-${chunk.end}`;
