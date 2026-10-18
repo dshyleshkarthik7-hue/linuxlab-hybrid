@@ -9,14 +9,17 @@ const inFlightControllers = new Map<string, AbortController>();
 export const TRUSTED_ISO_ORIGIN = runtimeConfig.isoWorkerOrigin;
 const RANGE_FETCH_TIMEOUT_MS = 180_000;
 const RANGE_CHUNK_BYTES = 32 * 1024 * 1024;
+const LINUX4_RANGE_CHUNK_BYTES = 4 * 1024 * 1024;
 const RANGE_CONCURRENCY = 4;
 const TRUSTED_HF_PREFIX = 'https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/';
+const NETLIFY_LINUX4_PATH = '/api/linux4-iso';
 
 export function artifactForIsoUrl(rawUrl: string): PinnedArtifact {
   const url = new URL(rawUrl, window.location.origin);
   const artifacts = [LINUX4_ARTIFACT, ALPINE_ARTIFACT, DEVELOPER_ALPINE_ARTIFACT];
   const direct = artifacts.find((a) => new URL(a.url, window.location.origin).toString() === url.toString());
   if (direct) return direct;
+  if (url.pathname === NETLIFY_LINUX4_PATH || url.pathname === '/api/linux4-iso/') return LINUX4_ARTIFACT;
   if (url.origin === TRUSTED_ISO_ORIGIN && url.pathname === '/') {
     const image = url.searchParams.get('image');
     if (image === 'virt') return ALPINE_ARTIFACT;
@@ -37,22 +40,22 @@ function requestSignal(parent: AbortSignal | undefined, timeoutMs: number): Abor
   return parent ? AbortSignal.any([parent, timeout]) : timeout;
 }
 
+function isChunkedProxy(url: URL): boolean {
+  return url.origin === TRUSTED_ISO_ORIGIN || url.pathname === NETLIFY_LINUX4_PATH;
+}
+
 async function fetchRange(url: string, start: number, end: number, artifact: PinnedArtifact, signal: AbortSignal): Promise<ArrayBuffer> {
   const cached = await readIsoChunkCache(artifact, start, end);
   if (cached) return cached;
   const chunkUrl = new URL(url, window.location.origin);
   chunkUrl.searchParams.set('chunkStart', String(start));
   chunkUrl.searchParams.set('chunkEnd', String(end));
-  const isWorker = chunkUrl.origin === TRUSTED_ISO_ORIGIN;
+  const proxy = isChunkedProxy(chunkUrl);
   const range = `bytes=${start}-${end}`;
   let lastError: unknown;
   for (let attempt = 0; attempt < 3; attempt += 1) {
     try {
-      // The Cloudflare Worker exposes each immutable chunk as a cacheable 200
-      // object. Do not send an HTTP Range to the Worker: Workers Cache would
-      // interpret that Range against the chunk body instead of the full ISO.
-      // Direct fallback origins still receive the real byte range.
-      const headers: HeadersInit = isWorker ? {} : { Range: range };
+      const headers: HeadersInit = proxy ? {} : { Range: range };
       const response = await fetch(chunkUrl, { cache: 'default', headers, signal: requestSignal(signal, RANGE_FETCH_TIMEOUT_MS) });
       const chunkStart = response.headers.get('x-linuxlab-chunk-start');
       const chunkEnd = response.headers.get('x-linuxlab-chunk-end');
@@ -88,6 +91,7 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
 }
 
 async function fetchIsoResumable(url: string, artifact: PinnedArtifact, signal: AbortSignal): Promise<ArrayBuffer> {
+  const chunkBytes = artifact.filename === 'linux4.iso' ? LINUX4_RANGE_CHUNK_BYTES : RANGE_CHUNK_BYTES;
   for (let cacheAttempt = 0; cacheAttempt < 2; cacheAttempt += 1) {
     const bytes = new Uint8Array(artifact.size), hash = new Sha256();
     let nextStart = 0;
@@ -95,7 +99,7 @@ async function fetchIsoResumable(url: string, artifact: PinnedArtifact, signal: 
       if (signal.aborted) throw signal.reason ?? new DOMException('Aborted', 'AbortError');
       const batch: Array<{ start: number; end: number }> = [];
       for (let i = 0; i < RANGE_CONCURRENCY && nextStart < artifact.size; i += 1) {
-        const start = nextStart, end = Math.min(artifact.size - 1, start + RANGE_CHUNK_BYTES - 1);
+        const start = nextStart, end = Math.min(artifact.size - 1, start + chunkBytes - 1);
         batch.push({ start, end }); nextStart = end + 1;
       }
       const chunks = await Promise.all(batch.map(({ start, end }) => fetchRange(url, start, end, artifact, signal)));
@@ -114,6 +118,16 @@ async function fetchIsoResumable(url: string, artifact: PinnedArtifact, signal: 
   throw new Error(`Artifact ${artifact.filename} failed SHA-256 integrity verification`);
 }
 
+function primaryCandidates(artifact: PinnedArtifact, image: string): string[] {
+  if (artifact.filename === 'linux4.iso') {
+    return [
+      new URL(NETLIFY_LINUX4_PATH, window.location.origin).toString(),
+      'https://linuxterminal.me/api/linux4-iso',
+    ];
+  }
+  return [`${TRUSTED_ISO_ORIGIN}/?image=${image}`];
+}
+
 export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Promise<ArrayBuffer> {
   const url = new URL(rawUrl, window.location.origin);
   const artifact = artifactForIsoUrl(url.toString());
@@ -126,10 +140,7 @@ export async function fetchVerifiedIso(rawUrl: string, signal?: AbortSignal): Pr
   const promise = (async () => {
     let lastError: unknown;
     const image = url.searchParams.get('image') || (artifact.filename === 'linux4.iso' ? 'linux4' : artifact.filename === 'alpine.iso' ? 'developer' : 'virt');
-    const primary = `${TRUSTED_ISO_ORIGIN}/?image=${image}`;
-    // The worker performs upstream failover and digest validation. Keep browser
-    // downloads on this single trusted origin rather than bypassing its controls.
-    const candidates = [primary];
+    const candidates = primaryCandidates(artifact, image);
     for (const candidate of candidates) {
       try { return await fetchIsoResumable(candidate, artifact, controller.signal); }
       catch (error) { lastError = error; if (controller.signal.aborted) throw error; }
