@@ -42,13 +42,13 @@
       "sha256": "a8ea434ab3b177c55f01275dcc1d35f52cfbee9bd44a32e74765c975b58bcc73",
       "release": "v3.00",
       "image": "linux4",
-      "url": "https://linuxterminal-iso.dshyleshkarthik7.workers.dev/?image=linux4",
+      "url": "https://linuxterminal.me/api/linux4-iso",
       "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v3.00",
       "fallbackUrls": [
         "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v3.00/linux4.iso",
         "https://huggingface.co/buckets/shyleshkarthikd/alpine-iso-bucket/resolve/linux4.iso?download=true"
       ],
-      "delivery": "Cloudflare Worker -> Hugging Face Bucket -> GitHub Release"
+      "delivery": "Netlify Edge -> GitHub Release / Hugging Face Bucket"
     },
     {
       "version": "v86-firmware-1",
@@ -57,8 +57,12 @@
       "size": 131072,
       "sha256": "73e3f359102e3a9982c35fce98eb7cd08f18303ac7f1ba6ebfbe6cdc1c244d98",
       "release": "v86-firmware-1",
-      "url": "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v86-firmware-1/seabios.bin",
-      "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v86-firmware-1"
+      "url": "https://linuxterminal.me/seabios.bin",
+      "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v86-firmware-1",
+      "fallbackUrls": [
+        "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v86-firmware-1/seabios.bin"
+      ],
+      "delivery": "Netlify static publish (same-origin)"
     },
     {
       "version": "v86-firmware-1",
@@ -67,8 +71,12 @@
       "size": 36352,
       "sha256": "a4bc0d80cc3ca028c73dafa8fee396b8d054ce87ebd8abfbd31b06b437607880",
       "release": "v86-firmware-1",
-      "url": "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v86-firmware-1/vgabios.bin",
-      "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v86-firmware-1"
+      "url": "https://linuxterminal.me/vgabios.bin",
+      "releaseManifestUrl": "https://api.github.com/repos/dshyleshkarthik7-hue/linuxlab-hybrid/releases/tags/v86-firmware-1",
+      "fallbackUrls": [
+        "https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid/releases/download/v86-firmware-1/vgabios.bin"
+      ],
+      "delivery": "Netlify static publish (same-origin)"
     }
   ],
   "provenance": {
