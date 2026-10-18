@@ -9,7 +9,7 @@ const realLinux = await readFile('index-v86.html', 'utf8');
 const developer = await readFile('developer-alpine/index.html', 'utf8');
 
 assert.match(runtime, /attachGuestTelemetry\s*\(\s*vm/);
-assert.match(runtime, /markReadyIfIdentityVerified\s*\(/);
+assert.match(runtime, /this\.acceptGuestIdentity\(identity\)/, "guest readiness must be tied to parsed identity callbacks");
 assert.match(runtime, /autostart:\s*false/);
 assert.match(runtime, /waitForV86Loaded/);
 assert.match(runtime, /wait_until_vga_screen_contains/);
