@@ -1,1 +1,53 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>About LinuxTerminal — Mission, Learning Method & Engineering</title><meta name="description" content="Learn about LinuxTerminal’s mission, practical teaching method, 200-command beginner curriculum, 6,161-entry reference and browser Linux engineering."><meta name="keywords" content="LinuxTerminal,learn Linux,Linux systems,browser Linux,AI Tutor"><meta name="author" content="LinuxTerminal"><meta name="robots" content="index,follow,max-image-preview:large"><link rel="canonical" href="https://linuxterminal.me/about/"><meta property="og:type" content="website"><meta name="twitter:card" content="summary"><meta property="og:title" content="About LinuxTerminal"><meta property="og:description" content="LinuxTerminal is a focused Linux learning platform built around practice, verification and browser-based Linux."><meta property="og:url" content="https://linuxterminal.me/about/"><link rel="stylesheet" href="/about/about.css"><script type="application/ld+json">{"@context":"https://schema.org","@type":"AboutPage","name":"About LinuxTerminal","url":"https://linuxterminal.me/about/","description":"LinuxTerminal is a free Linux learning platform built around clear explanations, observable practice and browser-based learning.","isPartOf":{"@type":"WebSite","name":"LinuxTerminal.me","url":"https://linuxterminal.me/"},"mainEntity":{"@type":"Organization","name":"LinuxTerminal.me","url":"https://linuxterminal.me/","sameAs":["https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid"]}}</script></head><body><main><nav><a class="brand" href="/">>_ LinuxTerminal</a> · <a href="/beginner/">Learn</a> · <a href="/commands/">Commands</a> · <a href="/contact/">Contact</a></nav><section class="hero"><p class="eyebrow">LINUX LEARNING PLATFORM</p><h1>About LinuxTerminal</h1><p>LinuxTerminal is a free learning platform for people who want to understand Linux by doing. It combines a 200-command beginner curriculum, a separate 6,161-entry command reference, practical tutorials, challenge sets, a 500-question practice quiz, contextual tutoring and a browser-based Linux environment.</p><p><strong>Engineering principle: make learning useful, observable and safe by default.</strong></p></section><div class="grid"><section class="card focus"><h2>LinuxTerminal first</h2><p>The platform is designed around practical Linux skills: commands, files, permissions, processes, pipelines, text processing, shell concepts, troubleshooting and system thinking.</p><ul><li>200-command curriculum</li><li>500-question practice quiz</li><li>30 challenge sets mapped to the canonical command catalog</li><li>Interactive browser simulator</li><li>Contextual AI Tutor</li><li>Verified Alpine browser Linux</li></ul></section><section class="card"><h2>How it works</h2><p>The simulator provides immediate, safe practice without requiring installation. The Tutor explains concepts using the learner's current context. Advanced learners can move to the browser Linux environment, where pinned artifacts are verified by exact size and SHA-256 before use.</p></section><section class="card"><h2>Engineering focus</h2><p>LinuxTerminal emphasizes deterministic behavior, integrity verification, clear security boundaries, bounded browser resources and transparent diagnostics. The browser VM is an educational environment, not a host-kernel security sandbox.</p></section><section class="card"><h2>Founder & developer</h2><p>LinuxTerminal is an independent learning project focused on Linux, systems engineering and practical computing education. The source repository documents the implementation and learning assets.</p></section></div><section class="card"><h2>How learning is designed</h2><p>Lessons use a prediction-and-observation loop: read the concept, predict what a command will do, run a small experiment, inspect output and exit status, then explain the result. Reference entries are not claims that every command is available in every browser environment; Linux implementations vary across distributions and toolsets.</p><p>The project is open source. Review the <a href="https://github.com/dshyleshkarthik7-hue/linuxlab-hybrid">source repository</a> to inspect the learning assets and engineering work.</p></section><section class="card"><h2>Stay focused</h2><p>LinuxTerminal is the primary project and product described here. For questions, feedback or collaboration, visit the <a href="/contact/">contact page</a>.</p></section></main></body></html>
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>About LinuxTerminal.me — Browser Linux Learning Lab</title>
+<meta name="description" content="LinuxTerminal.me is a free browser-based Linux learning platform with a command catalogue, structured lessons, quizzes, and temporary Alpine Linux practice sessions.">
+<meta name="robots" content="index,follow">
+<link rel="canonical" href="https://linuxterminal.me/about/">
+<link rel="icon" href="/logo.svg" type="image/svg+xml">
+<link rel="stylesheet" href="/about/about.css">
+</head>
+<body>
+<a class="skip-link" href="#main-content">Skip to content</a>
+<main id="main-content" class="about-wrap">
+<nav aria-label="Primary"><a href="/">>_ LinuxTerminal</a> · <a href="/learn/">Learn</a> · <a href="/commands/">Commands</a> · <a href="/linux-careers/">Careers</a></nav>
+<header>
+  <p class="eyebrow">ABOUT</p>
+  <h1>Learn Linux by doing — in the browser.</h1>
+  <p>LinuxTerminal.me helps beginners and practitioners practice real command-line skills without installing a full desktop distribution first. You get a searchable command reference, structured lessons, quizzes, progress tracking, and optional temporary Alpine Linux sessions powered by a browser emulator.</p>
+</header>
+<section>
+  <h2>What you can do here</h2>
+  <ul>
+    <li><strong>Command catalogue</strong> — explore 6,161 Linux command entries with lessons, examples, and safety notes.</li>
+    <li><strong>Beginner path</strong> — a curated 200-command foundation for everyday filesystem, text, process, and network work.</li>
+    <li><strong>Tutorials & library</strong> — guided topics from navigation to permissions, processes, and shell scripting.</li>
+    <li><strong>Practice environments</strong> — lightweight simulator flows and optional real Alpine Linux profiles (including Developer Alpine with GCC) running in-browser.</li>
+    <li><strong>Progress & certificate path</strong> — track practice locally and complete assessments when you are ready.</li>
+  </ul>
+</section>
+<section>
+  <h2>How the lab works</h2>
+  <p>Interactive Linux profiles use the v86 x86 emulator and xterm.js. Sessions are temporary learning environments: network access for the guest is restricted according to each profile’s policy, and large images are streamed in integrity-checked chunks when the delivery service is available.</p>
+  <p>Command lessons combine curated deep pages for foundational commands with complete lesson shells for the full catalogue. Always confirm behavior on your own systems with <code>command -v</code>, <code>--help</code>, and the local manual — BusyBox, GNU, and distribution packages can differ.</p>
+</section>
+<section>
+  <h2>What this is not</h2>
+  <ul>
+    <li>Not an accredited university degree or professional license.</li>
+    <li>Not a job-placement service — career pages are guidance and public internship links only.</li>
+    <li>Not a multi-tenant production cloud. Treat browser VMs as practice sandboxes.</li>
+  </ul>
+</section>
+<section>
+  <h2>Privacy & contact</h2>
+  <p>Learning progress can be stored locally in your browser. Review the <a href="/privacy/">privacy policy</a> and <a href="/terms/">terms</a>. For feedback or reproducible issues, use the <a href="/contact/">contact page</a>.</p>
+</section>
+<p><a class="cta" href="/beginner/">Start the beginner path →</a> <a class="cta" href="/commands/">Browse commands →</a></p>
+</main>
+<script src="/birthday.js" defer></script>
+</body>
+</html>
