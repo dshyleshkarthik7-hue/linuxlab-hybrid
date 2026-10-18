@@ -1,31 +1,24 @@
 # Security Policy
 
 ## Reporting a vulnerability
-
 Please do not disclose security vulnerabilities in public issues. Report them privately through the repository's GitHub security reporting mechanism when available.
 
 Include the affected URL or file, a concise reproduction, expected versus observed behavior, and any relevant logs. Do not include passwords, API keys, private certificates, or other secrets in a report.
 
 ## Scope
-
 Security-sensitive areas include browser VM isolation, CSP, firmware and ISO integrity, edge functions, certificate issuance, authentication, and persistence.
 
 ## Security principles
-
-- Browser VM execution must remain isolated from the host environment.
+- The browser VM is an educational browser environment, not a host-kernel security boundary or a hostile-code sandbox. Its browser/runtime controls are defense-in-depth only; do not rely on them to isolate hostile workloads from the host.
 - Firmware and ISO artifacts must be verified before use.
 - CSP must not be weakened merely to make a page load.
 - Secrets must remain server-side and must never be committed to the repository.
 
-
 ## Browser VM boundary
-
 The browser VM is an educational execution environment, not a host-kernel security boundary and not a general-purpose hostile-code execution sandbox. The real guest profile keeps guest networking disabled. Do not enable arbitrary guest networking without an independently reviewed isolation design.
 
 ## Data handling
-
 Tutor requests are authenticated and rate-limited. Learner context is treated as untrusted prompt data. Production failures are returned as explicit 5xx responses rather than silently converted into successful fallback responses. Do not log learner prompts or authentication material.
-
 
 ## Credential and client trust
 Certificate verification establishes that a server-signed educational record exists; it does not establish identity, unique authorship, invigilation, absence of collaboration, institutional recognition, or professional accreditation.
