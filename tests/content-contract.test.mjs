@@ -80,7 +80,11 @@ assert.match(cloudflareWorker, /linuxterminal\.me/);
 assert.match(cloudflareWorker, /MAX_CHUNK_BYTES/);
 assert.match(cloudflareWorker, /getFirmware/);
 assert.match(cspGenerator, /Cross-Origin-Embedder-Policy/);
-assert.match(cspGenerator, /const scriptSrc = \[\"'self'\", \"'wasm-unsafe-eval'\"/);
+// CSP is now built per page kind: 'self' always, 'wasm-unsafe-eval' only for VM pages,
+// plus optional inline-script hashes and optional script host.
+assert.match(cspGenerator, /const scriptSrc = \["'self'", \.\.\.\(kind === 'vm' \? \["'wasm-unsafe-eval'"\] : \[\]\)/);
 assert.match(cspGenerator, /Content-Security-Policy:/);
+assert.match(cspGenerator, /kind === 'vm' \? \["'wasm-unsafe-eval'"\]/);
+assert.doesNotMatch(cspGenerator, /script-src[^;]*'unsafe-eval'/, 'CSP must not grant broad unsafe-eval');
 
 console.log('Content contract checks passed');
