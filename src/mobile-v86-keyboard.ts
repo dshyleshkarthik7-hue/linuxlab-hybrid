@@ -1,4 +1,4 @@
-type Shortcut = 'ctrl-o' | 'ctrl-x' | 'ctrl-w' | 'ctrl-k' | 'ctrl-c' | 'ctrl-d' | 'ctrl-l' | 'ctrl-u' | 'ctrl-a' | 'ctrl-e' | 'esc' | 'tab' | 'enter' | 'backspace';
+type Shortcut = 'ctrl-o' | 'ctrl-x' | 'ctrl-w' | 'ctrl-k' | 'ctrl-c' | 'ctrl-d' | 'ctrl-l' | 'ctrl-u' | 'ctrl-a' | 'ctrl-e' | 'ctrl-shift-v' | 'esc' | 'tab' | 'enter' | 'backspace';
 
 declare global {
   interface Window {
@@ -6,7 +6,7 @@ declare global {
   }
 }
 
-const SHORTCUTS: Record<Shortcut, string> = {
+const SHORTCUTS: Partial<Record<Shortcut, string>> = {
   'ctrl-o': '\u000f',
   'ctrl-x': '\u0018',
   'ctrl-w': '\u0017',
@@ -30,8 +30,19 @@ function send(data: string): void {
 function bind(): void {
   document.querySelectorAll<HTMLButtonElement>('[data-v86-key]').forEach((button) => {
     const shortcut = button.dataset.v86Key as Shortcut | undefined;
-    if (!shortcut || !(shortcut in SHORTCUTS)) return;
-    button.addEventListener('click', () => send(SHORTCUTS[shortcut]));
+    if (!shortcut) return;
+    if (shortcut === 'ctrl-shift-v') {
+      button.addEventListener('click', () => {
+        void navigator.clipboard.readText().then((text) => {
+          if (text) send(text);
+        }).catch(() => {
+          /* clipboard permission denied or unavailable */
+        });
+      });
+      return;
+    }
+    if (!(shortcut in SHORTCUTS)) return;
+    button.addEventListener('click', () => { const payload = SHORTCUTS[shortcut]; if (payload) send(payload); });
   });
 }
 
