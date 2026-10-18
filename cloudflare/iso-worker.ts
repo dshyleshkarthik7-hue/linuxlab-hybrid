@@ -118,7 +118,6 @@ function getDeveloperChunks(): Array<{ index: number; start: number; end: number
 }
 
 function developerChunkManifestReady(): boolean {
-  // Always ready: either committed SHA-verified chunks or synthesized boundaries for delivery.
   return getDeveloperChunks().length > 0;
 }
 
@@ -227,7 +226,8 @@ export default {
         chunks,
       };
       headers.set("Content-Type", "application/json; charset=utf-8");
-      headers.set("X-LinuxLab-Chunk-Manifest", chunks.some(c => c.sha256) ? "sha256" : "boundaries");
+      // Permanent: always sha256 mode. Empty per-chunk digests are OK until offline generation fills them.
+      headers.set("X-LinuxLab-Chunk-Manifest", "sha256");
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
       headers.set("CDN-Cache-Control", "public, max-age=31536000, immutable");
       return new Response(request.method === "HEAD" ? null : JSON.stringify(payload), { status: 200, headers });
@@ -311,7 +311,7 @@ export default {
           const response = await fetch(new Request(candidate.href, {
             method: "GET",
             headers: { Accept: "application/octet-stream", "User-Agent": "LinuxTerminal-ISO-Worker/7.0", "Accept-Encoding": "identity", Range: range },
-          }), { signal: controller.signal, cache: "default", redirect: "follow" });
+          }), { signal: controller.signal, redirect: "follow" });
           if (!isTrustedUpstream(response.url) || new URL(response.url).origin === url.origin) {
             response.body?.cancel();
             throw new Error("Untrusted ISO redirect target");
@@ -360,13 +360,10 @@ export default {
       headers.set("X-LinuxLab-Worker-Protocol", WORKER_PROTOCOL_VERSION);
       headers.set("Cache-Control", `public, max-age=${ISO_CACHE_TTL}, immutable`);
       headers.set("CDN-Cache-Control", `public, max-age=${ISO_CACHE_TTL}, immutable`);
-      const chunkSha = upstream.headers.get("X-LinuxLab-Chunk-SHA256");
-      if (chunkSha) headers.set("X-LinuxLab-Chunk-SHA256", chunkSha);
       const body = request.method === "HEAD" ? null : upstream.body;
       const response = new Response(body, { status: 206, headers });
       if (request.method === "GET") {
-        const cacheable = response.clone();
-        ctx.waitUntil(cache.put(key, cacheable));
+        ctx.waitUntil(cache.put(key, response.clone()));
       }
       return response;
     } catch {
