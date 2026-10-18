@@ -19,9 +19,10 @@ assert.match(tutor, /return json\(\{ error: 'Tutor provider is temporarily unava
 assert.match(certificate, /return json\(\{ error: 'AI study feedback is temporarily unavailable\./, 'Certificate feedback provider errors must fail closed');
 assert.match(certificate, /certificate_revocations_certificateId_unique|revocationIndexPromise/, 'Certificate revocation must use durable indexed storage');
 
-assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), false, 'Linux 4 must use the direct Cloudflare Worker rather than a duplicate Netlify relay');
-assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), false, 'firmware must not use a runtime proxy');
-assert.doesNotMatch(config, /v86-firmware/, 'firmware API routes must be removed');
+assert.equal(existsSync('netlify/edge-functions/linux4-iso.ts'), true, 'Linux 4 must be served by Netlify Edge (not Cloudflare Worker)');
+assert.equal(existsSync('netlify/edge-functions/v86-firmware.ts'), false, 'firmware stays as Netlify static /seabios.bin and /vgabios.bin (no runtime proxy)');
+assert.match(config, /linux4-iso/, 'netlify.toml must register the linux4-iso edge function');
+assert.doesNotMatch(config, /v86-firmware/, 'firmware API routes must remain removed; static Netlify assets are used');
 const linux4Entry = await readFile(new URL('../src/main-linux4.ts', import.meta.url), 'utf8');
 const v86Entry = await readFile(new URL('../src/main-v86.ts', import.meta.url), 'utf8');
 const firmwareBuild = await readFile(new URL('../scripts/fetch-v86-firmware.mjs', import.meta.url), 'utf8');
@@ -57,6 +58,14 @@ assert.match(cloudflare, /getFirmware/);
 assert.match(cloudflare, /firmwareKey/);
 assert.match(cloudflare, /__cors_origin/);
 assert.doesNotMatch(cloudflare, /path = .*v86-firmware/);
+
+
+const linux4Edge = await readFile(new URL('../netlify/edge-functions/linux4-iso.ts', import.meta.url), 'utf8');
+assert.match(linux4Edge, /linux4/, 'linux4 edge must reference the pinned artifact');
+assert.match(linux4Edge, /chunkStart/, 'linux4 edge must support chunkStart/chunkEnd');
+assert.match(linux4Edge, /x-linuxlab-delivery/, 'linux4 edge must mark Netlify delivery');
+assert.match(linux4Entry, /const ISO_URL = '\/api\/linux4-iso'/, 'Linux 4 boot must fetch ISO from Netlify Edge');
+assert.doesNotMatch(linux4Entry, /workers\.dev\/\?image=linux4/, 'Linux 4 must not use the Cloudflare Worker primary URL');
 
 console.log('Netlify/Cloudflare delivery contract passed');
 
