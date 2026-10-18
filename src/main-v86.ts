@@ -332,7 +332,8 @@ export class V86LinuxTerminal {
     const chunk = this.serialDecoder.decode(new Uint8Array([value & 255]), { stream: true });
     if (!chunk) return;
     this.lastSerialAt = Date.now();
-    this.serial = (this.serial + chunk).slice(-65536);
+    this.serial += chunk;
+    if (this.serial.length > 65536) this.serial = this.serial.slice(-65536);
     const out = this.enforcer.acceptOutput(chunk);
     if (out.value) this.term.write(out.value);
     if (this.serial.includes(READY_MARKER) || /(?:\r?\n|^)\s*(?:[^\r\n]*[:~\/])?\s*[#$]\s*$/m.test(this.serial)) this.markReady();
@@ -443,10 +444,14 @@ export class V86LinuxTerminal {
     if (this.bootTimeout !== null) { window.clearTimeout(this.bootTimeout); this.bootTimeout = null; }
     if (this.sessionTimer !== null) { window.clearTimeout(this.sessionTimer); this.sessionTimer = null; }
     document.removeEventListener('visibilitychange', this.handleVisibility);
-    this.telemetryDispose?.(); this.telemetryDispose = null;
-    try { this.emulator?.stop?.(); this.emulator?.destroy?.(); } catch {}
+    const disposeTelemetry = this.telemetryDispose;
+    this.telemetryDispose = null;
+    try { disposeTelemetry?.(); } catch {}
+    const emulator = this.emulator;
     this.emulator = null;
-    this.enforcer?.stop();
+    try { emulator?.stop?.(); } catch {}
+    try { emulator?.destroy?.(); } catch {}
+    try { this.enforcer?.stop(); } catch {}
     this.enforcer = null;
   }
 }
