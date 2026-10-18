@@ -23,11 +23,6 @@
   path = "/api/csp-report"
   function = "csp-report"
 
-[[edge_functions]]
-  path = "/api/linux4-iso"
-  function = "linux4-iso"
-  cache = "manual"
-
 [[redirects]]
   from = "/commands"
   to = "/commands-entry.html"
