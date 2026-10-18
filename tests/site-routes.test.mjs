@@ -1,7 +1,20 @@
 import { strict as assert } from 'node:assert';
 import { existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { spawnSync } from 'node:child_process';
 const root = process.cwd();
+// Ensure build-time intelligence exists for Phase 2 route checks.
+if (!existsSync(join(root, '.cache/command-intelligence.json'))) {
+  for (const script of ['scripts/commands/build-database.mjs', 'scripts/commands/build-intelligence.mjs']) {
+    const result = spawnSync(process.execPath, [script], { encoding: 'utf8' });
+    if (result.status !== 0) throw new Error(script + ' failed: ' + (result.stderr || result.stdout || ''));
+  }
+}
+if (!existsSync(join(root, 'public/sitemap.xml'))) {
+  const result = spawnSync(process.execPath, ['scripts/generate-sitemap.mjs'], { encoding: 'utf8' });
+  if (result.status !== 0) throw new Error('generate-sitemap failed: ' + (result.stderr || result.stdout || ''));
+}
+
 const required = ['index.html','404.html','beginner/index.html','learn/index.html','learn/learn.css','learn/learn.js','progress/index.html','progress/progress.css','progress/progress.js','challenges/index.html','challenges/challenges.js','quiz/index.html','certificate/index.html'];
 for (const file of required) assert.ok(existsSync(join(root, file)), `Missing production route asset: ${file}`);
 const html = readFileSync(join(root, 'index.html'), 'utf8');
