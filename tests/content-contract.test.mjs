@@ -55,7 +55,7 @@ assert.match(beginner, /200 Essential Linux Commands/, 'Beginner page must retai
 assert.match(beginner, /\.\.\/commands\//, 'Beginner page must link to the complete catalog separately');
 const commandEntry = await read('commands-entry.html');
 assert.match(commandEntry, /complete 6,161-command reference independently of the beginner curriculum/i, 'Full catalog page must remain distinct from beginner curriculum');
-assert.match(commandEntry, /href=\"\/beginner\/\">Open the 200-command beginner path/, 'Full catalog page should offer a separate beginner path');
+assert.match(commandEntry, /href="\/beginner\/">Open the 200-command beginner path/, 'Full catalog page should offer a separate beginner path');
 const headers = await read('netlify.toml');
 const cspGenerator = await read('scripts/generate-netlify-headers.mjs');
 assert.match(cspGenerator, /Strict-Transport-Security/);
@@ -82,7 +82,7 @@ assert.match(cloudflareWorker, /getFirmware/);
 assert.match(cspGenerator, /Cross-Origin-Embedder-Policy/);
 // CSP is now built per page kind: 'self' always, 'wasm-unsafe-eval' only for VM pages,
 // plus optional inline-script hashes and optional script host.
-assert.match(cspGenerator, /const scriptSrc = \["'self'", \.\.\.\(kind === 'vm' \? \["'wasm-unsafe-eval'"\] : \[\]\)/);
+assert.match(cspGenerator, /const scriptSrc = \["'self'", \.\.\.\(kind === 'vm' \? \["'wasm-unsafe-eval'"\] : \[\]\), \.\.\.inlineScriptHashes\(html\)/);
 assert.match(cspGenerator, /Content-Security-Policy:/);
 assert.match(cspGenerator, /kind === 'vm' \? \["'wasm-unsafe-eval'"\]/);
 assert.doesNotMatch(cspGenerator, /script-src[^;]*'unsafe-eval'/, 'CSP must not grant broad unsafe-eval');
