@@ -26,7 +26,8 @@ const commandDatabase = JSON.parse(readFileSync(join(root, 'data/commands/index.
 assert.equal(commandDatabase.records.length, 200, 'Phase 1 command database must preserve the current 200 command records');
 assert.equal(new Set(commandDatabase.records.map((command) => command.name)).size, 200, 'Command database names must be unique');
 assert.equal(commandDatabase.records.filter((command) => command.intelligence?.status === 'complete').length, 26, 'Phase 2 must cover all 26 dedicated lessons');
-assert.ok(existsSync(join(root, 'public/command-intelligence.json')), 'Phase 2 intelligence index missing');
+// Intelligence is build-time only and lives outside the public web root.
+assert.ok(existsSync(join(root, '.cache/command-intelligence.json')), 'Phase 2 intelligence index missing (.cache)');
 assert.ok(existsSync(join(root, 'public/command-intelligence.js')), 'Phase 2 intelligence renderer missing');
 assert.ok(existsSync(join(root, 'public/command-intelligence.css')), 'Phase 2 intelligence stylesheet missing');
 assert.ok(existsSync(join(root, 'public/commands/custom/index.html')), 'Phase 3 custom command guide missing');
