@@ -95,7 +95,31 @@ async function runSmoke() {
     };
     await page.route('**/seabios.bin', serveFirmware);
     await page.route('**/vgabios.bin', serveFirmware);
-    await page.route('**/?image=linux4&**', async route => { await route.fulfill({ status: 200, headers: { 'content-range': 'bytes 0-0/7731200', 'accept-ranges': 'bytes', 'content-length': '1', 'content-type': 'application/octet-stream', 'access-control-allow-origin': '*' }, body: Buffer.from([0]) }); });
+    const fulfillLinux4Fixture = async (route) => {
+      const url = new URL(route.request().url());
+      const start = Number(url.searchParams.get('chunkStart') || '0');
+      const endRaw = url.searchParams.get('chunkEnd');
+      const end = endRaw === null ? start : Number(endRaw);
+      const total = 7731200;
+      const length = Math.max(0, end - start + 1);
+      await route.fulfill({
+        status: 206,
+        headers: {
+          'content-range': `bytes ${start}-${end}/${total}`,
+          'accept-ranges': 'bytes',
+          'content-length': String(length),
+          'content-type': 'application/octet-stream',
+          'x-linuxlab-sha256': 'a8ea434ab3b177c55f01275dcc1d35f52cfbee9bd44a32e74765c975b58bcc73',
+          'x-linuxlab-chunk-start': String(start),
+          'x-linuxlab-chunk-end': String(end),
+          'x-linuxlab-chunk-total': String(total),
+          'access-control-allow-origin': '*',
+        },
+        body: Buffer.alloc(length, 0),
+      });
+    };
+    await page.route('**/api/linux4-iso**', fulfillLinux4Fixture);
+    await page.route('**/?image=linux4**', fulfillLinux4Fixture);
     await stage(page, 'page-load', async () => { const response = await page.goto(baseURL.replace(/\/$/,'') + '/index-v86.html', { waitUntil:'domcontentloaded' }); if (!response || !response.ok()) throw new Error('Unable to load V86 page'); });
     const required=['#v86-health','#v86-status','#v86-monitor','#v86-terminal-container','#screen_container'];
     await stage(page, 'required-controls', async () => { for (const selector of required) await page.waitForSelector(selector,{state:'attached'}); });
