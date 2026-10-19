@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /**
- * Render lesson videos from the structured curriculum using the existing,
+ * Render lesson videos from the structured curriculum (520 lessons) using the existing,
  * shell-free FFmpeg renderer. This is an offline build tool; it does not run
  * tutorial commands and never fabricates terminal output.
  *
