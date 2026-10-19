@@ -189,7 +189,7 @@ export class V86LinuxTerminal {
             ? "Developer Alpine SHA-256 chunk manifest confirmed; Worker verifies each requested chunk before delivery"
             : "Developer Alpine boundary chunk manifest confirmed; Worker serves fixed 32 MiB ranges for the pinned artifact");
         } catch {
-          throw new Error("Developer Alpine chunk integrity manifest is unavailable. Retry after the image service recovers.");
+          throw new Error("Developer Alpine is temporarily unavailable because its image-integrity manifest could not be verified. Try Quick Linux at /real-linux/ while the image service is recovered.");
         }
       }
       let verifiedIsoBytes: ArrayBuffer | null = null;

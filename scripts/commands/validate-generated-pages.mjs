@@ -42,7 +42,7 @@ for (const command of records.records) {
   const robots = (robotsTag.match(/\bcontent\s*=\s*["']([^"']*)["']/i)?.[1] || "")
     .toLowerCase()
     .replace(/\s+/g, "");
-  const shouldIndex = command.page?.status === "complete" || command.intelligence?.status === "complete" || intelligence.records?.[command.name]?.status === "complete" || Boolean(String(command.summary || "").trim() && String(command.example || "").trim());
+  const shouldIndex = command.page?.status === "complete" && typeof command.page?.source === "string";
   if (shouldIndex && !robots.startsWith("index,")) throw new Error(`indexable command lacks index directive: ${command.url}`);
   if (!shouldIndex && !robots.startsWith("noindex")) throw new Error(`thin command must be noindex: ${command.url}`);
   if (shouldIndex) indexableUrls.add(command.url);

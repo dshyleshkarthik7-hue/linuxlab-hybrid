@@ -1,0 +1,2 @@
+# LinuxTerminal ads.txt is intentionally not authorized for advertising yet.
+# Replace this file with the exact seller record supplied by the verified AdSense account before enabling ads.
