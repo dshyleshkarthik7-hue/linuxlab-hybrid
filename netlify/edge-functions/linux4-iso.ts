@@ -72,14 +72,27 @@ function error(message: string, status: number, extra?: HeadersInit): Response {
       'cache-control': 'no-store',
       'content-type': 'text/plain; charset=utf-8',
       'x-content-type-options': 'nosniff',
+      'access-control-allow-origin': '*',
+      'access-control-expose-headers': 'content-range, content-length, accept-ranges, x-linuxlab-sha256, x-linuxlab-chunk-start, x-linuxlab-chunk-end, x-linuxlab-chunk-total, x-linuxlab-artifact-size, x-linuxlab-delivery',
       ...(extra || {}),
     },
   });
 }
 
 export default async (request: Request): Promise<Response> => {
+  if (request.method === 'OPTIONS') {
+    return new Response(null, {
+      status: 204,
+      headers: {
+        'access-control-allow-origin': '*',
+        'access-control-allow-methods': 'GET, HEAD, OPTIONS',
+        'access-control-allow-headers': 'range, content-type, accept, accept-encoding',
+        'access-control-max-age': '86400',
+      },
+    });
+  }
   if (request.method !== 'GET' && request.method !== 'HEAD') {
-    return error('Method Not Allowed', 405, { allow: 'GET, HEAD' });
+    return error('Method Not Allowed', 405, { allow: 'GET, HEAD, OPTIONS' });
   }
 
   let range: { start: number; end: number } | null;
@@ -164,6 +177,8 @@ export default async (request: Request): Promise<Response> => {
       'x-linuxlab-delivery': 'netlify-edge',
       'cache-control': 'public, max-age=86400, stale-while-revalidate=604800',
       'x-content-type-options': 'nosniff',
+      'access-control-allow-origin': '*',
+      'access-control-expose-headers': 'content-range, content-length, accept-ranges, x-linuxlab-sha256, x-linuxlab-chunk-start, x-linuxlab-chunk-end, x-linuxlab-chunk-total, x-linuxlab-artifact-size, x-linuxlab-delivery',
     });
 
     return new Response(request.method === 'HEAD' ? null : upstream.body, { status: 206, headers });
