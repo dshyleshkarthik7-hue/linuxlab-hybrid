@@ -29,7 +29,7 @@ const firmwareBuild = await readFile(new URL('../scripts/fetch-v86-firmware.mjs'
 const headersBuild = await readFile(new URL('../scripts/generate-netlify-headers.mjs', import.meta.url), 'utf8');
 assert.match(linux4Entry, /bios: \{ url: '\/seabios\.bin' \}/);
 assert.match(linux4Entry, /vga_bios: \{ url: '\/vgabios\.bin' \}/);
-assert.ok(v86Entry.includes('fetch(`/${artifact.filename}`'), 'v86 must load firmware from root-level static assets');
+assert.ok(v86Entry.includes("fetch('/seabios.bin'") && v86Entry.includes("fetch('/vgabios.bin'"), 'v86 must load firmware from root-level static assets');
 assert.match(firmwareBuild, /createHash\('sha256'\)/);
 assert.match(headersBuild, /max-age=31536000, immutable/);
 
