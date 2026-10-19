@@ -70,7 +70,14 @@ const htmlCache = 'CDN-Cache-Control: public, max-age=3600, stale-while-revalida
 const assetCache = 'CDN-Cache-Control: public, max-age=86400, stale-while-revalidate=604800';
 const indent = (block) => block.split('\n').map((line) => '  ' + line).join('\n');
 const htmlEntries = await listHtmlFiles();
-const htmlCacheMap = new Map(await Promise.all(htmlEntries.map(async ({ absolute }) => [absolute, await readFile(absolute, 'utf8')])));
+const htmlCacheMap = new Map();
+// Batch reads to avoid EMFILE on large command-page trees (6000+ HTML files).
+const READ_BATCH = 64;
+for (let i = 0; i < htmlEntries.length; i += READ_BATCH) {
+  const batch = htmlEntries.slice(i, i + READ_BATCH);
+  const pairs = await Promise.all(batch.map(async ({ absolute }) => [absolute, await readFile(absolute, 'utf8')]));
+  for (const [absolute, html] of pairs) htmlCacheMap.set(absolute, html);
+}
 const headers = [
   '/*',
   indent(security + '\nReporting-Endpoints: csp-endpoint="/api/csp-report"'),
