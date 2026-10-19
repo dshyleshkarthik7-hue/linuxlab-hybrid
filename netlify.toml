@@ -46,14 +46,6 @@
   to = "/learn/index.html"
   status = 200
 [[redirects]]
-  from = "/tutorials"
-  to = "/learn/index.html"
-  status = 200
-[[redirects]]
-  from = "/tutorials/"
-  to = "/learn/index.html"
-  status = 200
-[[redirects]]
   from = "/progress"
   to = "/progress/index.html"
   status = 200
