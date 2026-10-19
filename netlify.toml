@@ -196,3 +196,10 @@
   from = "/commands/tail/"
   to = "/commands/tail.html"
   status = 301
+
+# Static headers are generated at build time by scripts/generate-netlify-headers.mjs
+# into dist/_headers. Do not duplicate long CSP strings here — they blow past
+# Netlify's per-line header limits when inlined in this file.
+
+# Netlify Edge caches revalidating mutable root filenames while allowing Netlify's edge cache
+# to honor Cache-Control from the origin responses for ISO and firmware assets.
