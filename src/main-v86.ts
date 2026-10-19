@@ -441,8 +441,9 @@ export class V86LinuxTerminal {
     document.removeEventListener('visibilitychange', this.handleVisibility);
     window.removeEventListener('resize', this.handleResize);
     window.removeEventListener('orientationchange', this.handleOrientationChange);
-    this.telemetryDispose?.();
+    const disposeTelemetry = this.telemetryDispose;
     this.telemetryDispose = null;
+    try { disposeTelemetry?.(); } catch {}
     const emulator = this.emulator;
     this.emulator = null;
     try { emulator?.stop?.(); } catch {}
