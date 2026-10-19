@@ -1,11 +1,11 @@
 # AdSense readiness checklist
 
-Advertising is **disabled until every gate below is verified**. The repository cannot infer or invent a publisher ID. \`public/ads.txt\` is a reminder placeholder, not a valid publisher authorization record; do not apply for production ads with it in place.
+Publisher ID supplied by the site owner: \`pub-3209988960226055\`. The \`public/ads.txt\` file now publishes the corresponding Google seller record. This does **not** prove Google has crawled or accepted the file, approved the site, or authorize loading ads before consent/privacy and placement checks are complete.
 
 ## Required before enabling ads
 
 - [ ] Verify ownership of \`linuxterminal.me\` in the intended Google AdSense account.
-- [ ] Replace \`public/ads.txt\` with the exact \`google.com, pub-…\` seller line and relationship supplied by that account. Verify \`https://linuxterminal.me/ads.txt\` returns HTTP 200 and \`text/plain\`.
+- [ ] Verify \`https://linuxterminal.me/ads.txt\` returns HTTP 200 and \`text/plain\`, and that the published seller record matches the AdSense account.
 - [ ] Publish a privacy policy that explains Google advertising, cookies, identifiers, personalization and consent choices.
 - [ ] Publish accurate terms and a working contact route.
 - [ ] For EEA/UK/Swiss traffic where required, configure a Google-certified consent management platform before loading non-essential advertising.
@@ -17,4 +17,4 @@ Advertising is **disabled until every gate below is verified**. The repository c
 
 ## Operational policy
 
-Never commit a fake publisher ID, load AdSense by default, or claim approval before Google has approved the site. Keep the feature flag off until the production ads.txt response, consent handling, privacy disclosure, CSP, placement policy, and content quality have all been reviewed.
+Never load AdSense by default or claim approval before Google has approved the site. Keep the feature flag off until the production ads.txt response, consent handling, privacy disclosure, CSP, placement policy, and content quality have all been reviewed.
