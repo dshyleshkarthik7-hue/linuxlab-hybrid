@@ -58,7 +58,7 @@ jobs:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
         run: npx --yes wrangler@4.69.0 deploy --config cloudflare/wrangler.jsonc
 
-      - name: Verify deployed ISO worker
+      - name: Verify Cloudflare worker health
         run: |
           set -euo pipefail
           response_file="$(mktemp)"
