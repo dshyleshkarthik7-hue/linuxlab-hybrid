@@ -51,22 +51,28 @@ function testIsoProxy() {
           res.end(`ISO proxy failed: ${error instanceof Error ? error.message : String(error)}`);
         }
       });
-    }
+    },
   };
 }
 
 export default defineConfig({
-  plugins: [testIsoProxy(), copyVerifiedV86Firmware()],
-  base: '/',
-  server: { port: 3000, headers: { 'Cross-Origin-Opener-Policy': 'same-origin' } },
-  preview: { port: 3000, headers: { 'Cross-Origin-Opener-Policy': 'same-origin' } },
-  optimizeDeps: { include: ['@xterm/xterm', '@xterm/addon-fit', 'monaco-editor'] },
+  publicDir: 'public',
+  plugins: [copyVerifiedV86Firmware(), testIsoProxy()],
+  server: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+    },
+  },
+  preview: {
+    headers: {
+      'Cross-Origin-Opener-Policy': 'same-origin',
+      'Cross-Origin-Embedder-Policy': 'credentialless',
+    },
+  },
   build: {
-    outDir: 'dist',
     target: 'es2022',
-    cssMinify: 'esbuild',
-    chunkSizeWarningLimit: 500,
-    modulePreload: { resolveDependencies(filename, deps) { if (filename.includes('simulator')) return deps.filter(dep => !/(^|\/)monaco(?:-[^/]+)?\.js(?:\?.*)?$/.test(dep)); return deps; } },
+    sourcemap: true,
     rollupOptions: {
       input: {
         main: entry('index.html'), beginner: entry('beginner/index.html'), intermediate: entry('intermediate/index.html'), expert: entry('expert/index.html'),
@@ -77,7 +83,7 @@ export default defineConfig({
         privacy: entry('privacy/index.html'), terms: entry('terms/index.html'), faq: entry('faq/index.html'), learnLibrary: entry('learn/library/index.html'),
         learn: entry('learn/index.html'), learnLinuxBasics: entry('learn/linux-basics/index.html'), learnTerminalNavigation: entry('learn/terminal-navigation/index.html'),
         learnFiles: entry('learn/files-and-directories/index.html'), learnText: entry('learn/text-processing/index.html'), learnPermissions: entry('learn/permissions/index.html'),
-        learnProcesses: entry('learn/processes/index.html'), learnShell: entry('learn/shell-scripting/index.html'), learnOperatingSystems: entry('learn/operating-systems/index.html'), learnNetworkingBasics: entry('learn/networking-basics/index.html')
+        learnProcesses: entry('learn/processes/index.html'), learnShell: entry('learn/shell-scripting/index.html'), learnOperatingSystems: entry('learn/operating-systems/index.html'), learnNetworkingBasics: entry('learn/networking-basics/index.html'), tutorials: entry('tutorials/index.html'), tutorialsLs: entry('tutorials/linux-ls-command/index.html'), tutorialsGrep: entry('tutorials/grep-examples/index.html')
       },
       output: {
         manualChunks(id) { if (id.includes('monaco-editor')) return 'monaco'; if (id.includes('@xterm')) return 'xterm'; }
