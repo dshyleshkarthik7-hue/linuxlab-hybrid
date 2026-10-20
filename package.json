@@ -88,7 +88,9 @@
     "test:precommit": "npm run test:coverage && npm run build && (node -e \"require.resolve('axe-core')\" >/dev/null 2>&1 || npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund axe-core@4.10.3) && npm run test:accessibility:axe",
     "test:vm-pagehide": "node tests/vm-pagehide-lifecycle.test.mjs",
     "test:release-quality-gates": "node tests/release-quality-gates.test.mjs",
-    "test:lesson-evidence": "node scripts/commands/audit-evidence-pipeline.mjs"
+    "test:lesson-evidence": "node scripts/commands/audit-evidence-pipeline.mjs",
+    "manifest:developer-chunks": "node scripts/generate-developer-chunk-manifest.mjs",
+    "audit:command-evidence": "node scripts/commands/audit-evidence-pipeline.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
