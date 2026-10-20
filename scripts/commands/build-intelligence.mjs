@@ -28,7 +28,8 @@ for(const r of canonical.records){
   const summary=String(r.summary||"").trim()&&!/^Catalog entry/i.test(String(r.summary||""))?String(r.summary).trim():("Practice "+r.name+" safely on Linux.");
   const example=String(r.example||"").trim()&&String(r.example).trim()!==r.name?String(r.example).trim():(r.name+" --help");
   records[r.name]={
-    id:r.id,name:r.name,url:r.url,status:"complete",version:2,
+    id:r.id,name:r.name,url:r.url,status:"draft",version:3,
+    verification:{syntax_verified:false,examples_verified:false,busybox_tested:false,human_reviewed:false,provenance_verified:false,quality_score:null},
     tagline:"Learn "+r.name+" as a complete Linux lesson.",
     definition:r.name+" is a Linux utility in the "+f.replace(/-/g," ")+" family. "+summary,
     explanation:"Use "+r.name+" when you need "+concepts.slice(0,3).join(", ")+" behavior. Confirm the installed implementation with command -v "+r.name+" because BusyBox, GNU, and distribution packages can differ.",
@@ -45,5 +46,5 @@ for(const r of canonical.records){
 const out={schemaVersion:2,generatedFrom:"data/commands/canonical.json",records};
 await mkdir(path.join(root,".cache"),{recursive:true});
 await writeFile(path.join(root,".cache/command-intelligence.json"),JSON.stringify(out,null,2)+"\n");
-const completeCount=Object.values(records).filter(r=>r.status==="complete").length;
-console.log("[command-intelligence] generated "+Object.keys(records).length+" build-time lesson records outside the public web root ("+completeCount+" complete)");
+const draftCount=Object.values(records).filter(r=>r.status==="draft").length;
+console.log("[command-intelligence] generated "+Object.keys(records).length+" build-time lesson drafts outside the public web root ("+draftCount+" pending evidence-based validation; 0 self-certified complete)");
