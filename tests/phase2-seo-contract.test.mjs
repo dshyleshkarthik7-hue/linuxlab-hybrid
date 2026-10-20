@@ -15,6 +15,8 @@ const robots = await read('../public/robots.txt');
 assert.match(homepage, /"@type":"Course"/, 'homepage must describe the learning course');
 assert.match(homepage, /"@type":"FAQPage"/, 'homepage must expose concise, visible-product FAQ structured data');
 assert.match(homepage, /id="linux-learning-faq"/, 'FAQ content described by structured data must also be visible to visitors');
+assert.match(homepage, /class="home-skip-link" href="#main-content">Skip to main content/, 'homepage must expose a static keyboard skip link');
+assert.match(homepage, /<main id="main-content">/, 'homepage skip link must target the main landmark');
 for (const question of ['Can I learn Linux online for free?', 'Is the command reference the same as the beginner curriculum?', 'Is the verified assessment an accredited professional certification?']) assert.ok(homepage.includes(question), `visible FAQ missing: ${question}`);
 assert.match(homepage, /200-command beginner curriculum/, 'homepage must distinguish beginner curriculum from full reference');
 assert.match(homepage, /6,161-entry command reference/, 'homepage must describe the full catalog without conflating it with beginner lessons');

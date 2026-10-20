@@ -21,7 +21,7 @@ const intelligenceBuilder = await readFile("scripts/commands/build-intelligence.
 const databaseBuilder = await readFile("scripts/commands/build-database.mjs", "utf8");
 assert.match(databaseBuilder, /Linux command /);
 assert.match(databaseBuilder, /--help/);
-assert.match(intelligenceBuilder, /status:\s*"complete"/, "full catalogue lessons must be generated as complete intelligence records");
+assert.match(intelligenceBuilder, /status:\s*\(r\.page\?\.status === "complete".*\? "complete" : "draft"/, "only authored pages may be marked complete; generated records stay drafts");
 assert.match(intelligenceBuilder, /definition:/, "each generated lesson must include a definition");
 assert.match(intelligenceBuilder, /examples:/, "each generated lesson must include practice examples");
 assert.match(intelligenceBuilder, /\.cache\/command-intelligence\.json/, "large generated intelligence must stay outside the public web root");
@@ -30,6 +30,7 @@ assert.doesNotMatch(intelligenceBuilder, /public\/command-intelligence\.json/, "
 assert.match(builder, /commands\.css\?v=20261016/, "generated pages must bust stale stylesheet caches");
 assert.doesNotMatch(builder, /Shell builtin:/, "generic pages must not claim arbitrary inventory entries are shell builtins");
 assert.doesNotMatch(builder, /\$ echo \$\?/, "generator must not invent generic exit-status output");
+assert.match(builder, /command\.page\?\.status === "complete" && command\.page\?\.source/, "indexable command lessons must have a reviewed authored page");
 
 const incomplete = records.records.filter(
   (command) => command.page?.status !== "complete" && command.intelligence?.status !== "complete"

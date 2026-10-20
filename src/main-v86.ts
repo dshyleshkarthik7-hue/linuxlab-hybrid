@@ -189,7 +189,7 @@ export class V86LinuxTerminal {
             ? "Developer Alpine SHA-256 chunk manifest confirmed; Worker verifies each requested chunk before delivery"
             : "Developer Alpine boundary chunk manifest confirmed; Worker serves fixed 32 MiB ranges for the pinned artifact");
         } catch {
-          throw new Error("Developer Alpine chunk integrity manifest is unavailable. Retry after the image service recovers.");
+          throw new Error("Developer Alpine is temporarily unavailable because its image-integrity manifest could not be verified. Try Quick Linux at /real-linux/ while the image service is recovered.");
         }
       }
       let verifiedIsoBytes: ArrayBuffer | null = null;
@@ -386,10 +386,14 @@ export class V86LinuxTerminal {
 
   private setIntegrityState(state: 'verified' | 'unverified'): void {
     this.integrityState = state;
+    document.getElementById('v86-health')?.setAttribute('data-integrity', state);
   }
 
-  private setNetworkState(state: string): void {
-    void state;
+  private setNetworkState(state: 'disabled' | 'enabled' | 'unknown'): void {
+    // Reflect the enforced runtime policy in the accessible health/status element.
+    // This is observable state for diagnostics and regression tests, not the control
+    // that disables networking; v86 receives net_device: { type: 'none' } below.
+    document.getElementById('v86-health')?.setAttribute('data-network', state);
   }
 
   private fail(message: string, error?: Error): void {
