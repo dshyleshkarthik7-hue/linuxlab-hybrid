@@ -386,10 +386,14 @@ export class V86LinuxTerminal {
 
   private setIntegrityState(state: 'verified' | 'unverified'): void {
     this.integrityState = state;
+    document.getElementById('v86-health')?.setAttribute('data-integrity', state);
   }
 
-  private setNetworkState(state: string): void {
-    void state;
+  private setNetworkState(state: 'disabled' | 'enabled' | 'unknown'): void {
+    // Reflect the enforced runtime policy in the accessible health/status element.
+    // This is observable state for diagnostics and regression tests, not the control
+    // that disables networking; v86 receives net_device: { type: 'none' } below.
+    document.getElementById('v86-health')?.setAttribute('data-network', state);
   }
 
   private fail(message: string, error?: Error): void {
