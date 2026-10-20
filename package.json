@@ -39,7 +39,7 @@
     "test:real-guest-firmware-proxy": "node tests/real-guest-firmware-proxy.test.mjs",
     "test:coverage": "node tests/coverage-threshold.mjs",
     "test:security": "npm audit --audit-level=high",
-    "test:ci": "npm run typecheck:server && npm run typecheck:functions && npm run test:config && npm run test:shared-nav && npm run test:progress-snapshot && npm run test:production-preflight-contract && npm run test:certificate-question-quality && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy",
+    "test:ci": "npm run typecheck:server && npm run typecheck:functions && npm run test:config && npm run test:shared-nav && npm run test:progress-snapshot && npm run test:production-preflight-contract && npm run test:certificate-question-quality && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy && npm run test:lesson-evidence",
     "lint": "tsc --noEmit && node tests/security-static.test.mjs",
     "build:iso": "node scripts/check-lfs-assets.mjs --iso && node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
@@ -87,7 +87,8 @@
     "prepare": "node scripts/install-git-hooks.mjs",
     "test:precommit": "npm run test:coverage && npm run build && (node -e \"require.resolve('axe-core')\" >/dev/null 2>&1 || npm install --no-save --package-lock=false --ignore-scripts --no-audit --no-fund axe-core@4.10.3) && npm run test:accessibility:axe",
     "test:vm-pagehide": "node tests/vm-pagehide-lifecycle.test.mjs",
-    "test:release-quality-gates": "node tests/release-quality-gates.test.mjs"
+    "test:release-quality-gates": "node tests/release-quality-gates.test.mjs",
+    "test:lesson-evidence": "node scripts/commands/audit-evidence-pipeline.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
