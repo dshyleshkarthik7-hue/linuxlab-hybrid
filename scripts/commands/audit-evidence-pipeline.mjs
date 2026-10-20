@@ -74,7 +74,7 @@ for (const command of canonical.records) {
   if (!Array.isArray(lesson.sources) || !lesson.sources.every((source) =>
     source && typeof source.url === "string" && /^https:\/\//.test(source.url)
     && typeof source.title === "string" && source.title.trim()
-    && typeof source.accessedAt === "string" && /^\\d{4}-\\d{2}-\\d{2}$/.test(source.accessedAt))) {
+    && typeof source.accessedAt === "string" && /^\d{4}-\d{2}-\d{2}$/.test(source.accessedAt))) {
     missing.push("sources (each needs https URL, title, and YYYY-MM-DD accessedAt)");
   }
   if (!Array.isArray(lesson.examples) || !lesson.examples.every((example) =>
