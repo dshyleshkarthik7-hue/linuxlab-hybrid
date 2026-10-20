@@ -145,7 +145,7 @@ jobs:
           CERTIFICATE_SIGNING_KEY_ID: ${{ secrets.CERTIFICATE_SIGNING_KEY_ID }}
           CERTIFICATE_ALLOWED_ORIGINS: ${{ secrets.CERTIFICATE_ALLOWED_ORIGINS }}
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_MODEL: ${{ secrets.HF_MODEL }}
+          HF_MODEL: ${{ vars.HF_MODEL }}
         run: npm run release:preflight
       - name: Production smoke (explicitly approved release gate)
         if: github.event_name == 'workflow_dispatch' && inputs.run_production_smoke == true
