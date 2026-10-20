@@ -23,8 +23,8 @@ if (thin) {
 const builder = await readFile("scripts/commands/build-command-pages.mjs", "utf8");
 const intelligenceBuilder = await readFile("scripts/commands/build-intelligence.mjs", "utf8");
 const databaseBuilder = await readFile("scripts/commands/build-database.mjs", "utf8");
-assert.match(databaseBuilder, /Linux command /);
-assert.match(databaseBuilder, /--help/);
+assert.match(databaseBuilder, /r\.summary\s*=\s*[\x27\x22]{2}/, "unverified catalogue summaries must be cleared instead of replaced with generic claims");
+assert.match(databaseBuilder, /r\.example\s*=\s*[\x27\x22]{2}/, "unsupported catalogue examples must be cleared instead of fabricated");
 assert.match(intelligenceBuilder, /status:\s*"draft"/, "generated lessons must remain drafts until evidence-based verification");
 assert.match(intelligenceBuilder, /syntax_verified:false,examples_verified:false,busybox_tested:false,human_reviewed:false,provenance_verified:false/, "verification flags must default to false rather than be self-certified");
 assert.match(intelligenceBuilder, /definition:/, "each generated lesson must include a definition");
