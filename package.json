@@ -90,7 +90,8 @@
     "test:release-quality-gates": "node tests/release-quality-gates.test.mjs",
     "test:lesson-evidence": "node scripts/commands/audit-evidence-pipeline.mjs",
     "manifest:developer-chunks": "node scripts/generate-developer-chunk-manifest.mjs",
-    "audit:command-evidence": "node scripts/commands/audit-evidence-pipeline.mjs"
+    "audit:command-evidence": "node scripts/commands/audit-evidence-pipeline.mjs",
+    "audit:curriculum": "node scripts/audit-curriculum.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
