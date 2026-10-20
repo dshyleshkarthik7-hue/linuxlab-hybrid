@@ -3,7 +3,8 @@ import { readFile } from 'node:fs/promises';
 
 const script = await readFile(new URL('../scripts/production-preflight.mjs', import.meta.url), 'utf8');
 const pkg = JSON.parse(await readFile(new URL('../package.json', import.meta.url), 'utf8'));
-assert.ok(script.includes("ROUTER_QWEN_MODEL = 'Qwen/Qwen3-8B'"), 'Production preflight must pin the Hugging Face router model ID');
+assert.match(script, /ROUTER_QWEN_MODEL = process\.env\.HF_MODEL\?\.trim\(\) \|\| 'Qwen\/Qwen3-8B'/, 'Production preflight must default to the pinned Hugging Face router model while allowing the validated environment override');
+assert.match(script, /Qwen\\\/Qwen3-8B:\[a-z0-9_-\]\+\$/, 'Production preflight must validate an optional Hugging Face provider suffix');
 assert.match(script, /router\.huggingface\.co\/v1\/chat\/completions/);
 assert.match(script, /certificates_expiresAt_ttl/);
 assert.match(script, /certificate_revocations_certificateId_unique/);
