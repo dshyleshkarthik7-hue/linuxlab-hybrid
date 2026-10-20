@@ -42,7 +42,14 @@ for (const command of records.records) {
   const robots = (robotsTag.match(/\bcontent\s*=\s*["']([^"']*)["']/i)?.[1] || "")
     .toLowerCase()
     .replace(/\s+/g, "");
-  const shouldIndex = command.page?.status === "complete" || command.intelligence?.status === "complete" || intelligence.records?.[command.name]?.status === "complete" || Boolean(String(command.summary || "").trim() && String(command.example || "").trim());
+  const lesson = intelligence.records?.[command.name] || command.intelligence || {};
+  const shouldIndex = (command.page?.status === "complete" && Boolean(command.page?.source)) || Boolean(
+    (command.intelligence?.status === "complete" || intelligence.records?.[command.name]?.status === "complete")
+    && String(lesson.definition || lesson.explanation || "").trim()
+    && String(lesson.syntax || "").trim()
+    && Array.isArray(lesson.examples) && lesson.examples.some((example) => typeof example === "string" && example.trim())
+    && Array.isArray(lesson.internals) && lesson.internals.length > 0
+  );
   if (shouldIndex && !robots.startsWith("index,")) throw new Error(`indexable command lacks index directive: ${command.url}`);
   if (!shouldIndex && !robots.startsWith("noindex")) throw new Error(`thin command must be noindex: ${command.url}`);
   if (shouldIndex) indexableUrls.add(command.url);
