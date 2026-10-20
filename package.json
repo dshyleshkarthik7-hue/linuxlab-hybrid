@@ -92,7 +92,8 @@
     "manifest:developer-chunks": "node scripts/generate-developer-chunk-manifest.mjs",
     "audit:command-evidence": "node scripts/commands/audit-evidence-pipeline.mjs",
     "audit:curriculum": "node scripts/audit-curriculum.mjs",
-    "author:qwen-lessons": "node scripts/commands/author-qwen-lessons.mjs"
+    "author:qwen-lessons": "node scripts/commands/author-qwen-lessons.mjs",
+    "author:qwen-tutorials": "node scripts/author-qwen-tutorials.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
