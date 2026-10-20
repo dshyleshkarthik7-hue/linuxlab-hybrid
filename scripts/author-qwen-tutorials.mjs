@@ -16,7 +16,11 @@ const model = process.env.HF_MODEL || "Qwen/Qwen3-8B";
 const arg = (name, fallback) => {
   const eq = process.argv.find((value) => value.startsWith(name + "="));
   const next = process.argv.indexOf(name);
-  return Number(eq ? eq.slice(name.length + 1) : next >= 0 ? process.argv[next + 1] : fallback);
+  const raw = eq ? eq.slice(name.length + 1) : next >= 0 ? process.argv[next + 1] : undefined;
+  if (raw === undefined) return fallback;
+  const parsed = Number(raw);
+  if (!Number.isSafeInteger(parsed)) throw new Error(name + " must be a safe integer.");
+  return parsed;
 };
 const start = Math.max(0, arg("--start", 0));
 const count = Math.max(1, Math.min(10, arg("--count", 5)));
