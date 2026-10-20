@@ -49,10 +49,11 @@ for (const command of data.records) {
       // with the current indexability contract in the command database.
       const existing = await readFile(outputPath, "utf8");
       const robotsMeta = `<meta name="robots" content="${indexable ? "index,follow,max-image-preview:large" : "noindex,follow"}">`;
+      const cssVersioned = existing.replace(/commands\\.css(?:\\?v=\\d+)?/g, "commands.css?v=20261020");
       const existingRobotsTag = existing.match(/<meta\b[^>]*>/gi)?.find((tag) => /\bname\s*=\s*["']robots["']/i.test(tag));
-      let normalized = existing;
+      let normalized = cssVersioned;
       if (existingRobotsTag) {
-        normalized = existing.replace(existingRobotsTag, robotsMeta);
+        normalized = cssVersioned.replace(existingRobotsTag, robotsMeta);
       } else {
         normalized = existing.replace(/(<link\b[^>]*rel=["']canonical["'][^>]*>)/i, `${robotsMeta}\n$1`);
       }
@@ -105,7 +106,7 @@ for (const command of data.records) {
 <meta name="twitter:title" content="${escapeHtml(command.name)} command — Linux reference | LinuxTerminal.me">
 <meta name="twitter:description" content="${escapeHtml(summary)}">
 <script type="application/ld+json">${escapeJson(articleSchema)}</script>
-<link rel="stylesheet" href="/commands.css?v=20261016">
+<link rel="stylesheet" href="/commands.css?v=20261020">
 </head>
 <body class="detail-page">
 <main id="main-content" class="command-page">
