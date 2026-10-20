@@ -220,7 +220,7 @@ export default {
         chunks,
       };
       headers.set("Content-Type", "application/json; charset=utf-8");
-      // Permanent: always sha256 mode. Empty per-chunk digests are OK until offline generation fills them.
+      // Integrity mode is SHA-256 only; getDeveloperChunks rejects missing or malformed chunk digests.
       headers.set("X-LinuxLab-Chunk-Manifest", "sha256");
       headers.set("Cache-Control", "public, max-age=31536000, immutable");
       headers.set("CDN-Cache-Control", "public, max-age=31536000, immutable");
