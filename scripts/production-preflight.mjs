@@ -1,13 +1,13 @@
 import { MongoClient, ServerApiVersion } from 'mongodb';
 
-const ROUTER_QWEN_MODEL = 'Qwen/Qwen3-8B';
+const ROUTER_QWEN_MODEL = process.env.HF_MODEL?.trim() || 'Qwen/Qwen3-8B';
 const required = ['MONGODB_URI', 'UPSTASH_REDIS_REST_URL', 'UPSTASH_REDIS_REST_TOKEN', 'CERTIFICATE_SIGNING_KEYS', 'CERTIFICATE_SIGNING_KEY_ID', 'HF_TOKEN'];
 const missing = required.filter((name) => !process.env[name]?.trim());
 if (missing.length) {
   console.error('Release preflight missing required environment variables:', missing.join(', '));
   process.exit(1);
 }
-if ((process.env.HF_MODEL || ROUTER_QWEN_MODEL) !== ROUTER_QWEN_MODEL) throw new Error('HF_MODEL must match the supported Qwen router model ID exactly.');
+if (!/^Qwen\\/Qwen3-8B(?::[a-z0-9_-]+)?$/i.test(ROUTER_QWEN_MODEL)) throw new Error('HF_MODEL must use the supported Qwen/Qwen3-8B model, optionally with a Hugging Face provider suffix.');
 const origins = new Set((process.env.CERTIFICATE_ALLOWED_ORIGINS || 'https://linuxterminal.me').split(',').map((x) => x.trim()).filter(Boolean));
 if (!origins.has('https://linuxterminal.me')) throw new Error('CERTIFICATE_ALLOWED_ORIGINS must include https://linuxterminal.me.');
 
@@ -62,5 +62,5 @@ if (!modelResponse.ok) {
 }
 const modelPayload = await modelResponse.json();
 if (!modelPayload.choices?.[0]?.message?.content) throw new Error('Hugging Face Router returned no model completion.');
-console.log('Hugging Face Router accepted the supported Qwen router model ID and returned a completion.');
+console.log('Hugging Face Router accepted ' + ROUTER_QWEN_MODEL + ' and returned a completion.');
 console.log('Release preflight passed. No secret values were printed.');
