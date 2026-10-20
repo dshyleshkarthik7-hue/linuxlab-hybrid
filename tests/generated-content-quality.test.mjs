@@ -6,7 +6,11 @@ const authored = await readFile("public/commands/pwd.html", "utf8");
 assert.match(authored, /flow-controls|data-flow=|Working Directory \(Animated\)/i, "curated pwd lesson controls should survive regeneration");
 
 const records = JSON.parse(await readFile("public/command-records.json", "utf8"));
-const thin = records.records.find((item) => !String(item.summary || "").trim() || !String(item.example || "").trim() || /^Catalog entry/i.test(String(item.summary || "")));
+const thin = records.records.find((item) => !(item.page?.status === "complete" && item.page?.source) && (
+  !String(item.summary || "").trim() ||
+  !String(item.example || "").trim() ||
+  /^Catalog entry/i.test(String(item.summary || ""))
+));
 const sitemap = await readFile("public/sitemap.xml", "utf8");
 if (thin) {
   const thinHtml = await readFile(path.join("public/commands", path.basename(thin.url)), "utf8");
