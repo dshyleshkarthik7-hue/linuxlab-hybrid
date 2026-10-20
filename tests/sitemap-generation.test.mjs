@@ -5,7 +5,7 @@ const base = 'https://linuxterminal.me';
 const xml = await readFile('public/sitemap.xml', 'utf8');
 const records = JSON.parse(await readFile('public/command-records.json', 'utf8')).records;
 const intelligence = JSON.parse(await readFile('.cache/command-intelligence.json', 'utf8'));
-const urls = [...xml.matchAll(/<loc>([^<]+)<\\/loc>/g)].map((match) => match[1]);
+const urls = [...xml.matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]);
 const urlSet = new Set(urls);
 
 assert.equal(urlSet.size, urls.length, 'sitemap URLs must be unique');
