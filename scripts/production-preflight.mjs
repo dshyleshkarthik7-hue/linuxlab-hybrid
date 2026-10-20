@@ -7,7 +7,7 @@ if (missing.length) {
   console.error('Release preflight missing required environment variables:', missing.join(', '));
   process.exit(1);
 }
-if (!/^Qwen\\/Qwen3-8B(?::[a-z0-9_-]+)?$/i.test(ROUTER_QWEN_MODEL)) throw new Error('HF_MODEL must use the supported Qwen/Qwen3-8B model, optionally with a Hugging Face provider suffix.');
+if (!(ROUTER_QWEN_MODEL === 'Qwen/Qwen3-8B' || /^Qwen\/Qwen3-8B:[a-z0-9_-]+$/i.test(ROUTER_QWEN_MODEL))) throw new Error('HF_MODEL must use Qwen/Qwen3-8B, optionally with a Hugging Face provider suffix.');
 const origins = new Set((process.env.CERTIFICATE_ALLOWED_ORIGINS || 'https://linuxterminal.me').split(',').map((x) => x.trim()).filter(Boolean));
 if (!origins.has('https://linuxterminal.me')) throw new Error('CERTIFICATE_ALLOWED_ORIGINS must include https://linuxterminal.me.');
 
