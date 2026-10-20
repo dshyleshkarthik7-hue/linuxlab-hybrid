@@ -49,13 +49,13 @@ for (const command of data.records) {
       // with the current indexability contract in the command database.
       const existing = await readFile(outputPath, "utf8");
       const robotsMeta = `<meta name="robots" content="${indexable ? "index,follow,max-image-preview:large" : "noindex,follow"}">`;
-      const cssVersioned = existing.replace(/commands\\.css(?:\\?v=\\d+)?/g, "commands.css?v=20261020");
+      const cssVersioned = existing.replace(/commands\.css(?:\?v=\d+)?/g, "commands.css?v=20261020");
       const existingRobotsTag = existing.match(/<meta\b[^>]*>/gi)?.find((tag) => /\bname\s*=\s*["']robots["']/i.test(tag));
       let normalized = cssVersioned;
       if (existingRobotsTag) {
         normalized = cssVersioned.replace(existingRobotsTag, robotsMeta);
       } else {
-        normalized = existing.replace(/(<link\b[^>]*rel=["']canonical["'][^>]*>)/i, `${robotsMeta}\n$1`);
+        normalized = cssVersioned.replace(/(<link\b[^>]*rel=["']canonical["'][^>]*>)/i, `${robotsMeta}\n$1`);
       }
       if (normalized !== existing) await writeFile(outputPath, normalized);
       continue;
