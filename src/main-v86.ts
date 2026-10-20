@@ -386,10 +386,13 @@ export class V86LinuxTerminal {
 
   private setIntegrityState(state: 'verified' | 'unverified'): void {
     this.integrityState = state;
+    const el = document.getElementById('v86-health');
+    if (el) el.setAttribute('data-integrity', state);
   }
 
-  private setNetworkState(state: string): void {
-    void state;
+  private setNetworkState(state: 'disabled' | 'enabled' | 'unknown'): void {
+    const el = document.getElementById('v86-health');
+    if (el) el.setAttribute('data-network', state);
   }
 
   private fail(message: string, error?: Error): void {
