@@ -134,8 +134,34 @@ jobs:
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
           PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
         run: npm run test:preview
-      - name: Live release preflight (explicitly approved release gate)
+      - name: Production smoke (explicitly approved release gate)
         if: github.event_name == 'workflow_dispatch' && inputs.run_production_smoke == true
+        env:
+          PRODUCTION_BASE_URL: https://linuxterminal.me
+          EXPECTED_DEPLOY_SHA: ${{ github.sha }}
+          PRODUCTION_SMOKE_TIMEOUT_MS: 30000
+          PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
+        run: npm run test:production
+
+  release-preflight:
+    if: github.event_name == 'workflow_dispatch' && inputs.run_production_smoke == true
+    needs: verify
+    environment: content-authoring
+    permissions:
+      contents: read
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Live release preflight (explicitly approved release gate)
         env:
           MONGODB_URI: ${{ secrets.MONGODB_URI }}
           MONGODB_DB: ${{ secrets.MONGODB_DB }}
@@ -147,14 +173,6 @@ jobs:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
           HF_MODEL: ${{ vars.HF_MODEL }}
         run: npm run release:preflight
-      - name: Production smoke (explicitly approved release gate)
-        if: github.event_name == 'workflow_dispatch' && inputs.run_production_smoke == true
-        env:
-          PRODUCTION_BASE_URL: https://linuxterminal.me
-          EXPECTED_DEPLOY_SHA: ${{ github.sha }}
-          PRODUCTION_SMOKE_TIMEOUT_MS: 30000
-          PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
-        run: npm run test:production
 
   provenance:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
