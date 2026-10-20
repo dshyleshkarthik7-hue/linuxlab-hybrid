@@ -1,0 +1,88 @@
+name: Qwen content authoring
+
+on:
+  workflow_dispatch:
+    inputs:
+      content_type:
+        description: Which review-draft queue to run
+        type: choice
+        required: true
+        options:
+          - commands
+          - tutorials
+      start:
+        description: Zero-based inventory offset
+        type: number
+        required: true
+        default: 0
+      count:
+        description: Bounded batch size (commands max 25; tutorials max 10)
+        type: number
+        required: true
+        default: 5
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qwen-authoring-${{ github.ref }}-${{ inputs.content_type }}
+  cancel-in-progress: false
+
+jobs:
+  author:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    environment: content-authoring
+    steps:
+      - name: Checkout trusted main branch
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: main
+          persist-credentials: false
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22
+      - name: Validate bounded batch inputs
+        env:
+          CONTENT_TYPE: ${{ inputs.content_type }}
+          START: ${{ inputs.start }}
+          COUNT: ${{ inputs.count }}
+        run: |
+          set -euo pipefail
+          node --input-type=module <<'NODE'
+          const type = process.env.CONTENT_TYPE;
+          const start = Number(process.env.START);
+          const count = Number(process.env.COUNT);
+          const max = type === "commands" ? 25 : type === "tutorials" ? 10 : 0;
+          if (!Number.isSafeInteger(start) || start < 0) throw new Error("start must be a non-negative integer");
+          if (!Number.isSafeInteger(count) || count < 1 || count > max) throw new Error("count must be between 1 and the limit for the selected content type");
+          NODE
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Generate review drafts with Qwen
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_MODEL: ${{ vars.HF_MODEL }}
+          START: ${{ inputs.start }}
+          COUNT: ${{ inputs.count }}
+          CONTENT_TYPE: ${{ inputs.content_type }}
+        run: |
+          set -euo pipefail
+          test -n "$HF_TOKEN" || { echo "::error::Configure HF_TOKEN as a secret in the content-authoring environment."; exit 1; }
+          export HF_MODEL="${HF_MODEL:-Qwen/Qwen3-8B}"
+          if [ "$CONTENT_TYPE" = commands ]; then
+            npm run author:qwen-lessons -- --start "$START" --count "$COUNT"
+          else
+            npm run author:qwen-tutorials -- --start "$START" --count "$COUNT"
+          fi
+      - name: Upload review drafts for inspection
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: qwen-${{ inputs.content_type }}-drafts-${{ inputs.start }}
+          path: |
+            data/commands/research/
+            data/tutorial-research/
+          if-no-files-found: error
+          retention-days: 7
