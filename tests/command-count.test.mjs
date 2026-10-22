@@ -21,7 +21,7 @@ if (Number(index.target?.minimumEntries) < 6000) throw new Error(`Catalog minimu
 if (Number(canonical.uniqueRecordNames) !== canonicalCount) throw new Error(`Canonical unique name count ${canonical.uniqueRecordNames} does not match ${canonicalCount}`);
 if (publicIndex.schemaVersion !== 2 || publicIndex.recordCount !== EXPECTED_COMMANDS || publicIndex.records?.length !== EXPECTED_COMMANDS) throw new Error("Published command index is stale or incomplete");
 if (publicIndex.uniqueRecordNames !== EXPECTED_COMMANDS || new Set(publicIndex.records.map(record => String(record.name).trim().toLowerCase())).size !== EXPECTED_COMMANDS) throw new Error("Published command index has duplicate or missing names");
-if (publicIndex.records.some(record => !record.name || !record.category || !record.summary || !record.url)) throw new Error("Published command index contains records missing browser-required fields");
+if (publicIndex.records.some(record => !record.name || !record.category || !record.url || (record.editorialStatus !== "pending-review" && !String(record.summary || "").trim()))) throw new Error("Published command index contains records missing required fields or falsely marked as reviewed");
 if (!publicIndex.records.some(record => record.name === "sudo") || !publicIndex.records.some(record => record.name === "systemctl")) throw new Error("Published command index is missing representative commands");
 
 const databaseScript = await readFile("scripts/commands/build-database.mjs", "utf8");
