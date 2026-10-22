@@ -51,6 +51,7 @@ assert.ok(existsSync(join(root, 'public/commands/custom/index.html')), 'Phase 3 
 const canonicalCommands = JSON.parse(readFileSync(join(root, 'data/commands/canonical.json'), 'utf8'));
 assert.equal(canonicalCommands.records.length, 6161, 'Canonical command catalogue must contain 6161 records');
 assert.equal(new Set(canonicalCommands.records.map(({name}) => name.toLowerCase())).size, 6161, 'Canonical command names must be unique');
+assert.ok(existsSync(join(root, 'public/commands.css')), 'Production command stylesheet is missing from public assets');
 const sitemap = readFileSync(join(root, 'public/sitemap.xml'), 'utf8');
 const expectedSitemapRoutes = ['/', '/beginner/', '/intermediate/', '/expert/', '/real-linux/', '/developer-alpine/', '/open-source-iso/', '/commands/', '/learn/', '/learn/linux-basics/', '/learn/terminal-navigation/', '/learn/files-and-directories/', '/learn/text-processing/', '/learn/permissions/', '/learn/processes/', '/learn/shell-scripting/', '/learn/operating-systems/', '/learn/networking-basics/', '/challenges/', '/quiz/', '/curriculum/', '/about/', '/contact/', '/certificate/', '/linux-careers/'];
 for (const route of expectedSitemapRoutes) assert.ok(sitemap.includes(`https://linuxterminal.me${route}`), `Sitemap missing ${route}`);
@@ -59,7 +60,7 @@ for (const command of commands) {
   assert.ok(existsSync(join(root, file)), `Missing command page: ${file}`);
   const page = readFileSync(join(root, file), 'utf8');
   assert.ok(page.includes(`rel=\"canonical\" href=\"https://linuxterminal.me/commands/${command}.html\"`), `Bad canonical: ${command}`);
-  assert.ok(page.includes('href=\"/commands.css\"'), 'Command CSS missing');
+  assert.match(page, /href=\"\\/commands\\.css(?:\\?v=\\d+)?\"/, `Command CSS link missing or malformed: ${command}`);
   assert.ok(page.includes('data-flow=\"play\"') && page.includes('data-flow=\"pause\"') && page.includes('data-flow=\"reset\"'), `Animation controls missing: ${command}`);
   assert.ok(sitemap.includes(`https://linuxterminal.me/commands/${command}.html`), `Sitemap missing ${command}`);
   assert.ok(!page.includes('id=\"app\"'), `Command page must not depend on client-rendered app shell: ${command}`);
