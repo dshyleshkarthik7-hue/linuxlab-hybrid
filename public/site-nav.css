@@ -3,3 +3,25 @@
 .site-shared-links a:focus-visible,.site-skip-link:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}
 .site-skip-link{position:absolute;z-index:9999;left:.75rem;top:-100px;background:#fff;color:#111;padding:.65rem 1rem;border-radius:.4rem}
 .site-skip-link:focus{top:.75rem}
+
+/* Shared WCAG AA contrast corrections for controls rendered across route stylesheets. */
+.login-link,
+button,
+.button,
+.btn,
+.primary,
+a.button,
+a[href$="#tutorials"],
+button[data-tutorial],
+#save-name,
+#export-badges,
+#export-progress,
+#import-progress,
+#start {
+  color: #fff !important;
+  background: #005bb5 !important;
+}
+.sr-note a,
+.sr-note > a[href$="commands/"] {
+  color: #43d9ff !important;
+}
