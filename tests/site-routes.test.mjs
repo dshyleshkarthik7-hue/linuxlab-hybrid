@@ -60,7 +60,7 @@ for (const command of commands) {
   assert.ok(existsSync(join(root, file)), `Missing command page: ${file}`);
   const page = readFileSync(join(root, file), 'utf8');
   assert.ok(page.includes(`rel=\"canonical\" href=\"https://linuxterminal.me/commands/${command}.html\"`), `Bad canonical: ${command}`);
-  assert.ok(/href="\/commands\.css(?:\?v=\d+)?"/.test(page), \`Command CSS link missing or malformed: \${command}\`);
+  assert.ok(/href="\/commands\.css(?:\?v=\d+)?"/.test(page), 'Command CSS link missing or malformed: ' + command);
   assert.ok(page.includes('data-flow=\"play\"') && page.includes('data-flow=\"pause\"') && page.includes('data-flow=\"reset\"'), `Animation controls missing: ${command}`);
   assert.ok(sitemap.includes(`https://linuxterminal.me/commands/${command}.html`), `Sitemap missing ${command}`);
   assert.ok(!page.includes('id=\"app\"'), `Command page must not depend on client-rendered app shell: ${command}`);
