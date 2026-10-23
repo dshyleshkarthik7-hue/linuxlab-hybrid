@@ -23,3 +23,33 @@ body{margin:0;background:radial-gradient(circle at 15% 0,#17477c 0,transparent 3
 .steps h3{
   color:#f1f7ff !important;
 }
+
+/* Final cascade-level fix for CTA contrast. Use element-qualified selectors
+   matching the actual anchors audited by axe, not only the shared .btn class. */
+a.btn[href$="beginner/"],
+a.hero-actions > .btn[href$="beginner/"],
+.hero-actions a.btn[href$="beginner/"],
+.level a.btn[href$="beginner/"],
+a.btn[href$="real-linux/"],
+a.btn[href$="developer-alpine/"],
+a.btn[href$="certificate/"],
+a.btn.secondary[href$="learn/"],
+a.btn.secondary[href$="certificate/"] {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #075dcc !important;
+  background-color: #075dcc !important;
+  border-color: #72baff !important;
+}
+a.btn.secondary[href$="learn/"],
+a.btn.secondary[href$="certificate/"] {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background: #17466f !important;
+  background-color: #17466f !important;
+}
+.developer-guide .compare-grid > div:nth-child(1) > h3,
+.developer-guide .compare-grid > div:nth-child(1) h3 {
+  color: #f1f7ff !important;
+  -webkit-text-fill-color: #f1f7ff !important;
+}
