@@ -11,7 +11,13 @@ const browserType = playwright[browserName];
 const explicit = process.env.A11Y_BASE_URL || process.argv[2];
 const port = process.env.A11Y_PORT || '4173';
 const baseURL = explicit || `http://127.0.0.1:${port}`;
-const routes = ['/', '/learn/', '/quiz/', '/progress/', '/certificate/', '/verify/', '/real-linux/', '/developer-alpine/', '/challenges/'];
+const routes = [
+  { path: '/', url: '/' }, { path: '/learn/', url: '/learn/' }, { path: '/quiz/', url: '/quiz/' },
+  { path: '/progress/', url: '/progress/' }, { path: '/certificate/', url: '/certificate/' }, { path: '/verify/', url: '/verify/' },
+  // Vite preview does not execute Netlify rewrites, so use the real VM document.
+  { path: '/real-linux/', url: '/index-v86.html', expected: '#vm-header' },
+  { path: '/developer-alpine/', url: '/developer-alpine/', expected: 'main' }, { path: '/challenges/', url: '/challenges/' }
+];
 let server;
 
 async function waitForServer(url, timeoutMs = 20000) {
@@ -52,8 +58,10 @@ if (!explicit) {
 const browser = await browserType.launch({ headless: true });
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
-  for (const route of routes) {
-    await page.goto(baseURL + route, { waitUntil: 'domcontentloaded' });
+  for (const item of routes) {
+    const route = item.path;
+    await page.goto(baseURL + item.url, { waitUntil: 'domcontentloaded' });
+    if (item.expected && !(await page.locator(item.expected).count())) throw new Error(route + ' did not render expected page selector ' + item.expected);
     await page.keyboard.press('Tab');
     const firstFocus = await page.evaluate(() => ({ text: document.activeElement?.textContent || '', outline: getComputedStyle(document.activeElement).outlineStyle, outlineWidth: getComputedStyle(document.activeElement).outlineWidth }));
     if (!/skip to main content/i.test(firstFocus.text) || firstFocus.outline === 'none' || firstFocus.outlineWidth === '0px') throw new Error(route + ' skip link must be first keyboard stop with visible focus: ' + JSON.stringify(firstFocus));

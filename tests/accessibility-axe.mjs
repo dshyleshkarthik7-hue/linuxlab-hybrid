@@ -12,7 +12,15 @@ const axeSource = await readFile(require.resolve('axe-core/axe.min.js'), 'utf8')
 const explicit = process.env.A11Y_BASE_URL || process.argv[2];
 const port = process.env.A11Y_PORT || '4174';
 const baseURL = explicit || `http://127.0.0.1:${port}`;
-const routes = ['/', '/learn/', '/quiz/', '/progress/', '/certificate/', '/verify/', '/real-linux/', '/developer-alpine/', '/challenges/', '/linux-careers.html', '/linux-careers/'];
+const routes = [
+  { path: '/', url: '/' }, { path: '/learn/', url: '/learn/' }, { path: '/quiz/', url: '/quiz/' },
+  { path: '/progress/', url: '/progress/' }, { path: '/certificate/', url: '/certificate/' }, { path: '/verify/', url: '/verify/' },
+  // Vite preview does not apply Netlify rewrites; audit the actual target documents.
+  { path: '/real-linux/', url: '/index-v86.html', expected: '#vm-header' },
+  { path: '/developer-alpine/', url: '/developer-alpine/', expected: 'main' },
+  { path: '/challenges/', url: '/challenges/' }, { path: '/linux-careers.html', url: '/linux-careers.html', expected: '.career-wrap' },
+  { path: '/linux-careers/', url: '/linux-careers.html', expected: '.career-wrap' }
+];
 let server;
 
 async function waitForServer(url, timeoutMs = 20000) {
@@ -44,8 +52,10 @@ const other = [];
 try {
   const page = await browser.newPage({ viewport: { width: 1280, height: 900 } });
   await page.addInitScript(axeSource);
-  for (const route of routes) {
-    const response = await page.goto(baseURL + route, { waitUntil: 'domcontentloaded' });
+  for (const item of routes) {
+    const route = item.path;
+    const response = await page.goto(baseURL + item.url, { waitUntil: 'domcontentloaded' });
+    if (item.expected && !(await page.locator(item.expected).count())) throw new Error(route + ' did not render expected page selector ' + item.expected);
     if (!response || response.status() >= 400) throw new Error(route + ' returned HTTP ' + (response?.status() ?? 'no response'));
     const result = await page.evaluate(async () => {
       const report = await window.axe.run(document, {
