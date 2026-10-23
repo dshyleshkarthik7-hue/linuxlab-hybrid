@@ -57,6 +57,20 @@ try {
     const response = await page.goto(baseURL + item.url, { waitUntil: 'domcontentloaded' });
     if (item.expected && !(await page.locator(item.expected).count())) throw new Error(route + ' did not render expected page selector ' + item.expected);
     if (!response || response.status() >= 400) throw new Error(route + ' returned HTTP ' + (response?.status() ?? 'no response'));
+    if (route === '/') {
+      const ctas = await page.locator('.hero-actions > .btn[href$="beginner/"], .secondary.btn[href$="learn/"], .secondary.btn[href$="certificate/"]').evaluateAll(elements =>
+        elements.map(element => {
+          const style = getComputedStyle(element);
+          return { href: element.getAttribute('href'), color: style.color, backgroundColor: style.backgroundColor, textFillColor: style.webkitTextFillColor };
+        })
+      );
+      for (const cta of ctas) {
+        if (cta.color !== 'rgb(255, 255, 255)' || cta.textFillColor !== 'rgb(255, 255, 255)' ||
+            !['rgb(7, 93, 204)', 'rgb(23, 70, 111)'].includes(cta.backgroundColor)) {
+          throw new Error('Homepage CTA contrast guard did not win the cascade: ' + JSON.stringify(cta));
+        }
+      }
+    }
     const result = await page.evaluate(async () => {
       const report = await window.axe.run(document, {
         runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'best-practice'] }
