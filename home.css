@@ -46,3 +46,22 @@ html body .developer-guide .compare-grid h3 {
   color: #f1f7ff !important;
   -webkit-text-fill-color: #f1f7ff !important;
 }
+
+
+/* Keep CTA foreground/background contrast correct even before build-time normalization. */
+html body a.btn {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  background-color: #075dcc !important;
+  border-color: #72baff !important;
+}
+html body a.btn.secondary {
+  color: #fff !important;
+  -webkit-text-fill-color: #fff !important;
+  background-color: #17466f !important;
+  border-color: #83cfff !important;
+}
+html body .developer-guide .compare-grid > div:first-child > h3 {
+  color: #f1f7ff !important;
+  -webkit-text-fill-color: #f1f7ff !important;
+}
