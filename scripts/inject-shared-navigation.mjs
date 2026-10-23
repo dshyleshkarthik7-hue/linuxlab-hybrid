@@ -5,8 +5,11 @@ const root = 'dist';
 const scriptTag = '<script defer src="/site-nav.js"></script>';
 const styleTag = '<link rel="stylesheet" href="/site-nav.css">';
 const contrastStyle = `<style id="site-accessible-control-colors">
-/* Emit after linked stylesheets: route-specific CSS must not restore dark-on-dark CTAs. */
-a.btn, .btn, .hero-actions .btn, .level .btn, .actions .btn, button, .button {
+/* Scope the contrast override to the dark-themed homepage CTA components.
+   Do not globally recolor .btn: other routes (for example careers) deliberately
+   use a cyan button with dark text, and overriding only its text caused the
+   reported 1.62:1 contrast failure. */
+.hero-actions .btn, .level .btn {
   color: #fff !important;
   -webkit-text-fill-color: #fff !important;
   background: #005bb5 !important;
