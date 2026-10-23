@@ -9,12 +9,24 @@ const contrastStyle = `<style id="site-accessible-control-colors">
    Do not globally recolor .btn: other routes (for example careers) deliberately
    use a cyan button with dark text, and overriding only its text caused the
    reported 1.62:1 contrast failure. */
-.hero-actions .btn, .level .btn {
+html body .hero-actions > a.btn[href$="beginner/"],
+html body .secondary.btn[href$="learn/"],
+html body .secondary.btn[href$="certificate/"],
+html body .level a.btn[href$="beginner/"],
+html body a.btn[href$="real-linux/"],
+html body .expert.level a.btn[href$="developer-alpine/"],
+html body .level a.btn[href$="certificate/"] {
   color: #fff !important;
   -webkit-text-fill-color: #fff !important;
-  background: #005bb5 !important;
-  background-color: #005bb5 !important;
-  border-color: #72baff !important;
+  background: #075dcc !important;
+  background-color: #075dcc !important;
+  border: 1px solid #72baff !important;
+}
+html body .secondary.btn[href$="learn/"],
+html body .secondary.btn[href$="certificate/"] {
+  background: #17466f !important;
+  background-color: #17466f !important;
+  border-color: #83cfff !important;
 }
 .developer-guide .compare-grid > div:nth-child(1) > h3 {
   color: #f1f7ff !important;
