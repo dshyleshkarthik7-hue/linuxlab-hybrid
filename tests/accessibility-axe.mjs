@@ -58,17 +58,34 @@ try {
     if (item.expected && !(await page.locator(item.expected).count())) throw new Error(route + ' did not render expected page selector ' + item.expected);
     if (!response || response.status() >= 400) throw new Error(route + ' returned HTTP ' + (response?.status() ?? 'no response'));
     if (route === '/') {
-      const ctas = await page.locator('.hero-actions > .btn[href$="beginner/"], .secondary.btn[href$="learn/"], .secondary.btn[href$="certificate/"]').evaluateAll(elements =>
+      const ctas = await page.locator('a.btn').evaluateAll(elements =>
         elements.map(element => {
           const style = getComputedStyle(element);
-          return { href: element.getAttribute('href'), color: style.color, backgroundColor: style.backgroundColor, textFillColor: style.webkitTextFillColor };
+          const rgb = value => value.match(/[\\d.]+/g)?.slice(0, 3).map(Number) ?? [];
+          const luminance = value => {
+            const channels = rgb(value).map(channel => channel / 255).map(channel =>
+              channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);
+            return 0.2126 * channels[0] + 0.7152 * channels[1] + 0.0722 * channels[2];
+          };
+          const foreground = luminance(style.color);
+          const background = luminance(style.backgroundColor);
+          const ratio = (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
+          return { href: element.getAttribute('href'), color: style.color, backgroundColor: style.backgroundColor,
+            textFillColor: style.webkitTextFillColor, contrast: Number(ratio.toFixed(2)) };
         })
       );
       for (const cta of ctas) {
-        if (cta.color !== 'rgb(255, 255, 255)' || cta.textFillColor !== 'rgb(255, 255, 255)' ||
-            !['rgb(7, 93, 204)', 'rgb(23, 70, 111)'].includes(cta.backgroundColor)) {
-          throw new Error('Homepage CTA contrast guard did not win the cascade: ' + JSON.stringify(cta));
+        if (cta.contrast < 4.5 || cta.color !== 'rgb(255, 255, 255)' ||
+            cta.textFillColor !== 'rgb(255, 255, 255)') {
+          throw new Error('Homepage button failed WCAG AA contrast guard: ' + JSON.stringify(cta));
         }
+      }
+      const heading = await page.locator('.developer-guide > .compare-grid > div:nth-child(1) > h3').evaluate(element => {
+        const style = getComputedStyle(element);
+        return { color: style.color, backgroundColor: style.backgroundColor };
+      });
+      if (heading.color === 'rgb(21, 34, 52)' || heading.color === 'rgb(20, 34, 52)') {
+        throw new Error('Homepage comparison heading is still using a low-contrast foreground: ' + JSON.stringify(heading));
       }
     }
     const result = await page.evaluate(async () => {
