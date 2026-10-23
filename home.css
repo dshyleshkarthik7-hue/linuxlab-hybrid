@@ -23,3 +23,26 @@ html body .developer-guide > .compare-grid > div:nth-child(1) > h3 {
   color: #f1f7ff !important;
   -webkit-text-fill-color: #f1f7ff !important;
 }
+
+
+/* Homepage CTA contrast is defined at the shared component level so theme rules
+   cannot leave a dark foreground on the dark card background. */
+html body a.btn {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #075dcc !important;
+  background-image: none !important;
+  border-color: #72baff !important;
+}
+html body a.btn.secondary {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #17466f !important;
+  background-image: none !important;
+  border-color: #83cfff !important;
+}
+html body .comparison .compare-grid h3,
+html body .developer-guide .compare-grid h3 {
+  color: #f1f7ff !important;
+  -webkit-text-fill-color: #f1f7ff !important;
+}
