@@ -82,14 +82,14 @@ const isoArtifacts = manifest.artifacts.filter((artifact) => artifact.image);
 assert.equal(isoArtifacts.length, 3, 'production smoke must cover all three ISO profiles');
 for (const artifact of isoArtifacts) {
   const first = await get(`${isoBaseURL}/?image=${artifact.image}&chunkStart=0&chunkEnd=0`, { headers: { Origin: origin } });
-  assert.equal(first.status, 200, `${artifact.image} first-byte probe returned ${first.status}`);
+  assert.equal(first.status, 206, `${artifact.image} first-byte range probe returned ${first.status}`);
   assert.equal(first.headers.get('x-linuxlab-chunk-total'), String(artifact.size));
   assert.equal(first.headers.get('x-linuxlab-sha256'), artifact.sha256);
   assert.equal(first.headers.get('content-length'), '1');
   assert.equal(first.headers.get('content-range'), `bytes 0-0/${artifact.size}`);
   assert.equal((await first.arrayBuffer()).byteLength, 1);
   const last = await get(`${isoBaseURL}/?image=${artifact.image}&chunkStart=${artifact.size - 1}&chunkEnd=${artifact.size - 1}`, { headers: { Origin: origin } });
-  assert.equal(last.status, 200, `${artifact.image} last-byte probe returned ${last.status}`);
+  assert.equal(last.status, 206, `${artifact.image} last-byte range probe returned ${last.status}`);
   assert.equal(last.headers.get('x-linuxlab-chunk-total'), String(artifact.size));
   assert.equal(last.headers.get('x-linuxlab-sha256'), artifact.sha256);
   assert.equal(last.headers.get('content-range'), `bytes ${artifact.size - 1}-${artifact.size - 1}/${artifact.size}`);
@@ -104,7 +104,7 @@ for (const firmware of manifest.artifacts.filter((artifact) => artifact.release 
 }
 
 const iso = await get(`${isoBaseURL}${isoPath}`, { headers: { Origin: origin, Range: 'bytes=0-0' } });
-assert.equal(iso.status, 200, `Linux4 ISO probe returned ${iso.status}`);
+assert.equal(iso.status, 206, `Linux4 ISO range probe returned ${iso.status}`);
 assert.equal(iso.headers.get('x-linuxlab-worker-protocol'), expectedIsoProtocol);
 assert.equal(iso.headers.get('x-linuxlab-chunk-start'), '0');
 assert.equal(iso.headers.get('x-linuxlab-chunk-end'), '0');

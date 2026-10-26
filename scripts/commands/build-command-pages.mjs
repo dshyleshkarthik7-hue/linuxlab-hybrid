@@ -1,5 +1,6 @@
 import { mkdir, readFile, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { isCommandIndexable, commandCanonicalUrl, commandRobotsContent } from "./indexability.mjs";
 import { fileURLToPath } from "node:url";
 
 const root = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
@@ -14,16 +15,7 @@ const escapeHtml = (value) => String(value ?? "")
   .replace(/"/g, "&quot;");
 
 const escapeJson = (value) => JSON.stringify(value).replace(/</g, "\\u003c");
-const isIndexable = (command, intelligenceRecord) => {
-  if (command.page?.status === "complete" && command.page?.source) return true;
-  const lesson = intelligenceRecord || command.intelligence || {};
-  const hasReviewedStatus = command.intelligence?.status === "complete" || intelligenceRecord?.status === "complete";
-  return Boolean(hasReviewedStatus
-    && String(lesson.definition || lesson.explanation || "").trim()
-    && String(lesson.syntax || "").trim()
-    && Array.isArray(lesson.examples) && lesson.examples.some((example) => typeof example === "string" && example.trim())
-    && Array.isArray(lesson.internals) && lesson.internals.length > 0);
-};
+const isIndexable = isCommandIndexable;
 
 const relatedLinks = (items = []) => items.map((name) => {
   const target = data.records.find((r) => r.name === name);
@@ -48,7 +40,7 @@ for (const command of data.records) {
       // Preserve authored lesson content, but keep its robots directive aligned
       // with the current indexability contract in the command database.
       const existing = await readFile(outputPath, "utf8");
-      const robotsMeta = `<meta name="robots" content="${indexable ? "index,follow,max-image-preview:large" : "noindex,follow"}">`;
+      const robotsMeta = `<meta name="robots" content="${commandRobotsContent(command, intelligence.records?.[command.name])}">`;
       const cssVersioned = existing.replace(/commands\.css(?:\?v=\d+)?/g, "commands.css?v=20261020");
       const existingRobotsTag = existing.match(/<meta\b[^>]*>/gi)?.find((tag) => /\bname\s*=\s*["']robots["']/i.test(tag));
       let normalized = cssVersioned;
@@ -79,7 +71,7 @@ for (const command of data.records) {
     "@type": "TechArticle",
     "headline": `${command.name} command — Linux reference`,
     "description": summary,
-    "url": `https://linuxterminal.me${command.url}`,
+    "url": commandCanonicalUrl(command),
     "author": {"@type":"Organization","name":"LinuxTerminal.me","url":"https://linuxterminal.me/"},
     "isPartOf": {"@type":"WebSite","name":"LinuxTerminal.me","url":"https://linuxterminal.me/"},
     "breadcrumb": {"@type":"BreadcrumbList","itemListElement":[
@@ -96,11 +88,11 @@ for (const command of data.records) {
 <title>${escapeHtml(command.name)} command — Linux reference | LinuxTerminal.me</title>
 <meta name="description" content="${escapeHtml(summary)} Learn ${escapeHtml(command.name)} syntax, examples, common options, Linux implementation notes and safe practice.">
 <meta name="robots" content="${indexable ? "index,follow,max-image-preview:large" : "noindex,follow"}">
-<link rel="canonical" href="https://linuxterminal.me${escapeHtml(command.url)}">
+<link rel="canonical" href="${escapeHtml(commandCanonicalUrl(command))}">
 <meta property="og:type" content="article">
 <meta property="og:title" content="${escapeHtml(command.name)} command — Linux reference | LinuxTerminal.me">
 <meta property="og:description" content="${escapeHtml(summary)}">
-<meta property="og:url" content="https://linuxterminal.me${escapeHtml(command.url)}">
+<meta property="og:url" content="${escapeHtml(commandCanonicalUrl(command))}">
 <meta property="og:site_name" content="LinuxTerminal.me">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="${escapeHtml(command.name)} command — Linux reference | LinuxTerminal.me">

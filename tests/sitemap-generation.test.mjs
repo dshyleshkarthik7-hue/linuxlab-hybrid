@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { isCommandIndexable, commandCanonicalUrl } from '../scripts/commands/indexability.mjs';
 import { readFile } from 'node:fs/promises';
 
 const base = 'https://linuxterminal.me';
@@ -12,23 +13,12 @@ assert.equal(urlSet.size, urls.length, 'sitemap URLs must be unique');
 assert.ok(urls.length >= 30, 'sitemap must include the required static routes');
 assert.ok(urls.length < 6500, 'sitemap must not explode beyond catalogue + static routes');
 
-const isIndexable = (record) => {
-  if (record.page?.status === 'complete' && record.page?.source) return true;
-  const lesson = intelligence.records?.[record.name] || record.intelligence || {};
-  const reviewed = record.intelligence?.status === 'complete'
-    || intelligence.records?.[record.name]?.status === 'complete';
-  return Boolean(reviewed
-    && String(lesson.definition || lesson.explanation || '').trim()
-    && String(lesson.syntax || '').trim()
-    && Array.isArray(lesson.examples)
-    && lesson.examples.some((example) => typeof example === 'string' && example.trim())
-    && Array.isArray(lesson.internals)
-    && lesson.internals.length > 0);
-};
+const isIndexable = (record) => isCommandIndexable(record, intelligence.records?.[record.name]);
 
 let indexableCount = 0;
 for (const record of records) {
   const path = record.url;
+  assert.equal(commandCanonicalUrl(record), base + path, 'canonical URL helper mismatch for ' + record.name);
   assert.ok(typeof path === 'string' && path.startsWith('/commands/'), 'every catalogue record needs a canonical command URL: ' + record.name);
   const present = urlSet.has(base + path);
   const expected = isIndexable(record);

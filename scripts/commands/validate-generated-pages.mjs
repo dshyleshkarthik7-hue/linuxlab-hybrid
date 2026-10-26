@@ -1,5 +1,6 @@
 import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
+import { isCommandIndexable, commandCanonicalUrl, commandRobotsContent } from "./indexability.mjs";
 
 const EXPECTED = 6161;
 const records = JSON.parse(await readFile("public/command-records.json", "utf8"));
@@ -42,14 +43,11 @@ for (const command of records.records) {
   const robots = (robotsTag.match(/\bcontent\s*=\s*["']([^"']*)["']/i)?.[1] || "")
     .toLowerCase()
     .replace(/\s+/g, "");
-  const lesson = intelligence.records?.[command.name] || command.intelligence || {};
-  const shouldIndex = (command.page?.status === "complete" && Boolean(command.page?.source)) || Boolean(
-    (command.intelligence?.status === "complete" || intelligence.records?.[command.name]?.status === "complete")
-    && String(lesson.definition || lesson.explanation || "").trim()
-    && String(lesson.syntax || "").trim()
-    && Array.isArray(lesson.examples) && lesson.examples.some((example) => typeof example === "string" && example.trim())
-    && Array.isArray(lesson.internals) && lesson.internals.length > 0
-  );
+  const shouldIndex = isCommandIndexable(command, intelligence.records?.[command.name]);
+  const expectedCanonical = commandCanonicalUrl(command);
+  if (canonical !== expectedCanonical) throw new Error("canonical mismatch for " + command.url + ": expected " + expectedCanonical + ", found " + canonical);
+  const expectedRobots = commandRobotsContent(command, intelligence.records?.[command.name]).replace(/\s+/g, "");
+  if (robots !== expectedRobots) throw new Error("robots/indexability mismatch for " + command.url + ": expected " + expectedRobots + ", found " + robots);
   if (shouldIndex && !robots.startsWith("index,")) throw new Error(`indexable command lacks index directive: ${command.url}`);
   if (!shouldIndex && !robots.startsWith("noindex")) throw new Error(`thin command must be noindex: ${command.url}`);
   if (shouldIndex) indexableUrls.add(command.url);

@@ -10,6 +10,7 @@ import { fileURLToPath } from "node:url";
 
 const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const strict = process.argv.includes("--strict");
+const requireHumanReview = process.argv.includes("--require-human-review");
 const curriculum = JSON.parse(await readFile(path.join(root, "learn/curriculum.json"), "utf8"));
 const lessons = curriculum.lessons;
 const errors = [];
@@ -43,12 +44,16 @@ for (const lesson of lessons) trackCounts.set(lesson.track, (trackCounts.get(les
 for (const track of curriculum.tracks || []) {
   if (trackCounts.get(track.name) !== track.count) errors.push("Track count mismatch for " + track.name);
 }
+const humanReviewed = lessons.filter((lesson) => lesson.reviewStatus === "reviewed" && lesson.reviewer && lesson.reviewedAt).length;
+const examplesExecutionVerified = lessons.filter((lesson) => lesson.exampleExecutionStatus === "passed" && lesson.executionEnvironment && lesson.executedAt).length;
 const report = {
   schemaVersion: 1,
   generatedAt: new Date().toISOString(),
   lessonCount: lessons.length,
   uniqueIds: seenIds.size,
   uniqueBodies: contentHashes.size,
+  humanReviewed,
+  examplesExecutionVerified,
   duplicateBodies: lessons.length - contentHashes.size,
   errors,
   warnings,
@@ -57,7 +62,7 @@ const report = {
 await mkdir(path.join(root, ".cache"), { recursive: true });
 await writeFile(path.join(root, ".cache/curriculum-audit.json"), JSON.stringify(report, null, 2) + "\n");
 process.stdout.write("[curriculum-audit] " + lessons.length + " activities; " + seenIds.size + " unique IDs; " + contentHashes.size + " unique full bodies; " + errors.length + " errors; " + warnings.length + " review warnings. Report: .cache/curriculum-audit.json\n");
-if (errors.length || (strict && warnings.length)) {
+if (errors.length || (strict && warnings.length) || (requireHumanReview && (humanReviewed !== lessons.length || examplesExecutionVerified !== lessons.length))) {
   if (errors.length) process.stderr.write(errors.join("\n") + "\n");
   if (strict && warnings.length) process.stderr.write("STRICT MODE: review all curriculum warnings before release.\n");
   process.exitCode = 1;

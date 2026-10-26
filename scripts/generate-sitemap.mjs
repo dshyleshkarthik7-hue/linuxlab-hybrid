@@ -1,4 +1,5 @@
 import { readFile, writeFile } from 'node:fs/promises';
+import { isCommandIndexable, commandCanonicalUrl } from './commands/indexability.mjs';
 
 const base = 'https://linuxterminal.me';
 const staticPaths = [
@@ -16,24 +17,8 @@ const canonical = JSON.parse(await readFile('public/command-records.json', 'utf8
 // Intelligence is intentionally generated outside the public web root (.cache).
 const intelligence = JSON.parse(await readFile('.cache/command-intelligence.json', 'utf8'));
 if (!Array.isArray(canonical.records)) throw new Error('Canonical command catalog is invalid');
-const isIndexable = (record) => {
-  if (record.page?.status === 'complete' && record.page?.source) return true;
-  const lesson = intelligence.records?.[record.name] || record.intelligence || {};
-  const reviewed = record.intelligence?.status === 'complete' || intelligence.records?.[record.name]?.status === 'complete';
-  return Boolean(reviewed
-    && String(lesson.definition || lesson.explanation || '').trim()
-    && String(lesson.syntax || '').trim()
-    && Array.isArray(lesson.examples) && lesson.examples.some((example) => typeof example === 'string' && example.trim())
-    && Array.isArray(lesson.internals) && lesson.internals.length > 0);
-};
-const commandUrls = canonical.records
-  .filter(isIndexable)
-  .map((record) => {
-    if (typeof record.url !== 'string' || !record.url.startsWith('/commands/')) {
-      throw new Error('Indexable command has no canonical URL: ' + record.name);
-    }
-    return base + record.url;
-  });
+const isIndexable = (record) => isCommandIndexable(record, intelligence.records?.[record.name]);
+const commandUrls = canonical.records.filter(isIndexable).map((record) => commandCanonicalUrl(record, base));
 const urls = [...new Set([...staticPaths.map((path) => base + path), ...commandUrls])].sort((a, b) => {
   if (a === base + '/') return -1;
   if (b === base + '/') return 1;
