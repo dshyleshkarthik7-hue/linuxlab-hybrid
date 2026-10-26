@@ -94,15 +94,15 @@ async function walk(dir) {
       // Match all anchor opening tags first, then inspect class attributes.
       // This avoids relying on a class-first attribute regex and makes the
       // build output itself authoritative for contrast, regardless of CSS order.
-      output = output.replace(/<a\\b[^>]*>/g, tag => {
-        const classMatch = tag.match(/\\bclass="([^"]*)"/);
-        const classes = classMatch ? classMatch[1].split(/\\s+/) : [];
+      output = output.replace(/<a\b[^>]*>/g, tag => {
+        const classMatch = tag.match(/\bclass="([^"]*)"/);
+        const classes = classMatch ? classMatch[1].split(/\s+/) : [];
         if (!classes.includes('btn')) return tag;
         const secondary = classes.includes('secondary');
         const background = secondary ? '#17466f' : '#075dcc';
         const border = secondary ? '#83cfff' : '#72baff';
         const style = `color:#fff!important;-webkit-text-fill-color:#fff!important;background:${background}!important;background-color:${background}!important;background-image:none!important;border:1px solid ${border}!important`;
-        const withoutStyle = tag.replace(/\\sstyle="[^"]*"/g, '');
+        const withoutStyle = tag.replace(/\sstyle="[^"]*"/g, '');
         return withoutStyle.replace(/>$/, ` style="${style}">`);
       });
       if (relative(root, path) === 'index.html') {
