@@ -32,7 +32,7 @@ for (const command of records.records) {
   if (seenTitles.has(title)) throw new Error(`duplicate title ${title}`);
   seenTitles.add(title);
 
-  const canonical = html.match(/<link rel="canonical" href="([^"]+)"/i)?.[1];
+  const canonical = html.match(/<link\b[^>]*rel=["']canonical["'][^>]*href=["']([^"']+)["']/i)?.[1] || html.match(/<link\b[^>]*href=["']([^"']+)["'][^>]*rel=["']canonical["']/i)?.[1];
   if (!canonical) throw new Error(`missing canonical ${command.url}`);
   if (seenCanonicals.has(canonical)) throw new Error(`duplicate canonical ${canonical}`);
   seenCanonicals.add(canonical);
@@ -48,6 +48,8 @@ for (const command of records.records) {
   if (canonical !== expectedCanonical) throw new Error("canonical mismatch for " + command.url + ": expected " + expectedCanonical + ", found " + canonical);
   const expectedRobots = commandRobotsContent(command, intelligence.records?.[command.name]).replace(/\s+/g, "");
   if (robots !== expectedRobots) throw new Error("robots/indexability mismatch for " + command.url + ": expected " + expectedRobots + ", found " + robots);
+  const ogUrl = html.match(/<meta\b(?=[^>]*\bproperty\s*=\s*["']og:url["'])[^>]*\bcontent\s*=\s*["']([^"']+)["'][^>]*>/i)?.[1];
+  if (ogUrl !== expectedCanonical) throw new Error("og:url mismatch for " + command.url + ": expected " + expectedCanonical + ", found " + ogUrl);
   if (shouldIndex && !robots.startsWith("index,")) throw new Error(`indexable command lacks index directive: ${command.url}`);
   if (!shouldIndex && !robots.startsWith("noindex")) throw new Error(`thin command must be noindex: ${command.url}`);
   if (shouldIndex) indexableUrls.add(command.url);

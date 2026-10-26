@@ -13,6 +13,9 @@ assert.deepEqual(generated.chunks.map((chunk) => [chunk.index, chunk.start, chun
 for (const chunk of generated.chunks) assert.equal(chunk.sha256, createHash('sha256').update(bytes.subarray(chunk.start, chunk.end + 1)).digest('hex'));
 await assert.rejects(() => buildChunkManifest(Readable.from([bytes]), { ...artifact, sha256: '0'.repeat(64) }, 8), /SHA-256 mismatch/);
 await assert.rejects(() => buildChunkManifest(Readable.from([bytes.subarray(0, 3)]), artifact, 8), /size mismatch/);
+const checkedIn = JSON.parse(await readFile('artifacts/developer-alpine-chunks.json', 'utf8'));
+assert.equal(checkedIn.sourceStatus, 'template-not-deployable');
+assert.ok(checkedIn.chunks.every(chunk => !/^[a-f0-9]{64}$/.test(chunk.sha256)), 'checked-in placeholder must not masquerade as verified chunk hashes');
 const worker = await readFile('cloudflare/iso-worker.ts', 'utf8');
 const workflow = await readFile('.github/workflows/deploy-cloudflare.yml', 'utf8');
 assert.match(worker, /developerChunkManifestReady/);

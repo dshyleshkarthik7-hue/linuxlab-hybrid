@@ -1,5 +1,6 @@
 {
   "schemaVersion": 1,
+  "sourceStatus": "template-not-deployable",
   "artifactSha256": "9a4683039f356b6bdfa40897f1985b39d5a02e0f46d477e427e8262401301211",
   "artifactSize": 691011584,
   "chunkSize": 33554432,

@@ -57,7 +57,7 @@ const report = {
   duplicateBodies: lessons.length - contentHashes.size,
   errors,
   warnings,
-  disclaimer: "Structural checks do not prove factual accuracy. Topic-specific expert review and execution in a stated test environment are still required."
+  disclaimer: "The lessonCount is catalogue inventory only. It does not establish manual review or example execution. A lesson counts as human-reviewed only when reviewStatus=reviewed, reviewer, and reviewedAt are present; execution verification requires exampleExecutionStatus=passed, executionEnvironment, and executedAt. Structural checks do not prove factual accuracy."
 };
 await mkdir(path.join(root, ".cache"), { recursive: true });
 await writeFile(path.join(root, ".cache/curriculum-audit.json"), JSON.stringify(report, null, 2) + "\n");

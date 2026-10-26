@@ -44,6 +44,15 @@ for (const command of data.records) {
       const cssVersioned = existing.replace(/commands\.css(?:\?v=\d+)?/g, "commands.css?v=20261020");
       const existingRobotsTag = existing.match(/<meta\b[^>]*>/gi)?.find((tag) => /\bname\s*=\s*["']robots["']/i.test(tag));
       let normalized = cssVersioned;
+      const canonicalUrl = commandCanonicalUrl(command);
+      const canonicalTag = \`<link rel="canonical" href="\${escapeHtml(canonicalUrl)}">\`;
+      const oldCanonical = normalized.match(/<link\b[^>]*rel=["']canonical["'][^>]*>/i)?.[0];
+      if (oldCanonical) normalized = normalized.replace(oldCanonical, canonicalTag);
+      else normalized = normalized.replace("</head>", canonicalTag + "\n</head>");
+      const ogUrlTag = \`<meta property="og:url" content="\${escapeHtml(canonicalUrl)}">\`;
+      const oldOgUrl = normalized.match(/<meta\b(?=[^>]*\bproperty\s*=\s*["']og:url["'])[^>]*>/i)?.[0];
+      if (oldOgUrl) normalized = normalized.replace(oldOgUrl, ogUrlTag);
+      else normalized = normalized.replace("</head>", ogUrlTag + "\n</head>");
       if (existingRobotsTag) {
         normalized = cssVersioned.replace(existingRobotsTag, robotsMeta);
       } else {

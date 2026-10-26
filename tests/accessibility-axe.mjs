@@ -70,13 +70,14 @@ try {
           const foreground = luminance(style.color);
           const background = luminance(style.backgroundColor);
           const ratio = (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
+          const nestedText = [...element.querySelectorAll('*')].filter(child => child.textContent.trim()).map(child => ({ color: getComputedStyle(child).color, textFillColor: getComputedStyle(child).webkitTextFillColor }));
           return { href: element.getAttribute('href'), color: style.color, backgroundColor: style.backgroundColor,
-            textFillColor: style.webkitTextFillColor, contrast: Number(ratio.toFixed(2)) };
+            textFillColor: style.webkitTextFillColor, nestedText, contrast: Number(ratio.toFixed(2)) };
         })
       );
       for (const cta of ctas) {
         if (cta.contrast < 4.5 || cta.color !== 'rgb(255, 255, 255)' ||
-            cta.textFillColor !== 'rgb(255, 255, 255)') {
+            cta.textFillColor !== 'rgb(255, 255, 255)' || cta.nestedText.some(child => child.color !== 'rgb(255, 255, 255)' || child.textFillColor !== 'rgb(255, 255, 255)')) {
           throw new Error('Homepage button failed WCAG AA contrast guard: ' + JSON.stringify(cta));
         }
       }
