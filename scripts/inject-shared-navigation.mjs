@@ -94,19 +94,19 @@ async function walk(dir) {
       // Normalize every CTA in the final build artifact, not just the homepage.
       // Route-specific CSS can use more-specific !important rules and otherwise
       // reintroduce low-contrast text/background pairs after the shared styles load.
-      output = output.replace(/<a\\b([^>]*\\bclass="[^"]*\\bbtn\\b[^"]*"[^>]*)>/g, (tag, attributes) => {
-        const classes = (attributes.match(/\\bclass="([^"]*)"/) || [])[1] || '';
-        const secondary = classes.split(/\\s+/).includes('secondary');
+      output = output.replace(/<a\b([^>]*\bclass="[^"]*\bbtn\b[^"]*"[^>]*)>/g, (tag, attributes) => {
+        const classes = (attributes.match(/\bclass="([^"]*)"/) || [])[1] || '';
+        const secondary = classes.split(/\s+/).includes('secondary');
         const background = secondary ? '#17466f' : '#075dcc';
         const border = secondary ? '#83cfff' : '#72baff';
         const style = `color:#fff!important;-webkit-text-fill-color:#fff!important;background:${background}!important;background-color:${background}!important;background-image:none!important;border:1px solid ${border}!important`;
         // Replace stale inline declarations instead of appending conflicting styles.
-        const cleaned = attributes.replace(/\\sstyle="[^"]*"/g, '');
+        const cleaned = attributes.replace(/\sstyle="[^"]*"/g, '');
         return `<a${cleaned} style="${style}">`;
       });
       if (relative(root, path) === 'index.html') {
         output = output.replace(
-          /(<section class="info-card developer-guide">[\\s\\S]*?<div class="compare-grid">\\s*<div>\\s*<h3)(>)/,
+          /(<section class="info-card developer-guide">[\s\S]*?<div class="compare-grid">\s*<div>\s*<h3)(>)/,
           '$1 style="color:#f1f7ff!important;-webkit-text-fill-color:#f1f7ff!important"$2'
         );
       }
