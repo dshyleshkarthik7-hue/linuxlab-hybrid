@@ -91,18 +91,19 @@ async function walk(dir) {
     else if (entry.isFile() && entry.name.endsWith('.html')) {
       const html = await readFile(path, 'utf8');
       let output = html;
-      // Normalize every CTA in the final build artifact, not just the homepage.
-      // Route-specific CSS can use more-specific !important rules and otherwise
-      // reintroduce low-contrast text/background pairs after the shared styles load.
-      output = output.replace(/<a\b([^>]*\bclass="[^"]*\bbtn\b[^"]*"[^>]*)>/g, (tag, attributes) => {
-        const classes = (attributes.match(/\bclass="([^"]*)"/) || [])[1] || '';
-        const secondary = classes.split(/\s+/).includes('secondary');
+      // Match all anchor opening tags first, then inspect class attributes.
+      // This avoids relying on a class-first attribute regex and makes the
+      // build output itself authoritative for contrast, regardless of CSS order.
+      output = output.replace(/<a\\b[^>]*>/g, tag => {
+        const classMatch = tag.match(/\\bclass="([^"]*)"/);
+        const classes = classMatch ? classMatch[1].split(/\\s+/) : [];
+        if (!classes.includes('btn')) return tag;
+        const secondary = classes.includes('secondary');
         const background = secondary ? '#17466f' : '#075dcc';
         const border = secondary ? '#83cfff' : '#72baff';
         const style = `color:#fff!important;-webkit-text-fill-color:#fff!important;background:${background}!important;background-color:${background}!important;background-image:none!important;border:1px solid ${border}!important`;
-        // Replace stale inline declarations instead of appending conflicting styles.
-        const cleaned = attributes.replace(/\sstyle="[^"]*"/g, '');
-        return `<a${cleaned} style="${style}">`;
+        const withoutStyle = tag.replace(/\\sstyle="[^"]*"/g, '');
+        return withoutStyle.replace(/>$/, ` style="${style}">`);
       });
       if (relative(root, path) === 'index.html') {
         output = output.replace(
