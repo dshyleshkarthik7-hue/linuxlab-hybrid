@@ -60,6 +60,29 @@ html body .secondary.btn[href$="certificate/"] {
   color: #f1f7ff !important;
   -webkit-text-fill-color: #f1f7ff !important;
 }
+
+/* Enforce contrast at the shared control level, not only for a fragile URL list.
+   This final build-injected rule wins over route/theme declarations that can
+   reintroduce dark text on dark cards. */
+html body a.btn {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #075dcc !important;
+  background-image: none !important;
+  border-color: #72baff !important;
+}
+html body a.btn.secondary {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #17466f !important;
+  background-image: none !important;
+  border-color: #83cfff !important;
+}
+html body .comparison .compare-grid h3,
+html body .developer-guide .compare-grid h3 {
+  color: #f1f7ff !important;
+  -webkit-text-fill-color: #f1f7ff !important;
+}
 </style>`;
 async function walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
