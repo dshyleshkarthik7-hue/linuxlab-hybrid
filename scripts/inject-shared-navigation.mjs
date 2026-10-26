@@ -46,6 +46,10 @@ async function walk(dir) {
           const background = secondary ? '#17466f' : '#075dcc';
           const border = secondary ? '#83cfff' : '#72baff';
           const style = `color:#fff!important;-webkit-text-fill-color:#fff!important;background:${background}!important;background-color:${background}!important;border:1px solid ${border}!important`;
+          // Replace existing inline declarations instead of appending duplicate, potentially conflicting styles.
+          if (!style.includes('color:#fff!important') || !style.includes('-webkit-text-fill-color:#fff!important')) {
+            throw new Error('Homepage CTA normalization must pin both text-color mechanisms');
+          }
           const cleaned = attributes.replace(/\sstyle="[^"]*"/g, '');
           return `<a${cleaned} style="${style}">`;
         });

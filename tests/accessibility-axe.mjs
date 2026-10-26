@@ -61,7 +61,7 @@ try {
       const ctas = await page.locator('a.btn').evaluateAll(elements =>
         elements.map(element => {
           const style = getComputedStyle(element);
-          const rgb = value => value.match(/[\\d.]+/g)?.slice(0, 3).map(Number) ?? [];
+          const rgb = value => value.match(/[\d.]+/g)?.slice(0, 3).map(Number) ?? [];
           const luminance = value => {
             const channels = rgb(value).map(channel => channel / 255).map(channel =>
               channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4);
