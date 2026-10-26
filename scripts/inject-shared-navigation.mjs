@@ -4,6 +4,37 @@ import { join, relative } from 'node:path';
 const root = 'dist';
 const scriptTag = '<script defer src="/site-nav.js"></script>';
 const styleTag = '<link rel="stylesheet" href="/site-nav.css">';
+const runtimeContrastGuard = `<script id="homepage-runtime-contrast-guard">
+(() => {
+  const normalize = () => {
+    if (location.pathname !== '/' && location.pathname !== '/index.html') return;
+    for (const element of document.querySelectorAll('a.btn')) {
+      const secondary = element.classList.contains('secondary');
+      const set = (property, value) => {
+        if (element.style.getPropertyValue(property) !== value ||
+            element.style.getPropertyPriority(property) !== 'important') {
+          element.style.setProperty(property, value, 'important');
+        }
+      };
+      set('color', '#ffffff');
+      set('-webkit-text-fill-color', '#ffffff');
+      set('background-color', secondary ? '#17466f' : '#075dcc');
+      set('background-image', 'none');
+      set('border-color', secondary ? '#83cfff' : '#72baff');
+    }
+    for (const heading of document.querySelectorAll('.developer-guide .compare-grid h3')) {
+      if (getComputedStyle(heading).color !== 'rgb(241, 247, 255)') {
+        heading.style.setProperty('color', '#f1f7ff', 'important');
+        heading.style.setProperty('-webkit-text-fill-color', '#f1f7ff', 'important');
+      }
+    }
+  };
+  normalize();
+  const observer = new MutationObserver(normalize);
+  observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style'] });
+  document.addEventListener('DOMContentLoaded', normalize, { once: true });
+})();
+</script>`;
 const contrastStyle = `<style id="site-accessible-control-colors">
 /* Match the homepage's high-specificity inline guard; keep this override route-specific. */
 html body .hero-actions > a.btn[href$="beginner/"],
@@ -60,6 +91,9 @@ async function walk(dir) {
       }
       if (!output.includes('/site-nav.css') && output.includes('</head>')) output = output.replace('</head>', styleTag + '</head>');
       if (!output.includes('site-accessible-control-colors') && output.includes('</head>')) output = output.replace('</head>', contrastStyle + '</head>');
+      if (relative(root, path) === 'index.html' && !output.includes('homepage-runtime-contrast-guard') && output.includes('</body>')) {
+        output = output.replace('</body>', runtimeContrastGuard + '</body>');
+      }
       if (!output.includes('/site-nav.js') && output.includes('</body>')) output = output.replace('</body>', scriptTag + '</body>');
       if (output !== html) await writeFile(path, output);
     }
