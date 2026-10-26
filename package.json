@@ -93,7 +93,8 @@
     "audit:command-evidence": "node scripts/commands/audit-evidence-pipeline.mjs",
     "audit:curriculum": "node scripts/audit-curriculum.mjs",
     "author:qwen-lessons": "node scripts/commands/author-qwen-lessons.mjs",
-    "author:qwen-tutorials": "node scripts/author-qwen-tutorials.mjs"
+    "author:qwen-tutorials": "node scripts/author-qwen-tutorials.mjs",
+    "author:qwen-curriculum": "node scripts/author-qwen-curriculum.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",

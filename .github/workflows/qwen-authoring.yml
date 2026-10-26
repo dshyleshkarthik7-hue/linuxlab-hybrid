@@ -10,6 +10,9 @@ on:
         options:
           - commands
           - tutorials
+          - curriculum
+          - all-commands
+          - all-curriculum
       start:
         description: Zero-based inventory offset
         type: number
@@ -55,7 +58,7 @@ jobs:
           const type = process.env.CONTENT_TYPE;
           const start = Number(process.env.START);
           const count = Number(process.env.COUNT);
-          const max = type === "commands" ? 25 : type === "tutorials" ? 10 : 0;
+          const max = type === "commands" ? 25 : type === "tutorials" || type === "curriculum" ? 10 : type === "all-commands" || type === "all-curriculum" ? 1 : 0;
           if (!Number.isSafeInteger(start) || start < 0) throw new Error("start must be a non-negative integer");
           if (!Number.isSafeInteger(count) || count < 1 || count > max) throw new Error("count must be between 1 and the limit for the selected content type");
           NODE
@@ -72,11 +75,13 @@ jobs:
           set -euo pipefail
           test -n "$HF_TOKEN" || { echo "::error::Configure HF_TOKEN as a secret in the content-authoring environment."; exit 1; }
           export HF_MODEL="${HF_MODEL:-Qwen/Qwen3-8B}"
-          if [ "$CONTENT_TYPE" = commands ]; then
-            npm run author:qwen-lessons -- --start "$START" --count "$COUNT"
-          else
-            npm run author:qwen-tutorials -- --start "$START" --count "$COUNT"
-          fi
+          case "$CONTENT_TYPE" in
+            commands) npm run author:qwen-lessons -- --start "$START" --count "$COUNT" ;;
+            tutorials) npm run author:qwen-tutorials -- --start "$START" --count "$COUNT" ;;
+            curriculum) npm run author:qwen-curriculum -- --start "$START" --count "$COUNT" ;;
+            all-commands) for ((offset=0; offset<6161; offset+=25)); do npm run author:qwen-lessons -- --start "$offset" --count 25; done ;;
+            all-curriculum) npm run author:qwen-curriculum -- --all ;;
+          esac
       - name: Upload review drafts for inspection
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
@@ -84,5 +89,6 @@ jobs:
           path: |
             data/commands/research/
             data/tutorial-research/
+            data/curriculum-research/
           if-no-files-found: error
           retention-days: 7
