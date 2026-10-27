@@ -45,8 +45,17 @@ const pageStatus = Object.create(null);
 const intelligenceStatus = Object.create(null);
 let entriesWithAuthoredIntelligence = 0;
 let entriesWithExecutableExamples = 0;
+let nameOnlyStubs = 0;
+const enrichedRecords = canonical.records.filter((record) => typeof record.id === "string" && record.id.trim());
 for (const record of canonical.records) {
-  requireCondition(typeof record.id === "string" && record.id.trim(), "command record has no stable id");
+  requireCondition(typeof record.name === "string" && record.name.trim(), "command record has no name");
+  if (!record.id) {
+    // The canonical dataset intentionally preserves inventory-only name stubs.
+    requireCondition(Object.keys(record).every((key) => key === "name"), "name-only catalog entry has unexpected metadata: " + record.name);
+    nameOnlyStubs++;
+    continue;
+  }
+  requireCondition(typeof record.id === "string" && record.id.trim(), "command record has an invalid stable id");
   requireCondition(typeof record.url === "string" && record.url.startsWith("/"), "command " + record.name + " has no local canonical URL");
   requireCondition(typeof record.page?.status === "string" && record.page.status.trim(), "command " + record.name + " has no page status");
   requireCondition(typeof record.intelligence?.status === "string" && record.intelligence.status.trim(), "command " + record.name + " has no intelligence status");
@@ -55,8 +64,9 @@ for (const record of canonical.records) {
   if (record.intelligence?.syntax && record.intelligence?.description) entriesWithAuthoredIntelligence++;
   if (record.execution?.tryEnabled === true) entriesWithExecutableExamples++;
 }
-const ids = canonical.records.map((record) => record.id);
-requireCondition(new Set(ids).size === ids.length, "canonical command IDs are not unique");
+const ids = enrichedRecords.map((record) => record.id);
+requireCondition(new Set(ids).size === ids.length, "canonical enriched command IDs are not unique");
+requireCondition(enrichedRecords.length + nameOnlyStubs === canonical.records.length, "canonical catalog records are not fully classified");
 
 requireCondition(Array.isArray(curriculum.lessons), "curriculum lessons missing");
 requireCondition(curriculum.lessonCount === curriculum.lessons.length, "curriculum lessonCount is stale");
@@ -91,7 +101,7 @@ requireCondition(/npm run phase1:check/.test(ci), "Phase 1 readiness gate is not
 const summary = {
   result: "PASS",
   checks: ["Node and package-lock consistency", "required build/test/security scripts", "canonical command IDs, names, URLs, and explicit statuses", "curriculum IDs and track totals", "artifact size and SHA-256 metadata", "browser-VM security-boundary documentation", "tutor request-size controls", "least-privilege CI permissions and mandatory readiness gate"],
-  commands: { total: canonical.records.length, pageStatus, intelligenceStatus, authoredIntelligenceRecords: entriesWithAuthoredIntelligence, tryEnabledRecords: entriesWithExecutableExamples },
+  commands: { total: canonical.records.length, enrichedRecords: enrichedRecords.length, nameOnlyStubs, pageStatus, intelligenceStatus, authoredIntelligenceRecords: entriesWithAuthoredIntelligence, tryEnabledRecords: entriesWithExecutableExamples },
   curriculum: { total: curriculum.lessons.length, tracks: curriculum.tracks.length },
   artifacts: manifest.artifacts.length,
   note: "Structural contract only; it does not prove lesson accuracy, live deployment health, browser host isolation, or absence of vulnerabilities.",

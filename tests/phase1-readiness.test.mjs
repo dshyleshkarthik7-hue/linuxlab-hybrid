@@ -12,6 +12,8 @@ const report = execFileSync(process.execPath, ["scripts/phase1-readiness.mjs"], 
 const result = JSON.parse(report);
 assert.equal(result.result, "PASS");
 assert.ok(result.commands.total >= 6000);
+assert.equal(result.commands.enrichedRecords + result.commands.nameOnlyStubs, result.commands.total);
+assert.ok(result.commands.nameOnlyStubs > 0);
 assert.ok(result.curriculum.total > 0);
 assert.ok(result.artifacts > 0);
 console.log("Phase 1 readiness contract tests passed.");
