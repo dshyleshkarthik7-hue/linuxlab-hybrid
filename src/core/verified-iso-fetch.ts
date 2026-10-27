@@ -65,7 +65,7 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
         const contentRange = response.headers.get('content-range')?.match(/^bytes (\d+)-(\d+)\/(\d+)$/);
         if (!contentRange) throw new Error('ISO range integrity metadata mismatch');
         const responseStart = Number(contentRange[1]), responseEnd = Number(contentRange[2]), responseTotal = Number(contentRange[3]);
-        if (!Number.isSafeInteger(responseStart) || !Number.isSafeInteger(responseEnd) || !Number.isSafeInteger(responseTotal) || responseStart !== start || responseEnd < responseStart || responseEnd > end || responseTotal !== artifact.size) throw new Error('ISO range integrity metadata mismatch');
+        if (!Number.isSafeInteger(responseStart) || !Number.isSafeInteger(responseEnd) || !Number.isSafeInteger(responseTotal) || responseStart !== start || responseEnd !== end || responseTotal !== artifact.size) throw new Error('ISO range integrity metadata mismatch');
         const bytes = await response.arrayBuffer();
         if (bytes.byteLength !== responseEnd - responseStart + 1) throw new Error('ISO range size mismatch');
         await writeIsoChunkCache(artifact, responseStart, responseEnd, bytes);
@@ -84,7 +84,12 @@ async function fetchRange(url: string, start: number, end: number, artifact: Pin
     } catch (error) {
       lastError = error;
       if (signal.aborted) throw error;
-      if (attempt < 2) await new Promise<void>((resolve, reject) => { const timer = setTimeout(resolve, 250 * 2 ** attempt); const abort = () => { clearTimeout(timer); signal.removeEventListener('abort', abort); reject(signal.reason ?? new DOMException('Aborted', 'AbortError')); }; signal.addEventListener('abort', abort, { once: true }); });
+      if (attempt < 2) await new Promise<void>((resolve, reject) => {
+        const cleanup = () => { clearTimeout(timer); signal.removeEventListener('abort', abort); };
+        const timer = setTimeout(() => { signal.removeEventListener('abort', abort); resolve(); }, 250 * 2 ** attempt);
+        const abort = () => { cleanup(); reject(signal.reason ?? new DOMException('Aborted', 'AbortError')); };
+        signal.addEventListener('abort', abort, { once: true });
+      });
     }
   }
   throw lastError instanceof Error ? lastError : new Error('ISO range request failed');

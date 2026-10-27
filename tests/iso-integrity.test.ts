@@ -30,6 +30,9 @@ assert.match(resumableFetcher, /Promise\.all\(batch\.map\(\(\{ start, end \}\) =
 assert.match(resumableFetcher, /cacheAttempt < 2/, 'a failed whole-image digest gets one cache-cleared retry');
 assert.match(resumableFetcher, /clearIsoArtifactCache\(artifact\)/, 'whole-image digest mismatch invalidates cached chunks before retry');
 assert.match(resumableFetcher, /actual\.toLowerCase\(\) === artifact\.sha256\.toLowerCase\(\)/, 'full image is accepted only when the pinned digest matches');
+assert.match(resumableFetcher, /responseEnd !== end/, 'a short 206 response must be rejected rather than leaving unfilled bytes in the assembled ISO');
+assert.match(resumableFetcher, /signal\.removeEventListener\('abort', abort\); resolve\(\)/, 'completed retry delays must remove their abort listener');
+
 
 const fixture = new TextEncoder().encode('The quick brown fox jumps over the lazy dog');
 const expected = createHash('sha256').update(fixture).digest('hex');

@@ -79,6 +79,16 @@ function error(message: string, status: number, extra?: HeadersInit): Response {
   });
 }
 
+async function verifyFullArtifact(bytes: Uint8Array): Promise<void> {
+  if (bytes.byteLength !== linux4.size) throw new Error('Unexpected full body length');
+  const digestInput = new Uint8Array(bytes.byteLength);
+  digestInput.set(bytes);
+  const digest = [...new Uint8Array(await crypto.subtle.digest('SHA-256', digestInput.buffer))]
+    .map((byte) => byte.toString(16).padStart(2, '0'))
+    .join('');
+  if (digest !== linux4.sha256) throw new Error('Unexpected full body digest');
+}
+
 export default async (request: Request): Promise<Response> => {
   if (request.method === 'OPTIONS') {
     return new Response(null, {
@@ -144,7 +154,7 @@ export default async (request: Request): Promise<Response> => {
           }
           if (response.status === 200) {
             const bytes = new Uint8Array(await response.arrayBuffer());
-            if (bytes.byteLength !== linux4.size) throw new Error('Unexpected full body length');
+            await verifyFullArtifact(bytes);
             const slice = bytes.slice(start, end + 1);
             return new Response(slice, {
               status: 206,
@@ -167,7 +177,6 @@ export default async (request: Request): Promise<Response> => {
     const headers = new Headers({
       'content-type': 'application/octet-stream',
       'accept-ranges': 'bytes',
-      'content-range': expectedContentRange,
       'content-length': String(length),
       'x-linuxlab-sha256': linux4.sha256,
       'x-linuxlab-chunk-start': String(start),
@@ -181,8 +190,17 @@ export default async (request: Request): Promise<Response> => {
       'access-control-expose-headers': 'content-range, content-length, accept-ranges, x-linuxlab-sha256, x-linuxlab-chunk-start, x-linuxlab-chunk-end, x-linuxlab-chunk-total, x-linuxlab-artifact-size, x-linuxlab-delivery',
     });
 
-    return new Response(request.method === 'HEAD' ? null : upstream.body, { status: 206, headers });
-  } catch {
-    return error('linux4 ISO temporarily unavailable', 504);
+    let body: BodyInit | null = upstream.body;
+    if (!range) {
+      const bytes = new Uint8Array(await upstream.arrayBuffer());
+      await verifyFullArtifact(bytes);
+      body = bytes;
+    }
+    if (range) headers.set('content-range', expectedContentRange);
+    const responseStatus = range ? 206 : 200;
+    return new Response(request.method === 'HEAD' ? null : body, { status: responseStatus, headers });
+  } catch (cause) {
+    const invalidUpstream = cause instanceof Error && /digest|length|metadata|trusted redirect/i.test(cause.message);
+    return error(invalidUpstream ? 'linux4 ISO upstream validation failed' : 'linux4 ISO temporarily unavailable', invalidUpstream ? 502 : 504);
   }
 };
