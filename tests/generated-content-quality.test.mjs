@@ -57,3 +57,9 @@ for (const command of sample) {
 }
 
 console.log("generated-content quality contract passed");
+
+const generatedValidator = await readFile("scripts/commands/validate-generated-pages.mjs", "utf8");
+assert.match(generatedValidator, /broken internal command link/, "generated command pages must fail CI when an internal lesson link is broken");
+assert.match(generatedValidator, /withoutCompleteOrPlannedLesson/, "coverage reporting must distinguish incomplete catalog records from planned and complete lessons");
+assert.match(generatedValidator, /cleanAlias/, "internal route validation must accept canonical .html pages and clean URL aliases");
+assert.match(generatedValidator, /JSON\.stringify\(coverage\)/, "coverage counts must be calculated from the current catalog rather than copied into prose");

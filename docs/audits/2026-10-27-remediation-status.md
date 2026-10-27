@@ -1,5 +1,23 @@
 # Repository remediation status — 27 October 2026
 
+## CI failure-driven correction
+
+The CI run for commit `d2a1bd1faab990db4dd67af16fa59d22f3fd0764` reached `test:ci` and failed because the source-contract test still expected the old digest call signature after the TypeScript-safe `digestInput.buffer` correction. The assertion now checks the actual safe implementation rather than the obsolete signature. The next CI run must verify this correction.
+
+## Production deployment gate hardening
+
+The Cloudflare deployment workflow now requires a completed, successful push-triggered CI run for the exact `main` commit being deployed, in addition to checking that `main` has not advanced. Previously, the workflow's “since CI passed” guard only compared commit SHAs and did not actually query CI results. A regression contract checks that deployment inspects Actions runs and requires success.
+
+## Additional range-response hardening
+
+The Netlify Linux 4 endpoint now buffers the bounded upstream range (the endpoint caps explicit ranges at 8 MiB), verifies the actual body byte count against the requested length, and only then returns a 206 response. Previously it validated the upstream range headers but streamed the body without checking whether the body itself was truncated. A regression contract asserts the body-length check.
+
+## Follow-up CI re-audit
+
+The first CI run for commit `69bfc954a599a3c546ebb7ca725f3e8b36797fe7` failed in `test:build-syntax`: `scripts/commands/build-command-pages.mjs` contained escaped template-literal delimiters, causing a SyntaxError before tests could complete. The same block also reset the canonical/Open Graph edits when normalizing the robots tag. The follow-up fix restores valid template literals and applies robots normalization to the already-updated document, preserving all SEO tag edits.
+
+The release-security contract test passed in that CI run. The full CI run still needs to be repeated after the syntax correction.
+
 ## Changes in this commit
 
 - Fixed the Netlify Linux 4 ISO endpoint's HTTP semantics: requests without an explicit Range now return 200; explicit byte/chunk requests return 206 and include Content-Range.
@@ -15,6 +33,16 @@
 ## Verification status
 
 The first GitHub Actions run caught a TypeScript BufferSource type mismatch in the new SHA-256 verifier; the verifier now copies bytes into an owned Uint8Array before hashing. The rerun must still pass before considering this change verified. This environment did not execute the full npm test suite locally, real ISO download, real guest boot, or production endpoint smoke tests.
+
+## CI queue and stale-run correction
+
+The CI concurrency policy now cancels superseded push, pull-request, and manually triggered runs while preserving scheduled runs. This prevents a hung browser-install step on an obsolete main commit from holding the queue and delaying verification of the current commit. A regression contract checks the policy.
+
+## Catalog and internal-route re-audit
+
+The generated-page validator now derives coverage counts from the current catalog data at validation time and prints disjoint complete, planned, and remaining-entry totals with the generated-page check. It also checks internal `/commands/...` links in every generated command page against canonical `.html` routes and their clean trailing-slash aliases, so a generated cross-link to a missing lesson fails the existing command-page CI gate. The check intentionally does not claim that every catalog record is a fully authored lesson.
+
+This is source-level coverage and route validation. The full generation/build/test pipeline still must pass on the resulting commit before these checks are considered verified.
 
 ## Status of the prior 70-item audit register
 

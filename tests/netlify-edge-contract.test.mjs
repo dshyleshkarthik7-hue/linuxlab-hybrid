@@ -59,9 +59,11 @@ assert.match(linux4Edge, /linux4/, 'linux4 edge must reference the pinned artifa
 assert.match(linux4Edge, /chunkStart/, 'linux4 edge must support chunkStart/chunkEnd');
 assert.match(linux4Edge, /x-linuxlab-delivery/, 'linux4 edge must mark Netlify delivery');
 assert.match(linux4Edge, /async function verifyFullArtifact\(bytes: Uint8Array\)/, 'full-file requests must validate the complete artifact');
-assert.match(linux4Edge, /crypto\.subtle\.digest\('SHA-256', bytes\)/, 'full-file responses must verify the pinned digest');
+assert.match(linux4Edge, /crypto\.subtle\.digest\('SHA-256', digestInput\.buffer\)/, 'full-file responses must verify the pinned digest using a typed-array-safe buffer');
 assert.match(linux4Edge, /const responseStatus = range \? 206 : 200/, 'ordinary full-file requests must return 200 while explicit ranges return 206');
 assert.match(linux4Edge, /if \(range\) headers\.set\('content-range', expectedContentRange\)/, 'Content-Range must only be sent for explicit range requests');
+assert.match(linux4Edge, /const rangeBytes = new Uint8Array\(await response\.arrayBuffer\(\)\)/, 'upstream range bodies must be consumed and checked before being returned');
+assert.match(linux4Edge, /rangeBytes\.byteLength !== length/, 'truncated upstream range bodies must fail before delivery');
 
 assert.match(linux4Entry, /const ISO_URL = '\/api\/linux4-iso'/, 'Linux 4 boot must fetch ISO from Netlify Edge');
 assert.doesNotMatch(linux4Entry, /workers\.dev\/\?image=linux4/, 'Linux 4 must not use the Cloudflare Worker primary URL');

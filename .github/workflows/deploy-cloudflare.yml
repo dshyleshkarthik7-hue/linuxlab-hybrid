@@ -8,6 +8,7 @@ on:
         default: false
         type: boolean
 permissions:
+  actions: read
   contents: read
 jobs:
   deploy:
@@ -15,6 +16,32 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
+      - name: Require a successful push CI run for this exact commit
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TESTED_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          runs_file="$(mktemp)"
+          trap 'rm -f "$runs_file"' EXIT
+          gh api "repos/${GITHUB_REPOSITORY}/actions/workflows/ci.yml/runs?head_sha=${TESTED_SHA}&per_page=100" > "$runs_file"
+          export RUNS_FILE="$runs_file"
+          node --input-type=module -e '
+            import { readFileSync } from "node:fs";
+            const payload = JSON.parse(readFileSync(process.env.RUNS_FILE, "utf8"));
+            const passed = (payload.workflow_runs || []).some((run) =>
+              run.head_sha === process.env.TESTED_SHA &&
+              run.head_branch === "main" &&
+              run.event === "push" &&
+              run.status === "completed" &&
+              run.conclusion === "success"
+            );
+            if (!passed) {
+              console.error("Refusing production deploy: no successful push-triggered CI run exists for this exact main commit.");
+              process.exit(1);
+            }
+            console.log("Found successful push CI run for", process.env.TESTED_SHA);
+          '
       - name: Ensure main has not advanced since CI passed
         env:
           GH_TOKEN: ${{ github.token }}

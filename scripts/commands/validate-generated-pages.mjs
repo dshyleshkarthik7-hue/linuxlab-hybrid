@@ -10,6 +10,21 @@ if (records.records.length !== EXPECTED) {
 }
 
 const files = new Set(await readdir("public/commands"));
+const commandPaths = new Set(records.records.flatMap((command) => {
+  const pathname = new URL(command.url, "https://linuxterminal.me").pathname;
+  // The site supports both generated .html URLs and clean trailing-slash aliases.
+  const cleanAlias = pathname.endsWith(".html") ? pathname.slice(0, -5) + "/" : pathname.endsWith("/") ? pathname.slice(0, -1) + ".html" : pathname;
+  return [pathname, cleanAlias];
+}));
+const isComplete = (command) => command.page?.status === "complete" || command.intelligence?.status === "complete";
+const isPlanned = (command) => !isComplete(command) && (command.page?.status === "planned" || command.intelligence?.status === "planned");
+const coverage = {
+  totalCatalogEntries: records.records.length,
+  complete: records.records.filter(isComplete).length,
+  planned: records.records.filter(isPlanned).length,
+  withoutCompleteOrPlannedLesson: records.records.filter((command) => !isComplete(command) && !isPlanned(command)).length,
+};
+
 const seenTitles = new Set();
 const seenCanonicals = new Set();
 const indexableUrls = new Set();
@@ -19,6 +34,14 @@ for (const command of records.records) {
   if (!files.has(filename)) throw new Error(`missing ${command.url}`);
 
   const html = await readFile(path.join("public/commands", filename), "utf8");
+  // Validate command-to-command links against the canonical generated catalog.
+  // Ignore external URLs and the command index, but fail on broken internal lesson links.
+  for (const match of html.matchAll(/\bhref\s*=\s*["'](\/commands\/[^"'#]*)["']/gi)) {
+    const linkedPath = new URL(match[1], "https://linuxterminal.me").pathname;
+    if (linkedPath !== "/commands/" && !commandPaths.has(linkedPath)) {
+      throw new Error(`broken internal command link in ${command.url}: ${match[1]}`);
+    }
+  }
   if (!html.includes('rel="canonical"')) throw new Error(`invalid ${command.url}: missing canonical link`);
   if (!/<h1(?:\s|>)/i.test(html)) throw new Error(`invalid ${command.url}: missing h1 heading`);
   if (command.page?.status !== "complete") {
@@ -70,4 +93,7 @@ for (const url of sitemapCommandUrls) {
   if (!indexableUrls.has(url)) throw new Error(`sitemap includes non-indexable command ${url}`);
 }
 
-console.log(`validated ${EXPECTED} command records, unique titles/canonicals, indexability, and sitemap contract`);
+console.log(
+  `validated ${EXPECTED} command records, unique titles/canonicals, internal command links, indexability, and sitemap contract; coverage: ` +
+  JSON.stringify(coverage)
+);

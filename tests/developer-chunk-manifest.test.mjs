@@ -21,4 +21,9 @@ const workflow = await readFile('.github/workflows/deploy-cloudflare.yml', 'utf8
 assert.match(worker, /developerChunkManifestReady/);
 assert.match(worker, /X-LinuxLab-Chunk-SHA256/);
 assert.match(workflow, /node scripts\/generate-iso-chunk-manifest\.mjs/);
+assert.match(workflow, /actions: read/, 'production deploy must be able to inspect CI runs');
+assert.match(workflow, /actions\/workflows\/ci\.yml\/runs\?head_sha=/, 'production deploy must query CI for the exact tested commit');
+assert.match(workflow, /run\.conclusion === "success"/, 'production deploy must require a successful CI conclusion');
+assert.match(workflow, /run\.event === "push"/, 'manual workflow dispatch alone must not count as a passing CI run');
+
 console.log('Developer Alpine chunk-manifest generation and verification contract passed');

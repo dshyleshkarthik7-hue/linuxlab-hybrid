@@ -9,3 +9,6 @@ for (const file of readdirSync('.github/workflows').filter((name) => /\.(yml|yam
   }
 }
 console.log('GitHub Actions immutable SHA policy passed');
+
+const ciWorkflow = readFileSync('.github/workflows/ci.yml', 'utf8');
+assert.match(ciWorkflow, /cancel-in-progress:\s*\$\{\{\s*github\.event_name\s*!=\s*'schedule'\s*\}\}/, 'new commits must cancel stale non-scheduled CI runs so current main is not blocked behind obsolete runs');

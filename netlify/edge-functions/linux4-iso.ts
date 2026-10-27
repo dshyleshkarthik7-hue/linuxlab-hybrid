@@ -150,7 +150,9 @@ export default async (request: Request): Promise<Response> => {
               response.body?.cancel();
               throw new Error('Invalid range metadata');
             }
-            return response;
+            const rangeBytes = new Uint8Array(await response.arrayBuffer());
+            if (rangeBytes.byteLength !== length) throw new Error('Unexpected range body length');
+            return new Response(rangeBytes, { status: 206, headers: response.headers });
           }
           if (response.status === 200) {
             const bytes = new Uint8Array(await response.arrayBuffer());
