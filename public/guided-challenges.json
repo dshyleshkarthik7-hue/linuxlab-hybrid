@@ -1,0 +1,245 @@
+{
+  "schemaVersion": 1,
+  "challenges": [
+    {
+      "id": "paths",
+      "category": "Filesystem",
+      "level": "Beginner",
+      "title": "Resolve a relative path",
+      "prompt": "A shell is currently in /home/ana/projects. Which path names notes.txt in that directory?",
+      "choices": [
+        "../notes.txt",
+        "/etc/notes.txt",
+        "/home/ana/projects/notes.txt",
+        "notes.txt"
+      ],
+      "answerIndex": 3,
+      "explanation": "Relative paths are resolved from the current directory; absolute paths start at /.",
+      "hint": "Remember that a relative path does not start with /."
+    },
+    {
+      "id": "pipe",
+      "category": "Shell",
+      "level": "Beginner",
+      "title": "Understand a pipeline",
+      "prompt": "What does printf 'pear\\napple\\n' | sort do?",
+      "choices": [
+        "Deletes the lines",
+        "Runs the commands in separate shells",
+        "Sends standard error into a file",
+        "Sorts the lines printed by printf"
+      ],
+      "answerIndex": 3,
+      "explanation": "The pipe connects the left command's standard output to the right command's standard input.",
+      "hint": "A pipe connects output on the left to input on the right."
+    },
+    {
+      "id": "stderr",
+      "category": "Shell",
+      "level": "Intermediate",
+      "title": "Separate error output",
+      "prompt": "Which redirection writes only standard error to errors.log?",
+      "choices": [
+        "> errors.log",
+        "| errors.log",
+        "1> errors.log",
+        "2> errors.log"
+      ],
+      "answerIndex": 3,
+      "explanation": "File descriptor 2 is standard error; descriptor 1 is standard output.",
+      "hint": "The file descriptor number for standard error is 2."
+    },
+    {
+      "id": "exit",
+      "category": "Shell",
+      "level": "Beginner",
+      "title": "Read an exit status",
+      "prompt": "In Bash, what does $? contain immediately after a command?",
+      "choices": [
+        "The command's standard output",
+        "The current process ID",
+        "The number of open files",
+        "The previous command's exit status"
+      ],
+      "answerIndex": 3,
+      "explanation": "A zero status conventionally indicates success; non-zero indicates failure or another condition.",
+      "hint": "It is a numeric status, not the command's output."
+    },
+    {
+      "id": "find",
+      "category": "Filesystem",
+      "level": "Intermediate",
+      "title": "Find files by name",
+      "prompt": "Find regular files ending in .log below the current directory.",
+      "choices": [
+        "find . -type f -name \"*.log\"",
+        "grep -R \"*.log\" .",
+        "ls -l / \"*.log\"",
+        "wc -l .log"
+      ],
+      "answerIndex": 0,
+      "explanation": "Quoting the pattern lets find, rather than the shell, interpret the wildcard.",
+      "hint": "Use find to select paths by file type and name."
+    },
+    {
+      "id": "grep",
+      "category": "Text processing",
+      "level": "Intermediate",
+      "title": "Search literal text",
+      "prompt": "Search for literal a.b where the dot must not act as a regex wildcard.",
+      "choices": [
+        "grep -E \"a.b\" file.txt",
+        "grep -F \"a.b\" file.txt",
+        "grep -n \".\" file.txt",
+        "grep -v \"a.b\" file.txt"
+      ],
+      "answerIndex": 1,
+      "explanation": "grep -F interprets the pattern as fixed text.",
+      "hint": "Choose fixed-string matching when metacharacters should be literal."
+    },
+    {
+      "id": "permissions",
+      "category": "Security",
+      "level": "Beginner",
+      "title": "Choose restrictive permissions",
+      "prompt": "Which octal mode gives the owner read/write and gives group/others no permissions?",
+      "choices": [
+        "600",
+        "644",
+        "755",
+        "777"
+      ],
+      "answerIndex": 0,
+      "explanation": "Mode 600 grants owner read/write and no permissions to group or others.",
+      "hint": "Each octal digit represents owner, group, then other permissions."
+    },
+    {
+      "id": "storage",
+      "category": "Storage",
+      "level": "Beginner",
+      "title": "Measure filesystem capacity",
+      "prompt": "Which command shows filesystem free space for /var?",
+      "choices": [
+        "df -h /var",
+        "du -sh /var",
+        "ls -lh /var",
+        "wc -c /var"
+      ],
+      "answerIndex": 0,
+      "explanation": "df reports filesystem capacity; du summarizes directory usage.",
+      "hint": "Ask whether you need filesystem capacity or a directory's contents."
+    },
+    {
+      "id": "process",
+      "category": "Processes",
+      "level": "Intermediate",
+      "title": "Choose a graceful signal",
+      "prompt": "A process should be asked to exit gracefully before force is considered. Which signal is usual?",
+      "choices": [
+        "SIGCONT",
+        "SIGKILL",
+        "SIGSTOP",
+        "SIGTERM"
+      ],
+      "answerIndex": 3,
+      "explanation": "SIGTERM can be handled by a process; SIGKILL cannot be caught or ignored.",
+      "hint": "Start with a graceful termination request, after confirming the target PID."
+    },
+    {
+      "id": "archive",
+      "category": "Archives",
+      "level": "Intermediate",
+      "title": "Inspect an archive safely",
+      "prompt": "List a gzip-compressed tar archive without extracting it.",
+      "choices": [
+        "gzip -d backup.tar.gz",
+        "tar -czf backup.tar.gz /",
+        "tar -tzf backup.tar.gz",
+        "tar -xzf backup.tar.gz"
+      ],
+      "answerIndex": 2,
+      "explanation": "The t option lists entries; z handles gzip compression and f names the archive.",
+      "hint": "Use the list operation rather than the extract operation."
+    },
+    {
+      "id": "service",
+      "category": "Services",
+      "level": "Intermediate",
+      "title": "Inspect a systemd service",
+      "prompt": "On a system using systemd, inspect ssh.service without changing it.",
+      "choices": [
+        "rm /etc/systemd/system/ssh.service",
+        "systemctl disable ssh.service",
+        "systemctl restart ssh.service",
+        "systemctl status ssh.service"
+      ],
+      "answerIndex": 3,
+      "explanation": "status is observational; disable/restart and file removal change state.",
+      "hint": "Pick an inspection command, not a modifying command."
+    },
+    {
+      "id": "sockets",
+      "category": "Networking",
+      "level": "Intermediate",
+      "title": "Inspect listening sockets",
+      "prompt": "Show listening TCP sockets with numeric ports on Linux.",
+      "choices": [
+        "chmod -lnt",
+        "ip route flush table main",
+        "ping -c 100 127.0.0.1",
+        "ss -lnt"
+      ],
+      "answerIndex": 3,
+      "explanation": "ss inspects sockets; -l means listening, -n numeric, -t TCP.",
+      "hint": "The ss utility inspects socket state."
+    },
+    {
+      "id": "hostkey",
+      "category": "Security",
+      "level": "Advanced",
+      "title": "Respond to an SSH host-key warning",
+      "prompt": "SSH reports that a server host key changed unexpectedly. What should you do first?",
+      "choices": [
+        "Disable host-key checking permanently",
+        "Ignore the warning",
+        "Send your private key to the administrator",
+        "Verify the change through a trusted channel before accepting it"
+      ],
+      "answerIndex": 3,
+      "explanation": "A changed key may be legitimate, but can also indicate a man-in-the-middle risk.",
+      "hint": "Do not bypass a host identity warning without verification."
+    },
+    {
+      "id": "least-privilege",
+      "category": "Security",
+      "level": "Intermediate",
+      "title": "Apply least privilege",
+      "prompt": "A task only requires reading one protected log. Which principle should guide privilege use?",
+      "choices": [
+        "Disable authentication",
+        "Make the log world-writable",
+        "Run every command as root permanently",
+        "Use the narrowest authorized privilege and command needed"
+      ],
+      "answerIndex": 3,
+      "explanation": "Least privilege limits the impact of mistakes and compromised processes.",
+      "hint": "Prefer the smallest permission change that meets the need."
+    },
+    {
+      "id": "backup",
+      "category": "Storage",
+      "level": "Advanced",
+      "title": "Verify a backup",
+      "prompt": "After creating a backup archive, what is a useful verification step?",
+      "choices": [
+        "Assume it is valid without checking the exit status",
+        "Delete the original immediately",
+        "List or test its contents and perform a restore test in a safe location",
+        "Make the archive world-writable"
+      ],
+      "answerIndex": 2,
+      "explanation": "A successful-looking command is not proof of a usable backup; test integrity and restoration.",
+      "hint": "A backup is only useful if it can be restored."
+    }
+  ]
+}

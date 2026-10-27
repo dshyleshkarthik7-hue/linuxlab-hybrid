@@ -115,5 +115,60 @@
       render();
     }
   });
+
+  async function initGuidedChallenges() {
+    const target = document.querySelector('#guided-list');
+    const progress = document.querySelector('#guided-progress');
+    if (!target) return;
+    try {
+      const response = await fetch('/guided-challenges.json', { cache: 'force-cache' });
+      if (!response.ok) throw new Error('Guided tasks are unavailable.');
+      const payload = await response.json();
+      if (!Array.isArray(payload.challenges) || payload.challenges.length < 10) throw new Error('Guided task catalogue is invalid.');
+      const completed = () => new Set((window.LinuxProgress?.read().tutorials || []).map(item => String(item.id)).filter(id => id.startsWith('guided-')));
+      const updateProgress = () => { if (progress) progress.textContent = completed().size + ' / ' + payload.challenges.length + ' guided tasks completed'; };
+      target.replaceChildren();
+      for (const task of payload.challenges) {
+        const article = document.createElement('article');
+        article.className = 'guided-card';
+        const tag = document.createElement('span'); tag.className = 'tag'; tag.textContent = task.category + ' · ' + task.level;
+        const title = document.createElement('h3'); title.textContent = task.title;
+        const prompt = document.createElement('p'); prompt.textContent = task.prompt;
+        const choices = document.createElement('div'); choices.className = 'guided-choices';
+        const feedback = document.createElement('p'); feedback.className = 'guided-feedback'; feedback.setAttribute('role','status'); feedback.setAttribute('aria-live','polite');
+        const doneId = 'guided-' + task.id;
+        let locked = completed().has(doneId);
+        const paint = () => { article.classList.toggle('is-complete', locked); };
+        for (const [index, choice] of task.choices.entries()) {
+          const button = document.createElement('button'); button.type = 'button'; button.className = 'guided-choice'; button.textContent = choice;
+          if (locked) button.disabled = true;
+          button.addEventListener('click', () => {
+            if (locked) return;
+            if (index === task.answerIndex) {
+              locked = true;
+              for (const option of choices.querySelectorAll('button')) option.disabled = true;
+              button.classList.add('is-correct');
+              feedback.textContent = 'Correct. ' + task.explanation;
+              window.LinuxProgress?.completeTutorial(doneId, task.title);
+              paint(); updateProgress();
+            } else {
+              button.classList.add('is-incorrect');
+              button.disabled = true;
+              feedback.textContent = 'Not quite. Try another option. ' + task.hint;
+            }
+          });
+          choices.append(button);
+        }
+        if (locked) feedback.textContent = 'Completed earlier. ' + task.explanation;
+        article.append(tag,title,prompt,choices,feedback); target.append(article); paint();
+      }
+      updateProgress();
+    } catch (error) {
+      target.textContent = error instanceof Error ? error.message : 'Guided tasks are unavailable.';
+      if (progress) progress.textContent = 'Progress unavailable';
+    }
+  }
+
   void init();
+  void initGuidedChallenges();
 })();
