@@ -120,3 +120,21 @@ The earlier 70-item register mixed concrete defects, suspected risks, missing re
 68. Add and test operational runbooks for download, certificate, and deployment failures.
 69. Consolidate duplicate integrity/protocol logic where safe, with cross-platform regression tests.
 70. Convert any remaining security assumptions discovered during the full audit into enforceable automated checks.
+
+
+## Follow-up audit — 27 October 2026
+
+The latest CI run for `0a0a1272b6251806e3cbcd25a7d4edfe5ba46c7b` passed lint, server/function type checks, dependency audit, `npm run test:ci`, production build, and browser smoke, but failed the Chromium axe audit. The logged contrast values conflict with the page's own pre-axe computed-style guard, indicating the runtime contrast guard's style-observing MutationObserver is a likely source of unstable audit timing. This commit changes the guard to compare canonical computed CSS values and stops observing its own style writes; the regression contract now protects against reintroducing that loop. The next CI run must confirm the axe audit passes.
+
+CI now also downloads the actual pinned Developer Alpine release asset, verifies its full size and SHA-256, computes all chunk hashes into a temporary manifest, and checks contiguous complete coverage. This catches release drift or an unavailable asset before a deployment is considered ready. The checked-in chunk file remains a non-deployable template by design; deployment generates the verified manifest from release bytes, and the worker stays fail-closed until that generated manifest is available.
+
+Added operational recovery procedures for ISO integrity, certificate backend failures, Tutor provider incidents, rollback, monitoring, and the documented browser-VM trust boundary. The scheduled production smoke workflow now accepts an optional expected commit SHA for explicit deployed-provenance verification. A content-review checklist records what human editorial review must establish; it does not falsely claim that all catalog entries have been reviewed.
+
+### Still requiring external execution or human action
+
+- The final CI run must pass, including Chromium/Firefox/WebKit accessibility and axe checks.
+- The production smoke workflow must be run against the deployed environment, with the expected SHA supplied to verify provenance; live headers, cache isolation, and alert delivery require actual production evidence.
+- Certificate and Tutor failure/recovery/authorization scenarios require configured staging credentials and service-backed tests.
+- A server-enforced hostile-workload sandbox requires a separate architectural implementation; documentation correctly states that the browser v86 VM is not such a boundary.
+- Human editorial review of lessons is still required; generated audits cannot certify factual accuracy.
+- Repository settings, external paging destinations, provider spending ceilings, and deployment credentials must be verified by an authorized operator.

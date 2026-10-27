@@ -55,6 +55,8 @@ try {
   for (const item of routes) {
     const route = item.path;
     const response = await page.goto(baseURL + item.url, { waitUntil: 'domcontentloaded' });
+    // axe must inspect the final cascade, not a pre-load frame before stylesheets and deferred scripts settle.
+    await page.waitForLoadState('load');
     if (item.expected && !(await page.locator(item.expected).count())) throw new Error(route + ' did not render expected page selector ' + item.expected);
     if (!response || response.status() >= 400) throw new Error(route + ' returned HTTP ' + (response?.status() ?? 'no response'));
     if (route === '/') {

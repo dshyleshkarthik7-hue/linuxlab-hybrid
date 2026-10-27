@@ -6,6 +6,7 @@ const manifest = JSON.parse(await readFile('artifacts/manifest.json', 'utf8'));
 const vm = await readFile('src/main-v86.ts', 'utf8');
 const boundary = await readFile('docs/PRODUCTION_SECURITY_BOUNDARY.md', 'utf8');
 const packageJson = JSON.parse(await readFile('package.json', 'utf8'));
+const productionSmoke = await readFile('tests/production-smoke.mjs', 'utf8');
 
 const requiredArtifacts = [
   ['ALPINE_ARTIFACT', 'alpine-virt-3.24.1-x86.iso'],
@@ -31,4 +32,8 @@ assert.match(vm, /fetchVerifiedIso\(/, 'v86 must verify the complete ISO before 
 assert.match(boundary, /not equivalent to a server-side microVM/i, 'security boundary must not overclaim browser isolation');
 assert.match(boundary, /Production status remains BLOCKED.*server-side CPU\/process\/filesystem isolation/is, 'production boundary must remain explicitly blocked pending real isolation');
 assert.equal(packageJson.scripts.lint, 'tsc --noEmit && node tests/security-static.test.mjs');
+
+assert.ok(productionSmoke.includes('untrusted-origin.example'), 'production smoke must verify that sensitive APIs reject hostile browser origins');
+assert.ok(productionSmoke.includes('security-check--linuxterminalm.netlify.app'), 'production smoke must verify ISO cache isolation across permitted origins');
+assert.match(productionSmoke, /access-control-allow-origin/, 'production smoke must inspect CORS response headers');
 console.log('release security contract: ok');

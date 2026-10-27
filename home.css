@@ -65,3 +65,12 @@ html body .developer-guide .compare-grid > div:first-child > h3 {
   color: #f1f7ff !important;
   -webkit-text-fill-color: #f1f7ff !important;
 }
+
+
+/* Keep the first Developer Alpine guide heading readable on its dark card. */
+html body .developer-guide > .compare-grid > div:first-child > h3,
+html body .developer-guide > .compare-grid > div:first-child > h3 * {
+  color: #f1f7ff !important;
+  -webkit-text-fill-color: #f1f7ff !important;
+  background-color: transparent !important;
+}

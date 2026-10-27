@@ -44,6 +44,7 @@ const CERTIFICATE_FEEDBACK_TIMEOUT_MS = 15000;
 const SIGNING_KEYS = (() => { const map = new Map<string, string>(); for (const item of (process.env.CERTIFICATE_SIGNING_KEYS || '').split(',').map(x=>x.trim()).filter(Boolean)) { const i=item.indexOf('='); if(i>0) map.set(item.slice(0,i),item.slice(i+1)); } return map; })();
 const ALLOWED_ORIGINS = new Set((process.env.CERTIFICATE_ALLOWED_ORIGINS || 'https://linuxterminal.me').split(',').map(value => value.trim()).filter(Boolean));
 const corsOrigin = (request: Request) => { const origin = request.headers.get('origin'); return origin && (origin === new URL(request.url).origin || ALLOWED_ORIGINS.has(origin)) ? origin : undefined; };
+const RELEASE_LOCK_SCRIPT = 'if redis.call("GET", KEYS[1]) == ARGV[1] then return redis.call("DEL", KEYS[1]) else return 0 end';
 
 type User = {
   id?: unknown;
@@ -321,7 +322,8 @@ async function submit(user: User, body: unknown, request: Request) {
 
   const key = `linuxterminal:exam:attempt:${safe(value.attemptId)}`;
   const lock = `${key}:lock`;
-  if (await redis(['SET', lock, String(user.id), 'EX', 60, 'NX']) !== 'OK') {
+  const lockToken = crypto.randomUUID();
+  if (await redis(['SET', lock, lockToken, 'EX', 60, 'NX']) !== 'OK') {
     return json({ error: 'This attempt is already being submitted.' }, 409);
   }
 
@@ -408,7 +410,7 @@ async function submit(user: User, body: unknown, request: Request) {
     await redis(['DEL', key]);
     return json(response);
   } finally {
-    await redis(['DEL', lock]).catch(() => {});
+    await redis(['EVAL', RELEASE_LOCK_SCRIPT, '1', lock, lockToken]).catch(() => {});
   }
 }
 

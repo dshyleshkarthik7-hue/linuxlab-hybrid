@@ -3,6 +3,11 @@ on:
   schedule:
     - cron: '23 * * * *'
   workflow_dispatch:
+    inputs:
+      expected_deploy_sha:
+        description: 'Optional commit SHA that the live build-info.json must report'
+        required: false
+        type: string
 permissions:
   contents: read
 jobs:
@@ -21,6 +26,7 @@ jobs:
         env:
           PRODUCTION_BASE_URL: https://linuxterminal.me
           ISO_BASE_URL: https://linuxterminal-iso.dshyleshkarthik7.workers.dev
+          EXPECTED_DEPLOY_SHA: ${{ inputs.expected_deploy_sha || github.sha }}
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
           PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
         run: npm run test:production

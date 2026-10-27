@@ -84,6 +84,24 @@ jobs:
           set -euo pipefail
           bash -n iso-builder/build-linuxlab-gcc.sh
           node tests/iso-builder-contract.test.mjs
+      - name: Verify Developer Alpine release bytes and generated chunk digests
+        run: |
+          set -euo pipefail
+          node scripts/generate-iso-chunk-manifest.mjs --output "$RUNNER_TEMP/developer-alpine-chunks.json"
+          node --input-type=module -e '
+            import { readFile } from "node:fs/promises";
+            import manifest from "./artifacts/manifest.json" with { type: "json" };
+            const chunks = JSON.parse(await readFile(process.argv[1], "utf8"));
+            const artifact = manifest.artifacts.find(item => item.image === "developer");
+            if (!artifact || chunks.artifactSize !== artifact.size || chunks.artifactSha256 !== artifact.sha256) throw new Error("Generated chunk manifest does not match the pinned release artifact");
+            let next = 0;
+            for (const [index, chunk] of chunks.chunks.entries()) {
+              if (chunk.index !== index || chunk.start !== next || chunk.end < chunk.start || !/^[a-f0-9]{64}$/.test(chunk.sha256)) throw new Error("Invalid generated chunk " + index);
+              next = chunk.end + 1;
+            }
+            if (next !== artifact.size) throw new Error("Generated chunks do not cover the complete release artifact");
+            console.log("Verified", chunks.chunks.length, "chunk digests for", next, "bytes");
+          ' "$RUNNER_TEMP/developer-alpine-chunks.json"
       - name: Install Playwright browser matrix
         run: |
           set -euo pipefail

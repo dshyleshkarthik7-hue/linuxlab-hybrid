@@ -27,3 +27,5 @@ assert.match(headersGenerator, /inlineScriptHashes\(html\)/, 'inline script hash
 assert.match(headersGenerator, /kind === 'vm' \? \["'wasm-unsafe-eval'"\]/, 'WebAssembly evaluation must be limited to VM pages');
 assert.match(headersGenerator, /htmlEntries\.flatMap/, 'CSP must be generated per exact HTML path to avoid overlapping policies');
 assert.doesNotMatch(headersGenerator, /const commonCsp|const vmCsp|const loginCsp/, 'overlapping path-specific CSP variables must not be emitted alongside a global CSP');
+
+assert.match(headersGenerator, /kind === 'vm' \|\| kind === 'home' \? "'self' 'unsafe-inline'" : "'self'"/, 'homepage inline style overrides must be permitted without weakening other common routes');

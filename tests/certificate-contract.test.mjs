@@ -90,3 +90,8 @@ assert.match(certificate, /async function explainStudyPlan/);
 assert.match(certificate, /rate:certificate-feedback:user/);
 assert.match(certificate, /studyTopics/);
 assert.match(certJs, /Get AI study plan/);
+
+assert.match(certificate, /const RELEASE_LOCK_SCRIPT = /, 'submission lock release must compare the owner token atomically');
+assert.match(certificate, /const lockToken = crypto\.randomUUID\(\)/, 'each certificate submission must own a unique lock token');
+assert.match(certificate, /redis\(\['EVAL', RELEASE_LOCK_SCRIPT, '1', lock, lockToken\]\)/, 'submission cleanup must not delete a newer request lock');
+assert.doesNotMatch(certificate, /redis\(\['DEL', lock\]\)/, 'unconditional lock deletion can release a lock acquired by another request');

@@ -61,7 +61,7 @@ const policy = (html, kind) => {
   const scriptSrc = ["'self'", ...(kind === 'vm' ? ["'wasm-unsafe-eval'"] : []), ...inlineScriptHashes(html), 'https://netlify-rum.netlify.app', scriptHost].filter(Boolean).join(' ');
   if (kind === 'login') return "default-src 'self'; script-src " + scriptSrc + " https://identity.netlify.com; style-src 'self' 'unsafe-inline'; connect-src 'self' https://identity.netlify.com; img-src 'self' data: https://identity.netlify.com; frame-src 'self' https://identity.netlify.com; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report; report-to csp-endpoint";
   if (kind === 'beginner') return "default-src 'self'; script-src " + scriptSrc + " https://identity.netlify.com; style-src 'self'; connect-src " + connectSrc + " https://identity.netlify.com; img-src 'self' data: https://identity.netlify.com; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report; report-to csp-endpoint";
-  const styles = kind === 'vm' ? "'self' 'unsafe-inline'" : "'self'";
+  const styles = kind === 'vm' || kind === 'home' ? "'self' 'unsafe-inline'" : "'self'";
   return "default-src 'self'; script-src " + scriptSrc + "; style-src " + styles + "; connect-src " + connectSrc + "; img-src 'self' data:; font-src 'self' data:; worker-src 'self' blob:; child-src 'self' blob:; object-src 'none'; base-uri 'self'; frame-ancestors 'none'; form-action 'self'; report-uri /api/csp-report; report-to csp-endpoint";
 };
 
@@ -88,6 +88,7 @@ const headers = [
     const kind = /(^|\/)login\//.test(normalized) ? 'login'
       : /(^|\/)beginner\//.test(normalized) ? 'beginner'
       : /(^|\/)(real-linux|developer-alpine)\//.test(normalized) || /(^|\/)(index-v86|linux4)\.html$/.test(normalized) ? 'vm'
+      : normalized === 'index.html' ? 'home'
       : 'common';
     const block = indent('Content-Security-Policy: ' + policy(html, kind) + '\n' + htmlCache);
     const aliases = normalized === 'login/index.html' ? ['/login/', '/login']

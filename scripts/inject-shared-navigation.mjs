@@ -10,29 +10,44 @@ const runtimeContrastGuard = `<script id="homepage-runtime-contrast-guard">
     if (location.pathname !== '/' && location.pathname !== '/index.html') return;
     for (const element of document.querySelectorAll('a.btn')) {
       const secondary = element.classList.contains('secondary');
-      const set = (property, value) => {
-        if (element.style.getPropertyValue(property) !== value ||
-            element.style.getPropertyPriority(property) !== 'important') {
-          element.style.setProperty(property, value, 'important');
+      // Compare computed values, not CSS source spellings (#fff vs #ffffff).
+      // Otherwise MutationObserver can rewrite style on every notification forever.
+      const set = (target, property, value, expectedComputed) => {
+        if (getComputedStyle(target).getPropertyValue(property).trim().toLowerCase() !== expectedComputed) {
+          target.style.setProperty(property, value, 'important');
         }
       };
-      set('color', '#ffffff');
-      set('-webkit-text-fill-color', '#ffffff');
-      set('background-color', secondary ? '#17466f' : '#075dcc');
-      set('background-image', 'none');
-      set('border-color', secondary ? '#83cfff' : '#72baff');
+      const foreground = 'rgb(255, 255, 255)';
+      const background = secondary ? '#17466f' : '#075dcc';
+      set(element, 'color', '#ffffff', foreground);
+      set(element, '-webkit-text-fill-color', '#ffffff', foreground);
+      set(element, 'background-color', background, secondary ? 'rgb(23, 70, 111)' : 'rgb(7, 93, 204)');
+      set(element, 'background-image', 'none', 'none');
+      set(element, 'border-color', secondary ? '#83cfff' : '#72baff', secondary ? 'rgb(131, 207, 255)' : 'rgb(114, 186, 255)');
+      // Some page scripts add styled label spans inside CTAs. Inline !important
+      // styles on those children outrank the stylesheet's a.btn * rules, so
+      // enforce readable text and let the button's verified background show through.
+      for (const child of element.querySelectorAll('*')) {
+        set(child, 'color', '#ffffff', foreground);
+        set(child, '-webkit-text-fill-color', '#ffffff', foreground);
+        set(child, 'background-color', 'transparent', 'rgba(0, 0, 0, 0)');
+        set(child, 'background-image', 'none', 'none');
+      }
     }
     for (const heading of document.querySelectorAll('.developer-guide .compare-grid h3')) {
-      if (getComputedStyle(heading).color !== 'rgb(241, 247, 255)') {
-        heading.style.setProperty('color', '#f1f7ff', 'important');
-        heading.style.setProperty('-webkit-text-fill-color', '#f1f7ff', 'important');
-      }
+      // Apply inline important values unconditionally so later theme scripts
+      // cannot leave this heading with a dark foreground on the dark card.
+      heading.style.setProperty('color', '#f1f7ff', 'important');
+      heading.style.setProperty('-webkit-text-fill-color', '#f1f7ff', 'important');
+      heading.style.setProperty('background-color', 'transparent', 'important');
+      heading.style.setProperty('background-image', 'none', 'important');
     }
   };
   normalize();
   const observer = new MutationObserver(normalize);
-  observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class', 'style'] });
+  observer.observe(document.documentElement, { subtree: true, childList: true, attributes: true, attributeFilter: ['class'] });
   document.addEventListener('DOMContentLoaded', normalize, { once: true });
+  window.addEventListener('load', normalize, { once: true });
 })();
 </script>`;
 const contrastStyle = `<style id="site-accessible-control-colors">
@@ -87,6 +102,35 @@ html body .developer-guide .compare-grid h3 * {
   color: #f1f7ff !important;
   -webkit-text-fill-color: #f1f7ff !important;
 }
+
+/* Final high-specificity rules are appended after all route stylesheets so
+   contrast does not depend on the stylesheet order chosen by Vite. */
+html body a.btn[href][href],
+html body a.btn[href][href] *,
+html body a.btn[href][href]:link,
+html body a.btn[href][href]:visited,
+html body a.btn[href][href]:hover,
+html body a.btn[href][href]:focus-visible {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #075dcc !important;
+  background-image: none !important;
+}
+html body a.btn.secondary[href][href],
+html body a.btn.secondary[href][href] *,
+html body a.btn.secondary[href][href]:link,
+html body a.btn.secondary[href][href]:visited,
+html body a.btn.secondary[href][href]:hover,
+html body a.btn.secondary[href][href]:focus-visible {
+  color: #ffffff !important;
+  -webkit-text-fill-color: #ffffff !important;
+  background-color: #17466f !important;
+  background-image: none !important;
+}
+html body .developer-guide > .compare-grid > div:first-child > h3 {
+  color: #f1f7ff !important;
+  -webkit-text-fill-color: #f1f7ff !important;
+}
 </style>`;
 async function walk(dir) {
   for (const entry of await readdir(dir, { withFileTypes: true })) {
@@ -116,7 +160,7 @@ async function walk(dir) {
         );
       }
       if (!output.includes('/site-nav.css') && output.includes('</head>')) output = output.replace('</head>', styleTag + '</head>');
-      if (!output.includes('site-accessible-control-colors') && output.includes('</head>')) output = output.replace('</head>', contrastStyle + '</head>');
+      if (!output.includes('site-accessible-control-colors') && output.includes('</body>')) output = output.replace('</body>', contrastStyle + '</body>');
       if (relative(root, path) === 'index.html' && !output.includes('homepage-runtime-contrast-guard') && output.includes('</body>')) {
         output = output.replace('</body>', runtimeContrastGuard + '</body>');
       }
