@@ -94,7 +94,8 @@
     "audit:curriculum": "node scripts/audit-curriculum.mjs",
     "author:qwen-lessons": "node scripts/commands/author-qwen-lessons.mjs",
     "author:qwen-tutorials": "node scripts/author-qwen-tutorials.mjs",
-    "author:qwen-curriculum": "node scripts/author-qwen-curriculum.mjs"
+    "author:qwen-curriculum": "node scripts/author-qwen-curriculum.mjs",
+    "phase1:check": "node scripts/phase1-readiness.mjs && node tests/phase1-readiness.test.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",

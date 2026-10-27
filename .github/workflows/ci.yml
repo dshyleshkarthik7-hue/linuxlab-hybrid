@@ -76,6 +76,8 @@ jobs:
         with:
           name: dependency-audit-${{ github.sha }}
           path: dependency-audit.json
+      - name: Phase 1 repository readiness baseline
+        run: npm run phase1:check
       - run: npm run lint
       - name: Type-check Netlify backend and edge functions
         run: npm run typecheck:server
