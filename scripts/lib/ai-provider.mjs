@@ -81,7 +81,7 @@ function providerConfig(name, model, env) {
   return null;
 }
 
-export async function completeChat({ messages, temperature = 0.2, maxTokens = 3000, timeoutMs = 90000, env = process.env, fetchImpl = fetch, providerOrder, role = "default", expectJson = false } = {}) {
+export async function completeChat({ messages, temperature = 0.2, maxTokens = 3000, timeoutMs = 90000, env = process.env, fetchImpl = fetch, providerOrder, role = "default", expectJson = false, validateOutput } = {}) {
   if (!Array.isArray(messages) || messages.length === 0) throw new Error("completeChat requires non-empty messages.");
   const roleKey = String(role).toUpperCase();
   if (!Object.hasOwn(ROLE_DEFAULTS, role)) throw new Error("Unknown AI orchestration role: " + role);
@@ -119,6 +119,13 @@ export async function completeChat({ messages, temperature = 0.2, maxTokens = 30
       if (expectJson && !jsonObjectLooksValid(text)) {
         errors.push(name + "/" + model + ": malformed JSON output");
         continue;
+      }
+      if (typeof validateOutput === "function") {
+        try { validateOutput(text); }
+        catch (error) {
+          errors.push(name + "/" + model + ": schema validation failed (" + String(error?.message || error).slice(0, 180) + ")");
+          continue;
+        }
       }
       return { text, provider: cfg.provider, model: returnedModel, requestedModel: cfg.id, usage: body.usage || null };
     }
