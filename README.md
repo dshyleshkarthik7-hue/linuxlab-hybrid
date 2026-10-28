@@ -136,7 +136,6 @@ Configure `OPENROUTER_API_KEY` and `GEMINI_API_KEY` as GitHub Actions secrets. R
 
 Inventory totals (6,161 command records and 520 structured-curriculum records) do not imply lessons are fully accurate, executed, source-verified, or human-reviewed. AI drafts are never automatically published.
 
-
 ## License
 
 See `LICENSE` and `NOTICE`.

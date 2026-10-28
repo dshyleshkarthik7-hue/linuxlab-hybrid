@@ -84,7 +84,7 @@ jobs:
           AI_GENERATOR_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'openrouter,gemini' || inputs.provider }}
           AI_VERIFIER_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'openrouter,gemini' || inputs.provider }}
           AI_FINAL_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'gemini,openrouter' || inputs.provider }}
-          AI_DRAFT_LABEL: pilot-${{ inputs.provider == 'auto' && 'gemini' || inputs.provider }}
+          AI_DRAFT_LABEL: pilot-${{ inputs.provider }}
         run: |
           node scripts/commands/author-qwen-lessons.mjs --start 0 --count 5
           node scripts/author-qwen-tutorials.mjs --start 0 --count 2

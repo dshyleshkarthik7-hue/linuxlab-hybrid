@@ -11,7 +11,7 @@ class FactoryTests(unittest.TestCase):
         cmd=(ROOT/"scripts/commands/author-qwen-lessons.mjs").read_text()
         tut=(ROOT/"scripts/author-qwen-tutorials.mjs").read_text()
         cur=(ROOT/"scripts/author-qwen-curriculum.mjs").read_text()
-        self.assertIn("HF_TOKEN",cmd); self.assertIn("status: \"draft\"",cmd)
+        self.assertIn("orchestrateDraft",cmd); self.assertIn("status: \"draft\"",cmd)
         self.assertIn("humanReview: \"pending\"",tut)
         self.assertIn("humanReview:\"pending\"",cur)
         self.assertIn("data/commands/research",cmd)

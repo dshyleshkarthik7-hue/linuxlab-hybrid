@@ -2,7 +2,7 @@
 
 ## Pipeline
 
-Every command, tutorial, and structured-curriculum draft passes through three separate model calls. Each role has independent provider/model settings, and the resolved model is recorded in the draft's `model.stages` metadata.
+Every command, tutorial, and structured-curriculum draft passes through three separate model calls. Each role has independent provider/model settings, and the resolved model is recorded in `model.stages` metadata.
 
 1. **Generator — Arcee Trinity Large Preview (`arcee-ai/trinity-large-preview:free`) via OpenRouter.** Creates the complete first draft. This is the strongest configured free-tier candidate in this pipeline, not a claim that it is the strongest AI model overall.
 2. **Verifier/repairer — Arcee Trinity Mini (`arcee-ai/trinity-mini:free`) via OpenRouter.** Reviews the first draft for major factual mistakes, missing fields, unsafe commands, portability issues, unsupported claims, and broken exercises, then returns a corrected complete JSON object.
