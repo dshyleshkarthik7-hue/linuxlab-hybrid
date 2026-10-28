@@ -42,6 +42,11 @@ assert.match(errorDecoder, /rel="canonical" href="https:\/\/linuxterminal\.me\/t
 assert.match(errorDecoder, /"@type":"WebApplication"/, 'error decoder must declare WebApplication structured data');
 assert.match(errorDecoder, /"@type":"FAQPage"/, 'error decoder must expose FAQ structured data matching visible content');
 assert.match(errorDecoder, /id="error-decoder-faq"/, 'error decoder FAQ structured data must correspond to visible FAQ content');
+const commandCatalogScript = await read('../public/commands.js');
+assert.match(commandCatalogScript, /Reference entry · lesson not yet curated/, 'catalog results must disclose entries without curated lessons');
+assert.match(commandCatalogScript, /Open curated lesson/, 'catalog must distinguish curated lessons from reference-only entries');
+assert.match(homepage, /6,161-entry command catalogue/, 'homepage must describe the full inventory as a catalogue, not as fully authored lessons');
+assert.match(await read('../commands-entry.html'), /labels whether a curated lesson exists or the entry is reference-only/, 'catalog page must disclose per-entry editorial status');
 assert.match(errorDecoder, /No space left on device/, 'error decoder must include storage troubleshooting');
 assert.match(errorDecoder, /Permission denied/, 'error decoder must include permission troubleshooting');
 assert.match(errorDecoder, /does not require an account or an AI API key/, 'tool must clearly explain its free, client-side behavior');
