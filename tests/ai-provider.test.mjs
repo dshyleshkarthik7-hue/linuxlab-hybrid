@@ -51,6 +51,22 @@ const status = (code) => ({ ok: false, status: code, json: async () => ({}) });
 {
   const calls = [];
   const result = await completeChat({
+    messages, role: "final", providerOrder: ["openrouter"],
+    env: { OPENROUTER_API_KEY: "x" },
+    fetchImpl: async (url, init) => {
+      calls.push(JSON.parse(init.body).model);
+      return calls.length === 1
+        ? ok("must reject paid routing", {}, "openai/gpt-oss-120b")
+        : ok("safe free fallback", {}, "arcee-ai/trinity-mini:free");
+    }
+  });
+  assert.equal(calls[0], "openrouter/free");
+  assert.equal(calls[1], "arcee-ai/trinity-mini:free");
+  assert.equal(result.model, "arcee-ai/trinity-mini:free");
+}
+{
+  const calls = [];
+  const result = await completeChat({
     messages, role: "generator", providerOrder: ["openrouter"], expectJson: true,
     env: { OPENROUTER_API_KEY: "x" },
     fetchImpl: async (url, init) => {
