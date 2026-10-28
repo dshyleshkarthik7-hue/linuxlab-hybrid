@@ -47,3 +47,30 @@ This audit inspected the current `main` source for the curriculum factory, AI pr
 - Free-tier fallback hardening: `ec2eb40`, `3978534`
 - New schema/source and provider regression tests: see the latest `main` commits and CI run.
 
+
+
+## Follow-up remediation — 28 October 2026
+
+### Implemented after the initial audit
+
+- Added a client-side **Linux Error Decoder** at `/tools/linux-error-decoder/`. It covers common shell, path, permissions, storage, networking, SSH, package-manager and pipeline errors; it runs without an AI key or server-side text submission, includes safe diagnostic steps, visible FAQ content, canonical metadata and WebApplication/FAQ structured data. It is linked from the homepage and tutorial index and included in the generated and committed sitemap.
+- Corrected homepage copy that could imply 200+ completed command lessons and the inaccurate “1 GiB” Developer Alpine size. The copy now distinguishes the 200-command beginner path from the 6,161-entry reference and uses the ~659 MiB image size.
+- Added a `--next-missing --count N` option to command authoring. It selects bounded command batches without an existing research draft or curated complete page.
+- Updated the legacy authoring workflow to default to the next missing command batch and create a draft-only pull request for generated research files. The PR is not auto-merged and explicitly requires source, safety, portability, execution and human review. This makes accepted batches persist and lets later batches advance after review/merge; it does not turn drafts into published lessons.
+- Fixed additional CI contract drift: the full test suite now includes the Phase 3 readiness contract, and the assertion matches the actual push-triggered CI requirement in the Cloudflare deployment gate.
+- The latest observed CI run verified the Developer Alpine release bytes and generated SHA-256 chunk digests successfully before later failing in the release-readiness test contract. A subsequent test correction was committed; the newest CI run must finish to verify the corrected full suite.
+
+### Catalog status — still incomplete
+
+The canonical count remains an inventory count, not an authored-content count. The last checked repository summary reported 26 complete command lessons, 174 planned entries, and 5,961 entries without lesson status/content. The 6,161-entry command inventory and 520-item tutorial/curriculum queues have **not** been bulk-authored or approved in this audit. The new resumable workflow is the safe mechanism to create bounded review PRs; each batch still needs review and merge. No synthetic lesson content or fabricated verification evidence was added to make the counts appear complete.
+
+### Production and external controls — not marked fixed
+
+- The latest inspected scheduled production smoke run (`40646708187`) failed because the live `build-info.json` did not report the expected repository commit (the observed value was `undefined`). This is a real production-provenance failure, not a test to weaken.
+- The connected Netlify project metadata reported a ready deploy with context `deploy-preview`, branch `fix/cloudflare-validate-raced-response`, commit `6f5b41ccab832be32e33eba1a131aec384bbc548`, and `locked: true`. That is not evidence that current `main` is serving in production. The available integration does not expose an authorized publish/unlock action, so I did not override the lock or publish an unverified build. A project owner must unlock/restore the intended main-branch production deployment after CI passes, then rerun the explicit production smoke gate.
+- Developer Alpine chunk hashes must continue to be generated from the actual pinned release bytes by the CI/deploy workflow. The committed empty-hash file is a non-deployable template; do not fill it with guessed hashes. The deployment workflow regenerates and validates the real chunk manifest before deploying the Worker.
+- The repository ruleset still requires independent approval, but the observed settings do not enforce CODEOWNERS review and no second trusted maintainer identity was supplied. I did not invent a reviewer or weaken branch protection. A repository owner must add a second trusted maintainer and enable the desired CODEOWNERS review requirement in GitHub settings.
+
+### Current release decision
+
+**Do not declare production fully verified yet.** The code-side remediation is on `main`; the final CI run for the latest commit and a successful production deployment/provenance smoke are still required. Draft generation remains review-only, and no full-catalog generation or publication was triggered.
