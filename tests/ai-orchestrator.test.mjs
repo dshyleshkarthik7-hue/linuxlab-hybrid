@@ -1,0 +1,18 @@
+import assert from "node:assert/strict";
+import { orchestrateDraft } from "../scripts/lib/ai-orchestrator.mjs";
+const calls = [];
+const replies = { generator: { title: "rough draft", detail: "needs fixes" }, verifier: { title: "repaired draft", detail: "major issue fixed", verifierNote: "checked" }, final: { title: "final draft", detail: "polished and complete", verifierNote: "checked", finalCheck: true } };
+const result = await orchestrateDraft({ systemPrompt: "Write structured educational content.", userPrompt: "Create a Linux tutorial.", parse: JSON.parse, validate: value => { assert.equal(value.finalCheck, true); assert.equal(value.title, "final draft"); assert.ok(value.detail.includes("complete")); }, complete: async request => { calls.push(request); return { text: JSON.stringify(replies[request.role]), provider: "mock " + request.role, model: "free-" + request.role, requestedModel: "free-" + request.role, usage: { total_tokens: 10 } }; } });
+assert.deepEqual(calls.map(x => x.role), ["generator", "verifier", "final"]);
+assert.match(calls[1].messages[1].content, /GENERATOR DRAFT TO REVIEW/);
+assert.match(calls[1].messages[1].content, /rough draft/);
+assert.match(calls[2].messages[1].content, /VERIFIER-REPAIRED DRAFT/);
+assert.match(calls[2].messages[1].content, /major issue fixed/);
+assert.equal(result.strategyVersion, "three-stage-free-v1");
+assert.equal(result.stages.generator.model, "free-generator");
+assert.equal(result.stages.verifier.model, "free-verifier");
+assert.equal(result.stages.final.model, "free-final");
+let completed = 0;
+await assert.rejects(() => orchestrateDraft({ systemPrompt: "system", userPrompt: "task", parse: JSON.parse, validate: () => {}, complete: async request => { completed++; if (request.role === "verifier") throw new Error("free quota exhausted"); return { text: "{}", provider: request.role, model: request.role }; } }), /free quota exhausted/);
+assert.equal(completed, 2, "pipeline must stop instead of skipping a failed quality gate");
+console.log("AI orchestration tests passed.");
