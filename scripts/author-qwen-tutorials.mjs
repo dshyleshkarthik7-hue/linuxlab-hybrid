@@ -9,7 +9,7 @@
 import { readFile, mkdir, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { completeChat } from "./lib/ai-provider.mjs";
+import { orchestrateDraft } from "./lib/ai-orchestrator.mjs";
 
 const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
 const arg = (name, fallback) => {
@@ -53,22 +53,26 @@ Requirements:
 - No markdown fences. Every field must be a non-empty string except safetyNotes and sources which must be non-empty arrays. Make the content genuinely specific, not a generic reflection template.
 `;
   try {
-    const completion = await completeChat({ messages: [
-      { role: "system", content: "You author precise Linux education content. Return valid JSON, state uncertainty, and never claim unperformed execution or source verification." },
-      { role: "user", content: prompt }
-    ], temperature: 0.2, maxTokens: 2200 });
-    const draft = asJson(completion.text);
-    for (const key of ["title","objective","explanation","workedExample","expectedResult","exercise","knowledgeCheck"]) {
-      if (typeof draft[key] !== "string" || !draft[key].trim()) throw new Error("Missing required field " + key);
-    }
-    if (!Array.isArray(draft.safetyNotes) || !draft.safetyNotes.length || !Array.isArray(draft.sources) || !draft.sources.length) throw new Error("safetyNotes and candidate sources must be non-empty arrays");
+    const result = await orchestrateDraft({
+      systemPrompt: "You author precise Linux education content. Return valid JSON, state uncertainty, and never claim unperformed execution or source verification.",
+      userPrompt: prompt,
+      parse: asJson,
+      validate: draft => {
+        for (const key of ["title","objective","explanation","workedExample","expectedResult","exercise","knowledgeCheck"]) {
+          if (typeof draft[key] !== "string" || !draft[key].trim()) throw new Error("Missing required field " + key);
+        }
+        if (!Array.isArray(draft.safetyNotes) || !draft.safetyNotes.length || !Array.isArray(draft.sources) || !draft.sources.length) throw new Error("safetyNotes and candidate sources must be non-empty arrays");
+      },
+      maxTokens: 3000
+    });
+    const draft = result.draft;
     const record = {
       schemaVersion: 1,
       lessonId: lesson.id,
       track: lesson.track,
       topic: lesson.topic,
       status: "draft",
-      model: { provider: completion.provider, id: completion.model, generatedAt: new Date().toISOString() },
+      model: { provider: result.stages.generator.provider, id: result.stages.generator.model, strategyVersion: result.strategyVersion, stages: result.stages, generatedAt: new Date().toISOString() },
       content: draft,
       sourceVerification: "unverified-candidates",
       executionVerification: "not-run",
@@ -76,7 +80,7 @@ Requirements:
     };
     await writeFile(file, JSON.stringify(record, null, 2) + "\n", { flag: "wx" });
     created++;
-    process.stdout.write("DRAFT " + lesson.id + " — " + draft.title + " [" + completion.provider + " / " + completion.model + "]\n");
+    process.stdout.write("DRAFT " + lesson.id + " — " + draft.title + " [generator " + result.stages.generator.model + "; verifier " + result.stages.verifier.model + "; final " + result.stages.final.model + "]\n");
   } catch (error) {
     process.stderr.write("ERROR " + lesson.id + ": " + String(error.message || error) + "\n");
     process.exitCode = 1;
