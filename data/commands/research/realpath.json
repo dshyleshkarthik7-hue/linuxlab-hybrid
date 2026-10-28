@@ -1,0 +1,55 @@
+{
+  "schemaVersion": 1,
+  "name": "realpath",
+  "status": "draft",
+  "definition": "Resolve a pathname to an absolute path, processing `.` and `..` components and symbolic links according to the installed implementation and selected options.",
+  "explanation": "`realpath` prints canonicalized pathnames. It is useful when scripts need to make path resolution explicit, but flags for missing final components, symlink handling, and output formatting vary between GNU Coreutils, BusyBox, and BSD-derived implementations. A canonicalized path is not a guarantee that the target will remain unchanged or accessible after the command returns. Check `realpath --help` and the manual for the installed version before depending on non-portable flags.",
+  "syntax": "realpath [OPTION]... FILE...",
+  "examples": [
+    {
+      "command": "realpath .",
+      "expectedBehavior": "Print the resolved absolute pathname for the current directory on implementations providing the usual `realpath` utility.",
+      "testPlan": "Run in a temporary directory and compare the result with `pwd -P` where both commands are available."
+    },
+    {
+      "command": "realpath ../",
+      "expectedBehavior": "Print the resolved absolute pathname for the parent directory, subject to permissions and filesystem state.",
+      "testPlan": "Run from a temporary nested directory and compare the result with the parent's physical path."
+    },
+    {
+      "command": "realpath ./missing-target",
+      "expectedBehavior": "Behavior depends on implementation and options: some modes require the path to exist, while GNU Coreutils offers options that allow missing components.",
+      "testPlan": "In a disposable directory, run with and without the installed implementation's documented missing-path option; record actual exit status and output."
+    }
+  ],
+  "implementationDifferences": [
+    {
+      "implementation": "GNU Coreutils",
+      "notes": "Supports documented options for missing components and symlink resolution; check exact defaults against the installed Coreutils manual."
+    },
+    {
+      "implementation": "BusyBox and BSD-derived systems",
+      "notes": "Option availability and default handling of nonexistent paths can differ. Do not assume GNU-only flags are portable."
+    }
+  ],
+  "safetyNotes": [
+    "Path resolution does not prevent time-of-check/time-of-use races; a path can change after it is resolved.",
+    "A printed absolute path does not prove access permissions or that the destination is safe to modify.",
+    "For scripts targeting multiple distributions, feature-detect or constrain the supported implementation."
+  ],
+  "sources": [
+    {
+      "title": "GNU Coreutils manual: realpath invocation",
+      "url": "https://www.gnu.org/software/coreutils/manual/html_node/realpath-invocation.html",
+      "accessedAt": "",
+      "verified": false
+    }
+  ],
+  "verification": {
+    "syntaxVerified": false,
+    "examplesVerified": false,
+    "busyboxTested": false,
+    "humanReviewed": false,
+    "provenanceVerified": false
+  }
+}
