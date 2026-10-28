@@ -49,6 +49,10 @@ class FactoryTests(unittest.TestCase):
         self.assertIn("command_selection",legacy)
         self.assertIn("default: next-missing",legacy)
         self.assertIn("--next-missing --count",legacy)
+        self.assertIn("pull-requests: write",legacy)
+        self.assertIn("gh pr create --base main",legacy)
+        self.assertIn("No lesson is published by this PR.",legacy)
+        self.assertNotIn("gh pr merge",legacy)
     def test_quality_gate_flags_known_factual_contradictions(self):
         import importlib.util
         spec=importlib.util.spec_from_file_location("quality_gate", ROOT/"scripts/curriculum-quality-gate.py")
