@@ -25,6 +25,7 @@ const arg = (name, fallback) => {
   if (!Number.isSafeInteger(parsed)) throw new Error(name + " must be a safe integer.");
   return parsed;
 };
+const nextMissing = process.argv.includes("--next-missing");
 const start = Math.max(0, arg("--start", 0));
 const count = Math.max(1, Math.min(25, arg("--count", 5)));
 const delayMs = Math.max(1000, Number(process.env.QWEN_DELAY_MS || 1800));
@@ -73,8 +74,23 @@ function validateDraft(command, draft) {
   if (draft.sources.some((x) => !x || typeof x.title !== "string" || typeof x.url !== "string")) throw new Error(command.name + ": malformed source candidate.");
 }
 let written = 0;
-const slice = canonical.records.slice(start, start + count);
-if (!slice.length) throw new Error("No commands at start index " + start);
+let slice;
+if (nextMissing) {
+  const candidates = [];
+  for (const command of canonical.records) {
+    const curated = command.page?.status === "complete" && Boolean(command.page?.source);
+    if (curated) continue;
+    const target = path.join(outputDir, command.name + ".json");
+    try { await access(target); continue; } catch {}
+    candidates.push(command);
+    if (candidates.length >= count) break;
+  }
+  slice = candidates;
+  process.stdout.write("NEXT-MISSING queue: selected " + slice.length + " commands without an existing research draft or curated complete page." + String.fromCharCode(10));
+} else {
+  slice = canonical.records.slice(start, start + count);
+}
+if (!slice.length) throw new Error(nextMissing ? "No missing command drafts remain in this queue." : "No commands at start index " + start);
 for (const command of slice) {
   const target = path.join(outputDir, command.name + ".json");
   try { await access(target); process.stdout.write("SKIP existing " + command.name + "\n"); continue; } catch {}
