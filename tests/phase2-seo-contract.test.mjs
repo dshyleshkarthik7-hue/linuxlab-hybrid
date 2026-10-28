@@ -20,7 +20,7 @@ for (const question of ['Can I learn Linux online for free?', 'Is the command re
 assert.match(homepage, /200-command beginner curriculum/, 'homepage must distinguish beginner curriculum from full reference');
 assert.doesNotMatch(homepage, /200\+ curated lessons/, 'homepage must not overstate fully authored lesson coverage');
 assert.doesNotMatch(homepage, /1 GiB Developer Linux workspace/, 'homepage must use the verified Developer Alpine image size');
-assert.match(homepage, /6,161-entry command reference/, 'homepage must describe the full catalog without conflating it with beginner lessons');
+assert.match(homepage, /6,161-entry command catalogue/, 'homepage must describe the full inventory without conflating it with beginner lessons');
 assert.match(homepage, /github\.com\/dshyleshkarthik7-hue\/linuxlab-hybrid/, 'homepage must link the open-source repository');
 assert.match(about, /"@type":"AboutPage"/, 'About page must identify its purpose in structured metadata');
 assert.match(about, /source repository/, 'About page must provide verifiable project provenance');
