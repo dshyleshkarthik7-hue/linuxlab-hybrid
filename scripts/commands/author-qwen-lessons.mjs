@@ -7,8 +7,9 @@
  * and a human review have actually happened.
  *
  * Usage:
- *   HF_TOKEN=... node scripts/commands/author-qwen-lessons.mjs --start 0 --count 10
- *   HF_TOKEN=... node scripts/commands/author-qwen-lessons.mjs --start 10 --count 10
+ *   GEMINI_API_KEY=... node scripts/commands/author-qwen-lessons.mjs --start 0 --count 10
+ *   OPENROUTER_API_KEY=... node scripts/commands/author-qwen-lessons.mjs --start 10 --count 10
+ *   GEMINI_API_KEY=... node scripts/commands/author-qwen-lessons.mjs --next-missing --count 25
  */
 import { readFile, mkdir, writeFile, access } from "node:fs/promises";
 import path from "node:path";
