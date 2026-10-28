@@ -56,6 +56,9 @@ class FactoryTests(unittest.TestCase):
         errors,warnings=gate.validate_record("command",bad,Path("pwd.json"))
         self.assertEqual(errors,[])
         self.assertTrue(any("not HTTPS" in warning for warning in warnings))
+        bad_url={**command,"sources":[{"title":"bad URL","url":"https://example.com/path with spaces"}]}
+        _,warnings=gate.validate_record("command",bad_url,Path("pwd.json"))
+        self.assertTrue(any("not HTTPS" in warning for warning in warnings))
         curriculum={"content":{"title":"A sufficiently long title for a Linux lesson","objective":"An objective that is more than twenty five characters","prerequisites":"Prerequisites are sufficiently described for this lesson","explanation":"An explanation that is long enough to satisfy the curriculum contract and give the learner useful context.","workedExample":"A worked example that explains a safe Linux command and its expected behavior in enough detail.","expectedResult":"Expected results are described with enough detail for a learner to compare their own output.","commonMistakes":"Common mistakes are described in sufficient detail to help learners debug errors.","exercise":"A hands-on exercise with clear steps and completion criteria for the learner.","challenge":"A follow-up challenge that adds a useful variation and asks for reasoning.","reflection":"A reflection prompt that asks the learner to explain what they observed and why it matters.","steps":["step one","step two","step three"],"quiz":[{"question":"Question?","options":["A","B","C"],"answerIndex":9,"explanation":"Because this is invalid."}],"safetyNotes":["Use a disposable environment."],"sources":[{"title":"Linux manual","url":"https://man7.org/linux/man-pages/man1/ls.1.html"}]}}
         errors,warnings=gate.validate_record("curriculum",curriculum,Path("lesson.json"))
         self.assertTrue(any("malformed quiz question" in error for error in errors))
