@@ -1,0 +1,82 @@
+name: Curriculum Factory
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        description: "Which review-draft queue to generate"
+        required: true
+        type: choice
+        options: [commands, tutorials, curriculum]
+      start:
+        description: "Zero-based inventory offset"
+        required: true
+        default: "0"
+        type: string
+      count:
+        description: "Bounded batch size (commands 1-25; tutorials/curriculum 1-10)"
+        required: true
+        default: "10"
+        type: string
+permissions:
+  contents: read
+concurrency:
+  group: curriculum-factory-${{ github.ref }}-${{ inputs.target }}-${{ inputs.start }}
+  cancel-in-progress: false
+jobs:
+  draft:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 360
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: "3.12"
+      - run: npm ci
+      - run: python -m pip install -r requirements-curriculum.txt
+      - name: Validate bounded inputs
+        env:
+          TARGET: ${{ inputs.target }}
+          START: ${{ inputs.start }}
+          COUNT: ${{ inputs.count }}
+        run: |
+          python - <<'PY'
+          import os
+          target=os.environ["TARGET"]
+          start=int(os.environ["START"]); count=int(os.environ["COUNT"])
+          maximum=25 if target=="commands" else 10
+          if start < 0 or not 1 <= count <= maximum:
+              raise SystemExit(f"invalid batch: start >= 0 and count must be 1..{maximum}")
+          PY
+      - name: Generate review drafts
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+          HF_MODEL: Qwen/Qwen3-8B
+          START: ${{ inputs.start }}
+          COUNT: ${{ inputs.count }}
+          TARGET: ${{ inputs.target }}
+        run: |
+          test -n "$HF_TOKEN" || { echo "Repository secret HF_TOKEN is required"; exit 2; }
+          case "$TARGET" in
+            commands) node scripts/commands/author-qwen-lessons.mjs --start "$START" --count "$COUNT" ;;
+            tutorials) node scripts/author-qwen-tutorials.mjs --start "$START" --count "$COUNT" ;;
+            curriculum) node scripts/author-qwen-curriculum.mjs --start "$START" --count "$COUNT" ;;
+            *) echo "Unsupported target"; exit 2 ;;
+          esac
+      - name: Audit draft quality and coverage
+        if: always()
+        run: python scripts/curriculum-quality-gate.py --report .cache/curriculum-quality-report.json
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        if: always()
+        with:
+          name: curriculum-drafts-${{ inputs.target }}-${{ inputs.start }}-${{ github.run_id }}
+          path: |
+            data/commands/research/
+            data/tutorial-research/
+            data/curriculum-research/
+            .cache/curriculum-quality-report.json
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,29 @@
+#!/usr/bin/env python3
+import json, subprocess, sys, tempfile, unittest
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]
+class FactoryTests(unittest.TestCase):
+    def test_inventory_counts_and_authoring_queue_contracts(self):
+        canonical=json.loads((ROOT/"data/commands/canonical.json").read_text())
+        curriculum=json.loads((ROOT/"learn/curriculum.json").read_text())
+        self.assertEqual(canonical["recordCount"], len(canonical["records"]))
+        self.assertEqual(curriculum["lessonCount"], len(curriculum["lessons"]))
+        cmd=(ROOT/"scripts/commands/author-qwen-lessons.mjs").read_text()
+        tut=(ROOT/"scripts/author-qwen-tutorials.mjs").read_text()
+        cur=(ROOT/"scripts/author-qwen-curriculum.mjs").read_text()
+        self.assertIn("HF_TOKEN",cmd); self.assertIn("status: \"draft\"",cmd)
+        self.assertIn("humanReview: \"pending\"",tut)
+        self.assertIn("humanReview:\"pending\"",cur)
+        self.assertIn("data/commands/research",cmd)
+        self.assertIn("data/tutorial-research",tut)
+        self.assertIn("data/curriculum-research",cur)
+    def test_quality_audit_reports_missing_drafts_without_claiming_completion(self):
+        result=subprocess.run([sys.executable,str(ROOT/"scripts/curriculum-quality-gate.py"),"--report",".cache/test-curriculum-quality-report.json"],cwd=ROOT,text=True,capture_output=True)
+        self.assertIn(result.returncode,(0,1))
+        report=json.loads((ROOT/".cache/test-curriculum-quality-report.json").read_text())
+        self.assertTrue(report["modelDraftsAreNotPublishedContent"])
+        self.assertEqual(report["commandLessons"]["inventory"],6161)
+        self.assertEqual(report["structuredCurriculum"]["inventory"],520)
+        self.assertIn("disclaimer",report)
+        (ROOT/".cache/test-curriculum-quality-report.json").unlink(missing_ok=True)
+if __name__=="__main__": unittest.main()

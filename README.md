@@ -116,6 +116,20 @@ Run the full CI-oriented checks with `npm run check`. Production smoke testing u
 
 The repository uses strict TypeScript, reproducible npm installs, pinned CI action commits, automated dependency-update configuration, explicit code ownership, and regression tests for the learning engine, command catalog, parser, assessment runtime, ISO integrity, edge behavior, storage/resource controls, tutorials, quiz quality, certificate contracts and production routes.
 
+## AI-assisted curriculum production
+
+The repository includes resumable, review-gated AI drafting queues for the 6,161-command catalog and the 520-item structured curriculum. They use the Hugging Face Inference Providers chat API (default model: `Qwen/Qwen3-8B`) and require `HF_TOKEN` in the environment; never put tokens in source control.
+
+- Draft up to 25 command lessons: `HF_TOKEN=… npm run factory:commands -- --start 0 --count 25`
+- Draft up to 10 detailed tutorial lessons: `HF_TOKEN=… npm run factory:tutorials -- --start 0 --count 10`
+- Draft up to 10 structured curriculum lessons with quizzes: `HF_TOKEN=… npm run factory:curriculum -- --start 0 --count 10`
+- Audit generated drafts and duplication: `npm run audit:curriculum-quality`
+- Require full draft coverage and no detected duplicates/placeholders: `npm run audit:curriculum-quality:strict`
+
+The **Curriculum Factory** workflow can run one bounded batch and upload it as a review artifact. It does not silently publish model output. Drafts keep source candidates unverified, examples unexecuted, and human review pending. The Python quality gate reports lexical duplication, missing fields, suspiciously generic text, unsafe examples, and coverage separately for command research, tutorials, and curriculum lessons. Similarity screening is a triage tool, not proof of factual correctness.
+
+**Important:** 6,161 catalog records and 520 curriculum records are inventory counts, not proof that 6,161 or 520 lessons are accurate, tested, and human-reviewed. Do not mark AI-generated content complete until authoritative sources, implementation-specific behavior, safe examples, quiz answers, and reviewer evidence have been checked. Certificate issuance remains an assessment feature and must not imply accreditation or identity verification.
+
 ## License
 
 See `LICENSE` and `NOTICE`.
