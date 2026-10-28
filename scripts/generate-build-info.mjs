@@ -9,6 +9,9 @@ function gitCommit() {
 
 const candidates = [process.env.GITHUB_SHA, process.env.COMMIT_REF, process.env.VERCEL_GIT_COMMIT_SHA, gitCommit()];
 const commit = candidates.find(value => typeof value === 'string' && /^[0-9a-f]{40}$/i.test(value)) || null;
+if (!commit && (process.env.NETLIFY === 'true' || process.env.CI === 'true')) {
+  throw new Error('Refusing to build without a full 40-character source commit. Set the platform commit variable or build from a Git checkout.');
+}
 const packageJson = await readFile('package.json');
 const artifactManifest = await readFile('artifacts/manifest.json');
 const fingerprint = createHash('sha256').update(packageJson).update(artifactManifest).digest('hex');
