@@ -42,14 +42,26 @@ for (const lesson of curriculum.lessons.slice(start, start + count)) {
   if (!id) { process.stderr.write("SKIP lesson without stable id\n"); continue; }
   const file = path.join(outDir, id + ".json");
   try { await access(file); process.stdout.write("SKIP existing draft " + id + "\n"); continue; } catch {}
+  const existingDrafts = [];
+  for (const candidate of (await import("node:fs/promises")).readdir ? await (await import("node:fs/promises")).readdir(outDir) : []) {
+    if (!candidate.endsWith(".json") || candidate === path.basename(file)) continue;
+    try {
+      const prior = JSON.parse(await readFile(path.join(outDir, candidate), "utf8"));
+      const c = prior.content || prior;
+      existingDrafts.push({ id: prior.lessonId || prior.id || candidate, title: c.title || "", objective: c.objective || "", workedExample: String(c.workedExample || "").slice(0, 180) });
+    } catch {}
+  }
   const prompt = `Write a detailed, topic-specific Linux tutorial lesson for a learning platform. Return JSON only with keys title, objective, explanation, workedExample, expectedResult, exercise, knowledgeCheck, safetyNotes, sources.
 Existing lesson context (unverified): ${JSON.stringify({ id: lesson.id, track: lesson.track, topic: lesson.topic, title: lesson.title, objective: lesson.objective, explanation: lesson.explanation, workedExample: lesson.workedExample, expectedResult: lesson.expectedResult, exercise: lesson.exercise, knowledgeCheck: lesson.knowledgeCheck }).slice(0, 5000)}
+Existing draft lessons in this batch (avoid duplicating their objective, example, and exercise): ${JSON.stringify(existingDrafts).slice(0, 3500)}
 Requirements:
 - Preserve the topic and intended level. Provide a clear detailed explanation with prerequisite concepts, step-by-step reasoning, and common misconceptions.
 - Worked example must be safe and relevant; use temporary/example paths and read-only commands where possible. Never include destructive root commands, credentials, real network attacks, or commands that delete broad paths.
 - Explain expected behavior without pretending to have executed the example. Provide reproducible validation steps.
 - Exercise must be a concrete hands-on task with clear completion criteria. Knowledge check must be a topic-specific question with its answer and rationale.
 - Sources are candidate references as {title,url}; prefer official Linux man pages, GNU/Bash docs, kernel docs, or authoritative project docs. Do not claim they were verified.
+- Keep /etc/os-release examples internally consistent: never pair ID=ubuntu with NAME="Fedora"; ID=ubuntu should use NAME="Ubuntu". The file is not systemd-exclusive.
+- Make this lesson meaningfully distinct from existing drafts: do not reuse the same central explanation, worked example, or exercise. Choose a different practical angle while preserving the assigned topic.
 - No markdown fences. Every field must be a non-empty string except safetyNotes and sources which must be non-empty arrays. Make the content genuinely specific, not a generic reflection template.
 `;
   try {
