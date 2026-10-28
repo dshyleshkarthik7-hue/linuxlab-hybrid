@@ -95,6 +95,7 @@ jobs:
             data/commands/research/
             data/tutorial-research/
             data/curriculum-research/
+            artifacts/ai-pilot/
             .cache/curriculum-quality-report.json
           if-no-files-found: warn
           retention-days: 14

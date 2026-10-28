@@ -9,7 +9,7 @@ const status = (code) => ({ ok: false, status: code, json: async () => ({}) });
   const calls = [];
   const result = await completeChat({
     messages, env: { GEMINI_API_KEY: "test-gemini", OPENROUTER_API_KEY: "test-openrouter" },
-    fetchImpl: async (url, init) => { calls.push({ url, body: JSON.parse(init.body) }); return calls.length === 1 ? status(429) : ok("{\"ok\":true}"); }
+    fetchImpl: async (url, init) => { calls.push({ url, body: JSON.parse(init.body) }); return calls.length === 1 ? status(429) : ok("done", {}, "qwen/qwen3:free"); }
   });
   assert.equal(calls.length, 2);
   assert.match(calls[0].url, /generativelanguage\.googleapis\.com/);
