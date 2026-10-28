@@ -11,6 +11,7 @@ const tutorialIndex = await read('../tutorials/index.html');
 const commandBuilder = await read('../scripts/commands/build-command-pages.mjs');
 const sitemap = await read('../public/sitemap.xml');
 const robots = await read('../public/robots.txt');
+const errorDecoder = await read('../public/tools/linux-error-decoder/index.html');
 
 assert.match(homepage, /"@type":"Course"/, 'homepage must describe the learning course');
 assert.match(homepage, /"@type":"FAQPage"/, 'homepage must expose concise, visible-product FAQ structured data');
@@ -33,6 +34,17 @@ assert.match(tutorialIndex, /href="\/tutorials\/linux-ls-command\/"/, 'tutorial 
 assert.match(tutorialIndex, /href="\/tutorials\/grep-examples\/"/, 'tutorial index must link to grep guide');
 assert.match(homepage, /href="\/tutorials\/linux-ls-command\/"/, 'homepage must link to ls guide');
 assert.match(homepage, /href="\/tutorials\/grep-examples\/"/, 'homepage must link to grep guide');
+assert.match(homepage, /href="\/tools\/linux-error-decoder\//, 'homepage must discover the Linux Error Decoder tool');
+assert.match(tutorialIndex, /href="\/tools\/linux-error-decoder\//, 'tutorial index must link to the troubleshooting tool');
+assert.match(errorDecoder, /rel="canonical" href="https:\/\/linuxterminal\.me\/tools\/linux-error-decoder\//, 'error decoder must use a canonical URL');
+assert.match(errorDecoder, /"@type":"WebApplication"/, 'error decoder must declare WebApplication structured data');
+assert.match(errorDecoder, /"@type":"FAQPage"/, 'error decoder must expose FAQ structured data matching visible content');
+assert.match(errorDecoder, /No space left on device/, 'error decoder must include storage troubleshooting');
+assert.match(errorDecoder, /Permission denied/, 'error decoder must include permission troubleshooting');
+assert.match(errorDecoder, /does not require an account or an AI API key/, 'tool must clearly explain its free, client-side behavior');
+assert.match(errorDecoder, /addEventListener\('submit'/, 'error decoder search must work client-side');
+assert.match(sitemap, /https:\/\/linuxterminal\.me\/tools\/linux-error-decoder\//, 'sitemap must include the new troubleshooting tool');
+
 assert.match(permissions, /property="og:type" content="article"/, 'permissions tutorial must have social article metadata');
 assert.match(permissions, /Understand numeric modes/, 'permissions tutorial must explain numeric chmod modes');
 assert.match(permissions, /chmod 777/, 'permissions tutorial must answer a common unsafe permission misconception');
