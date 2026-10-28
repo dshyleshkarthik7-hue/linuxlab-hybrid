@@ -28,6 +28,11 @@ class FactoryTests(unittest.TestCase):
         self.assertIn("gemini-3.1-flash-lite",adapter)
         self.assertIn("AI_ALLOW_HF_ROUTER",adapter)
         self.assertIn("AI_DRAFT_LABEL",cmd); self.assertIn("AI_DRAFT_LABEL",tut); self.assertIn("AI_DRAFT_LABEL",cur)
+        gate=(ROOT/"scripts/curriculum-quality-gate.py").read_text()
+        workflow=(ROOT/".github/workflows/curriculum-factory.yml").read_text()
+        self.assertIn("--pilot-label",gate)
+        self.assertIn("artifacts/ai-pilot",gate)
+        self.assertIn("--pilot-label",workflow)
     def test_quality_audit_reports_missing_drafts_without_claiming_completion(self):
         result=subprocess.run([sys.executable,str(ROOT/"scripts/curriculum-quality-gate.py"),"--report",".cache/test-curriculum-quality-report.json"],cwd=ROOT,text=True,capture_output=True)
         self.assertIn(result.returncode,(0,1))
