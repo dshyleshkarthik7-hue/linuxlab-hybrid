@@ -39,6 +39,7 @@ assert.match(tutorialIndex, /href="\/tools\/linux-error-decoder\//, 'tutorial in
 assert.match(errorDecoder, /rel="canonical" href="https:\/\/linuxterminal\.me\/tools\/linux-error-decoder\//, 'error decoder must use a canonical URL');
 assert.match(errorDecoder, /"@type":"WebApplication"/, 'error decoder must declare WebApplication structured data');
 assert.match(errorDecoder, /"@type":"FAQPage"/, 'error decoder must expose FAQ structured data matching visible content');
+assert.match(errorDecoder, /id="error-decoder-faq"/, 'error decoder FAQ structured data must correspond to visible FAQ content');
 assert.match(errorDecoder, /No space left on device/, 'error decoder must include storage troubleshooting');
 assert.match(errorDecoder, /Permission denied/, 'error decoder must include permission troubleshooting');
 assert.match(errorDecoder, /does not require an account or an AI API key/, 'tool must clearly explain its free, client-side behavior');
