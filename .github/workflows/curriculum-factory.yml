@@ -86,8 +86,15 @@ jobs:
           AI_FINAL_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'gemini,openrouter' || inputs.provider }}
           AI_DRAFT_LABEL: pilot-${{ inputs.provider }}
         run: |
+          set +e
           node scripts/commands/author-qwen-lessons.mjs --start 0 --count 5
+          command_status=$?
           node scripts/author-qwen-tutorials.mjs --start 0 --count 2
+          tutorial_status=$?
+          if [ "$command_status" -ne 0 ] || [ "$tutorial_status" -ne 0 ]; then
+            echo "Pilot generation incomplete: commands=$command_status tutorials=$tutorial_status"
+            exit 1
+          fi
       - name: Audit draft quality and coverage
         if: always()
         env:
