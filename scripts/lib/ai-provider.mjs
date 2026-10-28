@@ -117,6 +117,10 @@ export async function completeChat({ messages, temperature = 0.2, maxTokens = 30
       const text = body?.choices?.[0]?.message?.content;
       if (typeof text !== "string" || !text.trim()) { errors.push(name + "/" + model + ": empty completion"); continue; }
       const returnedModel = String(body.model || cfg.id);
+      if (name === "openrouter" && returnedModel !== "openrouter/free" && !/:free$/i.test(returnedModel)) {
+        errors.push(name + "/" + model + ": provider returned a model not explicitly marked free (" + returnedModel + ")");
+        continue;
+      }
       // Requested OpenRouter IDs are constrained to explicit :free models or openrouter/free.
       if (expectJson && !jsonObjectLooksValid(text)) {
         errors.push(name + "/" + model + ": malformed JSON output");
