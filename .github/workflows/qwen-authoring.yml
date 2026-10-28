@@ -24,6 +24,12 @@ on:
         required: true
         default: auto
         options: [auto, gemini, openrouter]
+      command_selection:
+        description: For commands only, continue from the first missing draft instead of a fixed catalog offset
+        type: choice
+        required: true
+        default: next-missing
+        options: [next-missing, offset]
 
 permissions:
   contents: read
@@ -82,10 +88,17 @@ jobs:
           START: ${{ inputs.start }}
           COUNT: ${{ inputs.count }}
           CONTENT_TYPE: ${{ inputs.content_type }}
+          COMMAND_SELECTION: ${{ inputs.command_selection }}
         run: |
           set -euo pipefail
           case "$CONTENT_TYPE" in
-            commands) node scripts/commands/author-qwen-lessons.mjs --start "$START" --count "$COUNT" ;;
+            commands)
+              if [[ "$COMMAND_SELECTION" == "next-missing" ]]; then
+                node scripts/commands/author-qwen-lessons.mjs --next-missing --count "$COUNT"
+              else
+                node scripts/commands/author-qwen-lessons.mjs --start "$START" --count "$COUNT"
+              fi
+              ;;
             tutorials) node scripts/author-qwen-tutorials.mjs --start "$START" --count "$COUNT" ;;
             curriculum) node scripts/author-qwen-curriculum.mjs --start "$START" --count "$COUNT" ;;
             *) echo 'Unsupported content type'; exit 2 ;;
