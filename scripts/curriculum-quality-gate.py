@@ -68,6 +68,17 @@ def find_generic(text):
 def find_unsafe(text):
     return [p.pattern for p in UNSAFE if p.search(text)]
 
+def find_factual_red_flags(text, kind, filename):
+    """Deterministic high-confidence contradictions; never claim this replaces review."""
+    flags = []
+    if re.search(r"\\bID\\s*=\\s*['\"]?ubuntu\\b", text, re.I) and re.search(r"\\bNAME\\s*=\\s*['\"]Fedora['\"]", text, re.I):
+        flags.append("contradictory os-release example: ID=ubuntu paired with NAME=Fedora")
+    if kind == "command" and filename == "tree.json" and re.search(
+        r"exit status.{0,100}2.{0,100}(some|files).{0,40}(listed|printed)", text, re.I | re.S
+    ):
+        flags.append("unsupported tree exit-status claim; require implementation-specific manual verification")
+    return flags
+
 def audit_dir(kind, directory, expected_items):
     files = sorted(directory.glob("*.json")) if directory.exists() else []
     entries, errors, warnings = [], [], []
@@ -86,6 +97,9 @@ def audit_dir(kind, directory, expected_items):
         unsafe = find_unsafe(body)
         if unsafe:
             errors.append({"file": str(file.relative_to(ROOT)), "issue": "unsafe command pattern; manual review required", "matches": unsafe})
+        factual_flags = find_factual_red_flags(body, kind, file.name)
+        for flag in factual_flags:
+            errors.append({"file": str(file.relative_to(ROOT)), "issue": flag})
         normalized = norm(body)
         if normalized:
             hashes[hashlib.sha256(normalized.encode()).hexdigest()].append(file.name)
@@ -121,15 +135,19 @@ def audit_dir(kind, directory, expected_items):
                     for dist, j in zip(distances[i][1:], indices[i][1:]):
                         sim = 1.0 - float(dist)
                         pair = tuple(sorted((files[i].name, files[int(j)].name)))
-                        if sim >= 0.88 and pair not in seen:
+                        if sim >= (0.72 if kind == "command" else 0.58) and pair not in seen:
                             seen.add(pair)
                             pairs.append({"files": list(pair), "cosineSimilarity": round(sim, 4)})
                 ml = {"available": True, "method": "TF-IDF word uni/bigrams + cosine nearest neighbors",
+                      "threshold": 0.72 if kind == "command" else 0.58,
                       "compared": len(texts), "nearDuplicatePairs": sorted(pairs, key=lambda x: -x["cosineSimilarity"])[:200]}
         except ImportError:
             ml["note"] = "Install requirements-curriculum.txt to enable TF-IDF similarity; exact/templated checks still run."
         except Exception as exc:
             ml["note"] = "Optional similarity model unavailable: " + str(exc)[:200]
+    if ml.get("nearDuplicatePairs"):
+        warnings.append({"issue": "semantic near-duplicate lesson candidates; compare learning objectives and exercises", 
+                         "groups": ml["nearDuplicatePairs"][:100], "groupCount": len(ml["nearDuplicatePairs"])})
     return {
         "inventory": expected_items, "draftFiles": len(entries),
         "coveragePercent": round(100 * len(entries) / expected_items, 2) if expected_items else 100,
