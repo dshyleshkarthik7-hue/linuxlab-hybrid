@@ -117,11 +117,15 @@ def validate_record(kind, obj, file):
             if not isinstance(steps, list) or len(steps) < 3:
                 issues.append("content steps must contain at least three steps")
             quiz = content.get("quiz")
-            if not isinstance(quiz, list) or len(quiz) < 5:
-                issues.append("content quiz must contain at least five questions")
+            if not isinstance(quiz, list):
+                issues.append("content quiz must be an array")
             else:
+                if len(quiz) < 5:
+                    issues.append("content quiz must contain at least five questions")
+                # Validate every supplied question even when the quiz is too short.
+                # Otherwise a malformed answer key can hide behind the length error.
                 for i, q in enumerate(quiz):
-                    if not isinstance(q, dict) or not isinstance(q.get("question"), str) or not isinstance(q.get("options"), list) or len(q["options"]) < 3 or not isinstance(q.get("answerIndex"), int) or isinstance(q.get("answerIndex"), bool) or q["answerIndex"] < 0 or q["answerIndex"] >= len(q["options"]) or not isinstance(q.get("explanation"), str) or not q["explanation"].strip():
+                    if not isinstance(q, dict) or not isinstance(q.get("question"), str) or not q["question"].strip() or not isinstance(q.get("options"), list) or len(q["options"]) < 3 or any(not isinstance(option, str) or not option.strip() for option in q["options"]) or not isinstance(q.get("answerIndex"), int) or isinstance(q.get("answerIndex"), bool) or q["answerIndex"] < 0 or q["answerIndex"] >= len(q["options"]) or not isinstance(q.get("explanation"), str) or not q["explanation"].strip():
                         issues.append(f"malformed quiz question at index {i}")
             sources = content.get("sources", [])
             safety = content.get("safetyNotes", [])
