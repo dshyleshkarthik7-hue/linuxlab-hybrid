@@ -36,4 +36,39 @@ const status = (code) => ({ ok: false, status: code, json: async () => ({}) });
   const result = await completeChat({ messages, providerOrder: ["openrouter"], env: { OPENROUTER_API_KEY: "x", OPENROUTER_MODEL: "qwen/qwen3:free" }, fetchImpl: async (url, init) => { assert.equal(JSON.parse(init.body).model, "qwen/qwen3:free"); return ok("done"); } });
   assert.equal(result.text, "done");
 }
+
+{
+  const calls = [];
+  const result = await completeChat({
+    messages, role: "generator", providerOrder: ["openrouter"], expectJson: true,
+    env: { OPENROUTER_API_KEY: "x" },
+    fetchImpl: async (url, init) => {
+      calls.push(JSON.parse(init.body).model);
+      return calls.length === 1
+        ? ok("I cannot provide JSON, sorry.")
+        : ok('{"name":"pwd","definition":"Print the working directory."}', {}, "arcee-ai/trinity-mini:free");
+    }
+  });
+  assert.equal(calls.length, 2, "malformed JSON must trigger a free-model fallback");
+  assert.equal(calls[0], "arcee-ai/trinity-large-preview:free");
+  assert.equal(calls[1], "arcee-ai/trinity-mini:free");
+  assert.match(result.text, /"name":"pwd"/);
+}
+{
+  const calls = [];
+  const result = await completeChat({
+    messages, role: "generator", providerOrder: ["openrouter"], expectJson: true,
+    validateOutput: text => { if (!JSON.parse(text).definition) throw new Error("missing definition"); },
+    env: { OPENROUTER_API_KEY: "x" },
+    fetchImpl: async (url, init) => {
+      calls.push(JSON.parse(init.body).model);
+      return calls.length === 1
+        ? ok('{"name":"pwd"}')
+        : ok('{"name":"pwd","definition":"Print the working directory."}', {}, "arcee-ai/trinity-mini:free");
+    }
+  });
+  assert.equal(calls.length, 2, "schema-invalid JSON must trigger a free-model fallback");
+  assert.match(result.text, /definition/);
+}
+
 console.log("AI provider fallback tests passed.");
