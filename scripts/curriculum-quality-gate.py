@@ -144,6 +144,7 @@ def main():
     ap.add_argument("--strict", action="store_true", help="fail when any inventory item lacks a valid draft or duplicates/template warnings exist")
     ap.add_argument("--release", action="store_true", help="also require each item to be reviewed, source-verified, and execution-verified")
     ap.add_argument("--report", default=".cache/curriculum-quality-report.json")
+    ap.add_argument("--pilot-label", help="audit isolated pilot drafts under artifacts/ai-pilot/<label>")
     args = ap.parse_args()
     canonical = read_json(ROOT / "data/commands/canonical.json")
     curriculum = read_json(ROOT / "learn/curriculum.json")
@@ -157,17 +158,46 @@ def main():
     lessons = curriculum["lessons"]
     if len(lessons) != curriculum.get("lessonCount"):
         print("ERROR: curriculum count mismatch", file=sys.stderr); return 2
-    # Include every command's draft as a required identity; a stray JSON file cannot inflate coverage.
-    command_dir = ROOT / "data/commands/research"
-    command_audit = audit_dir("command", command_dir, len(command_records))
-    expected_names = {str(r.get("name", "")) + ".json" for r in command_records}
+    # Pilot drafts intentionally live outside production queues. Audit only the bounded
+    # pilot identities; otherwise a successful pilot is incorrectly reported as 0/full inventory.
+    if args.pilot_label and not re.fullmatch(r"[a-z0-9-]{1,48}", args.pilot_label):
+        print("ERROR: --pilot-label must be a lowercase slug (1-48 characters)", file=sys.stderr)
+        return 2
+    if args.pilot_label:
+        pilot_root = ROOT / "artifacts/ai-pilot" / args.pilot_label
+        expected_commands = command_records[:5]
+        expected_lessons = lessons[:2]
+        command_dir = pilot_root / "commands"
+        tutorial_dir = pilot_root / "tutorials"
+        curriculum_dir = pilot_root / "curriculum"
+    else:
+        expected_commands = command_records
+        expected_lessons = lessons
+        command_dir = ROOT / "data/commands/research"
+        tutorial_dir = ROOT / "data/tutorial-research"
+        curriculum_dir = ROOT / "data/curriculum-research"
+
+    # Compare filenames against required inventory identities so stray files cannot inflate coverage.
+    command_audit = audit_dir("command", command_dir, len(expected_commands))
+    expected_names = {str(r.get("name", "")) + ".json" for r in expected_commands}
     found_names = {p.name for p in command_dir.glob("*.json")} if command_dir.exists() else set()
     command_audit["missingDrafts"] = sorted(expected_names - found_names)
     command_audit["unexpectedDrafts"] = sorted(found_names - expected_names)
-    tutorial_audit = audit_dir("tutorial", ROOT / "data/tutorial-research", len(lessons))
-    tutorial_audit["missingDrafts"] = sorted({str(x.get("id", "")) + ".json" for x in lessons} - ({p.name for p in (ROOT / "data/tutorial-research").glob("*.json")} if (ROOT / "data/tutorial-research").exists() else set()))
-    curriculum_audit = audit_dir("curriculum", ROOT / "data/curriculum-research", len(lessons))
-    curriculum_audit["missingDrafts"] = sorted({str(x.get("id", "")) + ".json" for x in lessons} - ({p.name for p in (ROOT / "data/curriculum-research").glob("*.json")} if (ROOT / "data/curriculum-research").exists() else set()))
+
+    tutorial_audit = audit_dir("tutorial", tutorial_dir, len(expected_lessons))
+    expected_tutorial_names = {str(x.get("id", "")) + ".json" for x in expected_lessons}
+    found_tutorial_names = {p.name for p in tutorial_dir.glob("*.json")} if tutorial_dir.exists() else set()
+    tutorial_audit["missingDrafts"] = sorted(expected_tutorial_names - found_tutorial_names)
+    tutorial_audit["unexpectedDrafts"] = sorted(found_tutorial_names - expected_tutorial_names)
+
+    # The current pilot exercises commands and tutorials only, not structured curriculum.
+    curriculum_expected = [] if args.pilot_label else lessons
+    curriculum_audit = audit_dir("curriculum", curriculum_dir, len(curriculum_expected))
+    expected_curriculum_names = {str(x.get("id", "")) + ".json" for x in curriculum_expected}
+    found_curriculum_names = {p.name for p in curriculum_dir.glob("*.json")} if curriculum_dir.exists() else set()
+    curriculum_audit["missingDrafts"] = sorted(expected_curriculum_names - found_curriculum_names)
+    curriculum_audit["unexpectedDrafts"] = sorted(found_curriculum_names - expected_curriculum_names)
+
     report = {
         "schemaVersion": 1,
         "generatedAt": datetime.now(timezone.utc).isoformat(),
