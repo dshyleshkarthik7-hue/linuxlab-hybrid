@@ -8,7 +8,7 @@ export async function orchestrateDraft({ systemPrompt, userPrompt, parse, valida
     const result = await complete({ role, messages: [
       { role: "system", content: systemPrompt + "\n\n" + instruction },
       { role: "user", content: userPrompt + "\n\n" + context + "\n\nReturn exactly one complete JSON object. Do not use Markdown fences." }
-    ], temperature: role === "generator" ? 0.2 : 0.1, maxTokens: max, timeoutMs, env, expectJson: true });
+    ], temperature: role === "generator" ? 0.2 : 0.1, maxTokens: max, timeoutMs, env, expectJson: true, validateOutput: text => { const candidate = parse(text); if (!candidate || typeof candidate !== "object" || Array.isArray(candidate)) throw new Error("response must be a JSON object"); validate(candidate); } });
     let value;
     try { value = parse(result.text); } catch (error) { throw new Error(role + " stage returned invalid JSON: " + String(error?.message || error)); }
     if (!value || typeof value !== "object" || Array.isArray(value)) throw new Error(role + " stage must return a JSON object.");
