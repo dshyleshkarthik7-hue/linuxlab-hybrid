@@ -33,6 +33,16 @@ class FactoryTests(unittest.TestCase):
         self.assertIn("--pilot-label",gate)
         self.assertIn("artifacts/ai-pilot",gate)
         self.assertIn("--pilot-label",workflow)
+        self.assertIn("--strict-quality",gate)
+        self.assertIn("--strict-quality",workflow)
+        self.assertIn("Existing draft lessons in this batch",tut)
+    def test_quality_gate_flags_known_factual_contradictions(self):
+        import importlib.util
+        spec=importlib.util.spec_from_file_location("quality_gate", ROOT/"scripts/curriculum-quality-gate.py")
+        gate=importlib.util.module_from_spec(spec); spec.loader.exec_module(gate)
+        self.assertTrue(gate.find_factual_red_flags('ID=ubuntu NAME="Fedora"', "tutorial", "lesson.json"))
+        self.assertTrue(gate.find_factual_red_flags("tree exit status 2 means some files were listed", "command", "tree.json"))
+        self.assertFalse(gate.find_factual_red_flags('ID=ubuntu NAME="Ubuntu"', "tutorial", "lesson.json"))
     def test_quality_audit_reports_missing_drafts_without_claiming_completion(self):
         result=subprocess.run([sys.executable,str(ROOT/"scripts/curriculum-quality-gate.py"),"--report",".cache/test-curriculum-quality-report.json"],cwd=ROOT,text=True,capture_output=True)
         self.assertIn(result.returncode,(0,1))
