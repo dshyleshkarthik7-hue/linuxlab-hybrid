@@ -32,14 +32,19 @@ function createCard(item) {
   const code = document.createElement('code');
   code.textContent = item.name;
   title.appendChild(code);
+  const hasCuratedLesson = item.page?.status === 'complete' && Boolean(item.page?.source);
+  const status = document.createElement('span');
+  status.className = 'pill editorial-status';
+  status.textContent = hasCuratedLesson ? 'Curated lesson' : 'Reference entry · lesson not yet curated';
+  status.setAttribute('aria-label', hasCuratedLesson ? 'Curated lesson' : 'Reference entry; lesson not yet curated');
   const desc = document.createElement('p');
   desc.className = 'muted';
-  desc.textContent = item.summary || ('Open the full lesson for ' + item.name);
+  desc.textContent = item.summary || ('Reference entry for ' + item.name + '. Command-specific lesson content has not yet been reviewed and published.');
   const link = document.createElement('a');
   link.className = 'cta';
   link.href = item.url;
-  link.textContent = 'Open full lesson →';
-  card.append(pill, title, desc, link);
+  link.textContent = hasCuratedLesson ? 'Open curated lesson →' : 'Open reference entry →';
+  card.append(pill, status, title, desc, link);
   return card;
 }
 
