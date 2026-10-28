@@ -33,6 +33,17 @@ const status = (code) => ({ ok: false, status: code, json: async () => ({}) });
   await assert.rejects(() => completeChat({ messages, env: { AI_PROVIDER_ORDER: "huggingface", HF_TOKEN: "x" }, fetchImpl: async () => ok("x") }), /disabled in zero-cost mode/);
 }
 {
+  const calls = [];
+  const result = await completeChat({
+    messages, providerOrder: ["huggingface", "openrouter"],
+    env: { HF_TOKEN: "hf-test", OPENROUTER_API_KEY: "or-test" },
+    fetchImpl: async (url, init) => { calls.push(url); return ok("fallback worked", {}, "arcee-ai/trinity-mini:free"); }
+  });
+  assert.equal(calls.length, 1, "disabled optional Hugging Face routing must not prevent a later free provider from being tried");
+  assert.match(calls[0], /openrouter\.ai/);
+  assert.equal(result.text, "fallback worked");
+}
+{
   const result = await completeChat({ messages, providerOrder: ["openrouter"], env: { OPENROUTER_API_KEY: "x", OPENROUTER_MODEL: "qwen/qwen3:free" }, fetchImpl: async (url, init) => { assert.equal(JSON.parse(init.body).model, "qwen/qwen3:free"); return ok("done"); } });
   assert.equal(result.text, "done");
 }
