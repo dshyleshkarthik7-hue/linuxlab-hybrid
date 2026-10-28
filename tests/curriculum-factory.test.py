@@ -46,6 +46,9 @@ class FactoryTests(unittest.TestCase):
         self.assertNotIn("HF_TOKEN",legacy)
         self.assertIn("AI_GENERATOR_PROVIDER_ORDER",legacy)
         self.assertIn("count exceeds the selected bounded batch limit",legacy)
+        self.assertIn("command_selection",legacy)
+        self.assertIn("default: next-missing",legacy)
+        self.assertIn("--next-missing --count",legacy)
     def test_quality_gate_flags_known_factual_contradictions(self):
         import importlib.util
         spec=importlib.util.spec_from_file_location("quality_gate", ROOT/"scripts/curriculum-quality-gate.py")
