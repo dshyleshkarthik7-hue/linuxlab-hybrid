@@ -13,10 +13,16 @@ on:
         default: "0"
         type: string
       count:
-        description: "Bounded batch size (commands 1-25; tutorials/curriculum 1-10)"
+        description: "Bounded batch size (commands 1-25; tutorials/curriculum 1-10; pilot uses fixed sample)"
         required: true
         default: "10"
         type: string
+      provider:
+        description: "Free-tier provider; auto uses Gemini then OpenRouter, single providers are useful for the pilot"
+        required: true
+        default: auto
+        type: choice
+        options: [auto, gemini, openrouter]
 permissions:
   contents: read
 concurrency:
@@ -41,13 +47,14 @@ jobs:
         env:
           TARGET: ${{ inputs.target }}
           START: ${{ inputs.start }}
-          COUNT: ${{ inputs.count }}\n          PROVIDER: ${{ inputs.provider }}
+          COUNT: ${{ inputs.count }}
         run: |
           python - <<'PY'
           import os
           target=os.environ["TARGET"]
           start=int(os.environ["START"]); count=int(os.environ["COUNT"])
           maximum=25 if target=="commands" else 10
+          if target=="pilot": maximum=10
           if start < 0 or not 1 <= count <= maximum:
               raise SystemExit(f"invalid batch: start >= 0 and count must be 1..{maximum}")
           PY

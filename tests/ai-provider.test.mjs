@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { completeChat } from "../scripts/lib/ai-provider.mjs";
 
 const messages = [{ role: "user", content: "Return a JSON lesson." }];
-const ok = (text, usage = {}) => ({ ok: true, status: 200, json: async () => ({ choices: [{ message: { content: text } }], usage }) });
+const ok = (text, usage = {}, model = undefined) => ({ ok: true, status: 200, json: async () => ({ choices: [{ message: { content: text } }], usage, ...(model ? { model } : {}) }) });
 const status = (code) => ({ ok: false, status: code, json: async () => ({}) });
 
 {
@@ -17,7 +17,8 @@ const status = (code) => ({ ok: false, status: code, json: async () => ({}) });
   assert.match(calls[1].url, /openrouter\.ai/);
   assert.equal(calls[1].body.model, "openrouter/free");
   assert.equal(result.provider, "OpenRouter free models");
-  assert.equal(result.model, "openrouter/free");
+  assert.equal(result.model, "qwen/qwen3:free");
+  assert.equal(result.requestedModel, "openrouter/free");
 }
 {
   await assert.rejects(() => completeChat({ messages, env: {}, fetchImpl: async () => { throw new Error("should not call"); } }), /No configured free-tier AI provider/);

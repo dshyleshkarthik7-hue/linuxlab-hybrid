@@ -81,7 +81,7 @@ export async function completeChat({ messages, temperature = 0.2, maxTokens = 30
       errors.push(name + ": empty completion");
       continue;
     }
-    return { text, provider: cfg.provider, model: cfg.id, usage: body.usage || null };
+    return { text, provider: cfg.provider, model: body.model || cfg.id, requestedModel: cfg.id, usage: body.usage || null };
   }
   if (!configured) throw new Error("No configured free-tier AI provider. Set GEMINI_API_KEY and/or OPENROUTER_API_KEY; provider order is " + order.join(",") + ".");
   throw new Error("All configured AI providers failed without paid fallback: " + errors.join("; "));
