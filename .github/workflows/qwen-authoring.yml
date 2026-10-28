@@ -1,34 +1,35 @@
-name: Qwen content authoring
+name: Free-tier content authoring (bounded)
 
 on:
   workflow_dispatch:
     inputs:
       content_type:
-        description: Which review-draft queue to run
+        description: Which review-draft queue to generate
         type: choice
         required: true
-        options:
-          - commands
-          - tutorials
-          - curriculum
-          - all-commands
-          - all-curriculum
+        options: [commands, tutorials, curriculum]
       start:
         description: Zero-based inventory offset
         type: number
         required: true
         default: 0
       count:
-        description: Batch size (commands max 25; tutorials/curriculum max 10; all-* processes the full inventory)
+        description: Bounded batch size (commands max 25; tutorials/curriculum max 10)
         type: number
         required: true
         default: 5
+      provider:
+        description: Free-tier provider strategy
+        type: choice
+        required: true
+        default: auto
+        options: [auto, gemini, openrouter]
 
 permissions:
   contents: read
 
 concurrency:
-  group: qwen-authoring-${{ github.ref }}-${{ inputs.content_type }}
+  group: free-authoring-${{ github.ref }}-${{ inputs.content_type }}-${{ inputs.start }}
   cancel-in-progress: false
 
 jobs:
@@ -47,6 +48,11 @@ jobs:
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
+          cache: npm
+      - name: Set up Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12'
       - name: Validate bounded batch inputs
         env:
           CONTENT_TYPE: ${{ inputs.content_type }}
@@ -58,37 +64,44 @@ jobs:
           const type = process.env.CONTENT_TYPE;
           const start = Number(process.env.START);
           const count = Number(process.env.COUNT);
-          const max = type === "commands" ? 25 : type === "tutorials" || type === "curriculum" ? 10 : type === "all-commands" || type === "all-curriculum" ? 1 : 0;
-          if (!Number.isSafeInteger(start) || start < 0) throw new Error("start must be a non-negative integer");
-          if (!Number.isSafeInteger(count) || count < 1 || count > max) throw new Error("count must be between 1 and the limit for the selected content type");
+          const max = type === 'commands' ? 25 : type === 'tutorials' || type === 'curriculum' ? 10 : 0;
+          if (!Number.isSafeInteger(start) || start < 0) throw new Error('start must be a non-negative integer');
+          if (!Number.isSafeInteger(count) || count < 1 || count > max) throw new Error('count exceeds the selected bounded batch limit');
           NODE
       - name: Install locked dependencies
         run: npm ci --ignore-scripts
-      - name: Generate review drafts with Qwen
+      - name: Install optional similarity audit dependency
+        run: python -m pip install -r requirements-curriculum.txt
+      - name: Generate free-tier review drafts
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_MODEL: ${{ vars.HF_MODEL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          AI_GENERATOR_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'openrouter,gemini' || inputs.provider }}
+          AI_VERIFIER_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'openrouter,gemini' || inputs.provider }}
+          AI_FINAL_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'gemini,openrouter' || inputs.provider }}
           START: ${{ inputs.start }}
           COUNT: ${{ inputs.count }}
           CONTENT_TYPE: ${{ inputs.content_type }}
         run: |
           set -euo pipefail
-          test -n "$HF_TOKEN" || { echo "::error::Configure HF_TOKEN as a secret in the content-authoring environment."; exit 1; }
-          export HF_MODEL="${HF_MODEL:-Qwen/Qwen3-8B}"
           case "$CONTENT_TYPE" in
-            commands) npm run author:qwen-lessons -- --start "$START" --count "$COUNT" ;;
-            tutorials) npm run author:qwen-tutorials -- --start "$START" --count "$COUNT" ;;
-            curriculum) npm run author:qwen-curriculum -- --start "$START" --count "$COUNT" ;;
-            all-commands) for ((offset=0; offset<6161; offset+=25)); do npm run author:qwen-lessons -- --start "$offset" --count 25; done ;;
-            all-curriculum) npm run author:qwen-curriculum -- --all ;;
+            commands) node scripts/commands/author-qwen-lessons.mjs --start "$START" --count "$COUNT" ;;
+            tutorials) node scripts/author-qwen-tutorials.mjs --start "$START" --count "$COUNT" ;;
+            curriculum) node scripts/author-qwen-curriculum.mjs --start "$START" --count "$COUNT" ;;
+            *) echo 'Unsupported content type'; exit 2 ;;
           esac
-      - name: Upload review drafts for inspection
+      - name: Audit draft quality and coverage
+        if: always()
+        run: python scripts/curriculum-quality-gate.py --report .cache/curriculum-quality-report.json
+      - name: Upload review drafts and audit report
+        if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: qwen-${{ inputs.content_type }}-drafts-${{ inputs.start }}
+          name: free-content-drafts-${{ inputs.content_type }}-${{ inputs.start }}-${{ github.run_id }}
           path: |
             data/commands/research/
             data/tutorial-research/
             data/curriculum-research/
-          if-no-files-found: error
-          retention-days: 7
+            .cache/curriculum-quality-report.json
+          if-no-files-found: warn
+          retention-days: 14
