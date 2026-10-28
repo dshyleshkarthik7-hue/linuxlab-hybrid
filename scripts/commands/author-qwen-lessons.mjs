@@ -51,6 +51,7 @@ Rules:
 - Do not invent flags, output, environment support, or facts. If uncertain, say so in explanation and use empty arrays/strings.
 - examples is an array of objects: {command, expectedBehavior, testPlan}. No fake observed output. Avoid destructive actions, privilege escalation, network attacks, and commands that alter real user data.
 - implementationDifferences is an array of {implementation, notes}; distinguish GNU, BusyBox, BSD, or platform behavior only when you have a reason; use an uncertainty note instead of guessing.
+- For the tree utility, do not claim exit status 2 means a partial listing unless the target implementation manual explicitly says so. If the exact exit-status behavior is not verified, say it is implementation/version-specific and point to the matching tree(1) manual.
 - safetyNotes is an array of concrete cautions.
 - sources is an array of {title, url, accessedAt}; suggest only likely authoritative documentation URLs. These are unverified candidates, not evidence. accessedAt must be today's date if you know it, otherwise empty.
 - No verification booleans or claims that examples have been executed. Keep explanations detailed and specific to the named command.
