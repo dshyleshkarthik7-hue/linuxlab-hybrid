@@ -47,6 +47,6 @@ The Cloudflare ISO relay is transport only. Release tests must cover malformed C
 
 Certificate verification proves an authentic signed record, not human identity, invigilation, unique authorship, collaboration-free completion, or accreditation. Signing keys are versioned; retain old keys through the documented verification-retention window. Revocation is durable in MongoDB (`certificate_revocations`) with the environment-variable list retained only as an emergency override. Redis attempts expire and submission is locked; MongoDB is the durable certificate and revocation store. Production operations must maintain backup/restore and provider-outage procedures.
 
-## Network access and abuse controls
+## Networking access and abuse controls
 
 The browser-based guest may issue network requests according to the guest image and browser runtime; the application must not describe guest network restrictions as a hardened egress firewall. Treat guest-generated traffic and DNS-like requests as untrusted. Any future server-side executor must enforce outbound allow/deny policy outside the guest, block access to loopback and private/link-local/cloud-metadata ranges, limit connection count and bandwidth, and log abuse signals without recording secrets. Verify actual browser and relay behavior in staging before making stronger isolation claims. Browser-local execution does not itself provide a network security boundary.
