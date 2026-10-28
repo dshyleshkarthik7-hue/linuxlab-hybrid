@@ -89,7 +89,9 @@ export async function completeChat({ messages, temperature = 0.2, maxTokens = 30
   const errors = [];
   let configured = 0;
   for (const name of order) {
-    const models = modelCandidates(name, env, role);
+    let models;
+    try { models = modelCandidates(name, env, role); }
+    catch (error) { errors.push(name + ": " + String(error?.message || error)); continue; }
     for (const model of models) {
       const cfg = providerConfig(name, model, env);
       if (!cfg) continue;
@@ -130,7 +132,7 @@ export async function completeChat({ messages, temperature = 0.2, maxTokens = 30
       return { text, provider: cfg.provider, model: returnedModel, requestedModel: cfg.id, usage: body.usage || null };
     }
   }
-  if (!configured) throw new Error("No configured free-tier AI provider. Set GEMINI_API_KEY and/or OPENROUTER_API_KEY; provider order is " + order.join(",") + ".");
+  if (!configured) throw new Error("No configured free-tier AI provider. Set GEMINI_API_KEY and/or OPENROUTER_API_KEY; provider order is " + order.join(",") + ". " + errors.join("; "));
   throw new Error("All configured free-tier provider/model fallbacks failed: " + errors.join("; "));
 }
 export const AI_PROVIDER_DEFAULT_ORDER = DEFAULT_ORDER;
