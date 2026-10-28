@@ -1,0 +1,49 @@
+{
+  "schemaVersion": 1,
+  "name": "popd",
+  "status": "draft",
+  "definition": "In Bash, remove an entry from the directory stack and, in its usual forms, change the current working directory to the new top entry.",
+  "explanation": "`popd` is a Bash shell builtin used with the directory stack maintained by `pushd`. With no argument it removes the top entry and changes directory according to Bash's directory-stack rules. Supported `+N` and `-N` forms remove a selected entry. Exact index behavior and the effects of `-n` should be checked against the Bash manual; this is not a POSIX external command.",
+  "syntax": "popd [-n] [+N | -N]",
+  "examples": [
+    {
+      "command": "pushd /tmp && popd",
+      "expectedBehavior": "In Bash, `pushd` changes to `/tmp` and updates the stack; `popd` then removes the stack entry and returns according to the remaining stack.",
+      "testPlan": "Run in a disposable Bash session, recording `pwd` and `dirs` before and after each builtin."
+    },
+    {
+      "command": "dirs -v",
+      "expectedBehavior": "Display indexed directory-stack entries before choosing an entry to remove.",
+      "testPlan": "Create multiple stack entries, inspect their indices, and use the installed Bash manual to verify the intended `popd +N` or `popd -N` form."
+    }
+  ],
+  "implementationDifferences": [
+    {
+      "implementation": "Bash",
+      "notes": "Directory-stack indexing and option handling are Bash-specific and should be validated against the installed Bash version."
+    },
+    {
+      "implementation": "Other shells",
+      "notes": "Other shells may have similarly named builtins with different semantics; do not rely on this syntax for POSIX `sh`."
+    }
+  ],
+  "safetyNotes": [
+    "`popd` changes shell navigation state; it does not remove directories or files from disk.",
+    "After removing or rotating stack entries, check `pwd` before running relative-path commands."
+  ],
+  "sources": [
+    {
+      "title": "GNU Bash manual: Directory Stack Builtins",
+      "url": "https://www.gnu.org/software/bash/manual/html_node/Directory-Stack-Builtins.html",
+      "accessedAt": "",
+      "verified": false
+    }
+  ],
+  "verification": {
+    "syntaxVerified": false,
+    "examplesVerified": false,
+    "busyboxTested": false,
+    "humanReviewed": false,
+    "provenanceVerified": false
+  }
+}
