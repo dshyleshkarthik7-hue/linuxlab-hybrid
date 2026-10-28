@@ -13,7 +13,7 @@
 import { readFile, mkdir, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
-import { completeChat } from "../lib/ai-provider.mjs";
+import { orchestrateDraft } from "../lib/ai-orchestrator.mjs";
 
 const root = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const arg = (name, fallback) => {
@@ -56,11 +56,13 @@ Rules:
 - No verification booleans or claims that examples have been executed. Keep explanations detailed and specific to the named command.
 `;
 async function askQwen(command) {
-  const completion = await completeChat({ messages: [
-    { role: "system", content: "You are a careful Linux documentation researcher. Output valid JSON, never claim unperformed tests, and explicitly mark uncertainty." },
-    { role: "user", content: promptFor(command) }
-  ], temperature: 0.15, maxTokens: 1800 });
-  return { draft: parseJson(completion.text), provider: completion.provider, model: completion.model };
+  return orchestrateDraft({
+    systemPrompt: "You are a careful Linux documentation researcher. Return valid JSON, never claim unperformed tests, and explicitly mark uncertainty.",
+    userPrompt: promptFor(command),
+    parse: parseJson,
+    validate: draft => validateDraft(command, draft),
+    maxTokens: 2200
+  });
 }
 function validateDraft(command, draft) {
   if (draft.name !== command.name) throw new Error("Model command identity mismatch: expected " + command.name);
@@ -83,7 +85,7 @@ for (const command of slice) {
       schemaVersion: 1,
       name: command.name,
       status: "draft",
-      model: { provider: generated.provider, id: generated.model, generatedAt: new Date().toISOString() },
+      model: { provider: generated.stages.generator.provider, id: generated.stages.generator.model, strategyVersion: generated.strategyVersion, stages: generated.stages, generatedAt: new Date().toISOString() },
       definition: draft.definition,
       explanation: draft.explanation,
       syntax: draft.syntax,
@@ -95,7 +97,7 @@ for (const command of slice) {
     };
     await writeFile(target, JSON.stringify(record, null, 2) + "\n", { flag: "wx" });
     written++;
-    process.stdout.write("DRAFT " + command.name + " [" + generated.provider + " / " + generated.model + "]\n");
+    process.stdout.write("DRAFT " + command.name + " [generator " + generated.stages.generator.model + "; verifier " + generated.stages.verifier.model + "; final " + generated.stages.final.model + "]\n");
   } catch (error) {
     process.stderr.write("ERROR " + command.name + ": " + String(error.message || error) + "\n");
     process.exitCode = 1;
