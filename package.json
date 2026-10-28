@@ -105,7 +105,8 @@
     "audit:curriculum-quality:strict": "python3 scripts/curriculum-quality-gate.py --strict",
     "test:curriculum-factory": "python3 tests/curriculum-factory.test.py",
     "test:ai-provider": "node tests/ai-provider.test.mjs",
-    "test:ai-orchestrator": "node tests/ai-orchestrator.test.mjs"
+    "test:ai-orchestrator": "node tests/ai-orchestrator.test.mjs",
+    "test:production-monitor-contract": "node tests/production-monitor-contract.test.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
