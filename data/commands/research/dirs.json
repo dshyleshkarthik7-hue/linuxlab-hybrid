@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "dirs",
+  "status": "draft",
+  "definition": "In Bash, display the current directory stack, or select and display a stack entry using supported options.",
+  "explanation": "`dirs` is a Bash shell builtin associated with the directory stack manipulated by `pushd` and `popd`. With no options it displays the stack, usually with the current directory first. Options such as `-p`, `-v`, and `-c` alter formatting or clear the stack; clearing it changes shell state and should not be confused with deleting filesystem directories. Behavior and option syntax differ across shells, so confirm the active shell and its manual.",
+  "syntax": "dirs [-clpv] [+N | -N]",
+  "examples": [
+    {
+      "command": "dirs",
+      "expectedBehavior": "Display the current shell's directory stack.",
+      "testPlan": "In an interactive Bash session, run `pwd` and `dirs`; confirm the first stack entry corresponds to the current directory."
+    },
+    {
+      "command": "dirs -v",
+      "expectedBehavior": "In Bash, print directory-stack entries with numeric indices.",
+      "testPlan": "Use `pushd` to add a temporary directory, then compare `dirs` and `dirs -v`."
+    },
+    {
+      "command": "dirs -p",
+      "expectedBehavior": "In Bash, print one directory-stack entry per line.",
+      "testPlan": "Run after creating at least two stack entries and verify the line-oriented output."
+    }
+  ],
+  "implementationDifferences": [
+    {
+      "implementation": "Bash",
+      "notes": "The documented builtin supports directory-stack formatting and index options; check the installed Bash version."
+    },
+    {
+      "implementation": "Other shells",
+      "notes": "Zsh and other shells may provide `dirs` with different option semantics. This draft describes Bash, not universal shell syntax."
+    }
+  ],
+  "safetyNotes": [
+    "`dirs -c` clears the shell's directory stack; it does not delete the directories themselves.",
+    "This is shell state, so running it in a different shell process will not inspect the caller's interactive stack."
+  ],
+  "sources": [
+    {
+      "title": "GNU Bash manual: Directory Stack Builtins",
+      "url": "https://www.gnu.org/software/bash/manual/html_node/Directory-Stack-Builtins.html",
+      "accessedAt": "",
+      "verified": false
+    }
+  ],
+  "verification": {
+    "syntaxVerified": false,
+    "examplesVerified": false,
+    "busyboxTested": false,
+    "humanReviewed": false,
+    "provenanceVerified": false
+  }
+}
