@@ -41,7 +41,7 @@ assert.match(ci, /Cross-browser accessibility smoke matrix/);
 assert.match(ci, /run_production_smoke == true/);
 assert.match(ci, /EXPECTED_DEPLOY_SHA:\s*\$\{\{ github\.sha \}\}/);
 assert.match(cloudflareDeploy, /inputs\.confirm_production_deploy == true/);
-assert.match(cloudflareDeploy, /successful push CI run exists for this exact main commit/);
+assert.match(cloudflareDeploy, /successful push-triggered CI run exists for this exact main commit/, 'production deploy must require a successful push-triggered CI run for the exact main commit');
 assert.match(cloudflareDeploy, /current_main_sha/);
 assert.match(monitor, /schedule:/);
 assert.match(monitor, /EXPECTED_DEPLOY_SHA/);
