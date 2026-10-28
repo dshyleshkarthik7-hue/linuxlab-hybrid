@@ -79,6 +79,66 @@ def find_factual_red_flags(text, kind, filename):
         flags.append("unsupported tree exit-status claim; require implementation-specific manual verification")
     return flags
 
+def validate_record(kind, obj, file):
+    """Return deterministic schema/content issues without treating drafts as verified."""
+    issues, warnings = [], []
+    if kind == "command":
+        for key in ("name", "definition", "explanation", "syntax"):
+            if not isinstance(obj.get(key), str) or not obj[key].strip():
+                issues.append("missing or empty required field: " + key)
+        if obj.get("name") and obj.get("name") != file.stem:
+            issues.append("command name does not match filename")
+        for key in ("examples", "implementationDifferences", "safetyNotes", "sources"):
+            if not isinstance(obj.get(key), list):
+                issues.append("required array missing or invalid: " + key)
+        examples = obj.get("examples", [])
+        for i, example in enumerate(examples if isinstance(examples, list) else []):
+            if not isinstance(example, dict) or any(not isinstance(example.get(k), str) or not example[k].strip() for k in ("command", "expectedBehavior", "testPlan")):
+                issues.append(f"malformed example at index {i}")
+        sources = obj.get("sources", [])
+    else:
+        content = obj.get("content", obj)
+        if not isinstance(content, dict):
+            issues.append("content must be a JSON object")
+            content = {}
+        if kind == "tutorial":
+            for key in ("title", "objective", "explanation", "workedExample", "expectedResult", "exercise", "knowledgeCheck"):
+                if not isinstance(content.get(key), str) or not content[key].strip():
+                    issues.append("missing or empty content field: " + key)
+            sources = content.get("sources", [])
+            safety = content.get("safetyNotes", [])
+            if not isinstance(safety, list) or not safety:
+                issues.append("content safetyNotes must be a non-empty array")
+        else:
+            for key in ("title", "objective", "prerequisites", "explanation", "workedExample", "expectedResult", "commonMistakes", "exercise", "challenge", "reflection"):
+                if not isinstance(content.get(key), str) or len(content[key].strip()) < 25:
+                    issues.append("missing or shallow content field: " + key)
+            steps = content.get("steps")
+            if not isinstance(steps, list) or len(steps) < 3:
+                issues.append("content steps must contain at least three steps")
+            quiz = content.get("quiz")
+            if not isinstance(quiz, list) or len(quiz) < 5:
+                issues.append("content quiz must contain at least five questions")
+            else:
+                for i, q in enumerate(quiz):
+                    if not isinstance(q, dict) or not isinstance(q.get("question"), str) or not isinstance(q.get("options"), list) or len(q["options"]) < 3 or not isinstance(q.get("answerIndex"), int) or isinstance(q.get("answerIndex"), bool) or q["answerIndex"] < 0 or q["answerIndex"] >= len(q["options"]) or not isinstance(q.get("explanation"), str) or not q["explanation"].strip():
+                        issues.append(f"malformed quiz question at index {i}")
+            sources = content.get("sources", [])
+            safety = content.get("safetyNotes", [])
+            if not isinstance(safety, list) or not safety:
+                issues.append("content safetyNotes must be a non-empty array")
+        if not isinstance(sources, list) or not sources:
+            issues.append("candidate sources must be a non-empty array")
+    if isinstance(sources, list):
+        for i, source in enumerate(sources):
+            url = source.get("url", "") if isinstance(source, dict) else ""
+            title = source.get("title", "") if isinstance(source, dict) else ""
+            if not isinstance(title, str) or not title.strip():
+                issues.append(f"source {i} has no title")
+            if not isinstance(url, str) or not re.match(r"^https://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[^\\s]*)?$", url):
+                warnings.append(f"source {i} URL is malformed or not HTTPS")
+    return issues, warnings
+
 def audit_dir(kind, directory, expected_items):
     files = sorted(directory.glob("*.json")) if directory.exists() else []
     entries, errors, warnings = [], [], []
@@ -89,6 +149,11 @@ def audit_dir(kind, directory, expected_items):
             errors.append({"file": str(file.relative_to(ROOT)), "issue": "invalid JSON"})
             continue
         body = words_for(obj, kind)
+        schema_issues, source_warnings = validate_record(kind, obj, file)
+        for issue in schema_issues:
+            errors.append({"file": str(file.relative_to(ROOT)), "issue": issue})
+        for issue in source_warnings:
+            warnings.append({"file": str(file.relative_to(ROOT)), "issue": issue})
         if len(body.strip()) < 180:
             warnings.append({"file": str(file.relative_to(ROOT)), "issue": "short lesson body"})
         generic = find_generic(body)
@@ -119,11 +184,12 @@ def audit_dir(kind, directory, expected_items):
         try:
             from sklearn.feature_extraction.text import TfidfVectorizer
             from sklearn.neighbors import NearestNeighbors
-            texts = []
+            texts, text_files = [], []
             for file in files:
                 obj = read_json(file)
                 if isinstance(obj, dict) and "__parse_error__" not in obj:
                     texts.append(words_for(obj, kind))
+                    text_files.append(file)
             if len(texts) >= 2:
                 vectorizer = TfidfVectorizer(ngram_range=(1, 2), min_df=1, max_features=60000, stop_words="english")
                 matrix = vectorizer.fit_transform(texts)
@@ -134,7 +200,7 @@ def audit_dir(kind, directory, expected_items):
                 for i in range(len(texts)):
                     for dist, j in zip(distances[i][1:], indices[i][1:]):
                         sim = 1.0 - float(dist)
-                        pair = tuple(sorted((files[i].name, files[int(j)].name)))
+                        pair = tuple(sorted((text_files[i].name, text_files[int(j)].name)))
                         if sim >= (0.72 if kind == "command" else 0.58) and pair not in seen:
                             seen.add(pair)
                             pairs.append({"files": list(pair), "cosineSimilarity": round(sim, 4)})
