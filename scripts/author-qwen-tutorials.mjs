@@ -6,7 +6,7 @@
  * Usage:
  *   HF_TOKEN=... node scripts/author-qwen-tutorials.mjs --start 0 --count 5
  */
-import { readFile, mkdir, writeFile, access } from "node:fs/promises";
+import { readFile, mkdir, writeFile, access, readdir } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { orchestrateDraft } from "./lib/ai-orchestrator.mjs";
@@ -43,7 +43,7 @@ for (const lesson of curriculum.lessons.slice(start, start + count)) {
   const file = path.join(outDir, id + ".json");
   try { await access(file); process.stdout.write("SKIP existing draft " + id + "\n"); continue; } catch {}
   const existingDrafts = [];
-  for (const candidate of (await import("node:fs/promises")).readdir ? await (await import("node:fs/promises")).readdir(outDir) : []) {
+  for (const candidate of await readdir(outDir)) {
     if (!candidate.endsWith(".json") || candidate === path.basename(file)) continue;
     try {
       const prior = JSON.parse(await readFile(path.join(outDir, candidate), "utf8"));
