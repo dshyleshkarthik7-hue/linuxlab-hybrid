@@ -1,0 +1,54 @@
+{
+  "schemaVersion": 1,
+  "name": "pushd",
+  "status": "draft",
+  "definition": "In Bash, change the current working directory while updating the shell's directory stack.",
+  "explanation": "`pushd` is a shell builtin that maintains a directory stack for navigating between locations. With a directory argument, Bash changes to that directory and updates the stack. With supported `+N` or `-N` forms, it can rotate the stack and change to the selected entry. It is not a standalone POSIX utility; behavior depends on the shell and its directory-stack options.",
+  "syntax": "pushd [-n] [DIR | +N | -N]",
+  "examples": [
+    {
+      "command": "pushd /tmp",
+      "expectedBehavior": "In Bash, change the current directory to `/tmp` and update the directory stack, provided `/tmp` exists and is accessible.",
+      "testPlan": "In a disposable Bash session, record `pwd` and `dirs`, run the command, then check both again."
+    },
+    {
+      "command": "pushd ~",
+      "expectedBehavior": "In Bash, change to the user's home directory and update the directory stack.",
+      "testPlan": "Run in Bash with HOME set to an accessible directory; confirm `pwd` and `dirs` reflect the change."
+    },
+    {
+      "command": "pushd +1",
+      "expectedBehavior": "When the directory stack has an entry at index 1, rotate the stack and change to that entry according to Bash's indexing rules.",
+      "testPlan": "Create at least two distinct entries with `pushd`; inspect `dirs -v`, then verify the resulting current directory."
+    }
+  ],
+  "implementationDifferences": [
+    {
+      "implementation": "Bash",
+      "notes": "The `+N` and `-N` stack-index forms and `-n` option are Bash builtin behavior; consult the manual for index ordering and `DIRSTACK` semantics."
+    },
+    {
+      "implementation": "Other shells",
+      "notes": "Other shells may support `pushd` but differ in options and stack rotation. Do not assume Bash syntax is portable to `/bin/sh`."
+    }
+  ],
+  "safetyNotes": [
+    "Changing directory affects the current shell when used interactively or in a sourced script; a child process cannot change its parent's working directory.",
+    "Use known, accessible paths and inspect `pwd` after stack rotations to avoid acting in the wrong directory."
+  ],
+  "sources": [
+    {
+      "title": "GNU Bash manual: Directory Stack Builtins",
+      "url": "https://www.gnu.org/software/bash/manual/html_node/Directory-Stack-Builtins.html",
+      "accessedAt": "",
+      "verified": false
+    }
+  ],
+  "verification": {
+    "syntaxVerified": false,
+    "examplesVerified": false,
+    "busyboxTested": false,
+    "humanReviewed": false,
+    "provenanceVerified": false
+  }
+}
