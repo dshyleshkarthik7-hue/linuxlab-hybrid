@@ -135,7 +135,7 @@ def validate_record(kind, obj, file):
             title = source.get("title", "") if isinstance(source, dict) else ""
             if not isinstance(title, str) or not title.strip():
                 issues.append(f"source {i} has no title")
-            if not isinstance(url, str) or not re.match(r"^https://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[^\\s]*)?$", url):
+            if not isinstance(url, str) or not re.match(r"^https://[A-Za-z0-9.-]+(?::[0-9]+)?(?:/[^\s]*)?$", url):
                 warnings.append(f"source {i} URL is malformed or not HTTPS")
     return issues, warnings
 
