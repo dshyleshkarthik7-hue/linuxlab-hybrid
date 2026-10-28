@@ -90,7 +90,7 @@ def audit_dir(kind, directory, expected_items):
         if normalized:
             hashes[hashlib.sha256(normalized.encode()).hexdigest()].append(file.name)
         status = obj.get("status", "")
-        human_review = obj.get("humanReview") in ("approved", "reviewed") or obj.get("reviewStatus") == "reviewed"
+        human_review = (obj.get("humanReview") in ("approved", "reviewed") or obj.get("reviewStatus") == "reviewed" or (isinstance(obj.get("verification"), dict) and obj["verification"].get("humanReviewed") is True))
         source_verified = obj.get("sourceVerification") == "verified" or obj.get("verification", {}).get("provenanceVerified") is True
         execution_verified = obj.get("executionVerification") == "passed" or obj.get("exampleExecutionStatus") == "passed"
         entries.append({"file": file.name, "status": status, "humanReviewed": human_review,

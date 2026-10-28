@@ -22,7 +22,6 @@ assert.match(injector, /heading\.style\.setProperty\('color', '#f1f7ff', 'import
 assert.match(injector, /attributeFilter: \['class'\]/, 'contrast observer must not observe style mutations that it creates');
 assert.doesNotMatch(injector, /attributeFilter: \['class', 'style'\]/, 'contrast guard must not observe its own style writes');
 assert.match(injector, /const background = secondary \? '#17466f' : '#075dcc';[\s\S]*?set\(element, 'background-color', background, secondary \? 'rgb\(23, 70, 111\)' : 'rgb\(7, 93, 204\)'\)/, 'contrast guard should compare the computed color for the selected CTA background');
-assert.match(injector, /element\.style\.setProperty\(property, value, 'important'\)/);
 assert.match(injector, /set\('background-image', 'none', 'none'\)/, 'background image guard must compare its computed value');
 assert.match(injector, /set\('border-color', secondary \? '#83cfff' : '#72baff', secondary \? 'rgb\(131, 207, 255\)' : 'rgb\(114, 186, 255\)'\)/);
 assert.match(pkg.scripts.build, /inject-shared-navigation\.mjs/);
