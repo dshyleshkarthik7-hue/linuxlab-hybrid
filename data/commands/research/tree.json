@@ -1,0 +1,61 @@
+{
+  "schemaVersion": 1,
+  "name": "tree",
+  "status": "draft",
+  "definition": "Display a directory hierarchy as an indented tree. The commonly used `tree` utility is a separate program, not a POSIX shell builtin, and may need to be installed.",
+  "explanation": "`tree` recursively lists files and directories below a starting path, formatting the results to show parent-child relationships. Exact flags and behavior depend on the installed implementation and version. Common implementations support limiting depth and showing directories only, but consult the installed `tree --help` and matching manual before relying on an option. Large directory trees can produce extensive output; hidden-file inclusion and following symbolic links can substantially change what is shown.",
+  "syntax": "tree [OPTIONS] [DIRECTORY ...]",
+  "examples": [
+    {
+      "command": "tree -L 2 .",
+      "expectedBehavior": "On implementations supporting `-L`, list the current directory tree to a maximum depth of two levels.",
+      "testPlan": "In a disposable directory with two nested levels, compare this listing with `tree .` and confirm the output is depth-limited."
+    },
+    {
+      "command": "tree -d .",
+      "expectedBehavior": "On implementations supporting `-d`, display directories and omit regular files.",
+      "testPlan": "Create a temporary directory containing one subdirectory and one regular file; verify that only the directory appears."
+    },
+    {
+      "command": "tree --help",
+      "expectedBehavior": "Print usage information for implementations that support the conventional long help option.",
+      "testPlan": "Run on the target system and compare listed options with the installed package manual."
+    }
+  ],
+  "implementationDifferences": [
+    {
+      "implementation": "tree package implementations",
+      "notes": "Option availability, color defaults, symbolic-link handling, and exit-status details can vary by release. Verify the exact installed manual."
+    },
+    {
+      "implementation": "BusyBox",
+      "notes": "Do not assume a standalone `tree` applet exists in a minimal BusyBox installation; check `busybox --list` and installed packages."
+    }
+  ],
+  "safetyNotes": [
+    "Read-only listing in normal use, but recursive traversal can be slow on very large trees or network mounts.",
+    "Do not infer complete filesystem coverage from a listing; permissions, mount boundaries, and symbolic-link behavior affect visibility.",
+    "Do not assign a specific nonzero exit status meaning without checking the matching implementation manual."
+  ],
+  "sources": [
+    {
+      "title": "Debian tree(1) manual (candidate; verify package version)",
+      "url": "https://manpages.debian.org/bookworm/tree/tree.1.en.html",
+      "accessedAt": "",
+      "verified": false
+    },
+    {
+      "title": "Upstream tree project (candidate; verify the installed release)",
+      "url": "https://oldmanprogrammer.net/source.php?dir=projects/tree",
+      "accessedAt": "",
+      "verified": false
+    }
+  ],
+  "verification": {
+    "syntaxVerified": false,
+    "examplesVerified": false,
+    "busyboxTested": false,
+    "humanReviewed": false,
+    "provenanceVerified": false
+  }
+}
