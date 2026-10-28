@@ -198,7 +198,10 @@ def audit_dir(kind, directory, expected_items):
                 distances, indices = nn.kneighbors(matrix)
                 pairs, seen = [], set()
                 for i in range(len(texts)):
-                    for dist, j in zip(distances[i][1:], indices[i][1:]):
+                    for dist, j in zip(distances[i], indices[i]):
+                        # Duplicate vectors can tie with the current row; do not assume self is first.
+                        if int(j) == i:
+                            continue
                         sim = 1.0 - float(dist)
                         pair = tuple(sorted((text_files[i].name, text_files[int(j)].name)))
                         if sim >= (0.72 if kind == "command" else 0.58) and pair not in seen:
