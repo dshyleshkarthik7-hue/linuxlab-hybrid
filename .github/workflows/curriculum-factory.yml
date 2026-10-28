@@ -63,7 +63,9 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          AI_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'gemini,openrouter' || inputs.provider }}
+          AI_GENERATOR_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'openrouter,gemini' || inputs.provider }}
+          AI_VERIFIER_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'openrouter,gemini' || inputs.provider }}
+          AI_FINAL_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'gemini,openrouter' || inputs.provider }}
           START: ${{ inputs.start }}
           COUNT: ${{ inputs.count }}
           TARGET: ${{ inputs.target }}
@@ -79,7 +81,9 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
-          AI_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'gemini' || inputs.provider }}
+          AI_GENERATOR_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'openrouter,gemini' || inputs.provider }}
+          AI_VERIFIER_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'openrouter,gemini' || inputs.provider }}
+          AI_FINAL_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'gemini,openrouter' || inputs.provider }}
           AI_DRAFT_LABEL: pilot-${{ inputs.provider == 'auto' && 'gemini' || inputs.provider }}
         run: |
           node scripts/commands/author-qwen-lessons.mjs --start 0 --count 5

@@ -1,56 +1,48 @@
-# Free-tier AI model strategy and measurable pilot
+# LinuxTerminal three-stage AI orchestration (zero-paid-API policy)
 
-## Zero-cost default
+## Pipeline
 
-The curriculum factory routes through **Gemini free tier → OpenRouter free-model router**. It uses only:
-- `gemini-3.1-flash-lite` (allowlisted free-tier model; the Google project must have billing disabled);
-- `openrouter/free` or an explicitly `:free` model ID.
+Every command, tutorial, and structured-curriculum draft passes through three separate model calls. Each role has independent provider/model settings, and the resolved model is recorded in the draft's `model.stages` metadata.
 
-A provider quota failure advances to the next configured free provider. If all free routes are exhausted, the batch fails and is resumable; it does not switch to a paid model. Free quotas, model routing and availability can change. Google free-tier data may be used to improve Google's products, so do not send secrets, private learner data, or unpublished sensitive content.
+1. **Generator — Arcee Trinity Large Preview (`arcee-ai/trinity-large-preview:free`) via OpenRouter.** Creates the complete first draft. This is the strongest configured free-tier candidate in this pipeline, not a claim that it is the strongest AI model overall.
+2. **Verifier/repairer — Arcee Trinity Mini (`arcee-ai/trinity-mini:free`) via OpenRouter.** Reviews the first draft for major factual mistakes, missing fields, unsafe commands, portability issues, unsupported claims, and broken exercises, then returns a corrected complete JSON object.
+3. **Final editor — Gemini 3.1 Flash-Lite via Google's free tier.** Reviews both earlier versions, fixes remaining contradictions, completeness, clarity, and schema issues, and returns the final object. It cannot certify source URLs or command execution.
 
-Hugging Face routed inference is intentionally excluded from the default route because free-account credits are small and routing can be billable. It can only be enabled by explicitly setting both `AI_ALLOW_HF_ROUTER=1` and `HF_ROUTER_BILLING_DISABLED=1` after verifying billing is disabled in that account. The factory does not make paid requests intentionally.
+All three stages must succeed and the final schema validator must pass. A failed stage, invalid JSON, or exhausted free quota stops that item; the factory never skips a quality stage or intentionally falls back to a paid model. The actual provider/model used at every stage is saved for auditability.
+
+## Free access and limits
+
+- [OpenRouter free models](https://openrouter.ai/pricing/) are zero-priced, but free access is rate-limited and availability changes. The [Trinity Large Preview](https://openrouter.ai/arcee-ai/trinity-large-preview:free) and [Trinity Mini](https://openrouter.ai/arcee-ai/trinity-mini:free) model pages list zero token pricing when available.
+- Google's [Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) currently lists Gemini 3.1 Flash-Lite as free-tier eligible. Use a Google AI Studio project with billing disabled. Google says free-tier content may be used to improve its products; do not send secrets or private learner data.
+- A model being open-weight does not make hosted inference free. This pipeline permits only explicitly `:free` OpenRouter IDs or `openrouter/free`, and Gemini models on a small allowlist.
+- Free quota is not unlimited. Three calls per lesson mean the free request allowance only covers a fraction of the catalogue per day. Pause and resume rather than enabling billing.
+- GitHub Actions minutes and provider quota are separate. Use the repository's included Actions allowance and monitor usage; this workflow does not buy credits or change billing.
 
 ## Configure GitHub Actions
 
-Add repository Actions secrets:
-- `GEMINI_API_KEY`: Google AI Studio key for a project with billing disabled.
-- `OPENROUTER_API_KEY`: OpenRouter key; use only `openrouter/free` or `:free` model IDs.
+Add repository Actions secrets `OPENROUTER_API_KEY` and `GEMINI_API_KEY`. Never commit keys. The manual **Curriculum Factory** workflow accepts `provider=auto`, `provider=openrouter`, or `provider=gemini`. `auto` uses the tiered defaults above with free-only fallback.
 
-The workflow supports `provider=auto`, `provider=gemini`, and `provider=openrouter`. Use `auto` for normal fallback. To compare providers, run the pilot once per provider so each output is saved in a separate artifact folder. Missing keys or exhausted quotas should fail visibly, never silently switch to paid inference.
+Role settings can be overridden:
+- `AI_GENERATOR_PROVIDER_ORDER`, `AI_VERIFIER_PROVIDER_ORDER`, `AI_FINAL_PROVIDER_ORDER`
+- `AI_GENERATOR_OPENROUTER_MODEL`, `AI_VERIFIER_OPENROUTER_MODEL`, `AI_FINAL_OPENROUTER_MODEL`
+- `AI_GENERATOR_GEMINI_MODEL`, `AI_VERIFIER_GEMINI_MODEL`, `AI_FINAL_GEMINI_MODEL`
 
-## Pilot protocol
+OpenRouter model overrides must be `openrouter/free` or end in `:free`; Gemini overrides must be on the code allowlist. Do not add paid model IDs to a fallback list.
 
-### Stage A — small paired comparison
-Run the `Curriculum Factory` workflow with `target=pilot` once with `provider=gemini` and once with `provider=openrouter`. Each run drafts the same five representative command lessons and two tutorials into an isolated `artifacts/ai-pilot/<provider>/` directory. This is a low-cost screening sample, not a quality claim.
+## Pilot before bulk generation
 
-### Stage B — validation set on the winner
-After choosing a provider from Stage A, run the ordinary authoring queues on a **20-command validation set and five complete tutorials**. Include easy, common commands; complex text/process tools; GNU-vs-BusyBox differences; and potentially destructive commands that must be documented with safe examples only. Do not run dangerous examples.
+1. In Actions, run **Curriculum Factory** with `target=pilot`, `provider=auto`. It generates five command drafts and two tutorial drafts in an isolated artifact folder, with the model for each stage stored in every draft.
+2. If quotas allow, compare the same sample with `provider=openrouter` and `provider=gemini`. Compare reviewed output and stage provenance, not model self-assessments.
+3. Validate 20 command lessons and five tutorials. Include common commands, text/process tools, GNU-vs-BusyBox behavior, shell edge cases, and potentially destructive commands (safe examples only).
+4. Have two reviewers independently score each item 0–2 across factual correctness, specificity, syntax/portability, safe examples, correct exercises, and verified sources. Maximum 12.
+5. Proceed only if mean score is at least 10/12, critical factual/safety errors are zero, at least 90% of executable examples pass in a disposable Linux harness, no duplicate/template failures remain, and sampled source claims are checked.
 
-### Score every artifact
+If the pilot fails, revise prompts/schema and repeat. Do not lower the gate to increase output volume.
 
-Two reviewers should independently score each item from 0–2 in each category (0=fail, 1=partial, 2=strong):
-1. Factual correctness against an authoritative man page or upstream manual.
-2. Topic-specific depth and clarity; no filler/template reuse.
-3. Syntax/options and portability boundaries accurately qualified.
-4. Examples are safe, reproducible, and expected behavior is not fabricated.
-5. Quiz/exercise answer correctness and useful rationale.
-6. Source URLs actually support the claims (not merely plausible URLs).
+## Bulk generation and publication gates
 
-Maximum: 12 per item. Record scores, reviewer disagreements, provider/model, errors and latency in a CSV or spreadsheet. The winning model must achieve:
-- mean score **at least 10/12**;
-- **zero critical factual or safety errors**;
-- at least **90%** of examples passing in a disposable Linux test harness where executable;
-- **zero** duplicate/template-failure items in the validation set;
-- all citations checked for sampled factual claims.
-
-If either model misses the gate, improve prompts/schema and repeat the pilot. Never relax the correctness gate to fill the catalogue faster.
-
-## Scale-up
-
-1. Run bounded, resumable batches (25 commands or 10 tutorials/curriculum items maximum per workflow run).
-2. Preserve each generated file as a draft; do not commit model output automatically to learner-facing pages.
-3. Run `npm run audit:curriculum-quality` and the safe-command execution harness; manually review high-risk, ambiguous, and platform-specific commands.
-4. Publish only after source verification, example test evidence, duplicate checks, human approval, and build/route tests.
-5. Track factual quality and verification coverage separately from raw inventory counts.
-
-A free API quota may be too small or inconsistent to generate all 6,161 command lessons and 520+ tutorials quickly. The system pauses/fails on quota exhaustion; resume later rather than enabling billing.
+- Keep batches bounded and resumable (25 command records or 10 tutorial/curriculum records per run).
+- Keep AI output in review-draft directories or artifacts; never auto-publish.
+- Run `npm run audit:curriculum-quality`, safe example execution, source checks, duplicate checks, and human review.
+- Only mark content complete after independent verification and review. Inventory counts (6,161 command records and 520 structured-curriculum records) are not counts of verified lessons.
+- Store the three model IDs, provider, usage where supplied, and strategy version with each draft. The model may not mark its own output human-reviewed or executed.
