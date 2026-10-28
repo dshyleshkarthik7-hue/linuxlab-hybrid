@@ -64,7 +64,7 @@ class FactoryTests(unittest.TestCase):
         self.assertTrue(any("malformed quiz question" in error for error in errors))
     def test_quality_audit_reports_missing_drafts_without_claiming_completion(self):
         result=subprocess.run([sys.executable,str(ROOT/"scripts/curriculum-quality-gate.py"),"--report",".cache/test-curriculum-quality-report.json"],cwd=ROOT,text=True,capture_output=True)
-        self.assertIn(result.returncode,(0,1))
+        self.assertEqual(result.returncode,0, "bounded/default audit must not fail just because unprocessed inventory items have no draft yet")
         report=json.loads((ROOT/".cache/test-curriculum-quality-report.json").read_text())
         self.assertTrue(report["modelDraftsAreNotPublishedContent"])
         self.assertEqual(report["commandLessons"]["inventory"],6161)
