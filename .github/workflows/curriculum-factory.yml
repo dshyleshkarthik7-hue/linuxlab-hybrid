@@ -102,7 +102,7 @@ jobs:
           PROVIDER: ${{ inputs.provider }}
         run: |
           if [ "$TARGET" = "pilot" ]; then
-            python scripts/curriculum-quality-gate.py --pilot-label "pilot-$PROVIDER" --report .cache/curriculum-quality-report.json
+            python scripts/curriculum-quality-gate.py --pilot-label "pilot-$PROVIDER" --strict-quality --report .cache/curriculum-quality-report.json
           else
             python scripts/curriculum-quality-gate.py --report .cache/curriculum-quality-report.json
           fi
