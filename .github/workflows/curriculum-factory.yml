@@ -90,7 +90,15 @@ jobs:
           node scripts/author-qwen-tutorials.mjs --start 0 --count 2
       - name: Audit draft quality and coverage
         if: always()
-        run: python scripts/curriculum-quality-gate.py --report .cache/curriculum-quality-report.json
+        env:
+          TARGET: ${{ inputs.target }}
+          PROVIDER: ${{ inputs.provider }}
+        run: |
+          if [ "$TARGET" = "pilot" ]; then
+            python scripts/curriculum-quality-gate.py --pilot-label "pilot-$PROVIDER" --report .cache/curriculum-quality-report.json
+          else
+            python scripts/curriculum-quality-gate.py --report .cache/curriculum-quality-report.json
+          fi
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         if: always()
         with:
