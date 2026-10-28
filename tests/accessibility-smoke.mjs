@@ -14,6 +14,7 @@ const baseURL = explicit || `http://127.0.0.1:${port}`;
 const routes = [
   { path: '/', url: '/' }, { path: '/learn/', url: '/learn/' }, { path: '/quiz/', url: '/quiz/' },
   { path: '/progress/', url: '/progress/' }, { path: '/certificate/', url: '/certificate/' }, { path: '/verify/', url: '/verify/' },
+  { path: '/tutor/', url: '/tutor/', expected: '#main-content' },
   // Vite preview does not execute Netlify rewrites, so use the real VM document.
   { path: '/real-linux/', url: '/index-v86.html', expected: '#vm-header' },
   { path: '/developer-alpine/', url: '/developer-alpine/', expected: 'main' }, { path: '/challenges/', url: '/challenges/' }

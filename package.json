@@ -39,7 +39,7 @@
     "test:real-guest-firmware-proxy": "node tests/real-guest-firmware-proxy.test.mjs",
     "test:coverage": "node tests/coverage-threshold.mjs",
     "test:security": "npm audit --audit-level=high && node tests/dompurify-security.test.mjs",
-    "test:ci": "npm run typecheck:server && npm run typecheck:functions && npm run test:config && npm run test:shared-nav && npm run test:progress-snapshot && npm run test:production-preflight-contract && npm run test:production-monitor-contract && npm run test:certificate-question-quality && npm run test:phase2-learning && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy && npm run test:lesson-evidence && npm run audit:command-evidence && npm run audit:curriculum",
+    "test:ci": "npm run typecheck:server && npm run typecheck:functions && npm run test:config && npm run test:shared-nav && npm run test:progress-snapshot && npm run test:production-preflight-contract && npm run test:production-monitor-contract && npm run test:certificate-question-quality && npm run test:phase2-learning && npm run test:phase3-readiness && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy && npm run test:lesson-evidence && npm run audit:command-evidence && npm run audit:curriculum",
     "lint": "tsc --noEmit && node tests/security-static.test.mjs",
     "build:iso": "node scripts/check-lfs-assets.mjs --iso && node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
@@ -49,7 +49,7 @@
     "test:accessibility": "node tests/accessibility-smoke.mjs",
     "test:production": "node tests/production-smoke.mjs",
     "test:unit": "npm run test:engine && npm run test:catalog && npm run test:result && npm run test:vnext && npm run test:session",
-    "test:security-gate": "npm run test:static-security && npm run test:csp-contract && npm run test:sha256 && npm run test:release-security && npm run test:certificate-contract && npm run test:actions-pinning && npm run test:iso-worker && npm run test:netlify-edge",
+    "test:security-gate": "npm run test:static-security && npm run test:csp-contract && npm run test:sha256 && npm run test:release-security && npm run test:phase3-readiness && npm run test:certificate-contract && npm run test:actions-pinning && npm run test:iso-worker && npm run test:netlify-edge",
     "test:build-gate": "npm run test:build-syntax && npm run build && npm run test:command-pages && npm run test:browser-security && npm run test:dist-routes && npm run test:artifact-manifest && npm run sbom",
     "test:browser-gate": "npm run test:smoke && npm run test:real-guest && npm run test:mobile && npm run test:accessibility && npm run test:ui-ux",
     "test:artifact-manifest": "node tests/artifact-manifest.test.mjs",
@@ -96,7 +96,8 @@
     "author:qwen-tutorials": "node scripts/author-qwen-tutorials.mjs",
     "author:qwen-curriculum": "node scripts/author-qwen-curriculum.mjs",
     "phase1:check": "node scripts/phase1-readiness.mjs && node tests/phase1-readiness.test.mjs",
-    "test:phase2-learning": "node tests/phase2-learning-contract.test.mjs"
+    "test:phase2-learning": "node tests/phase2-learning-contract.test.mjs",
+    "test:phase3-readiness": "node tests/phase3-release-readiness.test.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",
