@@ -301,11 +301,13 @@ def main():
                       "tfidfAvailable": any(x["similarity"].get("available") for x in (command_audit, tutorial_audit, curriculum_audit))}, indent=2))
     problems = False
     for audit in (command_audit, tutorial_audit, curriculum_audit):
-        if audit["errors"] or audit.get("missingDrafts") or audit.get("unexpectedDrafts"):
+        if audit["errors"] or audit.get("unexpectedDrafts"):
             problems = True
-        if args.strict and (audit["draftFiles"] != audit["inventory"] or audit["warnings"]):
+        # Bounded production-queue runs may leave unprocessed inventory items missing.
+        # Strict/full-inventory and pilot-quality runs must not.
+        if args.strict and (audit["draftFiles"] != audit["inventory"] or audit.get("missingDrafts") or audit["warnings"]):
             problems = True
-        if args.strict_quality and audit["warnings"]:
+        if args.strict_quality and (audit["warnings"] or audit.get("missingDrafts")):
             problems = True
         if args.release and (audit["humanReviewed"] != audit["inventory"] or audit["sourceVerified"] != audit["inventory"] or audit["executionVerified"] != audit["inventory"]):
             problems = True
