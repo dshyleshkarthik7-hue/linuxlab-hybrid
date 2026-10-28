@@ -71,7 +71,7 @@ def find_unsafe(text):
 def find_factual_red_flags(text, kind, filename):
     """Deterministic high-confidence contradictions; never claim this replaces review."""
     flags = []
-    if re.search(r"\\bID\\s*=\\s*['\"]?ubuntu\\b", text, re.I) and re.search(r"\\bNAME\\s*=\\s*['\"]Fedora['\"]", text, re.I):
+    if re.search(r"\bID\s*=\s*['\"]?ubuntu\b", text, re.I) and re.search(r"\bNAME\s*=\s*['\"]Fedora['\"]", text, re.I):
         flags.append("contradictory os-release example: ID=ubuntu paired with NAME=Fedora")
     if kind == "command" and filename == "tree.json" and re.search(
         r"exit status.{0,100}2.{0,100}(some|files).{0,40}(listed|printed)", text, re.I | re.S
@@ -161,6 +161,7 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("--strict", action="store_true", help="fail when any inventory item lacks a valid draft or duplicates/template warnings exist")
     ap.add_argument("--release", action="store_true", help="also require each item to be reviewed, source-verified, and execution-verified")
+    ap.add_argument("--strict-quality", action="store_true", help="fail on audit errors or quality warnings without requiring the full inventory")
     ap.add_argument("--report", default=".cache/curriculum-quality-report.json")
     ap.add_argument("--pilot-label", help="audit isolated pilot drafts under artifacts/ai-pilot/<label>")
     args = ap.parse_args()
@@ -237,6 +238,8 @@ def main():
         if audit["errors"] or audit.get("missingDrafts") or audit.get("unexpectedDrafts"):
             problems = True
         if args.strict and (audit["draftFiles"] != audit["inventory"] or audit["warnings"]):
+            problems = True
+        if args.strict_quality and audit["warnings"]:
             problems = True
         if args.release and (audit["humanReviewed"] != audit["inventory"] or audit["sourceVerified"] != audit["inventory"] or audit["executionVerified"] != audit["inventory"]):
             problems = True
