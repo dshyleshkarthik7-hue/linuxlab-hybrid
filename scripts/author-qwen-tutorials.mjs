@@ -9,10 +9,9 @@
 import { readFile, mkdir, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { completeChat } from "./lib/ai-provider.mjs";
 
 const root = path.resolve(fileURLToPath(new URL("..", import.meta.url)));
-const token = process.env.HF_TOKEN;
-const model = process.env.HF_MODEL || "Qwen/Qwen3-8B";
 const arg = (name, fallback) => {
   const eq = process.argv.find((value) => value.startsWith(name + "="));
   const next = process.argv.indexOf(name);
@@ -24,10 +23,11 @@ const arg = (name, fallback) => {
 };
 const start = Math.max(0, arg("--start", 0));
 const count = Math.max(1, Math.min(10, arg("--count", 5)));
-if (!token) throw new Error("HF_TOKEN is required. Keep it in the environment, never in source control.");
 const curriculum = JSON.parse(await readFile(path.join(root, "learn/curriculum.json"), "utf8"));
 if (!Array.isArray(curriculum.lessons) || curriculum.lessons.length !== curriculum.lessonCount) throw new Error("Curriculum count contract failed.");
-const outDir = path.join(root, "data/tutorial-research");
+const pilotLabel = process.env.AI_DRAFT_LABEL || "";
+if (pilotLabel && !/^[a-z0-9-]{1,48}$/.test(pilotLabel)) throw new Error("AI_DRAFT_LABEL must be a lowercase slug (1-48 characters).");
+const outDir = pilotLabel ? path.join(root, "artifacts/ai-pilot", pilotLabel, "tutorials") : path.join(root, "data/tutorial-research");
 await mkdir(outDir, { recursive: true });
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const asJson = (text) => {
@@ -53,18 +53,11 @@ Requirements:
 - No markdown fences. Every field must be a non-empty string except safetyNotes and sources which must be non-empty arrays. Make the content genuinely specific, not a generic reflection template.
 `;
   try {
-    const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
-      method: "POST",
-      headers: { authorization: "Bearer " + token, "content-type": "application/json" },
-      body: JSON.stringify({ model, messages: [
-        { role: "system", content: "You author precise Linux education content. Return valid JSON, state uncertainty, and never claim unperformed execution or source verification." },
-        { role: "user", content: prompt }
-      ], temperature: 0.2, max_tokens: 2200 }),
-      signal: AbortSignal.timeout(90000)
-    });
-    if (!response.ok) throw new Error("Qwen router HTTP " + response.status + ": " + (await response.text()).slice(0, 500));
-    const body = await response.json();
-    const draft = asJson(body.choices?.[0]?.message?.content || "");
+    const completion = await completeChat({ messages: [
+      { role: "system", content: "You author precise Linux education content. Return valid JSON, state uncertainty, and never claim unperformed execution or source verification." },
+      { role: "user", content: prompt }
+    ], temperature: 0.2, maxTokens: 2200 });
+    const draft = asJson(completion.text);
     for (const key of ["title","objective","explanation","workedExample","expectedResult","exercise","knowledgeCheck"]) {
       if (typeof draft[key] !== "string" || !draft[key].trim()) throw new Error("Missing required field " + key);
     }
@@ -75,7 +68,7 @@ Requirements:
       track: lesson.track,
       topic: lesson.topic,
       status: "draft",
-      model: { provider: "Hugging Face Inference Providers", id: model, generatedAt: new Date().toISOString() },
+      model: { provider: completion.provider, id: completion.model, generatedAt: new Date().toISOString() },
       content: draft,
       sourceVerification: "unverified-candidates",
       executionVerification: "not-run",
@@ -83,7 +76,7 @@ Requirements:
     };
     await writeFile(file, JSON.stringify(record, null, 2) + "\n", { flag: "wx" });
     created++;
-    process.stdout.write("DRAFT " + lesson.id + " — " + draft.title + "\n");
+    process.stdout.write("DRAFT " + lesson.id + " — " + draft.title + " [" + completion.provider + " / " + completion.model + "]\n");
   } catch (error) {
     process.stderr.write("ERROR " + lesson.id + ": " + String(error.message || error) + "\n");
     process.exitCode = 1;

@@ -118,17 +118,76 @@ The repository uses strict TypeScript, reproducible npm installs, pinned CI acti
 
 ## AI-assisted curriculum production
 
-The repository includes resumable, review-gated AI drafting queues for the 6,161-command catalog and the 520-item structured curriculum. They use the Hugging Face Inference Providers chat API (default model: `Qwen/Qwen3-8B`) and require `HF_TOKEN` in the environment; never put tokens in source control.
+# Free-tier AI model strategy and measurable pilot
 
-- Draft up to 25 command lessons: `HF_TOKEN=… npm run factory:commands -- --start 0 --count 25`
-- Draft up to 10 detailed tutorial lessons: `HF_TOKEN=… npm run factory:tutorials -- --start 0 --count 10`
-- Draft up to 10 structured curriculum lessons with quizzes: `HF_TOKEN=… npm run factory:curriculum -- --start 0 --count 10`
+## Zero-cost default
+
+The curriculum factory routes through **Gemini free tier → OpenRouter free-model router**. It uses only:
+- `gemini-3.1-flash-lite` (allowlisted free-tier model; the Google project must have billing disabled);
+- `openrouter/free` or an explicitly `:free` model ID.
+
+A provider quota failure advances to the next configured free provider. If all free routes are exhausted, the batch fails and is resumable; it does not switch to a paid model. Free quotas, model routing and availability can change. Google free-tier data may be used to improve Google's products, so do not send secrets, private learner data, or unpublished sensitive content.
+
+Hugging Face routed inference is intentionally excluded from the default route because free-account credits are small and routing can be billable. It can only be enabled by explicitly setting both `AI_ALLOW_HF_ROUTER=1` and `HF_ROUTER_BILLING_DISABLED=1` after verifying billing is disabled in that account. The factory does not make paid requests intentionally.
+
+## Configure GitHub Actions
+
+Add repository Actions secrets:
+- `GEMINI_API_KEY`: Google AI Studio key for a project with billing disabled.
+- `OPENROUTER_API_KEY`: OpenRouter key; use only `openrouter/free` or `:free` model IDs.
+
+The workflow supports `provider=auto`, `provider=gemini`, and `provider=openrouter`. Use `auto` for normal fallback. To compare providers, run the pilot once per provider so each output is saved in a separate artifact folder. Missing keys or exhausted quotas should fail visibly, never silently switch to paid inference.
+
+## Pilot protocol
+
+### Stage A — small paired comparison
+Run the `Curriculum Factory` workflow with `target=pilot` once with `provider=gemini` and once with `provider=openrouter`. Each run drafts the same five representative command lessons and two tutorials into an isolated `artifacts/ai-pilot/<provider>/` directory. This is a low-cost screening sample, not a quality claim.
+
+### Stage B — validation set on the winner
+After choosing a provider from Stage A, run the ordinary authoring queues on a **20-command validation set and five complete tutorials**. Include easy, common commands; complex text/process tools; GNU-vs-BusyBox differences; and potentially destructive commands that must be documented with safe examples only. Do not run dangerous examples.
+
+### Score every artifact
+
+Two reviewers should independently score each item from 0–2 in each category (0=fail, 1=partial, 2=strong):
+1. Factual correctness against an authoritative man page or upstream manual.
+2. Topic-specific depth and clarity; no filler/template reuse.
+3. Syntax/options and portability boundaries accurately qualified.
+4. Examples are safe, reproducible, and expected behavior is not fabricated.
+5. Quiz/exercise answer correctness and useful rationale.
+6. Source URLs actually support the claims (not merely plausible URLs).
+
+Maximum: 12 per item. Record scores, reviewer disagreements, provider/model, errors and latency in a CSV or spreadsheet. The winning model must achieve:
+- mean score **at least 10/12**;
+- **zero critical factual or safety errors**;
+- at least **90%** of examples passing in a disposable Linux test harness where executable;
+- **zero** duplicate/template-failure items in the validation set;
+- all citations checked for sampled factual claims.
+
+If either model misses the gate, improve prompts/schema and repeat the pilot. Never relax the correctness gate to fill the catalogue faster.
+
+## Scale-up
+
+1. Run bounded, resumable batches (25 commands or 10 tutorials/curriculum items maximum per workflow run).
+2. Preserve each generated file as a draft; do not commit model output automatically to learner-facing pages.
+3. Run `npm run audit:curriculum-quality` and the safe-command execution harness; manually review high-risk, ambiguous, and platform-specific commands.
+4. Publish only after source verification, example test evidence, duplicate checks, human approval, and build/route tests.
+5. Track factual quality and verification coverage separately from raw inventory counts.
+
+A free API quota may be too small or inconsistent to generate all 6,161 command lessons and 520+ tutorials quickly. The system pauses/fails on quota exhaustion; resume later rather than enabling billing.
+
+The repository includes resumable, review-gated AI drafting queues for the 6,161-command catalog and the 520-item structured curriculum. They use a configurable free-tier provider adapter (Gemini free tier first, then OpenRouter's free-model router by default). Configure `GEMINI_API_KEY` and/or `OPENROUTER_API_KEY` as environment variables; never commit tokens.
+
+- Draft up to 25 command lessons: `npm run factory:commands -- --start 0 --count 25`
+- Draft up to 10 detailed tutorial lessons: `npm run factory:tutorials -- --start 0 --count 10`
+- Draft up to 10 structured curriculum lessons with quizzes: `npm run factory:curriculum -- --start 0 --count 10`
 - Audit generated drafts and duplication: `npm run audit:curriculum-quality`
 - Require full draft coverage and no detected duplicates/placeholders: `npm run audit:curriculum-quality:strict`
 
-The **Curriculum Factory** workflow can run one bounded batch and upload it as a review artifact. It does not silently publish model output. Drafts keep source candidates unverified, examples unexecuted, and human review pending. The Python quality gate reports lexical duplication, missing fields, suspiciously generic text, unsafe examples, and coverage separately for command research, tutorials, and curriculum lessons. Similarity screening is a triage tool, not proof of factual correctness.
+Set `AI_PROVIDER_ORDER=gemini,openrouter` for automatic free-tier fallback, or `AI_PROVIDER_ORDER=gemini` / `openrouter` to test one provider. Model metadata is recorded with each draft. `GEMINI_MODEL` is restricted to allowlisted free-tier models, and `OPENROUTER_MODEL` must be `openrouter/free` or end in `:free`. Hugging Face routing is excluded by default; enabling it requires explicit acknowledgement and a verified billing-disabled account.
 
-**Important:** 6,161 catalog records and 520 curriculum records are inventory counts, not proof that 6,161 or 520 lessons are accurate, tested, and human-reviewed. Do not mark AI-generated content complete until authoritative sources, implementation-specific behavior, safe examples, quiz answers, and reviewer evidence have been checked. Certificate issuance remains an assessment feature and must not imply accreditation or identity verification.
+The **Curriculum Factory** workflow can run bounded batches or a small provider pilot and upload output as artifacts. It never publishes model output automatically. Drafts keep source candidates unverified, examples unexecuted, and human review pending. The Python quality gate reports lexical duplication, missing fields, suspiciously generic text, unsafe examples, and coverage separately. Similarity screening is triage, not proof of correctness.
+
+**Important:** 6,161 catalog records and 520 curriculum records are inventory counts, not proof that all are accurate, tested, and human-reviewed. Do not mark AI-generated content complete until authoritative sources, implementation-specific behavior, safe examples, quiz answers, and reviewer evidence have been checked. Certificate issuance remains an assessment feature and must not imply accreditation or identity verification.
 
 ## License
 

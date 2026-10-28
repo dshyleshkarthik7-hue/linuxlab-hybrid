@@ -39,7 +39,7 @@
     "test:real-guest-firmware-proxy": "node tests/real-guest-firmware-proxy.test.mjs",
     "test:coverage": "node tests/coverage-threshold.mjs",
     "test:security": "npm audit --audit-level=high && node tests/dompurify-security.test.mjs",
-    "test:ci": "npm run typecheck:server && npm run typecheck:functions && npm run test:config && npm run test:shared-nav && npm run test:progress-snapshot && npm run test:production-preflight-contract && npm run test:production-monitor-contract && npm run test:certificate-question-quality && npm run test:phase2-learning && npm run test:phase3-readiness && npm run test:curriculum-factory && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy && npm run test:lesson-evidence && npm run audit:command-evidence && npm run audit:curriculum",
+    "test:ci": "npm run typecheck:server && npm run typecheck:functions && npm run test:config && npm run test:shared-nav && npm run test:progress-snapshot && npm run test:production-preflight-contract && npm run test:production-monitor-contract && npm run test:certificate-question-quality && npm run test:phase2-learning && npm run test:phase3-readiness && npm run test:curriculum-factory && npm run test:ai-provider && npm run test && npm run test:coverage && npm run test:security && npm run test:build-gate && npm run test:profile-boot && npm run test:browser-gate && npm run test:netlify-edge && npm run test:phase2-seo && npm run test:real-guest-firmware-proxy && npm run test:lesson-evidence && npm run audit:command-evidence && npm run audit:curriculum",
     "lint": "tsc --noEmit && node tests/security-static.test.mjs",
     "build:iso": "node scripts/check-lfs-assets.mjs --iso && node ./iso-builder/build-iso.mjs",
     "build:all": "npm run build && npm run build:iso",
@@ -103,7 +103,8 @@
     "factory:curriculum": "node scripts/author-qwen-curriculum.mjs",
     "audit:curriculum-quality": "python3 scripts/curriculum-quality-gate.py",
     "audit:curriculum-quality:strict": "python3 scripts/curriculum-quality-gate.py --strict",
-    "test:curriculum-factory": "python3 tests/curriculum-factory.test.py"
+    "test:curriculum-factory": "python3 tests/curriculum-factory.test.py",
+    "test:ai-provider": "node tests/ai-provider.test.mjs"
   },
   "dependencies": {
     "monaco-editor": "0.57.0",

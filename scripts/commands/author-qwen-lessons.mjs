@@ -13,10 +13,9 @@
 import { readFile, mkdir, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { completeChat } from "../lib/ai-provider.mjs";
 
 const root = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
-const token = process.env.HF_TOKEN;
-const model = process.env.HF_MODEL || "Qwen/Qwen3-8B";
 const arg = (name, fallback) => {
   const inline = process.argv.find((value) => value.startsWith(name + "="));
   const index = process.argv.indexOf(name);
@@ -29,11 +28,11 @@ const arg = (name, fallback) => {
 const start = Math.max(0, arg("--start", 0));
 const count = Math.max(1, Math.min(25, arg("--count", 5)));
 const delayMs = Math.max(1000, Number(process.env.QWEN_DELAY_MS || 1800));
-if (!token) throw new Error("HF_TOKEN is required. Never put provider tokens in source control.");
-if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+(?::[A-Za-z0-9_.-]+)?$/.test(model)) throw new Error("HF_MODEL is not a valid Hugging Face router model ID.");
 const canonical = JSON.parse(await readFile(path.join(root, "data/commands/canonical.json"), "utf8"));
 if (!Array.isArray(canonical.records) || canonical.records.length !== canonical.recordCount) throw new Error("Canonical command inventory failed its count check.");
-const outputDir = path.join(root, "data/commands/research");
+const pilotLabel = process.env.AI_DRAFT_LABEL || "";
+if (pilotLabel && !/^[a-z0-9-]{1,48}$/.test(pilotLabel)) throw new Error("AI_DRAFT_LABEL must be a lowercase slug (1-48 characters).");
+const outputDir = pilotLabel ? path.join(root, "artifacts/ai-pilot", pilotLabel, "commands") : path.join(root, "data/commands/research");
 await mkdir(outputDir, { recursive: true });
 const pause = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 const parseJson = (text) => {
@@ -57,25 +56,11 @@ Rules:
 - No verification booleans or claims that examples have been executed. Keep explanations detailed and specific to the named command.
 `;
 async function askQwen(command) {
-  const response = await fetch("https://router.huggingface.co/v1/chat/completions", {
-    method: "POST",
-    headers: { authorization: "Bearer " + token, "content-type": "application/json" },
-    body: JSON.stringify({
-      model,
-      messages: [
-        { role: "system", content: "You are a careful Linux documentation researcher. Output valid JSON, never claim unperformed tests, and explicitly mark uncertainty." },
-        { role: "user", content: promptFor(command) }
-      ],
-      temperature: 0.15,
-      max_tokens: 1800
-    }),
-    signal: AbortSignal.timeout(90000)
-  });
-  if (!response.ok) throw new Error("Qwen router returned HTTP " + response.status + ": " + (await response.text()).slice(0, 600));
-  const body = await response.json();
-  const text = body.choices?.[0]?.message?.content;
-  if (typeof text !== "string" || !text.trim()) throw new Error("Qwen returned no lesson content.");
-  return parseJson(text);
+  const completion = await completeChat({ messages: [
+    { role: "system", content: "You are a careful Linux documentation researcher. Output valid JSON, never claim unperformed tests, and explicitly mark uncertainty." },
+    { role: "user", content: promptFor(command) }
+  ], temperature: 0.15, maxTokens: 1800 });
+  return { draft: parseJson(completion.text), provider: completion.provider, model: completion.model };
 }
 function validateDraft(command, draft) {
   if (draft.name !== command.name) throw new Error("Model command identity mismatch: expected " + command.name);
@@ -91,13 +76,14 @@ for (const command of slice) {
   const target = path.join(outputDir, command.name + ".json");
   try { await access(target); process.stdout.write("SKIP existing " + command.name + "\n"); continue; } catch {}
   try {
-    const draft = await askQwen(command);
+    const generated = await askQwen(command);
+    const draft = generated.draft;
     validateDraft(command, draft);
     const record = {
       schemaVersion: 1,
       name: command.name,
       status: "draft",
-      model: { provider: "Hugging Face Inference Providers", id: model, generatedAt: new Date().toISOString() },
+      model: { provider: generated.provider, id: generated.model, generatedAt: new Date().toISOString() },
       definition: draft.definition,
       explanation: draft.explanation,
       syntax: draft.syntax,
@@ -109,7 +95,7 @@ for (const command of slice) {
     };
     await writeFile(target, JSON.stringify(record, null, 2) + "\n", { flag: "wx" });
     written++;
-    process.stdout.write("DRAFT " + command.name + "\n");
+    process.stdout.write("DRAFT " + command.name + " [" + generated.provider + " / " + generated.model + "]\n");
   } catch (error) {
     process.stderr.write("ERROR " + command.name + ": " + String(error.message || error) + "\n");
     process.exitCode = 1;

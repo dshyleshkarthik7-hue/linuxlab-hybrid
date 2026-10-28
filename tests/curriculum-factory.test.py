@@ -17,6 +17,11 @@ class FactoryTests(unittest.TestCase):
         self.assertIn("data/commands/research",cmd)
         self.assertIn("data/tutorial-research",tut)
         self.assertIn("data/curriculum-research",cur)
+        adapter=(ROOT/"scripts/lib/ai-provider.mjs").read_text()
+        self.assertIn("openrouter/free",adapter)
+        self.assertIn("gemini-3.1-flash-lite",adapter)
+        self.assertIn("AI_ALLOW_HF_ROUTER",adapter)
+        self.assertIn("AI_DRAFT_LABEL",cmd); self.assertIn("AI_DRAFT_LABEL",tut); self.assertIn("AI_DRAFT_LABEL",cur)
     def test_quality_audit_reports_missing_drafts_without_claiming_completion(self):
         result=subprocess.run([sys.executable,str(ROOT/"scripts/curriculum-quality-gate.py"),"--report",".cache/test-curriculum-quality-report.json"],cwd=ROOT,text=True,capture_output=True)
         self.assertIn(result.returncode,(0,1))

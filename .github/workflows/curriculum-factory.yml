@@ -6,7 +6,7 @@ on:
         description: "Which review-draft queue to generate"
         required: true
         type: choice
-        options: [commands, tutorials, curriculum]
+        options: [commands, tutorials, curriculum, pilot]
       start:
         description: "Zero-based inventory offset"
         required: true
@@ -41,7 +41,7 @@ jobs:
         env:
           TARGET: ${{ inputs.target }}
           START: ${{ inputs.start }}
-          COUNT: ${{ inputs.count }}
+          COUNT: ${{ inputs.count }}\n          PROVIDER: ${{ inputs.provider }}
         run: |
           python - <<'PY'
           import os
@@ -52,20 +52,31 @@ jobs:
               raise SystemExit(f"invalid batch: start >= 0 and count must be 1..{maximum}")
           PY
       - name: Generate review drafts
+        if: inputs.target != 'pilot'
         env:
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_MODEL: Qwen/Qwen3-8B
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          AI_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'gemini,openrouter' || inputs.provider }}
           START: ${{ inputs.start }}
           COUNT: ${{ inputs.count }}
           TARGET: ${{ inputs.target }}
         run: |
-          test -n "$HF_TOKEN" || { echo "Repository secret HF_TOKEN is required"; exit 2; }
           case "$TARGET" in
             commands) node scripts/commands/author-qwen-lessons.mjs --start "$START" --count "$COUNT" ;;
             tutorials) node scripts/author-qwen-tutorials.mjs --start "$START" --count "$COUNT" ;;
             curriculum) node scripts/author-qwen-curriculum.mjs --start "$START" --count "$COUNT" ;;
             *) echo "Unsupported target"; exit 2 ;;
           esac
+      - name: Generate paired model pilot (5 commands + 2 tutorials)
+        if: inputs.target == 'pilot'
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          OPENROUTER_API_KEY: ${{ secrets.OPENROUTER_API_KEY }}
+          AI_PROVIDER_ORDER: ${{ inputs.provider == 'auto' && 'gemini' || inputs.provider }}
+          AI_DRAFT_LABEL: pilot-${{ inputs.provider == 'auto' && 'gemini' || inputs.provider }}
+        run: |
+          node scripts/commands/author-qwen-lessons.mjs --start 0 --count 5
+          node scripts/author-qwen-tutorials.mjs --start 0 --count 2
       - name: Audit draft quality and coverage
         if: always()
         run: python scripts/curriculum-quality-gate.py --report .cache/curriculum-quality-report.json
