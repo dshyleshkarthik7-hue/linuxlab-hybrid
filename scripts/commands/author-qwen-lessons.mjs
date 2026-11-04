@@ -15,6 +15,7 @@ import { readFile, mkdir, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { orchestrateDraft } from "../lib/ai-orchestrator.mjs";
+import { validateCommandLesson } from "./lesson-schema.mjs";
 
 const root = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const arg = (name, fallback) => {
@@ -44,7 +45,7 @@ const parseJson = (text) => {
   if (first < 0 || last <= first) throw new Error("Model did not return a JSON object.");
   return JSON.parse(cleaned.slice(first, last + 1));
 };
-const promptFor = (command) => `You are drafting a Linux command reference for human review. Return one JSON object only with keys: name, definition, explanation, syntax, examples, implementationDifferences, safetyNotes, sources.
+const promptFor = (command) => `You are drafting a Linux command reference for human review. Return one JSON object only with keys: name, definition, explanation, syntax, examples, implementationDifferences, safetyNotes, sources, lesson.
 Command identifier: ${command.name}
 Catalog category: ${command.category || "unknown"}
 Catalog summary (unverified context, do not treat as proof): ${String(command.summary || "").slice(0, 500)}
@@ -56,6 +57,8 @@ Rules:
 - For the tree utility, do not claim exit status 2 means a partial listing unless the target implementation manual explicitly says so. If the exact exit-status behavior is not verified, say it is implementation/version-specific and point to the matching tree(1) manual.
 - safetyNotes is an array of concrete cautions.
 - sources is an array of {title, url, accessedAt}; suggest only likely authoritative documentation URLs. These are unverified candidates, not evidence. accessedAt must be today's date if you know it, otherwise empty.
+- lesson must contain title, objective, difficulty (beginner/intermediate/advanced), prerequisites, 3-5 learningOutcomes, at least 3 ordered command-specific steps, workedExample, expectedResult, at least 3 commonMistakes, exercise with completion criteria, a harder safe challenge, at least 5 quiz questions (each with question, exactly 4 options, answerIndex, explanation), and a reflection prompt.
+- Every lesson field must teach this exact command. Never use generic filler or repeat the same explanation across commands.
 - No verification booleans or claims that examples have been executed. Keep explanations detailed and specific to the named command.
 `;
 async function askQwen(command) {
@@ -64,7 +67,7 @@ async function askQwen(command) {
     userPrompt: promptFor(command),
     parse: parseJson,
     validate: draft => validateDraft(command, draft),
-    maxTokens: 2200
+    maxTokens: 5200
   });
 }
 function validateDraft(command, draft) {
@@ -73,6 +76,8 @@ function validateDraft(command, draft) {
   for (const key of ["examples", "implementationDifferences", "safetyNotes", "sources"]) if (!Array.isArray(draft[key])) throw new Error(command.name + ": " + key + " must be an array.");
   if (draft.examples.some((x) => !x || typeof x.command !== "string" || typeof x.expectedBehavior !== "string" || typeof x.testPlan !== "string")) throw new Error(command.name + ": malformed example.");
   if (draft.sources.some((x) => !x || typeof x.title !== "string" || typeof x.url !== "string")) throw new Error(command.name + ": malformed source candidate.");
+  const lessonErrors = validateCommandLesson(draft.lesson);
+  if (lessonErrors.length) throw new Error(command.name + ": incomplete educational lesson: " + lessonErrors.join("; "));
 }
 let written = 0;
 let slice;
@@ -111,6 +116,7 @@ for (const command of slice) {
       implementationDifferences: draft.implementationDifferences,
       safetyNotes: draft.safetyNotes,
       sources: draft.sources.map((x) => ({ title: x.title, url: x.url, accessedAt: x.accessedAt || "", verified: false })),
+      lesson: draft.lesson,
       verification: { syntaxVerified: false, examplesVerified: false, busyboxTested: false, humanReviewed: false, provenanceVerified: false }
     };
     await writeFile(target, JSON.stringify(record, null, 2) + "\n", { flag: "wx" });
