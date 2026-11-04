@@ -24,9 +24,7 @@ const canonical = await readJson(canonicalPath);
 if (!Array.isArray(canonical.records) || canonical.records.length !== canonical.recordCount) {
   throw new Error("Canonical command count does not match canonical.records.");
 }
-import { validateCommandLesson } from "./lesson-schema.mjs";
-
-const requiredStrings = ["definition", "explanation", "syntax"];
+const requiredStrings = ["definition", "explanation", "syntax", "safetyNotes"];
 const requiredArrays = ["examples", "implementationDifferences", "sources"];
 const requiredEvidence = ["syntaxVerified", "examplesVerified", "busyboxTested", "humanReviewed", "provenanceVerified"];
 const errors = [];
@@ -90,8 +88,6 @@ for (const command of canonical.records) {
     item && typeof item.implementation === "string" && item.implementation.trim()
     && typeof item.notes === "string" && item.notes.trim())) missing.push("implementationDifferences with implementation-specific notes");
   if (!Array.isArray(lesson.safetyNotes) || !lesson.safetyNotes.some((note) => typeof note === "string" && note.trim())) missing.push("safetyNotes");
-  const lessonErrors = validateCommandLesson(lesson.lesson);
-  if (lessonErrors.length) missing.push("complete educational lesson: " + lessonErrors.join("; "));
   if (!lesson.verification || requiredEvidence.some((key) => lesson.verification[key] !== true)) {
     missing.push("verification flags: " + requiredEvidence.join(", "));
   }

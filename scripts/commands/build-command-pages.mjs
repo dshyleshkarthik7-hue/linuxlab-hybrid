@@ -67,27 +67,6 @@ for (const command of data.records) {
   const mistakes = hasVerifiedReference ? (lesson.mistakes || []) : [];
   const related = hasVerifiedReference ? (lesson.related || []) : [];
   const internals = hasVerifiedReference ? (lesson.internals || []) : [];
-  const educational = hasVerifiedReference ? lesson.lesson?.content : null;
-  const quizHtml = educational ? (educational.quiz || []).map((q, i) =>
-    "<li><strong>" + escapeHtml(q.question) + "</strong><ol>" +
-    (q.options || []).map(option => "<li>" + escapeHtml(option) + "</li>").join("") +
-    "</ol><details><summary>Reveal answer and explanation</summary><p><strong>" +
-    escapeHtml(q.options?.[q.answerIndex] || "Answer unavailable") + "</strong> — " +
-    escapeHtml(q.explanation) + "</p></details></li>").join("") : "";
-  const educationalHtml = educational ? [
-    '<section class="card anatomy-card"><h2>Complete learning lesson</h2>',
-    '<h3>Learning objective</h3><p>' + escapeHtml(educational.objective) + '</p>',
-    '<h3>Prerequisites</h3><ul>' + (educational.prerequisites || []).map(x => '<li>' + escapeHtml(x) + '</li>').join("") + '</ul>',
-    '<h3>Learning outcomes</h3><ul>' + (educational.learningOutcomes || []).map(x => '<li>' + escapeHtml(x) + '</li>').join("") + '</ul>',
-    '<h3>Guided steps</h3><ol>' + (educational.steps || []).map(x => '<li>' + escapeHtml(x) + '</li>').join("") + '</ol>',
-    '<h3>Worked example</h3><p>' + escapeHtml(educational.workedExample) + '</p>',
-    '<h3>Expected result</h3><p>' + escapeHtml(educational.expectedResult) + '</p>',
-    '<h3>Common mistakes</h3><ul>' + (educational.commonMistakes || []).map(x => '<li>' + escapeHtml(x) + '</li>').join("") + '</ul>',
-    '<h3>Practice exercise</h3><p>' + escapeHtml(educational.exercise) + '</p>',
-    '<h3>Challenge</h3><p>' + escapeHtml(educational.challenge) + '</p>',
-    '<h3>Knowledge check</h3><ol>' + quizHtml + '</ol>',
-    '<h3>Reflection</h3><p>' + escapeHtml(educational.reflection) + '</p></section>'
-  ].join("") : "";
   const distroRows = Object.entries(command.availability || {}).filter(([, availability]) => availability && availability !== "unverified").map(([name, availability]) =>
     `<tr><th scope="row">${escapeHtml(name)}</th><td>${escapeHtml(availability)}</td></tr>`).join("");
   const optionRows = options.map(([flag, description]) =>
@@ -149,7 +128,7 @@ for (const command of data.records) {
 <article class="availability-card"><h2>Linux availability</h2>${distroRows ? `<table><tbody>${distroRows}</tbody></table>` : `<p class="muted">Distribution availability has not been verified for this command yet.</p>`}</article>
 </section>
 <section class="card anatomy-card"><h2>Common mistakes and safety</h2><ul>${mistakeList}</ul><p>Linux utilities can differ between GNU, BusyBox, BSD-derived and distribution-specific implementations. Check <code>man ${escapeHtml(command.name)}</code> or <code>${escapeHtml(command.name)} --help</code> on the target system before relying on implementation-specific behavior.</p></section>
-${educationalHtml}\n<section class="card anatomy-card"><h2>Related Linux commands</h2><p>${relatedLinks(related) || "Explore the complete Linux command catalogue for related tools."}</p><p><a class="cta" href="/learn/files-and-directories/">Files and directories</a> <a class="cta" href="/learn/permissions/">Linux permissions</a> <a class="cta" href="/learn/">All Linux tutorials</a></p></section>
+<section class="card anatomy-card"><h2>Related Linux commands</h2><p>${relatedLinks(related) || "Explore the complete Linux command catalogue for related tools."}</p><p><a class="cta" href="/learn/files-and-directories/">Files and directories</a> <a class="cta" href="/learn/permissions/">Linux permissions</a> <a class="cta" href="/learn/">All Linux tutorials</a></p></section>
 <section class="card anatomy-card"><h2>Practice ${escapeHtml(command.name)} online</h2><p>Use the browser learning environment for a disposable practice session. The command reference itself is static and does not require the VM to load.</p>${hasVerifiedReference ? `<a class="cta" href="${practiceUrl}">Open practice →</a>` : `<a class="cta" href="/beginner/">Open curated beginner practice →</a>`}</section>
 <footer class="lesson-footer-links"><a class="cta" href="/commands/">← Back to all 6,161 Linux commands</a><a class="cta" href="/beginner/">200-command beginner curriculum →</a></footer>
 </main>
