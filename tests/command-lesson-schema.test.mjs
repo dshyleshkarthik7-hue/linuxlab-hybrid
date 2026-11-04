@@ -1,25 +1,35 @@
 import assert from "node:assert/strict";
-import { validateCommandLesson } from "../scripts/commands/lesson-schema.mjs";
-const lesson = {
-  title:"Find files by name and type",
-  objective:"Learn to construct a safe find expression and interpret its traversal scope.",
-  difficulty:"intermediate",
-  prerequisites:["Basic shell navigation and absolute versus relative paths."],
-  learningOutcomes:["Choose a starting path and explain traversal scope.","Combine name and type predicates.","Explain how predicates affect matched paths."],
-  steps:["Choose a narrow starting directory that you are allowed to inspect.","Add a name predicate to select the target filename pattern.","Add a type predicate and inspect matching paths before further action."],
-  workedExample:"From a disposable practice directory, use find . -type f -name logfiles to list regular files in the selected scope. The starting dot keeps traversal inside the practice directory.",
-  expectedResult:"The command prints matching pathnames, one per line; no output means no path matched or the directory was not readable.",
-  commonMistakes:["Quoting the pattern incorrectly so the shell expands it before find receives it.","Starting from an unexpectedly broad directory.","Confusing -name matching with content searching."],
-  exercise:"Create a practice directory with empty files and list only regular files ending in .txt. Confirm that directories are excluded.",
-  challenge:"Extend the practice query with a second filename pattern while keeping the search confined to the practice directory.",
-  quiz:Array.from({length:5},(_,i)=>({question:"Which predicate restricts matches to regular files? "+(i+1),options:["-type f","-name","-mtime","-user"],answerIndex:0,explanation:"The -type f predicate selects regular files; the other predicates test different properties."})),
-  reflection:"Explain why choosing the starting directory is as important as choosing the predicates."
+import { readFile } from "node:fs/promises";
+import { validateCommandLessonDraft, validateCommandResearchRecord } from "../scripts/commands/lesson-schema.mjs";
+
+const schema = JSON.parse(await readFile("data/commands/schema.json", "utf8"));
+const catalog = JSON.parse(await readFile("data/commands/canonical.json", "utf8"));
+assert.equal(schema.type, "object");
+assert.equal(schema.additionalProperties, false);
+assert.equal(catalog.records.length, catalog.recordCount);
+const command = { name: "grep" };
+const draft = {
+  name: "grep",
+  definition: "Search input for lines matching a pattern.",
+  explanation: "grep reads input and reports matching lines according to its selected matching mode.",
+  syntax: "grep [OPTION]... PATTERN [FILE]...",
+  examples: [{ command: "grep -F needle sample.txt", expectedBehavior: "Prints lines containing the literal text needle.", testPlan: "Use a temporary fixture with matching and non-matching lines." }],
+  implementationDifferences: [{ implementation: "BusyBox", notes: "Check supported flags against the installed BusyBox build." }],
+  safetyNotes: ["Use a disposable test file."],
+  sources: [{ title: "grep manual", url: "https://www.gnu.org/software/grep/manual/grep.html", accessedAt: "" }]
 };
-assert.deepEqual(validateCommandLesson(lesson),[]);
-for (const key of ["objective","workedExample","expectedResult","exercise","challenge","reflection"]) {
-  assert.ok(validateCommandLesson({...lesson,[key]:"short"}).length>0,key);
-}
-assert.ok(validateCommandLesson({...lesson,quiz:lesson.quiz.slice(0,4)}).some(x=>x.includes("five questions")));
-assert.ok(validateCommandLesson({...lesson,quiz:[{...lesson.quiz[0],answerIndex:9},...lesson.quiz.slice(1)]}).some(x=>x.includes("malformed")));
-assert.ok(validateCommandLesson({...lesson,steps:["one"]}).some(x=>x.includes("three ordered steps")));
-console.log("Command lesson schema tests passed.");
+assert.equal(validateCommandLessonDraft(command, draft), true);
+assert.throws(() => validateCommandLessonDraft(command, { ...draft, name: "sed" }), /identity mismatch/);
+assert.throws(() => validateCommandLessonDraft(command, { ...draft, examples: [{ command: "grep" }] }), /malformed example/);
+const record = {
+  schemaVersion: 1, name: "grep", status: "draft",
+  definition: draft.definition, explanation: draft.explanation, syntax: draft.syntax,
+  examples: [{ command: "grep -F needle sample.txt", expectedBehavior: "Prints matching lines.", testEvidence: [] }],
+  implementationDifferences: draft.implementationDifferences,
+  safetyNotes: draft.safetyNotes,
+  sources: [{ title: "grep manual", url: "https://www.gnu.org/software/grep/manual/grep.html", accessedAt: "", verified: false }],
+  verification: { syntaxVerified: false, examplesVerified: false, busyboxTested: false, humanReviewed: false, provenanceVerified: false }
+};
+assert.equal(validateCommandResearchRecord(record), true);
+assert.throws(() => validateCommandResearchRecord({ ...record, verification: {} }), /verification.syntaxVerified/);
+console.log("Command lesson draft and research-record schemas passed.");

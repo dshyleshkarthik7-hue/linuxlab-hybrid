@@ -3,6 +3,7 @@ import { isCommandIndexable, commandCanonicalUrl } from './commands/indexability
 
 const base = 'https://linuxterminal.me';
 const staticPaths = [
+  '/academy/',
   '/learn/operating-systems/', '/learn/networking-basics/', '/', '/beginner/', '/tutorials/', '/tools/linux-error-decoder/', '/tutorials/linux-ls-command/', '/tutorials/grep-examples/',
   '/intermediate/', '/expert/', '/real-linux/', '/developer-alpine/',
   '/open-source-iso/', '/commands/', '/learn/', '/learn/linux-basics/',

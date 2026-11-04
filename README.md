@@ -8,6 +8,7 @@ Before deployment, read [`THREAT_MODEL.md`](./THREAT_MODEL.md). The browser simu
 
 ## Start learning
 
+- Learning ecosystem and knowledge map: https://linuxterminal.me/academy/
 - Homepage: https://linuxterminal.me/
 - Tutorials: https://linuxterminal.me/learn/
 - Beginner path: https://linuxterminal.me/beginner/
@@ -32,7 +33,7 @@ Crawlable tutorials cover Linux basics, terminal navigation, files and directori
 
 ### Command reference
 
-The canonical catalog contains 6,161 entries; this is a reference-catalog count, not a count of fully authored lessons. The current catalog has 26 complete entries, 174 planned entries, and 5,961 entries without lesson status/content. Only entries with authored teaching content should be presented as lessons. Important commands have dedicated URLs such as `/commands/cd/`, `/commands/pwd/`, `/commands/ls/`, `/commands/grep/`, `/commands/chmod/` and `/commands/gcc/`.
+The canonical catalog contains 6,161 entries; this is a reference-catalog count, not a count of fully authored lessons. The learning graph classifies 200 essential entries, 1,000 promotion-queue candidates, and 4,961 reference entries. The 1,000 are a deterministic editorial queue, not a claim that all have been individually selected, authored, or verified. The current catalog has 26 complete entries, 174 planned entries, and 5,961 entries without lesson status/content. Only entries with authored teaching content should be presented as lessons. The Academy dashboard exposes command, tutorial, challenge, language, DSA, project, career, tutor, lab and assessment relationships, while marking roadmaps separately from published content. Important commands have dedicated URLs such as `/commands/cd/`, `/commands/pwd/`, `/commands/ls/`, `/commands/grep/`, `/commands/chmod/` and `/commands/gcc/`.
 
 Completed lessons explain purpose, starter syntax, behavior and safe practice. Planned and name-only catalog entries are reference stubs, not complete lessons. A reference page does not imply that every command is implemented by the educational simulator.
 
@@ -165,3 +166,9 @@ The browser VM uses the explicitly trusted Cloudflare ISO worker at `https://lin
 The browser VM is an educational execution environment, not a hostile-code sandbox or host-kernel security boundary. Browser-side ISO SHA-256 verification protects artifact integrity in transit; it cannot make a modified client trusted.
 
 A verified certificate proves that LinuxTerminal has an authentic signed assessment record. It does not prove presenter identity, unique authorship, invigilation, absence of collaboration, employment/university recognition, or professional accreditation.
+
+## Learning ecosystem and content publication
+
+The `/academy/` dashboard reads a generated knowledge graph built from canonical inventories and existing curriculum records. The graph is an index of resources and planned pathways, not proof that every roadmap item is a complete course. Language, DSA, project, career and certification tracks remain roadmaps until their individual content and assessment banks are authored and reviewed.
+
+Command research records are drafts by default. A research record becomes eligible for the generated command-intelligence index only after it has timestamped passing execution evidence, verified HTTPS source records, all required verification flags, a quality score of at least 90, and a recorded human review. AI output and URL-shaped citations alone do not satisfy these gates. Existing hand-authored command pages retain their explicit editorial status.

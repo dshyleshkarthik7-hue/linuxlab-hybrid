@@ -1,0 +1,442 @@
+{
+  "schemaVersion": 1,
+  "title": "LinuxTerminal Learning Ecosystem",
+  "policy": {
+    "inventoryIsNotPublication": true,
+    "commandTiers": {
+      "essential": 200,
+      "importantTarget": 1000,
+      "referenceTarget": 4961
+    },
+    "tutorialTarget": 535,
+    "challengeTarget": 1000,
+    "certificationIsNotAccreditation": true
+  },
+  "commandTiers": [
+    {
+      "id": "essential",
+      "target": 200,
+      "status": "curated-inventory"
+    },
+    {
+      "id": "important",
+      "target": 1000,
+      "status": "planned-editorial-promotion-queue"
+    },
+    {
+      "id": "reference",
+      "target": 4961,
+      "status": "catalogue-reference"
+    }
+  ],
+  "tutorialTracks": [
+    {
+      "id": "linux-fundamentals",
+      "name": "Linux Fundamentals",
+      "target": 50,
+      "topics": [
+        "Linux and distributions",
+        "Kernel and user space",
+        "Shell and terminal",
+        "Filesystem hierarchy",
+        "Processes",
+        "Permissions",
+        "Users and groups"
+      ]
+    },
+    {
+      "id": "bash",
+      "name": "Bash",
+      "target": 60,
+      "topics": [
+        "Variables",
+        "Quoting and expansion",
+        "Conditionals",
+        "Loops",
+        "Functions",
+        "Arrays",
+        "Arguments",
+        "Exit status"
+      ]
+    },
+    {
+      "id": "networking",
+      "name": "Networking",
+      "target": 75,
+      "topics": [
+        "IP addressing",
+        "TCP and UDP",
+        "DNS",
+        "Routing",
+        "Ports and sockets",
+        "SSH",
+        "Firewalls",
+        "Troubleshooting"
+      ]
+    },
+    {
+      "id": "system-administration",
+      "name": "System Administration",
+      "target": 75,
+      "topics": [
+        "systemd",
+        "Services",
+        "Logs",
+        "Cron",
+        "Backups",
+        "Monitoring",
+        "Users and groups",
+        "Storage"
+      ]
+    },
+    {
+      "id": "security",
+      "name": "Security",
+      "target": 75,
+      "topics": [
+        "Least privilege",
+        "sudo",
+        "auditd",
+        "SELinux",
+        "AppArmor",
+        "SSH hardening",
+        "File permissions",
+        "Security review"
+      ]
+    },
+    {
+      "id": "devops",
+      "name": "DevOps",
+      "target": 100,
+      "topics": [
+        "Git",
+        "Containers",
+        "Docker",
+        "Kubernetes",
+        "CI/CD",
+        "Ansible",
+        "Terraform",
+        "Observability"
+      ]
+    },
+    {
+      "id": "linux-programming",
+      "name": "Programming on Linux",
+      "target": 100,
+      "topics": [
+        "GCC",
+        "Make",
+        "C",
+        "C++",
+        "Python",
+        "Rust",
+        "Go",
+        "Debugging"
+      ]
+    }
+  ],
+  "languages": [
+    {
+      "id": "c",
+      "name": "C",
+      "stages": [
+        "Roadmap",
+        "Basics",
+        "Intermediate",
+        "Advanced",
+        "Projects",
+        "Interview practice",
+        "Cheat sheet",
+        "Assessment practice"
+      ]
+    },
+    {
+      "id": "cpp",
+      "name": "C++",
+      "stages": [
+        "Roadmap",
+        "Basics",
+        "Intermediate",
+        "Advanced",
+        "Projects",
+        "Interview practice",
+        "Cheat sheet",
+        "Assessment practice"
+      ]
+    },
+    {
+      "id": "python",
+      "name": "Python",
+      "stages": [
+        "Roadmap",
+        "Basics",
+        "Intermediate",
+        "Advanced",
+        "Projects",
+        "Interview practice",
+        "Cheat sheet",
+        "Assessment practice"
+      ]
+    },
+    {
+      "id": "java",
+      "name": "Java",
+      "stages": [
+        "Roadmap",
+        "Basics",
+        "Intermediate",
+        "Advanced",
+        "Projects",
+        "Interview practice",
+        "Cheat sheet",
+        "Assessment practice"
+      ]
+    },
+    {
+      "id": "javascript",
+      "name": "JavaScript",
+      "stages": [
+        "Roadmap",
+        "Basics",
+        "Intermediate",
+        "Advanced",
+        "Projects",
+        "Interview practice",
+        "Cheat sheet",
+        "Assessment practice"
+      ]
+    },
+    {
+      "id": "rust",
+      "name": "Rust",
+      "stages": [
+        "Roadmap",
+        "Basics",
+        "Intermediate",
+        "Advanced",
+        "Projects",
+        "Interview practice",
+        "Cheat sheet",
+        "Assessment practice"
+      ]
+    },
+    {
+      "id": "go",
+      "name": "Go",
+      "stages": [
+        "Roadmap",
+        "Basics",
+        "Intermediate",
+        "Advanced",
+        "Projects",
+        "Interview practice",
+        "Cheat sheet",
+        "Assessment practice"
+      ]
+    }
+  ],
+  "dsaTopics": [
+    "Arrays",
+    "Linked Lists",
+    "Stacks",
+    "Queues",
+    "Trees",
+    "Binary Search Trees",
+    "AVL Trees",
+    "Graphs",
+    "Hash Tables",
+    "Heaps",
+    "Tries",
+    "Segment Trees",
+    "Dynamic Programming",
+    "Greedy Algorithms",
+    "Backtracking"
+  ],
+  "labMethod": [
+    "Read",
+    "Predict",
+    "Run",
+    "Observe",
+    "Explain"
+  ],
+  "tutorDomains": [
+    {
+      "id": "linux",
+      "label": "Linux Tutor",
+      "focus": "Linux concepts, commands, filesystems and processes"
+    },
+    {
+      "id": "bash",
+      "label": "Bash Tutor",
+      "focus": "Shell syntax, quoting, scripting, pipelines and debugging"
+    },
+    {
+      "id": "networking",
+      "label": "Networking Tutor",
+      "focus": "IP, TCP, UDP, DNS, routing, ports and diagnostics"
+    },
+    {
+      "id": "security",
+      "label": "Security Tutor",
+      "focus": "Defensive Linux security, permissions, auditing and hardening"
+    },
+    {
+      "id": "c",
+      "label": "C Tutor",
+      "focus": "C language fundamentals, compilation, memory safety and debugging"
+    },
+    {
+      "id": "python",
+      "label": "Python Tutor",
+      "focus": "Python programming, testing, tooling and debugging"
+    },
+    {
+      "id": "dsa",
+      "label": "DSA Tutor",
+      "focus": "Data structures, algorithms, complexity and implementation"
+    }
+  ],
+  "certificationTracks": [
+    {
+      "id": "linux-foundations",
+      "name": "Linux Foundations",
+      "questionTarget": 100,
+      "status": "roadmap"
+    },
+    {
+      "id": "linux-administration",
+      "name": "Linux Administration",
+      "questionTarget": 150,
+      "status": "roadmap"
+    },
+    {
+      "id": "bash-automation",
+      "name": "Bash Automation",
+      "questionTarget": 100,
+      "status": "roadmap"
+    },
+    {
+      "id": "linux-networking",
+      "name": "Linux Networking",
+      "questionTarget": 100,
+      "status": "roadmap"
+    },
+    {
+      "id": "linux-security",
+      "name": "Linux Security",
+      "questionTarget": 150,
+      "status": "roadmap"
+    },
+    {
+      "id": "devops-foundations",
+      "name": "DevOps Foundations",
+      "questionTarget": 150,
+      "status": "roadmap"
+    }
+  ],
+  "authoringPipeline": [
+    "canonical-inventory",
+    "research-retrieval",
+    "ai-draft",
+    "independent-ai-review",
+    "source-verification",
+    "isolated-command-execution",
+    "evidence-collection",
+    "quality-scoring",
+    "publication-candidate",
+    "seo-generation",
+    "deploy"
+  ],
+  "publicationGates": [
+    "schema-valid",
+    "topic-specificity-pass",
+    "source-claims-verified",
+    "examples-executed-in-declared-environment",
+    "security-review-pass",
+    "human-review-recorded",
+    "quality-threshold-met"
+  ],
+  "challengeRoadmap": {
+    "target": 1000,
+    "categories": [
+      "Linux",
+      "Networking",
+      "Bash",
+      "Docker",
+      "Git",
+      "Defensive security",
+      "Programming",
+      "Debugging"
+    ],
+    "levels": [
+      "Beginner",
+      "Intermediate",
+      "Advanced",
+      "Expert"
+    ]
+  },
+  "projectPathways": [
+    {
+      "id": "linux-cli-tool",
+      "title": "Build a Linux CLI utility",
+      "focus": "Argument parsing, files, errors, tests and documentation"
+    },
+    {
+      "id": "log-analyser",
+      "title": "Build a safe log analyser",
+      "focus": "Text processing, structured output, filtering and test fixtures"
+    },
+    {
+      "id": "system-monitor",
+      "title": "Build a system monitor",
+      "focus": "Process and resource observation, metrics and clear reporting"
+    },
+    {
+      "id": "network-diagnostics",
+      "title": "Build a network diagnostics dashboard",
+      "focus": "Interfaces, routes, DNS observations and diagnostic summaries"
+    },
+    {
+      "id": "shell-automation",
+      "title": "Build a shell automation toolkit",
+      "focus": "Functions, quoting, exit status, logging and safe dry-run behavior"
+    },
+    {
+      "id": "c-parser",
+      "title": "Build a C configuration parser",
+      "focus": "Parsing, memory ownership, error handling and unit tests"
+    },
+    {
+      "id": "python-automation",
+      "title": "Build a Python administration helper",
+      "focus": "Filesystem APIs, validation, tests and clear logs"
+    },
+    {
+      "id": "devops-pipeline",
+      "title": "Build a CI pipeline",
+      "focus": "Build reproducibility, test stages, artifacts and release gates"
+    }
+  ],
+  "careerPathways": [
+    {
+      "id": "linux-administration",
+      "title": "Linux Systems Administrator",
+      "focus": "Linux fundamentals, services, users, storage, networking and troubleshooting"
+    },
+    {
+      "id": "devops-engineering",
+      "title": "DevOps Engineer",
+      "focus": "Git, automation, containers, CI/CD and infrastructure as code"
+    },
+    {
+      "id": "site-reliability",
+      "title": "Site Reliability Engineer",
+      "focus": "Observability, incident analysis, automation, reliability and systems"
+    },
+    {
+      "id": "defensive-security",
+      "title": "Defensive Security Analyst",
+      "focus": "Linux hardening, logs, access controls, auditing and incident triage"
+    }
+  ]
+}

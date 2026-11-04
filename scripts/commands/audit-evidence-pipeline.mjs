@@ -12,6 +12,7 @@
 import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { researchPublicationErrors } from "./research-publication-policy.mjs";
 
 const root = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const canonicalPath = path.join(root, "data/commands/canonical.json");
@@ -24,10 +25,8 @@ const canonical = await readJson(canonicalPath);
 if (!Array.isArray(canonical.records) || canonical.records.length !== canonical.recordCount) {
   throw new Error("Canonical command count does not match canonical.records.");
 }
-import { validateCommandLesson } from "./lesson-schema.mjs";
-
 const requiredStrings = ["definition", "explanation", "syntax"];
-const requiredArrays = ["examples", "implementationDifferences", "sources"];
+const requiredArrays = ["examples", "implementationDifferences", "sources", "safetyNotes"];
 const requiredEvidence = ["syntaxVerified", "examplesVerified", "busyboxTested", "humanReviewed", "provenanceVerified"];
 const errors = [];
 const warnings = [];
@@ -90,12 +89,11 @@ for (const command of canonical.records) {
     item && typeof item.implementation === "string" && item.implementation.trim()
     && typeof item.notes === "string" && item.notes.trim())) missing.push("implementationDifferences with implementation-specific notes");
   if (!Array.isArray(lesson.safetyNotes) || !lesson.safetyNotes.some((note) => typeof note === "string" && note.trim())) missing.push("safetyNotes");
-  const lessonErrors = validateCommandLesson(lesson.lesson);
-  if (lessonErrors.length) missing.push("complete educational lesson: " + lessonErrors.join("; "));
   if (!lesson.verification || requiredEvidence.some((key) => lesson.verification[key] !== true)) {
     missing.push("verification flags: " + requiredEvidence.join(", "));
   }
   if (lesson.status !== "complete") missing.push('status="complete" only after all evidence gates pass');
+  missing.push(...researchPublicationErrors(lesson));
   if (missing.length) {
     pending.push(name);
     warnings.push({ name, file: lesson._file, missing: [...new Set(missing)] });
