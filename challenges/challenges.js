@@ -46,7 +46,7 @@
       const link = document.createElement('a');
       link.className = 'lesson-link';
       link.href = cmd.url || ('/commands/' + encodeURIComponent(cmd.name) + '.html');
-      link.textContent = 'Read lesson';
+      link.textContent = 'Open reference page';
       const button = document.createElement('button');
       button.className = 'btn' + (done.includes(id) ? ' done' : '');
       button.type = 'button';
