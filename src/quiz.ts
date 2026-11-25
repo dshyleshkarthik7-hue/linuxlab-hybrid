@@ -125,7 +125,7 @@ let session: Question[] = [];
 let index = 0;
 let score = 0;
 let answered = false;
-const SESSION_SIZE = 500;
+const SESSION_SIZE = 50;
 
 const q = document.querySelector<HTMLElement>('#question');
 const o = document.querySelector<HTMLElement>('#options');
@@ -196,6 +196,7 @@ document.querySelector<HTMLButtonElement>('#reset')?.addEventListener('click', (
   session = shuffle(QUESTIONS).slice(0, SESSION_SIZE);
   index = 0;
   score = 0;
+  if (r) { r.textContent = ''; delete r.dataset.logged; }
   render();
 });
 
