@@ -73,4 +73,5 @@ assert.match(progressJs, /practiceQuizSize/);
 assert.match(databaseBuilder, /practiceQuizSize:guidedChallengeCount\\+35/);
 assert.match(databaseBuilder, /challengeCount:guidedChallengeCount/);
 assert.match(quiz, /SESSION_SIZE = 50/);
+assert.equal(progressHtml.split('<script src="/progress.js"').length - 1, 1, 'the local progress ledger must load exactly once');
 console.log('Guided learning, accurate catalogue metrics, curated quiz, tutor, and progress contracts passed.');
