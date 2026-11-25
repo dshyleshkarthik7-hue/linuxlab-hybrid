@@ -23,6 +23,7 @@ const [guidedHtml, guidedJs, guidedPublicJs, guidedDataText, vite, tutorHtml, tu
 const guidedData = JSON.parse(guidedDataText);
 const pkg = JSON.parse(pkgText);
 const pkg = JSON.parse(pkgText);
+const pkg = JSON.parse(pkgText);
 
 assert.match(guidedHtml, /id="guided-list"/);
 assert.match(guidedHtml, /6,161 Linux command catalog entries/);
