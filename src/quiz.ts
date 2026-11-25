@@ -116,6 +116,7 @@ const bankSize = document.querySelector<HTMLElement>('#bank-size');
 
 function render(): void {
   answered = false;
+  if (r) r.textContent = '';
   const question = session[index];
   if (!question || !q || !o || !f || !n || !p || !s || !c) return;
 
