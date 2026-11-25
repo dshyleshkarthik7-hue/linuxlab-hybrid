@@ -1,10 +1,3 @@
-type CommandRecord = {
-  name: string;
-  summary?: string;
-  example?: string;
-  category?: string;
-};
-
 type Question = {
   id: string;
   command: string;
@@ -67,123 +60,43 @@ function shuffle<T>(items: readonly T[]): T[] {
   return out;
 }
 
-function randomDistinctIndices(length: number, excluded: number, count: number): number[] {
-  const selected: number[] = [];
-  while (selected.length < count) {
-    const random = new Uint32Array(1);
-    crypto.getRandomValues(random);
-    const candidate = random[0] % length;
-    if (candidate === excluded || selected.includes(candidate)) continue;
-    selected.push(candidate);
-  }
-  return selected;
-}
-
 async function load(): Promise<void> {
-  const response = await fetch('/command-records.json', { cache: 'force-cache' });
-  if (!response.ok) throw new Error('Command catalog unavailable');
+  const response = await fetch('/guided-challenges.json', { cache: 'force-cache' });
+  if (!response.ok) throw new Error('Guided Linux question bank unavailable');
+  const payload = await response.json() as { challenges?: Array<{
+    id?: string; category?: string; level?: string; title?: string; prompt?: string;
+    choices?: string[]; answerIndex?: number; explanation?: string;
+  }> };
+  const tasks = Array.isArray(payload.challenges) ? payload.challenges : [];
+  if (tasks.length < 10) throw new Error('Guided Linux question bank is incomplete');
 
-  const payload = await response.json() as { records?: CommandRecord[] };
-  const records = Array.isArray(payload.records) ? payload.records : [];
-  if (records.length < 6000) throw new Error('Quiz catalog is incomplete');
-
-  const namesByCategory = new Map<string, string[]>();
-  const examplesByCategory = new Map<string, string[]>();
-  for (const record of records) {
-    const name = String(record.name).trim();
-    const category = String(record.category || 'linux').trim() || 'linux';
-    if (!name) continue;
-    const names = namesByCategory.get(category) ?? [];
-    names.push(name);
-    namesByCategory.set(category, names);
-    const example = String(record.example || '').trim();
-    if (example) {
-      const examples = examplesByCategory.get(category) ?? [];
-      examples.push(example);
-      examplesByCategory.set(category, examples);
+  const seen = new Set(COMMON.map(question => question.id));
+  for (const task of tasks) {
+    if (!task.id || !task.prompt || !task.explanation || !Array.isArray(task.choices) ||
+        task.choices.length !== 4 || new Set(task.choices).size !== 4 ||
+        !Number.isInteger(task.answerIndex) || task.answerIndex! < 0 || task.answerIndex! >= task.choices.length) {
+      throw new Error('Guided challenge has an invalid question or answer key');
     }
-  }
-
-  const unique = (values: string[]) => [...new Set(values)];
-  const pickDistractors = (pool: string[], answer: string, count: number, fallback: string[]): string[] => {
-    const candidates = unique([...pool, ...fallback]).filter(value => value && value !== answer);
-    if (candidates.length < count) throw new Error('Quiz catalog does not contain enough unique distractors');
-    const picked: string[] = [];
-    const indices = randomDistinctIndices(candidates.length, -1, Math.min(count, candidates.length));
-    for (const i of indices) {
-      const value = candidates[i];
-      if (!picked.includes(value)) picked.push(value);
-      if (picked.length === count) break;
-    }
-    if (picked.length !== count) throw new Error('Quiz distractor generation failed');
-    return picked;
-  };
-
-  const allNames = unique(records.map(record => String(record.name).trim()).filter(Boolean));
-  const allExamples = unique(records.map(record => String(record.example || '').trim()).filter(Boolean));
-  const summaryCounts = new Map<string, number>();
-  for (const record of records) {
-    const summary = String(record.summary || '').trim().toLowerCase();
-    if (summary) summaryCounts.set(summary, (summaryCounts.get(summary) ?? 0) + 1);
-  }
-  const seenIds = new Set<string>();
-
-  for (const record of records) {
-    const name = String(record.name || '').trim();
-    const purpose = String(record.summary || '').trim();
-    const example = String(record.example || '').trim();
-    if (!name || (!purpose && !example)) continue;
-    const category = String(record.category || 'linux').trim() || 'linux';
-    const categoryNames = unique(namesByCategory.get(category) ?? []);
-    const categoryExamples = unique(examplesByCategory.get(category) ?? []);
-    const idBase = name + '-' + category;
-    const addQuestion = (question: Question): void => {
-      if (seenIds.has(question.id)) throw new Error('Quiz catalog contains duplicate question IDs');
-      seenIds.add(question.id);
-      QUESTIONS.push(question);
-    };
-
-    // A description question is answerable only when its authored summary identifies one record.
-    if (purpose && summaryCounts.get(purpose.toLowerCase()) === 1) {
-      addQuestion({
-        id: idBase + '-identify',
-        command: name,
-        category,
-        difficulty: 'foundation',
-        q: 'Which command is represented by this catalog entry: ' + purpose + '?',
-        a: name,
-        d: pickDistractors(categoryNames, name, 3, allNames)
-      });
-    }
-
-    if (example) {
-      addQuestion({
-        id: idBase + '-example',
-        command: name,
-        category,
-        difficulty: 'practical',
-        q: 'Which example belongs to ' + name + '?',
-        a: example,
-        d: pickDistractors(categoryExamples, example, 3, allExamples)
-      });
-      addQuestion({
-        id: idBase + '-from-example',
-        command: name,
-        category,
-        difficulty: 'practical',
-        q: 'Which command is shown by this example: ' + example + '?',
-        a: name,
-        d: pickDistractors(categoryNames, name, 3, allNames)
-      });
-    }
+    const id = 'guided-' + task.id;
+    if (seen.has(id)) throw new Error('Quiz bank contains duplicate question IDs');
+    seen.add(id);
+    const answer = task.choices[task.answerIndex!];
+    QUESTIONS.push({
+      id,
+      command: task.title || task.id,
+      category: task.category || 'Linux',
+      difficulty: /advanced|expert/i.test(task.level || '') ? 'reasoning' : 'practical',
+      q: task.prompt,
+      a: answer,
+      d: task.choices.filter((_, index) => index !== task.answerIndex),
+      rationale: task.explanation
+    });
   }
   QUESTIONS.push(...COMMON);
-
-  if (QUESTIONS.length < COMMON.length || new Set(QUESTIONS.map(question => question.id)).size !== QUESTIONS.length) {
-    throw new Error('Practice quiz could not load its core question set or contains duplicate question IDs');
+  if (QUESTIONS.length < 45 || new Set(QUESTIONS.map(question => question.id)).size !== QUESTIONS.length) {
+    throw new Error('Practice quiz could not load its curated question bank');
   }
 }
-
 let session: Question[] = [];
 let index = 0;
 let score = 0;
