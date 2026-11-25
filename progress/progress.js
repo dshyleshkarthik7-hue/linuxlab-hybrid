@@ -3,7 +3,7 @@ import { exportSnapshot, importSnapshot } from './progress-snapshot.mjs';
 document.addEventListener('DOMContentLoaded', () => {
   const $ = (selector) => document.querySelector(selector);
   const fmt = (value) => new Date(value).toLocaleString();
-  const catalogCount = () => Number(window.LinuxProgress?.catalog?.()?.commandCount) || 0;
+  const catalogCount = () => Number(window.LinuxProgress?.catalog?.()?.catalogEntryCount) || 0;
   const guidedCount = () => Number(window.LinuxProgress?.catalog?.()?.guidedChallengeCount) || 0;
   const practiceQuizSize = () => Number(window.LinuxProgress?.catalog?.()?.practiceQuizSize) || 0;
 
