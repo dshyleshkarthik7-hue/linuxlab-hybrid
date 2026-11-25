@@ -11,7 +11,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const host = $('#achievement-badges');
     if (!host) return;
     host.replaceChildren();
-    const quizPct = state.quiz?.bestTotal ? Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100) : 0;
+    const currentQuiz = practiceQuizSize() > 0 && state.quiz?.bestTotal === practiceQuizSize();
+    const quizPct = currentQuiz ? Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100) : 0;
     const definitions = [
       { name: 'First Steps', tier: 'Bronze', description: 'Complete a tutorial, a guided scenario, or review a catalogue entry.', unlocked: state.tutorialCount >= 1 || state.guidedChallengeCount >= 1 || state.reviewedCommandCount >= 1, progress: Math.min(1, Math.max(state.tutorialCount, state.guidedChallengeCount, state.reviewedCommandCount)) },
       { name: 'Practice Builder', tier: 'Bronze', description: 'Complete 10 guided scenarios and 3 tutorials.', unlocked: state.guidedChallengeCount >= 10 && state.tutorialCount >= 3, progress: Math.min(state.guidedChallengeCount / 10, state.tutorialCount / 3) },
@@ -68,7 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#challenges').textContent = `${state.reviewedCommandCount} / ${catalogCount().toLocaleString()}`;
     $('#guided-challenges').textContent = `${state.guidedChallengeCount} / ${guidedCount()}`;
     $('#sessions').textContent = state.sessionCount;
-    $('#quiz').textContent = state.quiz.bestTotal ? `${state.quiz.bestScore}/${state.quiz.bestTotal} (${Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100)}%)` : 'Not started';
+    $('#quiz').textContent = currentQuiz ? `${state.quiz.bestScore}/${state.quiz.bestTotal} (${Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100)}%)` : state.quiz.bestTotal ? 'Retake current quiz' : 'Not started';
     $('#name').value = state.name || '';
     const list = $('#session-list'); list.replaceChildren();
     if (!state.sessions.length) list.textContent = 'No previous sessions yet.';
