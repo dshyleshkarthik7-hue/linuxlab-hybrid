@@ -10,7 +10,7 @@
   if (count) { count.setAttribute('role', 'status'); count.setAttribute('aria-live', 'polite'); count.setAttribute('aria-atomic', 'true'); }
 
   const update = () => {
-    if (count) count.textContent = data ? `${done.length} / ${data.commandCount} catalog entries reviewed · ${visibleCount} entries shown` : 'Loading challenge catalog…';
+    if (count) count.textContent = data ? `${done.length} / ${data.commandCount} catalogue entries marked seen · ${visibleCount} entries shown` : 'Loading challenge catalog…';
   };
 
   function render() {
@@ -52,7 +52,7 @@
       button.type = 'button';
       const paint = () => {
         const yes = done.includes(id);
-        button.textContent = yes ? '✓ Reviewed' : 'Mark reviewed';
+        button.textContent = yes ? '✓ Seen' : 'Mark seen';
         button.classList.toggle('done', yes);
         article.classList.toggle('is-complete', yes);
       };
