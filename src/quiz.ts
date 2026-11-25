@@ -179,8 +179,8 @@ async function load(): Promise<void> {
   }
   QUESTIONS.push(...COMMON);
 
-  if (QUESTIONS.length < 300 || new Set(QUESTIONS.map(question => question.id)).size !== QUESTIONS.length) {
-    throw new Error('Quiz bank was not generated uniquely from the full catalog');
+  if (QUESTIONS.length < COMMON.length || new Set(QUESTIONS.map(question => question.id)).size !== QUESTIONS.length) {
+    throw new Error('Practice quiz could not load its core question set or contains duplicate question IDs');
   }
 }
 
@@ -198,6 +198,7 @@ const p = document.querySelector<HTMLElement>('#progress');
 const s = document.querySelector<HTMLElement>('#score');
 const c = document.querySelector<HTMLElement>('#context');
 const r = document.querySelector<HTMLElement>('#result');
+const bankSize = document.querySelector<HTMLElement>('#bank-size');
 
 function render(): void {
   answered = false;
@@ -241,7 +242,7 @@ function finish(): void {
   if (c) c.textContent = '';
   if (o) o.replaceChildren();
   if (f) f.textContent = '';
-  if (r) r.textContent = `Exact score: ${score} / ${session.length} • ${pct}% • The question bank covers the full canonical command catalog plus OS and networking.`;
+  if (r) r.textContent = `Exact score: ${score} / ${session.length} • ${pct}% • Questions are drawn from available command lesson records and Linux, operating-system and networking concepts. Catalogue size is not the same as question-bank size.`;
   if (n) n.hidden = true;
 }
 
@@ -264,6 +265,7 @@ document.querySelector<HTMLButtonElement>('#reset')?.addEventListener('click', (
 load()
   .then(() => {
     session = shuffle(QUESTIONS).slice(0, SESSION_SIZE);
+    if (bankSize) bankSize.textContent = `${QUESTIONS.length} questions are currently available; each session uses up to ${SESSION_SIZE}.`;
     render();
   })
   .catch(error => {
