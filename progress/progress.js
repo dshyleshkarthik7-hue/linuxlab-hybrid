@@ -101,7 +101,7 @@ document.addEventListener('DOMContentLoaded', () => {
       ['Quiz Ready', quizPct >= 80],
       ['Scenario Solver', state.guidedChallengeCount >= 10],
       ['Catalog Explorer', state.reviewedCommandCount >= 100],
-      ['Path Complete', state.tutorialCount >= 10 && state.guidedChallengeCount >= 10],
+      ['Path Complete', state.tutorialCount >= 10 && state.guidedChallengeCount >= guidedCount() && guidedCount() > 0],
       ['Advanced Learner', state.guidedChallengeCount >= guidedCount() && guidedCount() > 0 && state.tutorialCount >= 10 && quizPct >= 80],
       ['Dedicated', state.points >= 500]
     ].filter((item) => item[1]).map((item) => item[0]);
