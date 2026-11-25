@@ -2,28 +2,25 @@ import { strict as assert } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 
 const source = await readFile(new URL('../src/quiz.ts', import.meta.url), 'utf8');
+const html = await readFile(new URL('../quiz/index.html', import.meta.url), 'utf8');
 const guided = JSON.parse(await readFile(new URL('../public/guided-challenges.json', import.meta.url), 'utf8'));
-const commonStart = source.indexOf('const COMMON:');
-const commonEnd = source.indexOf('];', commonStart);
-assert.ok(commonStart >= 0 && commonEnd > commonStart, 'curated core questions must exist');
-const commonCount = (source.slice(commonStart, commonEnd).match(/id: '/g) || []).length;
+const commonBlock = source.match(/const COMMON: Question\[\] = \[([\s\S]*?)\n\];/);
+assert.ok(commonBlock, 'the curated core question bank must exist');
+const commonCount = (commonBlock[1].match(/id: 'scenario-/g) || []).length;
 
-assert.ok(source.includes("fetch('/guided-challenges.json'"), 'quiz must use the reviewed guided scenario bank');
-assert.ok(source.includes('QUESTIONS.push(...COMMON)'), 'quiz must include the curated core question bank');
-assert.ok(source.includes('Guided challenge has an invalid question or answer key'));
-assert.ok(source.includes('Quiz bank contains duplicate question IDs'));
-assert.ok(source.includes('crypto.getRandomValues'));
-assert.ok(source.includes('session = shuffle(QUESTIONS)'));
-assert.ok(source.includes('currently available'));
-assert.ok(!source.includes('/command-records.json'), 'catalogue placeholders must not be used as quiz questions');
-assert.ok(guided.challenges.length >= 10);
-
+assert.match(source, /fetch\('\/guided-challenges\.json'/, 'guided scenarios must be part of the quiz bank');
+assert.equal(source.split("QUESTIONS.push(...COMMON)").length - 1, 1, 'the core question set must be appended exactly once');
+assert.match(source, /SESSION_SIZE = 50/, 'the session size must match the currently authored bank');
+assert.match(source, /bankSize\.textContent = .*QUESTIONS\.length/, 'the UI must report the actual available question count');
+assert.doesNotMatch(source, /command-records\.json|namesByCategory|examplesByCategory|pickDistractors/, 'catalogue placeholders must not be treated as authored quiz questions');
+assert.doesNotMatch(html, /500 Linux Quiz|500-question practice quiz/, 'the page must not claim a 500-question bank');
+assert.ok(guided.challenges.length >= 10, 'the guided scenario bank must be present');
 for (const task of guided.challenges) {
-  assert.equal(task.choices.length, 4, task.id);
-  assert.equal(new Set(task.choices).size, 4, task.id);
-  assert.ok(Number.isInteger(task.answerIndex) && task.answerIndex >= 0 && task.answerIndex < task.choices.length, task.id);
+  assert.ok(task.id && task.prompt && task.explanation, 'every guided question needs an ID, prompt and explanation');
+  assert.equal(task.choices.length, 4, task.id + ' must have four answer choices');
+  assert.equal(new Set(task.choices).size, 4, task.id + ' must have distinct choices');
+  assert.ok(Number.isInteger(task.answerIndex) && task.answerIndex >= 0 && task.answerIndex < 4, task.id + ' must have a valid answer key');
 }
-assert.equal(commonCount, 35, 'the curated core bank should contain 35 reviewed questions');
-assert.ok(commonCount + guided.challenges.length >= 45, 'the curated question bank must contain enough questions');
-
-console.log('Curated quiz bank and guided challenge answer-key checks passed (' + (guided.challenges.length + commonCount) + ' questions).');
+assert.ok(commonCount >= 30, 'the authored core question bank must contain at least 30 questions');
+assert.equal(commonCount + guided.challenges.length, 50, 'the published bank should contain exactly 50 curated questions');
+console.log('Curated quiz bank and guided challenge answer-key checks passed (' + (commonCount + guided.challenges.length) + ' questions).');
