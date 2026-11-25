@@ -109,7 +109,7 @@
   category?.addEventListener('change', render);
   setSelect?.addEventListener('change', render);
   clear?.addEventListener('click', () => {
-    if (done.length && confirm('Reset all challenge progress on this browser?')) {
+    if (done.length && confirm('Reset all catalogue review marks on this browser?')) {
       window.LinuxProgress?.clearChallenges?.();
       done = [];
       render();
