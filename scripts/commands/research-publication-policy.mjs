@@ -1,5 +1,9 @@
 const FLAGS = ["syntaxVerified", "examplesVerified", "busyboxTested", "humanReviewed", "provenanceVerified"];
-const DATE = /^\d{4}-\d{2}-\d{2}$/;
+const isRealDate = (value) => {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + "T00:00:00.000Z");
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+};
 
 export function researchPublicationErrors(record) {
   const errors = [];
@@ -9,7 +13,7 @@ export function researchPublicationErrors(record) {
   }
   if (!Array.isArray(record?.safetyNotes) || !record.safetyNotes.some((x) => typeof x === "string" && x.trim())) errors.push("safetyNotes");
   if (!Array.isArray(record?.implementationDifferences) || !record.implementationDifferences.some((x) => x && typeof x.implementation === "string" && x.implementation.trim() && typeof x.notes === "string" && x.notes.trim())) errors.push("implementationDifferences");
-  if (!Array.isArray(record?.sources) || !record.sources.length || !record.sources.every((x) => x && typeof x.title === "string" && x.title.trim() && typeof x.url === "string" && /^https:\/\//.test(x.url) && x.verified === true && typeof x.accessedAt === "string" && DATE.test(x.accessedAt))) errors.push("verified sources with title, HTTPS URL and access date");
+  if (!Array.isArray(record?.sources) || !record.sources.length || !record.sources.every((x) => x && typeof x.title === "string" && x.title.trim() && typeof x.url === "string" && /^https:\/\//.test(x.url) && x.verified === true && isRealDate(x.accessedAt))) errors.push("verified sources with title, HTTPS URL and access date");
   if (!Array.isArray(record?.examples) || !record.examples.length || !record.examples.every((x) => x && typeof x.command === "string" && x.command.trim() && typeof x.expectedBehavior === "string" && x.expectedBehavior.trim() && Array.isArray(x.testEvidence) && x.testEvidence.length && x.testEvidence.every((e) => e && typeof e.environment === "string" && e.environment.trim() && e.result === "passed" && typeof e.executedAt === "string" && Number.isFinite(Date.parse(e.executedAt))))) errors.push("examples with timestamped passing execution evidence");
   if (!record?.verification || FLAGS.some((key) => record.verification[key] !== true)) errors.push("all verification flags");
   const score = Number(record?.qualityScore ?? record?.verification?.qualityScore);
