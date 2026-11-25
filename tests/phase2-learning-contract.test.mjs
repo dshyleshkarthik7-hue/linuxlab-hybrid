@@ -3,7 +3,7 @@ import { readFile } from 'node:fs/promises';
 
 const root = new URL('../', import.meta.url);
 const read = (path) => readFile(new URL(path, root), 'utf8');
-const [guidedHtml, guidedJs, guidedPublicJs, guidedDataText, vite, tutorHtml, tutorJs, tutorCss, quiz, quizHtml, progressHtml, progressJs, ledger, databaseBuilder, pkg] = await Promise.all([
+const [guidedHtml, guidedJs, guidedPublicJs, guidedDataText, vite, tutorHtml, tutorJs, tutorCss, quiz, quizHtml, progressHtml, progressJs, ledger, databaseBuilder, pkgText] = await Promise.all([
   read('challenges/index.html'),
   read('challenges/challenges.js'),
   read('public/challenges/challenges.js'),
@@ -21,6 +21,7 @@ const [guidedHtml, guidedJs, guidedPublicJs, guidedDataText, vite, tutorHtml, tu
   read('package.json')
 ]);
 const guidedData = JSON.parse(guidedDataText);
+const pkg = JSON.parse(pkgText);
 
 assert.match(guidedHtml, /id="guided-list"/);
 assert.match(guidedHtml, /6,161 Linux command catalog entries/);
