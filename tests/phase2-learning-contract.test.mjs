@@ -49,6 +49,8 @@ assert.match(progressJs, /not an externally verified credential/);
 assert.match(ledger, /guidedChallengeCount/);
 assert.match(ledger, /completed\s*>=\s*required/);
 assert.match(ledger, /reviewedCommandCount/);
+assert.match(ledger, /catalogSeenPointsMigration/);
+assert.match(ledger, /state\.challenges\.length\*10/);
 assert.doesNotMatch(ledger, /function completeChallenge[^\n]*s\.points/, 'catalogue seen marks must not award mastery points');
 assert.doesNotMatch(ledger, /function updateChallenge[^\n]*s\.points/, 'removing a catalogue seen mark must not change mastery points');
 assert.doesNotMatch(ledger, /function clearChallenges[^\n]*s\.points/, 'clearing catalogue seen marks must not change mastery points');
