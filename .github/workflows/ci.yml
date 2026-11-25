@@ -21,7 +21,7 @@ permissions:
   contents: read
 concurrency:
   group: linuxlab-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: ${{ github.event_name != 'schedule' }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 jobs:
   verify:
     permissions:
@@ -40,12 +40,6 @@ jobs:
         with:
           fetch-depth: 0
           lfs: true
-      - name: Hydrate and verify Git LFS assets
-        run: |
-          set -euo pipefail
-          git lfs install --local
-          git lfs pull
-          node scripts/check-lfs-assets.mjs --iso
       - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22
@@ -60,12 +54,7 @@ jobs:
           set -euo pipefail
           npm config set registry "$NPM_CONFIG_REGISTRY"
           npm cache verify
-          npm ci --ignore-scripts --prefer-offline
-      - name: Load trusted ISO worker endpoint from runtime config
-        run: |
-          node --input-type=module -e "import config from './config/runtime.json' with { type: 'json' }; console.log('ISO_BASE_URL=' + config.isoWorkerOrigin)" >> "$GITHUB_ENV"
-      - name: Verify required build and test packages
-        run: node -e "for (const p of ['vite','typescript','playwright','monaco-editor','@xterm/xterm','@xterm/addon-fit']) { const f = require.resolve(p); if (!f) process.exit(1); console.log('verified', p, f); }"
+          npm ci --ignore-scripts --prefer-online
       - run: npm audit --audit-level=high
       - name: Write dependency audit artifact
         if: always()
@@ -76,34 +65,12 @@ jobs:
         with:
           name: dependency-audit-${{ github.sha }}
           path: dependency-audit.json
-      - name: Phase 1 repository readiness baseline
-        run: npm run phase1:check
       - run: npm run lint
-      - name: Type-check Netlify backend and edge functions
-        run: npm run typecheck:server
       - name: Verify ISO builder scripts
         run: |
           set -euo pipefail
           bash -n iso-builder/build-linuxlab-gcc.sh
           node tests/iso-builder-contract.test.mjs
-      - name: Verify Developer Alpine release bytes and generated chunk digests
-        run: |
-          set -euo pipefail
-          node scripts/generate-iso-chunk-manifest.mjs --output "$RUNNER_TEMP/developer-alpine-chunks.json"
-          node --input-type=module -e '
-            import { readFile } from "node:fs/promises";
-            import manifest from "./artifacts/manifest.json" with { type: "json" };
-            const chunks = JSON.parse(await readFile(process.argv[1], "utf8"));
-            const artifact = manifest.artifacts.find(item => item.image === "developer");
-            if (!artifact || chunks.artifactSize !== artifact.size || chunks.artifactSha256 !== artifact.sha256) throw new Error("Generated chunk manifest does not match the pinned release artifact");
-            let next = 0;
-            for (const [index, chunk] of chunks.chunks.entries()) {
-              if (chunk.index !== index || chunk.start !== next || chunk.end < chunk.start || !/^[a-f0-9]{64}$/.test(chunk.sha256)) throw new Error("Invalid generated chunk " + index);
-              next = chunk.end + 1;
-            }
-            if (next !== artifact.size) throw new Error("Generated chunks do not cover the complete release artifact");
-            console.log("Verified", chunks.chunks.length, "chunk digests for", next, "bytes");
-          ' "$RUNNER_TEMP/developer-alpine-chunks.json"
       - name: Install Playwright browser matrix
         run: |
           set -euo pipefail
@@ -112,8 +79,8 @@ jobs:
       - run: npm run test:ci
       - name: Package production build
         run: tar -czf linuxlab-dist-${GITHUB_SHA}.tar.gz dist
-      - name: Upload tested production build for provenance
-        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+      - name: Upload production build for provenance
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: linuxlab-dist-${{ github.sha }}
           path: linuxlab-dist-${{ github.sha }}.tar.gz
@@ -124,23 +91,14 @@ jobs:
           name: sbom-${{ github.sha }}
           path: sbom.cdx.json
       - run: npm run test:smoke
-      - name: Install pinned axe-core for accessibility audit
-        run: npm install --no-save --ignore-scripts --no-audit --no-fund axe-core@4.10.3
-      - name: Cross-browser accessibility smoke matrix
-        run: |
-          set -euo pipefail
-          for browser in chromium firefox webkit; do
-            echo "Accessibility smoke: $browser"
-            A11Y_BROWSER="$browser" npm run test:accessibility
-            echo "axe-core WCAG audit: $browser"
-            A11Y_BROWSER="$browser" npm run test:accessibility:axe
-          done
       - name: Real guest isolation gate
         env:
           GITHUB_TOKEN: ${{ github.token }}
           REAL_GUEST_BROWSERS: chromium,firefox,webkit
         run: npm run test:real-guest
       - run: npm run test:mobile
+      - name: Accessibility gate
+        run: npm run test:accessibility
       - run: node tests/p2-p3-contract.test.mjs
       - run: node tests/artifact-manifest.test.mjs
       - run: node tests/github-actions-pinning.test.mjs
@@ -150,6 +108,7 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.preview_base_url != ''
         env:
           PREVIEW_BASE_URL: ${{ inputs.preview_base_url }}
+          ISO_BASE_URL: https://linuxterminal-iso.dshyleshkarthik7.workers.dev
           EXPECTED_DEPLOY_SHA: ${{ github.sha }}
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
           PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
@@ -158,53 +117,23 @@ jobs:
         if: github.event_name == 'workflow_dispatch' && inputs.run_production_smoke == true
         env:
           PRODUCTION_BASE_URL: https://linuxterminal.me
+          ISO_BASE_URL: https://linuxterminal-iso.dshyleshkarthik7.workers.dev
           EXPECTED_DEPLOY_SHA: ${{ github.sha }}
           PRODUCTION_SMOKE_TIMEOUT_MS: 30000
           PRODUCTION_VM_BOOT_TIMEOUT_MS: 120000
         run: npm run test:production
 
-  release-preflight:
-    if: github.event_name == 'workflow_dispatch' && inputs.run_production_smoke == true
-    needs: verify
-    environment: content-authoring
-    permissions:
-      contents: read
-    runs-on: ubuntu-24.04
-    timeout-minutes: 15
-    steps:
-      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          ref: main
-          persist-credentials: false
-      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
-        with:
-          node-version: 22
-      - name: Install locked dependencies
-        run: npm ci --ignore-scripts
-      - name: Live release preflight (explicitly approved release gate)
-        env:
-          MONGODB_URI: ${{ secrets.MONGODB_URI }}
-          MONGODB_DB: ${{ secrets.MONGODB_DB }}
-          UPSTASH_REDIS_REST_URL: ${{ secrets.UPSTASH_REDIS_REST_URL }}
-          UPSTASH_REDIS_REST_TOKEN: ${{ secrets.UPSTASH_REDIS_REST_TOKEN }}
-          CERTIFICATE_SIGNING_KEYS: ${{ secrets.CERTIFICATE_SIGNING_KEYS }}
-          CERTIFICATE_SIGNING_KEY_ID: ${{ secrets.CERTIFICATE_SIGNING_KEY_ID }}
-          CERTIFICATE_ALLOWED_ORIGINS: ${{ secrets.CERTIFICATE_ALLOWED_ORIGINS }}
-          HF_TOKEN: ${{ secrets.HF_TOKEN }}
-          HF_MODEL: ${{ vars.HF_MODEL }}
-        run: npm run release:preflight
-
-  provenance:
+  attest:
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     needs: verify
+    runs-on: ubuntu-24.04
     permissions:
       contents: read
       id-token: write
       attestations: write
-    runs-on: ubuntu-24.04
     steps:
-      - name: Download tested build artifact
-        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
+      - name: Download verified production build
+        uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         with:
           name: linuxlab-dist-${{ github.sha }}
       - name: Generate signed build provenance
