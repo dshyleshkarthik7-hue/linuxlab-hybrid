@@ -83,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
     $('#eligibility').textContent = eligible
       ? `You completed all ${guidedCount()} guided scenarios and reached 80% on the ${practiceQuizSize()}-question practice quiz. This is a browser-local learning record, not an externally verified credential.`
       : `Complete all ${guidedCount()} guided scenarios and reach 80% on the ${practiceQuizSize()}-question practice quiz to unlock a browser-local learning record.`;
-    const existing = state.certificates.find((item) => item.type === 'learning-completion');
+    const existing = state.certificates.find((item) => item.type === 'learning-completion-v2' && item.criteriaVersion === 2);
     if (existing) showCertificate(existing);
   }
 
