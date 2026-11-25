@@ -1,12 +1,14 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { isCommandIndexable } from "../scripts/commands/indexability.mjs";
 
 const authored = await readFile("public/commands/pwd.html", "utf8");
 assert.match(authored, /flow-controls|data-flow=|Working Directory \(Animated\)/i, "curated pwd lesson controls should survive regeneration");
 
 const records = JSON.parse(await readFile("public/command-records.json", "utf8"));
-const thin = records.records.find((item) => !String(item.summary || "").trim() || !String(item.example || "").trim() || /^Catalog entry/i.test(String(item.summary || "")));
+const intelligence = JSON.parse(await readFile(".cache/command-intelligence.json", "utf8"));
+const thin = records.records.find((item) => !isCommandIndexable(item, intelligence.records?.[item.name]));
 const sitemap = await readFile("public/sitemap.xml", "utf8");
 if (thin) {
   const thinHtml = await readFile(path.join("public/commands", path.basename(thin.url)), "utf8");
@@ -27,7 +29,8 @@ assert.match(intelligenceBuilder, /examples:/, "each generated lesson must inclu
 assert.match(intelligenceBuilder, /\.cache\/command-intelligence\.json/, "large generated intelligence must stay outside the public web root");
 assert.match(builder, /\.cache\/command-intelligence\.json/, "command pages should consume the build-time intelligence artifact");
 assert.doesNotMatch(intelligenceBuilder, /public\/command-intelligence\.json/, "generated intelligence must not be published as a whole-site JSON download");
-assert.match(builder, /commands\.css\?v=20261016/, "generated pages must bust stale stylesheet caches");
+assert.match(builder, /ASSET_VERSION/, "generated pages must use a controlled stylesheet cache version");
+assert.match(builder, /commands\.css\?v=/, "generated pages must version their stylesheet URL");
 assert.doesNotMatch(builder, /Shell builtin:/, "generic pages must not claim arbitrary inventory entries are shell builtins");
 assert.doesNotMatch(builder, /\$ echo \$\?/, "generator must not invent generic exit-status output");
 assert.match(builder, /command\.page\?\.status === "complete" && command\.page\?\.source/, "indexable command lessons must have a reviewed authored page");
