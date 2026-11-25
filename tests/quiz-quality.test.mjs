@@ -1,15 +1,19 @@
 import { strict as assert } from 'node:assert';
 import { readFile } from 'node:fs/promises';
 const source = await readFile(new URL('../src/quiz.ts', import.meta.url), 'utf8');
-assert.match(source, /QUESTIONS\.length/);
+const guided = JSON.parse(await readFile(new URL('../public/guided-challenges.json', import.meta.url), 'utf8'));
+assert.match(source, /fetch\('\/guided-challenges\.json'/);
+assert.match(source, /QUESTIONS\.push\(\.\.\.COMMON\)/);
+assert.match(source, /guided challenge has an invalid question or answer key/i);
+assert.match(source, /duplicate question IDs/i);
 assert.match(source, /getRandomValues/);
-assert.match(source, /session\s*=\s*shuffle\(QUESTIONS\)/);
-assert.match(source, /randomDistinctIndices/);
-assert.match(source, /namesByCategory/);
-assert.match(source, /examplesByCategory/);
-assert.match(source, /pickDistractors/);
-assert.match(source, /duplicate question IDs/);
-assert.match(source, /command catalog/i);
-assert.match(source, /OS and networking/i);
-assert.doesNotMatch(source, /What is a primary learning goal for/);
-console.log('Quiz quality and randomization checks passed');
+assert.match(source, /session\\s*=\\s*shuffle\\(QUESTIONS\\)/);
+assert.match(source, /currently available/);
+assert.doesNotMatch(source, /command-records\.json|namesByCategory|examplesByCategory|pickDistractors/);
+assert.ok(guided.challenges.length >= 10);
+for (const task of guided.challenges) {
+  assert.equal(task.choices.length, 4, task.id);
+  assert.equal(new Set(task.choices).size, 4, task.id);
+  assert.ok(task.answerIndex >= 0 && task.answerIndex < task.choices.length, task.id);
+}
+console.log('Curated quiz bank and guided challenge answer-key checks passed (' + (guided.challenges.length + 35) + ' expected questions).');
