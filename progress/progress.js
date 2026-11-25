@@ -3,7 +3,7 @@ import { exportSnapshot, importSnapshot } from './progress-snapshot.mjs';
 document.addEventListener('DOMContentLoaded', () => {
   const $ = (selector) => document.querySelector(selector);
   const fmt = (value) => new Date(value).toLocaleString();
-  const catalogCount = () => Number(window.LinuxProgress?.catalog?.()?.catalogEntryCount) || 0;
+  const catalogCount = () => Number(window.LinuxProgress?.catalog?.()?.commandCount) || 0;
   const guidedCount = () => Number(window.LinuxProgress?.catalog?.()?.guidedChallengeCount) || 0;
 
   function renderBadges(state) {
@@ -12,13 +12,13 @@ document.addEventListener('DOMContentLoaded', () => {
     host.replaceChildren();
     const quizPct = state.quiz?.bestTotal ? Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100) : 0;
     const definitions = [
-      { name: 'First Steps', tier: 'Bronze', description: 'Complete your first tutorial or challenge.', unlocked: state.tutorialCount >= 1 || state.guidedChallengeCount >= 1 || state.reviewedCommandCount >= 1, progress: Math.min(1, Math.max(state.tutorialCount, state.challengeCount)) },
+      { name: 'First Steps', tier: 'Bronze', description: 'Complete your first tutorial or challenge.', unlocked: state.tutorialCount >= 1 || state.guidedChallengeCount >= 1 || state.reviewedCommandCount >= 1, progress: Math.min(1, Math.max(state.tutorialCount, state.guidedChallengeCount, state.reviewedCommandCount)) },
       { name: 'Practice Builder', tier: 'Bronze', description: 'Complete 10 guided scenarios and 3 tutorials.', unlocked: state.guidedChallengeCount >= 10 && state.tutorialCount >= 3, progress: Math.min(state.guidedChallengeCount / 10, state.tutorialCount / 3) },
       { name: 'Quiz Ready', tier: 'Silver', description: 'Score at least 80% on a recorded practice quiz.', unlocked: quizPct >= 80, progress: Math.min(1, quizPct / 80) },
       { name: 'Scenario Solver', tier: 'Silver', description: 'Complete 10 guided Linux scenarios.', unlocked: state.guidedChallengeCount >= 10, progress: Math.min(1, state.guidedChallengeCount / 10) },
-      { name: 'Catalog Explorer', tier: 'Gold', description: 'Review 100 command catalogue entries.', unlocked: state.reviewedCommandCount >= 100, progress: Math.min(1, state.reviewedCommandCount / 100) },
-      { name: 'Path Complete', tier: 'Gold', description: 'Complete 10 tutorials and 50 challenges.', unlocked: state.tutorialCount >= 10 && state.guidedChallengeCount >= 10, progress: Math.min(state.tutorialCount / 10, state.guidedChallengeCount / 10) },
-      { name: 'Advanced Learner', tier: 'Platinum', description: 'Complete 100 challenges, 10 tutorials, and score 80% on a quiz.', unlocked: state.guidedChallengeCount >= guidedCount() && guidedCount() > 0 && state.tutorialCount >= 10 && quizPct >= 80, progress: Math.min(state.guidedChallengeCount / Math.max(1, guidedCount()), state.tutorialCount / 10, quizPct / 80) },
+      { name: 'Catalog Explorer', tier: 'Gold', description: 'Mark 100 command catalogue entries as seen.', unlocked: state.reviewedCommandCount >= 100, progress: Math.min(1, state.reviewedCommandCount / 100) },
+      { name: 'Path Complete', tier: 'Gold', description: 'Complete 10 tutorials and all guided scenarios.', unlocked: state.tutorialCount >= 10 && state.guidedChallengeCount >= 10, progress: Math.min(state.tutorialCount / 10, state.guidedChallengeCount / 10) },
+      { name: 'Advanced Learner', tier: 'Platinum', description: 'Complete all guided scenarios, 10 tutorials, and score 80% on the practice quiz.', unlocked: state.guidedChallengeCount >= guidedCount() && guidedCount() > 0 && state.tutorialCount >= 10 && quizPct >= 80, progress: Math.min(state.guidedChallengeCount / Math.max(1, guidedCount()), state.tutorialCount / 10, quizPct / 80) },
       { name: 'Dedicated', tier: 'Platinum', description: 'Earn 500 learning points.', unlocked: state.points >= 500, progress: Math.min(1, state.points / 500) }
     ];
     for (const badge of definitions) {
