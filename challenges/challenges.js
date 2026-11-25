@@ -35,12 +35,12 @@
       const h = document.createElement('h2');
       h.textContent = cmd.name;
       const p = document.createElement('p');
-      p.textContent = 'Practice ' + cmd.name + ': ' + cmd.summary;
+      p.textContent = 'Catalogue entry: ' + cmd.name + (cmd.summary ? ' — ' + cmd.summary : '');
       const depth = document.createElement('span');
       depth.className = 'content-depth';
-      const curated = Boolean(String(cmd.example || '').trim() && String(cmd.summary || '').trim().length >= 80);
-      depth.textContent = curated ? 'Curated task' : 'Catalog entry · lesson detail may be limited';
-      depth.setAttribute('aria-label', curated ? 'Curated task with example' : 'Catalog entry; lesson detail may be limited');
+      const curated = cmd.lessonStatus === 'complete';
+      depth.textContent = curated ? 'Reviewed lesson available' : 'Reference entry · lesson pending review';
+      depth.setAttribute('aria-label', curated ? 'Reviewed lesson available' : 'Reference entry; lesson pending review');
       const actions = document.createElement('div');
       actions.className = 'challenge-actions';
       const link = document.createElement('a');
