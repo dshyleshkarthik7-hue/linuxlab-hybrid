@@ -18,8 +18,8 @@ assert.match(homepage, /id="linux-learning-faq"/, 'FAQ content described by stru
 assert.match(homepage, /class="home-skip-link" href="#main-content">Skip to main content/, 'homepage must expose a static keyboard skip link');
 assert.match(homepage, /<main id="main-content">/, 'homepage skip link must target the main landmark');
 for (const question of ['Can I learn Linux online for free?', 'Is the command reference the same as the beginner curriculum?', 'Is the verified assessment an accredited professional certification?']) assert.ok(homepage.includes(question), `visible FAQ missing: ${question}`);
-assert.match(homepage, /200-command beginner curriculum/, 'homepage must distinguish beginner curriculum from full reference');
-assert.match(homepage, /6,161-entry command reference/, 'homepage must describe the full catalog without conflating it with beginner lessons');
+assert.match(homepage, /200-command beginner index/, 'homepage must distinguish beginner curriculum from full reference');
+assert.match(homepage, /6,161-entry command-name catalogue/, 'homepage must describe the full catalog without conflating it with beginner lessons');
 assert.match(homepage, /github\.com\/dshyleshkarthik7-hue\/linuxlab-hybrid/, 'homepage must link the open-source repository');
 assert.match(about, /"@type":"AboutPage"/, 'About page must identify its purpose in structured metadata');
 assert.match(about, /source repository/, 'About page must provide verifiable project provenance');
