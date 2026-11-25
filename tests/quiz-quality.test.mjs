@@ -7,8 +7,11 @@ assert.match(source, /QUESTIONS\.push\(\.\.\.COMMON\)/);
 assert.match(source, /guided challenge has an invalid question or answer key/i);
 assert.match(source, /duplicate question IDs/i);
 assert.match(source, /getRandomValues/);
-assert.match(source, /session\\s*=\\s*shuffle\\(QUESTIONS\\)/);
+assert.match(source, /session\s*=\s*shuffle\(QUESTIONS\)/);
 assert.match(source, /currently available/);
+assert.match(source, /const SESSION_SIZE = 50/);
+assert.match(source, /QUESTIONS.length < 45/);
+assert.equal((source.match(/id: 'scenario-/g) || []).length, 35, 'the common foundation question bank should remain stable');
 assert.doesNotMatch(source, /command-records\.json|namesByCategory|examplesByCategory|pickDistractors/);
 assert.ok(guided.challenges.length >= 10);
 for (const task of guided.challenges) {
