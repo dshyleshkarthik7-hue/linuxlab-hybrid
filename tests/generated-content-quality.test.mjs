@@ -21,8 +21,9 @@ if (thin) {
 const builder = await readFile("scripts/commands/build-command-pages.mjs", "utf8");
 const intelligenceBuilder = await readFile("scripts/commands/build-intelligence.mjs", "utf8");
 const databaseBuilder = await readFile("scripts/commands/build-database.mjs", "utf8");
-assert.match(databaseBuilder, /Linux command /);
-assert.match(databaseBuilder, /--help/);
+assert.match(databaseBuilder, /summaryFrequency/, "repeated catalogue blurbs must be detected before page generation");
+assert.match(databaseBuilder, /pending-review/, "unreviewed catalogue entries must remain editorially pending");
+assert.doesNotMatch(databaseBuilder, /Linux command .*practice syntax, options, and safe usage patterns/, "generic command blurbs must not masquerade as researched content");
 assert.match(intelligenceBuilder, /status:\s*\(r\.page\?\.status === "complete".*\? "complete" : "draft"/, "only authored pages may be marked complete; generated records stay drafts");
 assert.match(intelligenceBuilder, /definition:/, "each generated lesson must include a definition");
 assert.match(intelligenceBuilder, /examples:/, "each generated lesson must include practice examples");
