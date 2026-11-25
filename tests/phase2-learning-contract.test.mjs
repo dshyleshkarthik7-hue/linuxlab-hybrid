@@ -75,6 +75,8 @@ assert.match(pkg.scripts['test:ci'], /test:phase2-learning/);
 assert.match(pkg.scripts.test, /test:phase2-learning/);
 
 assert.match(ledger, /expectedQuizSize/, 'local completion must require the full published quiz');
+assert.match(ledger, /total!==expected/, 'legacy quiz formats must not overwrite the current quiz result');
+assert.match(progressJs, /currentQuiz/, 'legacy quiz results must not unlock current badges');
 assert.match(progressJs, /practiceQuizSize/);
 assert.ok(databaseBuilder.includes('practiceQuizSize:guidedChallengeCount+35'));
 assert.match(databaseBuilder, /challengeCount:guidedChallengeCount/);
