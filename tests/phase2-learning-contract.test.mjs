@@ -1,3 +1,70 @@
-import assert from 'node:assert/strict';import {readFile} from 'node:fs/promises';
-const root=new URL('../',import.meta.url),guidedHtml=await readFile(new URL('challenges/index.html',root),'utf8'),guidedJs=await readFile(new URL('challenges/challenges.js',root),'utf8'),publicGuidedJs=await readFile(new URL('public/challenges/challenges.js',root),'utf8'),progressJs=await readFile(new URL('progress/progress.js',root),'utf8'),progressLedger=await readFile(new URL('public/progress.js',root),'utf8'),manifestBuilder=await readFile(new URL('scripts/commands/build-database.mjs',root),'utf8'),guidedData=JSON.parse(await readFile(new URL('public/guided-challenges.json',root),'utf8')),vite=await readFile(new URL('vite.config.ts',root),'utf8'),html=await readFile(new URL('tutor/index.html',root),'utf8'),js=await readFile(new URL('tutor/tutor.js',root),'utf8'),css=await readFile(new URL('tutor/tutor.css',root),'utf8'),quiz=await readFile(new URL('src/quiz.ts',root),'utf8'),pkg=JSON.parse(await readFile(new URL('package.json',root),'utf8'));
-assert.match(guidedHtml,/id="guided-list"/);assert.equal(publicGuidedJs,guidedJs,'the public challenge script must ship the same guided-scenario implementation');assert.match(guidedJs,/Mark reviewed/);assert.match(guidedJs,/guided-challenges\.json/);assert.match(progressJs,/reviewedCommandCount/);assert.match(progressJs,/guidedChallengeCount/);assert.match(progressLedger,/guidedChallengeCount/);assert.match(progressLedger,/completed>=required/);assert.match(manifestBuilder,/catalogEntryCount:records\.length/);assert.match(manifestBuilder,/guidedChallengeCount/);assert.match(guidedJs,/index === task.answerIndex/);assert.match(guidedJs,/completeTutorial\(doneId/);assert.ok(guidedData.challenges.length>=10);assert.match(vite,/tutor:\s*entry\('tutor\/index\.html'\)/,'Tutor page must be included in Vite production build');assert.match(html,/<title>Lincyb/);assert.match(html,/Do not paste passwords, API keys, private keys/);assert.match(html,/id="voice-input"/);assert.match(js,/fetch\('\/api\/tutor'/);assert.match(js,/answer\.textContent/);assert.doesNotMatch(js,/innerHTML\s*=/);assert.match(js,/SpeechRecognition/);assert.match(js,/speechSynthesis/);assert.match(js,/pagehide/);assert.match(css,/prefers-reduced-motion/);assert.match(quiz,/scenario-path/);assert.match(quiz,/scenario-hostkey/);assert.ok((quiz.match(/id: 'scenario-/g)||[]).length>=25);assert.match(pkg.scripts['test:ci'],/test:phase2-learning/);assert.match(pkg.scripts.test,/test:phase2-learning/);console.log('Phase 2 learning, tutor, and quiz contracts passed.');
+import assert from 'node:assert/strict';
+import { readFile } from 'node:fs/promises';
+
+const root = new URL('../', import.meta.url);
+const read = (path) => readFile(new URL(path, root), 'utf8');
+const [guidedHtml, guidedJs, guidedPublicJs, guidedDataText, vite, tutorHtml, tutorJs, tutorCss, quiz, quizHtml, progressHtml, progressJs, ledger, databaseBuilder, pkg] = await Promise.all([
+  read('challenges/index.html'),
+  read('challenges/challenges.js'),
+  read('public/challenges/challenges.js'),
+  read('public/guided-challenges.json'),
+  read('vite.config.ts'),
+  read('tutor/index.html'),
+  read('tutor/tutor.js'),
+  read('tutor/tutor.css'),
+  read('src/quiz.ts'),
+  read('quiz/index.html'),
+  read('progress/index.html'),
+  read('progress/progress.js'),
+  read('public/progress.js'),
+  read('scripts/commands/build-database.mjs'),
+  read('package.json')
+]);
+const guidedData = JSON.parse(guidedDataText);
+
+assert.match(guidedHtml, /id="guided-list"/);
+assert.match(guidedHtml, /6,161 Linux command catalog entries/);
+assert.match(guidedHtml, /not authored exercises/);
+assert.match(guidedJs, /index === task.answerIndex/);
+assert.match(guidedJs, /completeTutorial\(doneId/);
+assert.match(guidedJs, /catalog entries reviewed/);
+assert.match(guidedPublicJs, /initGuidedChallenges/);
+assert.match(guidedPublicJs, /completeTutorial\(doneId/);
+assert.equal(guidedData.challenges.length, 15, 'guided scenario count is explicit');
+assert.match(databaseBuilder, /catalogEntryCount:records\.length/);
+assert.match(databaseBuilder, /guidedChallengeCount/);
+
+assert.match(quiz, /fetch\('\/guided-challenges\.json'/);
+assert.match(quiz, /QUESTIONS\.push\(\.\.\.COMMON\)/);
+assert.doesNotMatch(quiz, /command-records\.json/);
+assert.match(quizHtml, /currently available Linux question bank/i);
+assert.doesNotMatch(quizHtml, /500 Linux Quiz/);
+assert.doesNotMatch(quizHtml, /500 available questions per session/);
+
+assert.match(progressHtml, /catalogue entries reviewed/);
+assert.match(progressHtml, /guided scenarios completed/);
+assert.match(progressJs, /guidedChallengeCount/);
+assert.match(progressJs, /reviewedCommandCount/);
+assert.match(progressJs, /not an externally verified credential/);
+assert.match(ledger, /guidedChallengeCount/);
+assert.match(ledger, /completed >= required/);
+assert.match(ledger, /reviewedCommandCount/);
+
+assert.match(vite, /tutor:\s*entry\('tutor\/index\.html'\)/, 'Tutor page must be included in Vite production build');
+assert.match(tutorHtml, /<title>Lincyb/);
+assert.match(tutorHtml, /Do not paste passwords, API keys, private keys/);
+assert.match(tutorHtml, /id="voice-input"/);
+assert.match(tutorJs, /fetch\('\/api\/tutor'/);
+assert.match(tutorJs, /answer\.textContent/);
+assert.doesNotMatch(tutorJs, /innerHTML\s*=/);
+assert.match(tutorJs, /SpeechRecognition/);
+assert.match(tutorJs, /speechSynthesis/);
+assert.match(tutorJs, /pagehide/);
+assert.match(tutorCss, /prefers-reduced-motion/);
+assert.match(quiz, /scenario-path/);
+assert.match(quiz, /scenario-hostkey/);
+assert.ok((quiz.match(/id: 'scenario-/g) || []).length >= 25);
+assert.match(pkg.scripts['test:ci'], /test:phase2-learning/);
+assert.match(pkg.scripts.test, /test:phase2-learning/);
+
+console.log('Guided learning, accurate catalogue metrics, curated quiz, tutor, and progress contracts passed.');
