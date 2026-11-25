@@ -80,47 +80,24 @@ async function load(): Promise<void> {
     const id = 'guided-' + task.id;
     if (seen.has(id)) throw new Error('Quiz bank contains duplicate question IDs');
     seen.add(id);
-    const answer = task.choices[task.answerIndex!];
     QUESTIONS.push({
       id,
       command: task.title || task.id,
       category: task.category || 'Linux',
       difficulty: /advanced|expert/i.test(task.level || '') ? 'reasoning' : 'practical',
       q: task.prompt,
-      a: answer,
+      a: task.choices[task.answerIndex!],
       d: task.choices.filter((_, index) => index !== task.answerIndex),
       rationale: task.explanation
     });
   }
-  const guidedResponse = await fetch('/guided-challenges.json', { cache: 'force-cache' });
-  if (!guidedResponse.ok) throw new Error('Guided Linux question set unavailable');
-  const guidedPayload = await guidedResponse.json() as { challenges?: Array<{ id: string; title: string; category: string; level: string; prompt: string; choices: string[]; answerIndex: number; explanation: string }> };
-  if (!Array.isArray(guidedPayload.challenges) || guidedPayload.challenges.length < 10) {
-    throw new Error('Guided Linux question set is incomplete');
-  }
-  const guidedQuestions: Question[] = guidedPayload.challenges.map(task => {
-    if (!task.id || !task.prompt || !Array.isArray(task.choices) || task.choices.length !== 4 ||
-        !Number.isInteger(task.answerIndex) || task.answerIndex < 0 || task.answerIndex >= task.choices.length ||
-        new Set(task.choices).size !== task.choices.length) {
-      throw new Error('Guided Linux question has invalid or duplicate choices');
-    }
-    return {
-      id: 'guided-' + task.id,
-      command: task.title || 'guided scenario',
-      category: task.category || 'Linux',
-      difficulty: 'practical',
-      q: task.prompt,
-      a: task.choices[task.answerIndex],
-      d: task.choices.filter((_, index) => index !== task.answerIndex),
-      rationale: task.explanation
-    };
-  });
-  QUESTIONS.push(...guidedQuestions);
+
   QUESTIONS.push(...COMMON);
   if (QUESTIONS.length < 45 || new Set(QUESTIONS.map(question => question.id)).size !== QUESTIONS.length) {
     throw new Error('Practice quiz could not load its curated question bank');
   }
 }
+
 let session: Question[] = [];
 let index = 0;
 let score = 0;
@@ -179,7 +156,7 @@ function finish(): void {
   if (c) c.textContent = '';
   if (o) o.replaceChildren();
   if (f) f.textContent = '';
-  if (r) r.textContent = `Exact score: ${score} / ${session.length} • ${pct}% • Questions are drawn from available command lesson records and Linux, OS and networking concepts. Catalogue size is not the same as question-bank size.`;
+  if (r) r.textContent = `Exact score: ${score} / ${session.length} • ${pct}% • Questions are drawn from the curated guided scenario set and Linux, OS and networking concepts.`;
   if (n) n.hidden = true;
 }
 
