@@ -21,6 +21,11 @@ const outputRoot = path.join(root, ".cache");
 const strict = process.argv.includes("--strict");
 
 const readJson = async (file) => JSON.parse(await readFile(file, "utf8"));
+const isRealDate = (value) => {
+  if (typeof value !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return false;
+  const date = new Date(value + "T00:00:00.000Z");
+  return Number.isFinite(date.getTime()) && date.toISOString().slice(0, 10) === value;
+};
 const canonical = await readJson(canonicalPath);
 if (!Array.isArray(canonical.records) || canonical.records.length !== canonical.recordCount) {
   throw new Error("Canonical command count does not match canonical.records.");
@@ -75,7 +80,7 @@ for (const command of canonical.records) {
   if (!Array.isArray(lesson.sources) || !lesson.sources.every((source) =>
     source && typeof source.url === "string" && /^https:\/\//.test(source.url)
     && typeof source.title === "string" && source.title.trim()
-    && typeof source.accessedAt === "string" && /^\d{4}-\d{2}-\d{2}$/.test(source.accessedAt))) {
+    && isRealDate(source.accessedAt))) {
     missing.push("sources (each needs https URL, title, and YYYY-MM-DD accessedAt)");
   }
   if (!Array.isArray(lesson.examples) || !lesson.examples.every((example) =>
