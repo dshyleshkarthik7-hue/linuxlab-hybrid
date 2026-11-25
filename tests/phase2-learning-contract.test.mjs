@@ -24,7 +24,7 @@ const guidedData = JSON.parse(guidedDataText);
 
 assert.match(guidedHtml, /id="guided-list"/);
 assert.match(guidedHtml, /6,161 Linux command catalog entries/);
-assert.match(guidedHtml, /not authored exercises/);
+assert.match(guidedHtml, /not 6,161 tested exercises/);
 assert.match(guidedJs, /index === task.answerIndex/);
 assert.match(guidedJs, /completeTutorial\(doneId/);
 assert.match(guidedJs, /catalogue entries marked seen/);
