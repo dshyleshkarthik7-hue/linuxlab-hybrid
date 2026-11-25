@@ -31,7 +31,7 @@ for (const workflow of ['.github/workflows/ci.yml', '.github/workflows/deploy-cl
 
 const progress = readFileSync('progress/index.html', 'utf8');
 const progressScripts = [...progress.matchAll(/<script[^>]+src=["']([^"']+)["']/gi)].map((m) => m[1]);
-assert.deepEqual(progressScripts, ['./progress.js'], 'progress page must load exactly one page-local progress module');
+assert.deepEqual(progressScripts, ['/progress.js', './progress.js'], 'progress page must load the shared ledger before its page module');
 assert.equal(existsSync('src/home.css'), false, 'dead src/home.css must not return');
 assert.equal(existsSync('home.css'), true, 'home.css is the canonical static home stylesheet (synced into public at build)');
 
