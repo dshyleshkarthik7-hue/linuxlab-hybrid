@@ -13,8 +13,8 @@ Before deployment, read [`THREAT_MODEL.md`](./THREAT_MODEL.md). The browser simu
 - Tutorials: https://linuxterminal.me/learn/
 - Beginner path: https://linuxterminal.me/beginner/
 - canonical command reference (6,161 catalog entries, including planned entries and name-only stubs): https://linuxterminal.me/commands/
-- 30 challenge sets: https://linuxterminal.me/challenges/
-- 500-question practice quiz: https://linuxterminal.me/quiz/
+- 30 command-catalog groups and 15 scored guided scenarios: https://linuxterminal.me/challenges/
+- 50-question curated practice quiz: https://linuxterminal.me/quiz/
 - Free verified exam and certificate: https://linuxterminal.me/certificate/
 - Public certificate verification: https://linuxterminal.me/verify/
 - Privacy policy: https://linuxterminal.me/privacy/
@@ -39,11 +39,11 @@ Completed lessons explain purpose, starter syntax, behavior and safe practice. P
 
 ### Challenges
 
-There are 30 challenge sets across selected command topics, plus operating-system and networking questions. Challenge coverage is not a guarantee that every catalog entry has a dedicated prediction-and-verification task or a reasoning/change task. Learners are asked to predict stdout, stderr and exit status before running a command, then explain the observed evidence.
+The command catalogue is divided into 30 browse groups. Those groups are not 30 scored exercise sets. The site currently provides 15 browser-graded guided scenarios with hints and explanations; they do not execute shell commands. The catalogue also offers local seen marks, which are self-reported browsing progress, not assessed challenge completion.
 
-### 500-question practice quiz
+### 50-question curated practice quiz
 
-Each practice session selects up to 500 questions from a generated bank built from catalog entries that have authored summaries or examples, plus operating-system and networking questions. Catalog stubs without teaching content are excluded. Coverage varies by available authored content; it is not a claim that every catalog entry is tested. Question and answer-choice order are randomized for every session and reset.
+The current question bank contains 35 curated core Linux questions and 15 questions drawn from the scored guided scenarios, for 50 questions total. The quiz does not synthesize questions from command names, catalogue placeholders, or name-only inventory records. Question and answer-choice order are randomized for every session and reset.
 
 The practice quiz is browser-local and is not treated as a credential.
 
