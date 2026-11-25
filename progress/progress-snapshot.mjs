@@ -45,7 +45,8 @@ export function validateSnapshot(input) {
     challenges,
     quiz: { attempts: Math.min(1000000, Math.floor(number(quiz.attempts))), bestScore, bestTotal, passed: quiz.passed === true, lastAt: date(quiz.lastAt) },
     sessions: sessions.slice(0, 30),
-    certificates
+    certificates,
+    catalogSeenPointsMigration: value.catalogSeenPointsMigration === 1 ? 1 : 0
   };
 }
 
