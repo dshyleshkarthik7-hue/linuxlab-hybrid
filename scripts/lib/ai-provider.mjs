@@ -110,6 +110,10 @@ export async function completeChat({ messages, temperature = 0.2, maxTokens = 30
       }
       if (!response.ok) {
         errors.push(name + "/" + model + ": HTTP " + response.status);
+        // Authentication and quota failures are provider-scoped. Trying another
+        // model with the same credentials cannot repair them; fall through to
+        // the next configured provider instead.
+        if ([401, 403, 429].includes(response.status)) break;
         continue;
       }
       let body;
