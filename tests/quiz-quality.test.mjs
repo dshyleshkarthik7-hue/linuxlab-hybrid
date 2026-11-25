@@ -6,7 +6,7 @@ const html = await readFile(new URL('../quiz/index.html', import.meta.url), 'utf
 const guided = JSON.parse(await readFile(new URL('../public/guided-challenges.json', import.meta.url), 'utf8'));
 const commonBlock = source.match(/const COMMON: Question\[\] = \[([\s\S]*?)\n\];/);
 assert.ok(commonBlock, 'the curated core question bank must exist');
-const commonCount = (commonBlock[1].match(/id: 'scenario-/g) || []).length;
+const commonCount = (commonBlock[1].match(/id:\s*['"]/g) || []).length;
 
 assert.match(source, /fetch\('\/guided-challenges\.json'/, 'guided scenarios must be part of the quiz bank');
 assert.equal(source.split("QUESTIONS.push(...COMMON)").length - 1, 1, 'the core question set must be appended exactly once');
@@ -21,6 +21,6 @@ for (const task of guided.challenges) {
   assert.equal(new Set(task.choices).size, 4, task.id + ' must have distinct choices');
   assert.ok(Number.isInteger(task.answerIndex) && task.answerIndex >= 0 && task.answerIndex < 4, task.id + ' must have a valid answer key');
 }
-assert.ok(commonCount >= 30, 'the authored core question bank must contain at least 30 questions');
+assert.equal(commonCount, 35, 'the authored core question bank must contain 35 questions');
 assert.equal(commonCount + guided.challenges.length, 50, 'the published bank should contain exactly 50 curated questions');
 console.log('Curated quiz bank and guided challenge answer-key checks passed (' + (commonCount + guided.challenges.length) + ' questions).');
