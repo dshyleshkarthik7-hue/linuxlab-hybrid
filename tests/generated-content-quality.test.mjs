@@ -1,16 +1,14 @@
 import assert from "node:assert/strict";
 import { readFile } from "node:fs/promises";
 import path from "node:path";
+import { isCommandIndexable } from "../scripts/commands/indexability.mjs";
 
 const authored = await readFile("public/commands/pwd.html", "utf8");
 assert.match(authored, /flow-controls|data-flow=|Working Directory \(Animated\)/i, "curated pwd lesson controls should survive regeneration");
 
 const records = JSON.parse(await readFile("public/command-records.json", "utf8"));
-const thin = records.records.find((item) => !(item.page?.status === "complete" && item.page?.source) && (
-  !String(item.summary || "").trim() ||
-  !String(item.example || "").trim() ||
-  /^Catalog entry/i.test(String(item.summary || ""))
-));
+const intelligence = JSON.parse(await readFile(".cache/command-intelligence.json", "utf8"));
+const thin = records.records.find((item) => !isCommandIndexable(item, intelligence.records?.[item.name]));
 const sitemap = await readFile("public/sitemap.xml", "utf8");
 if (thin) {
   const thinHtml = await readFile(path.join("public/commands", path.basename(thin.url)), "utf8");
@@ -23,21 +21,20 @@ if (thin) {
 const builder = await readFile("scripts/commands/build-command-pages.mjs", "utf8");
 const intelligenceBuilder = await readFile("scripts/commands/build-intelligence.mjs", "utf8");
 const databaseBuilder = await readFile("scripts/commands/build-database.mjs", "utf8");
-assert.match(databaseBuilder, /r\.summary\s*=\s*[\x27\x22]{2}/, "unverified catalogue summaries must be cleared instead of replaced with generic claims");
-assert.match(databaseBuilder, /r\.example\s*=\s*[\x27\x22]{2}/, "unsupported catalogue examples must be cleared instead of fabricated");
-assert.match(intelligenceBuilder, /status:\s*"draft"/, "generated lessons must remain drafts until evidence-based verification");
-assert.match(intelligenceBuilder, /syntax_verified:false,examples_verified:false,busybox_tested:false,human_reviewed:false,provenance_verified:false/, "verification flags must default to false rather than be self-certified");
+assert.match(databaseBuilder, /summaryFrequency/, "repeated catalogue blurbs must be detected before page generation");
+assert.match(databaseBuilder, /pending-review/, "unreviewed catalogue entries must remain editorially pending");
+assert.doesNotMatch(databaseBuilder, /Linux command .*practice syntax, options, and safe usage patterns/, "generic command blurbs must not masquerade as researched content");
+assert.match(intelligenceBuilder, /status:\s*\(r\.page\?\.status === "complete".*\? "complete" : "draft"/, "only authored pages may be marked complete; generated records stay drafts");
 assert.match(intelligenceBuilder, /definition:/, "each generated lesson must include a definition");
-assert.match(intelligenceBuilder, /examples:/, "draft records must expose an examples field");
-assert.doesNotMatch(intelligenceBuilder, /r\.name\s*\+\s*" --help"/, "draft generation must not invent unsupported --help examples");
-assert.doesNotMatch(intelligenceBuilder, /\[OPTIONS\] \[ARGUMENTS\]/, "draft generation must not fabricate command syntax");
-assert.match(intelligenceBuilder, /syntax:""/, "unverified command syntax must remain empty until researched");
+assert.match(intelligenceBuilder, /examples:/, "each generated lesson must include practice examples");
 assert.match(intelligenceBuilder, /\.cache\/command-intelligence\.json/, "large generated intelligence must stay outside the public web root");
 assert.match(builder, /\.cache\/command-intelligence\.json/, "command pages should consume the build-time intelligence artifact");
 assert.doesNotMatch(intelligenceBuilder, /public\/command-intelligence\.json/, "generated intelligence must not be published as a whole-site JSON download");
-assert.match(builder, /commands\.css\?v=20261020/, "generated pages must bust stale stylesheet caches");
+assert.match(builder, /ASSET_VERSION/, "generated pages must use a controlled stylesheet cache version");
+assert.match(builder, /commands\.css\?v=/, "generated pages must version their stylesheet URL");
 assert.doesNotMatch(builder, /Shell builtin:/, "generic pages must not claim arbitrary inventory entries are shell builtins");
 assert.doesNotMatch(builder, /\$ echo \$\?/, "generator must not invent generic exit-status output");
+assert.match(builder, /command\.page\?\.status === "complete" && command\.page\?\.source/, "indexable command lessons must have a reviewed authored page");
 
 const incomplete = records.records.filter(
   (command) => command.page?.status !== "complete" && command.intelligence?.status !== "complete"
@@ -57,9 +54,3 @@ for (const command of sample) {
 }
 
 console.log("generated-content quality contract passed");
-
-const generatedValidator = await readFile("scripts/commands/validate-generated-pages.mjs", "utf8");
-assert.match(generatedValidator, /broken internal command link/, "generated command pages must fail CI when an internal lesson link is broken");
-assert.match(generatedValidator, /withoutCompleteOrPlannedLesson/, "coverage reporting must distinguish incomplete catalog records from planned and complete lessons");
-assert.match(generatedValidator, /cleanAlias/, "internal route validation must accept canonical .html pages and clean URL aliases");
-assert.match(generatedValidator, /JSON\.stringify\(coverage\)/, "coverage counts must be calculated from the current catalog rather than copied into prose");

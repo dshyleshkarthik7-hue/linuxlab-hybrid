@@ -2,11 +2,12 @@ import { readFile, readdir } from "node:fs/promises";
 import path from "node:path";
 import { isCommandIndexable, commandCanonicalUrl, commandRobotsContent } from "./indexability.mjs";
 
-const EXPECTED = 6161;
+const canonical = JSON.parse(await readFile("data/commands/canonical.json", "utf8"));
+const EXPECTED = canonical.recordCount;
 const records = JSON.parse(await readFile("public/command-records.json", "utf8"));
 const intelligence = JSON.parse(await readFile(".cache/command-intelligence.json", "utf8"));
-if (records.records.length !== EXPECTED) {
-  throw new Error(`expected ${EXPECTED} command records, found ${records.records.length}`);
+if (!Array.isArray(canonical.records) || !Array.isArray(records.records) || records.records.length !== EXPECTED || canonical.records.length !== EXPECTED) {
+  throw new Error(`expected ${EXPECTED} command records, found ${records.records?.length ?? 0}`);
 }
 
 const files = new Set(await readdir("public/commands"));

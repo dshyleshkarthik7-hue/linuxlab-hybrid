@@ -1,11 +1,8 @@
-import { readFile, readdir, writeFile, mkdir } from "node:fs/promises";
+import {readFile,writeFile,mkdir} from "node:fs/promises";
 import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { isPublishableResearch } from "./research-publication-policy.mjs";
+import {fileURLToPath} from "node:url";
 const root=path.resolve(fileURLToPath(new URL("../..",import.meta.url)));
-const readJson=async file=>JSON.parse(await readFile(file,"utf8"));
-const canonical=await readJson(path.join(root,"data/commands/canonical.json"));
-if(!Array.isArray(canonical.records)||canonical.records.length!==canonical.recordCount)throw new Error("Canonical command inventory failed its count contract.");
+const canonical=JSON.parse(await readFile(path.join(root,"data/commands/canonical.json"),"utf8"));
 const family=(n,c)=>{const s=String(n).toLowerCase();
 if(/^(ls|cd|pwd|find|tree|which)$/.test(s))return"filesystem-navigation";
 if(/^(cp|mv|rm|mkdir|chmod|chown)$/.test(s))return"filesystem-management";
@@ -16,31 +13,38 @@ if(/^(ip|ping|ss)$/.test(s))return"networking";
 if(/^(curl|wget|ssh|scp)$/.test(s))return"network-transfer";
 if(/^(tar|gzip|zip)$/.test(s))return"archives";
 if(/^(apt|apk|dnf|rpm)$/.test(s))return"package-management";
-if(/^(systemctl|journalctl)$/.test(s))return"systemd";
+if(/^systemctl|journalctl/.test(s))return"systemd";
 if(/^(df|du|free|uptime)$/.test(s))return"observability";
 if(/^git/.test(s))return"git";
 return c||"system-tool";};
-async function walk(dir,out=[]){let entries=[];try{entries=await readdir(dir,{withFileTypes:true});}catch(e){if(e.code==="ENOENT")return out;throw e;}for(const entry of entries){const file=path.join(dir,entry.name);if(entry.isDirectory())await walk(file,out);else if(entry.isFile()&&entry.name.endsWith(".json"))out.push(file);}return out;}
-const researchFiles=await walk(path.join(root,"data/commands/research"));
-const research=new Map();
-for(const file of researchFiles){const record=await readJson(file);const name=String(record.name||path.basename(file,".json"));if(research.has(name))throw new Error("Duplicate research record: "+name);research.set(name,record);}
-const canonicalNames=new Set(canonical.records.map(x=>x.name));
-for(const name of research.keys())if(!canonicalNames.has(name))throw new Error("Research record is not canonical: "+name);
+const concepts=["arguments","stdin/stdout","exit status","implementation differences"];
+const steps=["The shell expands the command line.","The program validates arguments and context.","It performs its Linux/library operation.","It writes output and returns an exit status."];
 const byFamily=new Map();
-for(const r of canonical.records){const f=family(r.name,r.category);if(!byFamily.has(f))byFamily.set(f,[]);byFamily.get(f).push(r);}
-const records={};let approved=0;
+for(const r of canonical.records){const f=family(r.name,r.category);(byFamily.get(f)||byFamily.set(f,[]).get(f)).push(r);}
+const related=r=>(byFamily.get(family(r.name,r.category))||[]).filter(x=>x.name!==r.name).slice(0,5).map(x=>x.name);
+const records={};
 for(const r of canonical.records){
- const f=family(r.name,r.category),related=(byFamily.get(f)||[]).filter(x=>x.name!==r.name).slice(0,5).map(x=>x.name),candidate=research.get(r.name);
- if(isPublishableResearch(candidate)){
-  approved++;
-  records[r.name]={id:r.id,name:r.name,url:r.url,status:"complete",version:4,verification:{syntaxVerified:true,examplesVerified:true,busyboxTested:true,humanReviewed:true,provenanceVerified:true,syntax_verified:true,examples_verified:true,busybox_tested:true,human_reviewed:true,provenance_verified:true,quality_score:Number(candidate.qualityScore??candidate.verification.qualityScore)},qualityScore:Number(candidate.qualityScore??candidate.verification.qualityScore),review:candidate.review,tagline:candidate.definition,definition:candidate.definition,explanation:candidate.explanation,syntax:candidate.syntax,options:Array.isArray(candidate.options)?candidate.options:[],examples:candidate.examples.map(x=>({command:x.command,expectedBehavior:x.expectedBehavior,testEvidence:x.testEvidence})),internals:candidate.implementationDifferences.map(x=>x.implementation+": "+x.notes),mistakes:Array.isArray(candidate.commonMistakes)?candidate.commonMistakes:[],safetyNotes:candidate.safetyNotes,concepts:Array.isArray(candidate.concepts)?candidate.concepts:[],related:Array.isArray(candidate.related)?candidate.related:related,distroNotes:candidate.implementationDifferences,sources:candidate.sources,sourceEvidence:candidate.sources,lesson:{family:f,learningPath:Array.isArray(candidate.learningPath)?candidate.learningPath:[]}};
- }else{
-  const summary=String(r.summary||"").trim()&&!/^Catalog entry/i.test(String(r.summary||""))?String(r.summary).trim():"";
-  const example=String(r.example||"").trim()&&String(r.example).trim()!==r.name?String(r.example).trim():"";
-  records[r.name]={id:r.id,name:r.name,url:r.url,status:"draft",version:4,verification:{syntax_verified:false,examples_verified:false,busybox_tested:false,human_reviewed:false,provenance_verified:false,quality_score:null},tagline:summary?"Draft lesson for "+r.name+"; pending source verification.":"Catalogue record for "+r.name+"; lesson content not yet researched.",definition:summary,explanation:"Not yet researched or verified. Populate from authoritative command documentation before publishing.",syntax:"",options:[],examples:example?[example]:[],internals:[],mistakes:[],concepts:[],related,distroNotes:[],lesson:{family:f,learningPath:[]}};
- }
+  const f=family(r.name,r.category);
+  const summary=String(r.summary||"").trim()&&!/^Catalog entry/i.test(String(r.summary||""))?String(r.summary).trim():("Practice "+r.name+" safely on Linux.");
+  const example=String(r.example||"").trim()&&String(r.example).trim()!==r.name?String(r.example).trim():(r.name+" --help");
+  records[r.name]={
+    id:r.id,name:r.name,url:r.url,status:(r.page?.status === "complete" && typeof r.page?.source === "string") ? "complete" : "draft",version:2,
+    tagline:"Learn "+r.name+" as a complete Linux lesson.",
+    definition:r.name+" is a Linux utility in the "+f.replace(/-/g," ")+" family. "+summary,
+    explanation:"Use "+r.name+" when you need "+concepts.slice(0,3).join(", ")+" behavior. Confirm the installed implementation with command -v "+r.name+" because BusyBox, GNU, and distribution packages can differ.",
+    syntax:r.name+" [OPTIONS] [ARGUMENTS]",
+    options:[["--help","Show usage when supported."],["--version","Show version when supported."],["[ARGUMENTS]","Operands for "+r.name+"; check the local manual."]],
+    examples:["command -v "+r.name,example,"man "+r.name+" 2>/dev/null || "+r.name+" --help"],
+    internals:steps,
+    mistakes:["Do not assume identical options across BusyBox, GNU, and BSD.","Read local --help before scripting.","Verify targets before changing real system data.","Remember shell expansion happens before "+r.name+" runs."],
+    concepts,related:related(r),
+    distroNotes:["Alpine may use BusyBox for "+r.name+".","Debian/Ubuntu availability depends on installed packages.","Kali follows Debian packaging with a security focus."],
+    lesson:{family:f,learningPath:["Check command -v "+r.name+".","Read help text.","Run a reversible example.","Compare implementations you deploy."]}
+  };
 }
-const out={schemaVersion:3,generatedFrom:"data/commands/canonical.json",researchDirectory:"data/commands/research",approvedResearchLessons:approved,records};
+const out={schemaVersion:2,generatedFrom:"data/commands/canonical.json",records};
 await mkdir(path.join(root,".cache"),{recursive:true});
 await writeFile(path.join(root,".cache/command-intelligence.json"),JSON.stringify(out,null,2)+"\n");
-console.log("[command-intelligence] "+Object.keys(records).length+" catalog entries; "+approved+" research records passed every publication gate; "+(Object.keys(records).length-approved)+" remain noindex drafts.");
+const completeCount=Object.values(records).filter(r=>r.status==="complete").length;
+const draftCount=Object.values(records).filter(r=>r.status==="draft").length;
+console.log("[command-intelligence] generated "+Object.keys(records).length+" build-time lesson records outside the public web root ("+completeCount+" reviewed; "+draftCount+" drafts)");

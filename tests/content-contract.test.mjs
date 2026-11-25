@@ -31,7 +31,10 @@ assert.equal(await exists('netlify/edge-functions/linux4-iso.ts'), true, 'Linux 
 assert.equal(await exists('netlify/edge-functions/v86-firmware.ts'), false, 'firmware delivery must not duplicate the canonical static assets');
 
 const publicEntries = await readdir(join(root, 'public'), { withFileTypes: true });
-for (const entry of publicEntries.filter(e => e.isDirectory())) {
+// The academy is a real, canonical route served from public/; other nested
+// index.html files duplicate root-level pages and must not ship.
+assert.equal(await exists('public/academy/index.html'), true, 'the canonical academy route must remain available');
+for (const entry of publicEntries.filter(e => e.isDirectory() && e.name !== 'academy')) {
   assert.equal(await exists(`public/${entry.name}/index.html`), false, `public/${entry.name}/index.html is a duplicate page source`);
 }
 

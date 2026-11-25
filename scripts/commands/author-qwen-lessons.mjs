@@ -15,6 +15,7 @@ import { readFile, mkdir, writeFile, access } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { orchestrateDraft } from "../lib/ai-orchestrator.mjs";
+import { validateCommandResearchRecord } from "./lesson-schema.mjs";
 
 const root = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const arg = (name, fallback) => {
