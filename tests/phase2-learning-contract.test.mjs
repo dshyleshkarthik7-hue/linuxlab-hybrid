@@ -27,7 +27,7 @@ assert.match(guidedHtml, /6,161 Linux command catalog entries/);
 assert.match(guidedHtml, /not authored exercises/);
 assert.match(guidedJs, /index === task.answerIndex/);
 assert.match(guidedJs, /completeTutorial\(doneId/);
-assert.match(guidedJs, /catalog entries reviewed/);
+assert.match(guidedJs, /catalogue entries marked seen/);
 assert.match(guidedPublicJs, /initGuidedChallenges/);
 assert.match(guidedPublicJs, /completeTutorial\(doneId/);
 assert.equal(guidedData.challenges.length, 15, 'guided scenario count is explicit');
@@ -41,13 +41,13 @@ assert.match(quizHtml, /currently available Linux question bank/i);
 assert.doesNotMatch(quizHtml, /500 Linux Quiz/);
 assert.doesNotMatch(quizHtml, /500 available questions per session/);
 
-assert.match(progressHtml, /catalogue entries reviewed/);
+assert.match(progressHtml, /catalogue entries marked seen/);
 assert.match(progressHtml, /guided scenarios completed/);
 assert.match(progressJs, /guidedChallengeCount/);
 assert.match(progressJs, /reviewedCommandCount/);
 assert.match(progressJs, /not an externally verified credential/);
 assert.match(ledger, /guidedChallengeCount/);
-assert.match(ledger, /completed >= required/);
+assert.match(ledger, /completed\s*>=\s*required/);
 assert.match(ledger, /reviewedCommandCount/);
 
 assert.match(vite, /tutor:\s*entry\('tutor\/index\.html'\)/, 'Tutor page must be included in Vite production build');
