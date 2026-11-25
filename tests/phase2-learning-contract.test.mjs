@@ -49,6 +49,10 @@ assert.match(progressJs, /not an externally verified credential/);
 assert.match(ledger, /guidedChallengeCount/);
 assert.match(ledger, /completed\s*>=\s*required/);
 assert.match(ledger, /reviewedCommandCount/);
+assert.match(ledger, /learning-completion-v2/);
+assert.match(ledger, /criteriaVersion:2/);
+assert.match(progressJs, /learning-completion-v2/);
+assert.equal(progressHtml.split('<script src="/progress.js"').length - 1, 1, 'the local progress ledger must load exactly once');
 
 assert.match(vite, /tutor:\s*entry\('tutor\/index\.html'\)/, 'Tutor page must be included in Vite production build');
 assert.match(tutorHtml, /<title>Lincyb/);
