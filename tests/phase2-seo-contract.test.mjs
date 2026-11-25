@@ -23,7 +23,7 @@ assert.match(homepage, /6,161-entry command reference catalogue/, 'homepage must
 assert.match(homepage, /26 published reviewed command references/);
 assert.match(homepage, /15 scored guided scenarios/);
 assert.match(homepage, /50-question curated practice quiz/);
-assert.doesNotMatch(homepage, /200\\+ curated command lessons|500-question practice quiz/, 'homepage must not overstate authored lesson or quiz counts');
+assert.ok(!homepage.includes('200+ curated command lessons') && !homepage.includes('500-question practice quiz'), 'homepage must not overstate authored lesson or quiz counts');
 assert.match(homepage, /github\.com\/dshyleshkarthik7-hue\/linuxlab-hybrid/, 'homepage must link the open-source repository');
 assert.match(about, /"@type":"AboutPage"/, 'About page must identify its purpose in structured metadata');
 assert.match(about, /source repository/, 'About page must provide verifiable project provenance');
