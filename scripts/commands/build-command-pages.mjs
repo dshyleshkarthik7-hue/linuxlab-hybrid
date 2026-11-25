@@ -60,7 +60,11 @@ for (const command of data.records) {
       }
       if (normalized !== existing) await writeFile(outputPath, normalized);
       continue;
-    } catch { /* regenerate missing curated output */ }
+    } catch (error) {
+      if (error?.code !== "ENOENT") throw error;
+      // Regenerate only when the curated output is genuinely absent. Permission
+      // and other I/O failures must not be hidden by the build.
+    }
   }
   const options = hasVerifiedReference ? (lesson.options || []) : [];
   const concepts = hasVerifiedReference ? (lesson.concepts || []) : [];
