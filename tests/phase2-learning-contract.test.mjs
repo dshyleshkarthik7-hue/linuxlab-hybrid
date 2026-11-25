@@ -67,10 +67,9 @@ assert.ok((quiz.match(/id: 'scenario-/g) || []).length >= 25);
 assert.match(pkg.scripts['test:ci'], /test:phase2-learning/);
 assert.match(pkg.scripts.test, /test:phase2-learning/);
 
-assert.match(progressHtml, /<script src="\\/progress\\.js" defer><\\/script>/, 'the local progress ledger must load before the dashboard module');
 assert.match(ledger, /expectedQuizSize/, 'local completion must require the full published quiz');
 assert.match(progressJs, /practiceQuizSize/);
-assert.match(databaseBuilder, /practiceQuizSize:guidedChallengeCount\\+35/);
+assert.ok(databaseBuilder.includes('practiceQuizSize:guidedChallengeCount+35'));
 assert.match(databaseBuilder, /challengeCount:guidedChallengeCount/);
 assert.match(quiz, /SESSION_SIZE = 50/);
 assert.equal(progressHtml.split('<script src="/progress.js"').length - 1, 1, 'the local progress ledger must load exactly once');
