@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const fmt = (value) => new Date(value).toLocaleString();
   const catalogCount = () => Number(window.LinuxProgress?.catalog?.()?.commandCount) || 0;
   const guidedCount = () => Number(window.LinuxProgress?.catalog?.()?.guidedChallengeCount) || 0;
+  const practiceQuizSize = () => Number(window.LinuxProgress?.catalog?.()?.practiceQuizSize) || 0;
 
   function renderBadges(state) {
     const host = $('#achievement-badges');
@@ -80,8 +81,8 @@ document.addEventListener('DOMContentLoaded', () => {
     const eligible = window.LinuxProgress.eligible();
     $('#certificate').hidden = !eligible;
     $('#eligibility').textContent = eligible
-      ? `You completed all ${guidedCount()} guided scenarios and reached 80% on the available practice quiz. This is a browser-local learning record, not an externally verified credential.`
-      : `Complete all ${guidedCount()} guided scenarios and reach 80% on the available practice quiz to unlock a browser-local learning record.`;
+      ? `You completed all ${guidedCount()} guided scenarios and reached 80% on the ${practiceQuizSize()}-question practice quiz. This is a browser-local learning record, not an externally verified credential.`
+      : `Complete all ${guidedCount()} guided scenarios and reach 80% on the ${practiceQuizSize()}-question practice quiz to unlock a browser-local learning record.`;
     const existing = state.certificates.find((item) => item.type === 'learning-completion');
     if (existing) showCertificate(existing);
   }
