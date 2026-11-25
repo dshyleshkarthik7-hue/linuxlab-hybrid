@@ -63,6 +63,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function render() {
     const state = window.LinuxProgress?.summary();
     if (!state) return;
+    const currentQuiz = practiceQuizSize() > 0 && state.quiz?.bestTotal === practiceQuizSize();
     renderBadges(state);
     $('#points').textContent = state.points;
     $('#tutorials').textContent = state.tutorialCount;
@@ -95,7 +96,8 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#export-badges')?.addEventListener('click', () => {
     const state = window.LinuxProgress?.summary();
     if (!state) return;
-    const quizPct = state.quiz?.bestTotal ? Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100) : 0;
+    const currentQuiz = practiceQuizSize() > 0 && state.quiz?.bestTotal === practiceQuizSize();
+    const quizPct = currentQuiz ? Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100) : 0;
     const badges = [
       ['First Steps', state.tutorialCount >= 1 || state.guidedChallengeCount >= 1 || state.reviewedCommandCount >= 1],
       ['Practice Builder', state.guidedChallengeCount >= 10 && state.tutorialCount >= 3],
