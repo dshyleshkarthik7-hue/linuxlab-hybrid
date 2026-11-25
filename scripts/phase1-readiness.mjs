@@ -60,8 +60,10 @@ for (const record of canonical.records) {
   requireCondition(typeof record.page?.status === "string" && record.page.status.trim(), "command " + record.name + " has no page status");
   requireCondition(typeof record.intelligence?.status === "string" && record.intelligence.status.trim(), "command " + record.name + " has no intelligence status");
   pageStatus[record.page.status] = (pageStatus[record.page.status] || 0) + 1;
-  intelligenceStatus[record.intelligence.status] = (intelligenceStatus[record.intelligence.status] || 0) + 1;
-  if (record.intelligence?.syntax && record.intelligence?.description) entriesWithAuthoredIntelligence++;
+  const reviewedLesson = record.page?.status === "complete" && typeof record.page?.source === "string" && record.page.source.trim().length > 0;
+  const publicationStatus = reviewedLesson ? "complete" : "draft";
+  intelligenceStatus[publicationStatus] = (intelligenceStatus[publicationStatus] || 0) + 1;
+  if (reviewedLesson && record.intelligence?.syntax && record.intelligence?.description) entriesWithAuthoredIntelligence++;
   if (record.execution?.tryEnabled === true) entriesWithExecutableExamples++;
 }
 const ids = enrichedRecords.map((record) => record.id);

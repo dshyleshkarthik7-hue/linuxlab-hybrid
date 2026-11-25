@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { exportSnapshot, importSnapshot, validateSnapshot } from '../progress/progress-snapshot.mjs';
 
 const original = {
-  version: 2, name: 'Learner', points: 42,
+  version: 2, name: 'Learner', points: 42, catalogSeenPointsMigration: 1,
   tutorials: [{ id: 'linux-basics', title: 'Linux Basics', completedAt: '2026-10-01T10:00:00.000Z' }],
   challenges: [{ id: 'chmod', title: 'chmod', completedAt: '2026-10-02T10:00:00.000Z' }],
   quiz: { attempts: 2, bestScore: 9, bestTotal: 10, passed: true, lastAt: '2026-10-03T10:00:00.000Z' },
@@ -13,6 +13,8 @@ const encoded = exportSnapshot(original);
 const restored = importSnapshot(encoded);
 assert.equal(restored.name, original.name);
 assert.equal(restored.points, original.points);
+assert.equal(restored.catalogSeenPointsMigration, 1, 'new progress backups must preserve the one-time points migration marker');
+assert.equal(validateSnapshot({ version: 2, points: 20, challenges: [{ id: 'old-seen' }] }).catalogSeenPointsMigration, 0, 'legacy backups must still be migrated on import');
 assert.deepEqual(restored.tutorials, original.tutorials);
 assert.deepEqual(restored.challenges, original.challenges);
 assert.deepEqual(restored.quiz, original.quiz);

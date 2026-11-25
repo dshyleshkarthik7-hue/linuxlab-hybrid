@@ -10,7 +10,7 @@
   if (count) { count.setAttribute('role', 'status'); count.setAttribute('aria-live', 'polite'); count.setAttribute('aria-atomic', 'true'); }
 
   const update = () => {
-    if (count) count.textContent = data ? `${done.length} / ${data.commandCount} commands practiced · ${visibleCount} results shown` : 'Loading challenge catalog…';
+    if (count) count.textContent = data ? `${done.length} / ${data.commandCount} catalogue entries marked seen · ${visibleCount} entries shown` : 'Loading challenge catalog…';
   };
 
   function render() {
@@ -35,24 +35,24 @@
       const h = document.createElement('h2');
       h.textContent = cmd.name;
       const p = document.createElement('p');
-      p.textContent = 'Practice ' + cmd.name + ': ' + cmd.summary;
+      p.textContent = 'Catalogue entry: ' + cmd.name + (cmd.summary ? ' — ' + cmd.summary : '');
       const depth = document.createElement('span');
       depth.className = 'content-depth';
-      const curated = Boolean(String(cmd.example || '').trim() && String(cmd.summary || '').trim().length >= 80);
-      depth.textContent = curated ? 'Curated task' : 'Catalog entry · lesson detail may be limited';
-      depth.setAttribute('aria-label', curated ? 'Curated task with example' : 'Catalog entry; lesson detail may be limited');
+      const curated = cmd.lessonStatus === 'complete';
+      depth.textContent = curated ? 'Reviewed lesson available' : 'Reference entry · lesson pending review';
+      depth.setAttribute('aria-label', curated ? 'Reviewed lesson available' : 'Reference entry; lesson pending review');
       const actions = document.createElement('div');
       actions.className = 'challenge-actions';
       const link = document.createElement('a');
       link.className = 'lesson-link';
       link.href = cmd.url || ('/commands/' + encodeURIComponent(cmd.name) + '.html');
-      link.textContent = 'Read lesson';
+      link.textContent = 'Open reference page';
       const button = document.createElement('button');
       button.className = 'btn' + (done.includes(id) ? ' done' : '');
       button.type = 'button';
       const paint = () => {
         const yes = done.includes(id);
-        button.textContent = yes ? '✓ Completed' : 'Mark complete';
+        button.textContent = yes ? '✓ Seen' : 'Mark seen';
         button.classList.toggle('done', yes);
         article.classList.toggle('is-complete', yes);
       };
@@ -109,7 +109,7 @@
   category?.addEventListener('change', render);
   setSelect?.addEventListener('change', render);
   clear?.addEventListener('click', () => {
-    if (done.length && confirm('Reset all challenge progress on this browser?')) {
+    if (done.length && confirm('Reset all catalogue review marks on this browser?')) {
       window.LinuxProgress?.clearChallenges?.();
       done = [];
       render();

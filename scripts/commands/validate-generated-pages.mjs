@@ -17,8 +17,8 @@ const commandPaths = new Set(records.records.flatMap((command) => {
   const cleanAlias = pathname.endsWith(".html") ? pathname.slice(0, -5) + "/" : pathname.endsWith("/") ? pathname.slice(0, -1) + ".html" : pathname;
   return [pathname, cleanAlias];
 }));
-const isComplete = (command) => command.page?.status === "complete" || command.intelligence?.status === "complete";
-const isPlanned = (command) => !isComplete(command) && (command.page?.status === "planned" || command.intelligence?.status === "planned");
+const isComplete = (command) => isCommandIndexable(command, intelligence.records?.[command.name]);
+const isPlanned = (command) => !isComplete(command) && command.page?.status === "planned";
 const coverage = {
   totalCatalogEntries: records.records.length,
   complete: records.records.filter(isComplete).length,

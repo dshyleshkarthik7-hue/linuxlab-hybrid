@@ -37,8 +37,12 @@ assert.doesNotMatch(builder, /\$ echo \$\?/, "generator must not invent generic 
 assert.match(builder, /command\.page\?\.status === "complete" && command\.page\?\.source/, "indexable command lessons must have a reviewed authored page");
 
 const incomplete = records.records.filter(
-  (command) => command.page?.status !== "complete" && command.intelligence?.status !== "complete"
+  (command) => !isCommandIndexable(command, intelligence.records?.[command.name])
 );
+const completeLessons = records.records.filter(
+  (command) => isCommandIndexable(command, intelligence.records?.[command.name])
+);
+assert.equal(completeLessons.length, 26, "only reviewed authored lessons may be treated as complete");
 // Sample existing public command pages for fabricated exit-status output (full catalogue pages are produced at prebuild).
 const sample = incomplete.slice(0, 50);
 for (const command of sample) {

@@ -3,21 +3,24 @@ import { exportSnapshot, importSnapshot } from './progress-snapshot.mjs';
 document.addEventListener('DOMContentLoaded', () => {
   const $ = (selector) => document.querySelector(selector);
   const fmt = (value) => new Date(value).toLocaleString();
-  const catalogCount = () => Number(window.LinuxProgress?.catalog?.()?.challengeCount) || 6161;
+  const catalogCount = () => Number(window.LinuxProgress?.catalog?.()?.catalogEntryCount) || 0;
+  const guidedCount = () => Number(window.LinuxProgress?.catalog?.()?.guidedChallengeCount) || 0;
+  const practiceQuizSize = () => Number(window.LinuxProgress?.catalog?.()?.practiceQuizSize) || 0;
 
   function renderBadges(state) {
     const host = $('#achievement-badges');
     if (!host) return;
     host.replaceChildren();
-    const quizPct = state.quiz?.bestTotal ? Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100) : 0;
+    const currentQuiz = practiceQuizSize() > 0 && state.quiz?.bestTotal === practiceQuizSize();
+    const quizPct = currentQuiz ? Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100) : 0;
     const definitions = [
-      { name: 'First Steps', tier: 'Bronze', description: 'Complete your first tutorial or challenge.', unlocked: state.tutorialCount >= 1 || state.challengeCount >= 1, progress: Math.min(1, Math.max(state.tutorialCount, state.challengeCount)) },
-      { name: 'Practice Builder', tier: 'Bronze', description: 'Complete 10 challenges and 3 tutorials.', unlocked: state.challengeCount >= 10 && state.tutorialCount >= 3, progress: Math.min(state.challengeCount / 10, state.tutorialCount / 3) },
+      { name: 'First Steps', tier: 'Bronze', description: 'Complete a tutorial, a guided scenario, or review a catalogue entry.', unlocked: state.tutorialCount >= 1 || state.guidedChallengeCount >= 1 || state.reviewedCommandCount >= 1, progress: Math.min(1, Math.max(state.tutorialCount, state.guidedChallengeCount, state.reviewedCommandCount)) },
+      { name: 'Practice Builder', tier: 'Bronze', description: 'Complete 10 guided scenarios and 3 tutorials.', unlocked: state.guidedChallengeCount >= 10 && state.tutorialCount >= 3, progress: Math.min(state.guidedChallengeCount / 10, state.tutorialCount / 3) },
       { name: 'Quiz Ready', tier: 'Silver', description: 'Score at least 80% on a recorded practice quiz.', unlocked: quizPct >= 80, progress: Math.min(1, quizPct / 80) },
-      { name: 'Shell Scripter', tier: 'Silver', description: 'Complete 25 command challenges.', unlocked: state.challengeCount >= 25, progress: Math.min(1, state.challengeCount / 25) },
-      { name: 'Century Club', tier: 'Gold', description: 'Complete 100 command challenges.', unlocked: state.challengeCount >= 100, progress: Math.min(1, state.challengeCount / 100) },
-      { name: 'Path Complete', tier: 'Gold', description: 'Complete 10 tutorials and 50 challenges.', unlocked: state.tutorialCount >= 10 && state.challengeCount >= 50, progress: Math.min(state.tutorialCount / 10, state.challengeCount / 50) },
-      { name: 'Advanced Learner', tier: 'Platinum', description: 'Complete 100 challenges, 10 tutorials, and score 80% on a quiz.', unlocked: state.challengeCount >= 100 && state.tutorialCount >= 10 && quizPct >= 80, progress: Math.min(state.challengeCount / 100, state.tutorialCount / 10, quizPct / 80) },
+      { name: 'Scenario Solver', tier: 'Silver', description: 'Complete 10 guided Linux scenarios.', unlocked: state.guidedChallengeCount >= 10, progress: Math.min(1, state.guidedChallengeCount / 10) },
+      { name: 'Catalog Explorer', tier: 'Gold', description: 'Mark 100 command catalogue entries as seen.', unlocked: state.reviewedCommandCount >= 100, progress: Math.min(1, state.reviewedCommandCount / 100) },
+      { name: 'Path Complete', tier: 'Gold', description: 'Complete 10 tutorials and all guided scenarios.', unlocked: state.tutorialCount >= 10 && state.guidedChallengeCount >= guidedCount() && guidedCount() > 0, progress: Math.min(state.tutorialCount / 10, state.guidedChallengeCount / Math.max(1, guidedCount())) },
+      { name: 'Advanced Learner', tier: 'Platinum', description: 'Complete all guided scenarios, 10 tutorials, and score 80% on the practice quiz.', unlocked: state.guidedChallengeCount >= guidedCount() && guidedCount() > 0 && state.tutorialCount >= 10 && quizPct >= 80, progress: Math.min(state.guidedChallengeCount / Math.max(1, guidedCount()), state.tutorialCount / 10, quizPct / 80) },
       { name: 'Dedicated', tier: 'Platinum', description: 'Earn 500 learning points.', unlocked: state.points >= 500, progress: Math.min(1, state.points / 500) }
     ];
     for (const badge of definitions) {
@@ -51,7 +54,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const card = document.createElement('div'); card.className = 'certificate';
     const heading = document.createElement('h3'); heading.textContent = 'LinuxTerminal Learning Completion';
     const paragraph = document.createElement('p'); const strong = document.createElement('strong'); strong.textContent = certificate.name; paragraph.append(strong, ' completed the local learning path.');
-    const details = document.createElement('p'); details.textContent = `${certificate.challenges}/${catalogCount().toLocaleString()} command practice items · ${certificate.quizScore}/${certificate.quizTotal} quiz · ${certificate.points} points`;
+    const details = document.createElement('p'); details.textContent = `${certificate.challenges}/${guidedCount()} guided scenarios · ${certificate.quizScore}/${certificate.quizTotal} quiz · ${certificate.points} points`;
     const meta = document.createElement('small'); meta.textContent = `Issued ${fmt(certificate.issuedAt)} · ID ${certificate.id}`;
     const print = document.createElement('button'); print.className = 'print'; print.textContent = 'Print certificate'; print.addEventListener('click', () => window.print());
     card.append(heading, paragraph, details, meta, print); box.append(card);
@@ -60,12 +63,14 @@ document.addEventListener('DOMContentLoaded', () => {
   function render() {
     const state = window.LinuxProgress?.summary();
     if (!state) return;
+    const currentQuiz = practiceQuizSize() > 0 && state.quiz?.bestTotal === practiceQuizSize();
     renderBadges(state);
     $('#points').textContent = state.points;
     $('#tutorials').textContent = state.tutorialCount;
-    $('#challenges').textContent = `${state.challengeCount} / ${catalogCount().toLocaleString()}`;
+    $('#challenges').textContent = `${state.reviewedCommandCount} / ${catalogCount().toLocaleString()}`;
+    $('#guided-challenges').textContent = `${state.guidedChallengeCount} / ${guidedCount()}`;
     $('#sessions').textContent = state.sessionCount;
-    $('#quiz').textContent = state.quiz.bestTotal ? `${state.quiz.bestScore}/${state.quiz.bestTotal} (${Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100)}%)` : 'Not started';
+    $('#quiz').textContent = currentQuiz ? `${state.quiz.bestScore}/${state.quiz.bestTotal} (${Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100)}%)` : state.quiz.bestTotal ? 'Retake current quiz' : 'Not started';
     $('#name').value = state.name || '';
     const list = $('#session-list'); list.replaceChildren();
     if (!state.sessions.length) list.textContent = 'No previous sessions yet.';
@@ -78,9 +83,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const eligible = window.LinuxProgress.eligible();
     $('#certificate').hidden = !eligible;
     $('#eligibility').textContent = eligible
-      ? `You completed all ${catalogCount().toLocaleString()} catalog practice items and reached 80% on the practice quiz. This is a browser-local learning completion certificate; the verified assessment certificate remains at /certificate/.`
-      : `Complete the catalog practice items and reach 80% on the practice quiz to unlock a local learning completion certificate.`;
-    const existing = state.certificates.find((item) => item.type === 'learning-completion');
+      ? `You completed all ${guidedCount()} guided scenarios and reached 80% on the ${practiceQuizSize()}-question practice quiz. This is a browser-local learning record, not an externally verified credential.`
+      : `Complete all ${guidedCount()} guided scenarios and reach 80% on the ${practiceQuizSize()}-question practice quiz to unlock a browser-local learning record.`;
+    const existing = state.certificates.find((item) => item.type === 'learning-completion-v2' && item.criteriaVersion === 2);
     if (existing) showCertificate(existing);
   }
 
@@ -91,15 +96,16 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#export-badges')?.addEventListener('click', () => {
     const state = window.LinuxProgress?.summary();
     if (!state) return;
-    const quizPct = state.quiz?.bestTotal ? Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100) : 0;
+    const currentQuiz = practiceQuizSize() > 0 && state.quiz?.bestTotal === practiceQuizSize();
+    const quizPct = currentQuiz ? Math.round(state.quiz.bestScore / state.quiz.bestTotal * 100) : 0;
     const badges = [
-      ['First Steps', state.tutorialCount >= 1 || state.challengeCount >= 1],
-      ['Practice Builder', state.challengeCount >= 10 && state.tutorialCount >= 3],
+      ['First Steps', state.tutorialCount >= 1 || state.guidedChallengeCount >= 1 || state.reviewedCommandCount >= 1],
+      ['Practice Builder', state.guidedChallengeCount >= 10 && state.tutorialCount >= 3],
       ['Quiz Ready', quizPct >= 80],
-      ['Shell Scripter', state.challengeCount >= 25],
-      ['Century Club', state.challengeCount >= 100],
-      ['Path Complete', state.tutorialCount >= 10 && state.challengeCount >= 50],
-      ['Advanced Learner', state.challengeCount >= 100 && state.tutorialCount >= 10 && quizPct >= 80],
+      ['Scenario Solver', state.guidedChallengeCount >= 10],
+      ['Catalog Explorer', state.reviewedCommandCount >= 100],
+      ['Path Complete', state.tutorialCount >= 10 && state.guidedChallengeCount >= guidedCount() && guidedCount() > 0],
+      ['Advanced Learner', state.guidedChallengeCount >= guidedCount() && guidedCount() > 0 && state.tutorialCount >= 10 && quizPct >= 80],
       ['Dedicated', state.points >= 500]
     ].filter((item) => item[1]).map((item) => item[0]);
     const escapeXml = (value) => String(value).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
