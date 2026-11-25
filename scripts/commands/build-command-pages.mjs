@@ -7,6 +7,8 @@ const root = path.resolve(fileURLToPath(new URL("../..", import.meta.url)));
 const data = JSON.parse(await readFile(path.join(root, "public/command-records.json"), "utf8"));
 const intelligence = JSON.parse(await readFile(path.join(root, ".cache/command-intelligence.json"), "utf8"));
 const out = path.join(root, "public/commands");
+const ASSET_VERSION = process.env.BUILD_ASSET_VERSION || "20261125";
+if (!/^\d{8}$/.test(ASSET_VERSION)) throw new Error("BUILD_ASSET_VERSION must use YYYYMMDD format.");
 
 await mkdir(out, { recursive: true });
 
@@ -26,9 +28,10 @@ for (const command of data.records) {
   const lesson = intelligence.records?.[command.name] || command.intelligence || {};
   const hasAuthoredLesson = command.page?.status === "complete" || isIndexable(command, intelligence.records?.[command.name]);
   const hasVerifiedReference = Boolean(hasAuthoredLesson && String(lesson.definition || lesson.explanation || "").trim() && String(lesson.syntax || "").trim() && Array.isArray(lesson.examples) && lesson.examples.length > 0 && Array.isArray(lesson.internals) && lesson.internals.length > 0);
-  const rawSummary = hasVerifiedReference ? (lesson.definition || lesson.explanation || lesson.tagline || command.summary) : (command.summary || "Catalogue entry only. A command-specific explanation has not yet been reviewed and published.");
+  const rawSummary = hasVerifiedReference ? (lesson.definition || lesson.explanation || lesson.tagline || command.summary) : `Catalogue entry for ${command.name}. A command-specific explanation has not yet been reviewed and published.`;
   // Keep descriptions useful and within the 320-character metadata contract.
   const summary = String(rawSummary).replace(/\s+/g, " ").trim().slice(0, 190);
+  const pageDescription = hasVerifiedReference ? `${summary} Learn ${command.name} syntax, examples, common options, Linux implementation notes and safe practice.` : summary;
   const syntax = hasVerifiedReference ? lesson.syntax : "Not published — verify the local command before use.";
   const examples = hasVerifiedReference ? lesson.examples.filter((example) => (typeof example === "string" && example.trim()) || (example && typeof example.command === "string" && example.command.trim())) : [];
   const indexable = isIndexable(command, intelligence.records?.[command.name]);
@@ -41,7 +44,7 @@ for (const command of data.records) {
       // with the current indexability contract in the command database.
       const existing = await readFile(outputPath, "utf8");
       const robotsMeta = `<meta name="robots" content="${commandRobotsContent(command, intelligence.records?.[command.name])}">`;
-      const cssVersioned = existing.replace(/commands\.css(?:\?v=\d+)?/g, "commands.css?v=20261020");
+      const cssVersioned = existing.replace(/commands\.css(?:\?v=\d+)?/g, `commands.css?v=${ASSET_VERSION}`);
       const existingRobotsTag = existing.match(/<meta\b[^>]*>/gi)?.find((tag) => /\bname\s*=\s*["']robots["']/i.test(tag));
       let normalized = cssVersioned;
       const canonicalUrl = commandCanonicalUrl(command);
@@ -82,7 +85,7 @@ for (const command of data.records) {
   const articleSchema = {
     "@context": "https://schema.org",
     "@type": "TechArticle",
-    "headline": `${command.name} command — Linux reference`,
+    "headline": `${command.name} command — ${hasVerifiedReference ? "Linux reference" : "Linux command catalogue entry"}`,
     "description": summary,
     "url": commandCanonicalUrl(command),
     "author": {"@type":"Organization","name":"LinuxTerminal.me","url":"https://linuxterminal.me/"},
@@ -98,20 +101,20 @@ for (const command of data.records) {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>${escapeHtml(command.name)} command — Linux reference | LinuxTerminal.me</title>
-<meta name="description" content="${escapeHtml(summary)} Learn ${escapeHtml(command.name)} syntax, examples, common options, Linux implementation notes and safe practice.">
+<title>${escapeHtml(command.name)} command — ${hasVerifiedReference ? "Linux reference" : "Linux command catalogue entry"} | LinuxTerminal.me</title>
+<meta name="description" content="${escapeHtml(pageDescription)}">
 <meta name="robots" content="${indexable ? "index,follow,max-image-preview:large" : "noindex,follow"}">
 <link rel="canonical" href="${escapeHtml(commandCanonicalUrl(command))}">
 <meta property="og:type" content="article">
-<meta property="og:title" content="${escapeHtml(command.name)} command — Linux reference | LinuxTerminal.me">
+<meta property="og:title" content="${escapeHtml(command.name)} command — ${hasVerifiedReference ? "Linux reference" : "Linux command catalogue entry"} | LinuxTerminal.me">
 <meta property="og:description" content="${escapeHtml(summary)}">
 <meta property="og:url" content="${escapeHtml(commandCanonicalUrl(command))}">
 <meta property="og:site_name" content="LinuxTerminal.me">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:title" content="${escapeHtml(command.name)} command — Linux reference | LinuxTerminal.me">
+<meta name="twitter:title" content="${escapeHtml(command.name)} command — ${hasVerifiedReference ? "Linux reference" : "Linux command catalogue entry"} | LinuxTerminal.me">
 <meta name="twitter:description" content="${escapeHtml(summary)}">
 <script type="application/ld+json">${escapeJson(articleSchema)}</script>
-<link rel="stylesheet" href="/commands.css?v=20261020">
+<link rel="stylesheet" href="/commands.css?v=${ASSET_VERSION}">
 </head>
 <body class="detail-page">
 <main id="main-content" class="command-page">
@@ -134,7 +137,7 @@ for (const command of data.records) {
 <section class="card anatomy-card"><h2>Common mistakes and safety</h2><ul>${mistakeList}</ul><p>Linux utilities can differ between GNU, BusyBox, BSD-derived and distribution-specific implementations. Check <code>man ${escapeHtml(command.name)}</code> or <code>${escapeHtml(command.name)} --help</code> on the target system before relying on implementation-specific behavior.</p></section>
 <section class="card anatomy-card"><h2>Related Linux commands</h2><p>${relatedLinks(related) || "Explore the complete Linux command catalogue for related tools."}</p><p><a class="cta" href="/learn/files-and-directories/">Files and directories</a> <a class="cta" href="/learn/permissions/">Linux permissions</a> <a class="cta" href="/learn/">All Linux tutorials</a></p></section>
 <section class="card anatomy-card"><h2>Practice ${escapeHtml(command.name)} online</h2><p>Use the browser learning environment for a disposable practice session. The command reference itself is static and does not require the VM to load.</p>${hasVerifiedReference ? `<a class="cta" href="${practiceUrl}">Open practice →</a>` : `<a class="cta" href="/beginner/">Open curated beginner practice →</a>`}</section>
-<footer class="lesson-footer-links"><a class="cta" href="/commands/">← Back to all 6,161 Linux commands</a><a class="cta" href="/beginner/">200-command beginner curriculum →</a></footer>
+<footer class="lesson-footer-links"><a class="cta" href="/commands/">← Back to all ${data.records.length.toLocaleString("en-US")} Linux commands</a><a class="cta" href="/beginner/">200-command beginner curriculum →</a></footer>
 </main>
 </body>
 </html>`;
